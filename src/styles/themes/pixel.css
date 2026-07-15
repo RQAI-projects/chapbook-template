@@ -1,0 +1,219 @@
+/* ============================================================
+   THEME · Storybook  (Kids & First Blogs)  — LIGHT
+   ------------------------------------------------------------
+   A cosy fairy-tale read: soft cream paper, muted coral + sage
+   pastels, rounded cards with GENTLE BLURRED shadows and roomy
+   leading. Signature = bedtime-story warmth and soft decorative
+   dividers. Deliberately quieter and softer than Crayon — no hard
+   offset shadows, no loud primaries. Drops the 3D hero.
+   ============================================================ */
+
+html[data-blog-theme="pixel"] {
+  color-scheme: light;
+
+  /* surfaces — soft daylight game-boy greens */
+  --bg-0: #e8f4d6;
+  --bg-1: #f2f8e4;
+  --bg-2: #dcecc4;
+  --bg-3: #cfe3b4;
+
+  /* ink — deep pixel olive */
+  --ink: #2b2f24;
+  --ink-dim: #4a5140;
+  --ink-faint: #77855f;
+
+  /* soft pastel quest hues */
+  --teal: #5a9e3f;   /* leaf green */
+  --cyan: #4aa3b0;   /* teal */
+  --violet: #9b7fd0; /* lilac */
+  --pink: #e08fa8;
+  --amber: #e0b64a;  /* coin gold */
+  --accent: #5a9e3f; /* leaf green */
+  --accent-ink: #ffffff;
+  --grad: linear-gradient(100deg, #5a9e3f, #4aa3b0);
+
+  --line: rgba(43, 47, 36, 0.16);
+  --line-strong: rgba(43, 47, 36, 0.30);
+
+  /* glows → soft, blurred warm ambient shadows */
+  --glow-teal: 0 12px 30px rgba(143, 174, 145, 0.20);
+  --glow-cyan: 0 12px 30px rgba(127, 168, 201, 0.20);
+  --glow-violet: 0 12px 30px rgba(183, 155, 212, 0.20);
+
+  --radius: 6px;
+
+  --header-bg: rgba(251, 243, 231, 0.86);
+  --header-blur: saturate(1.2) blur(12px);
+  --header-border: rgba(90, 70, 55, 0.12);
+  --selection-bg: rgba(217, 128, 95, 0.22);
+  --scrim-text-shadow: none;
+  --masthead-ink: var(--ink);
+  --masthead-shadow: 0 2px 0 rgba(255, 255, 255, 0.9), 0 8px 26px rgba(217, 128, 95, 0.18);
+
+  --font-display: 'Fredoka', 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible', 'Inter', system-ui, sans-serif;
+}
+
+html[data-blog-theme="pixel"] .section { padding-block: clamp(1.8rem, 4.5vw, 3.4rem); }
+
+/* ---- header ---- */
+html[data-blog-theme="pixel"] .logo { font-weight: 600; letter-spacing: 0.005em; }
+html[data-blog-theme="pixel"] .site-nav a { color: var(--ink-dim); }
+html[data-blog-theme="pixel"] .site-nav a[aria-current="page"]::after { box-shadow: none; height: 3px; border-radius: 3px; background: var(--accent); }
+
+/* ---- hero: drop the galaxy; warm bedtime wash ---- */
+html[data-blog-theme="pixel"] .three-hero { display: none; }
+html[data-blog-theme="pixel"] .hero { min-height: calc(56vh - var(--header-h)); }
+html[data-blog-theme="pixel"] .hero-scrim {
+  background:
+    radial-gradient(120% 95% at 30% 6%, rgba(232, 185, 107, 0.24), transparent 58%),
+    radial-gradient(120% 95% at 82% 30%, rgba(217, 128, 95, 0.16), transparent 58%),
+    radial-gradient(130% 100% at 55% 100%, rgba(143, 174, 145, 0.14), transparent 62%);
+}
+html[data-blog-theme="pixel"] .masthead { font-weight: 500; letter-spacing: -0.005em; }
+html[data-blog-theme="pixel"] .hero .lead { color: var(--ink-dim); }
+html[data-blog-theme="pixel"] .scroll-cue { border-color: var(--line-strong); }
+html[data-blog-theme="pixel"] .scroll-cue span { background: var(--accent); box-shadow: none; }
+
+/* ---- eyebrow / section heads: soft dotted divider ---- */
+html[data-blog-theme="pixel"] .eyebrow { color: #b85a3c; text-shadow: none; letter-spacing: 0.2em; }
+html[data-blog-theme="pixel"] .section-title { font-weight: 600; }
+html[data-blog-theme="pixel"] .section-head .rule {
+  height: 3px;
+  background: radial-gradient(circle, var(--line-strong) 40%, transparent 42%) 0 / 8px 8px repeat-x;
+}
+html[data-blog-theme="pixel"] .see-all { color: #b85a3c; }
+html[data-blog-theme="pixel"] .see-all:hover { text-shadow: none; opacity: 0.75; }
+
+/* ---- post cards: rounded, cream, soft blurred shadow ---- */
+html[data-blog-theme="pixel"] .post-card {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 28px rgba(90, 70, 55, 0.10);
+}
+html[data-blog-theme="pixel"] .post-card::before {
+  width: 5px; border-radius: 0 5px 5px 0;
+  background: color-mix(in srgb, var(--card-accent, var(--accent)) 70%, #fff);
+  box-shadow: none; opacity: 0.9;
+}
+html[data-blog-theme="pixel"] .post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(90, 70, 55, 0.16);
+  border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 40%, var(--line-strong));
+}
+html[data-blog-theme="pixel"] .post-card:hover::before { width: 7px; }
+html[data-blog-theme="pixel"] .post-card h3 { color: var(--ink); font-weight: 600; }
+html[data-blog-theme="pixel"] .post-card p { color: var(--ink-dim); }
+html[data-blog-theme="pixel"] .post-meta { color: var(--ink-faint); }
+html[data-blog-theme="pixel"] .tag-chip {
+  color: #6b4a2f; background: rgba(232, 185, 107, 0.20); border-color: rgba(232, 185, 107, 0.6);
+}
+html[data-blog-theme="pixel"] .badge-interactive {
+  color: #7a5230; background: rgba(217, 128, 95, 0.14); border-color: rgba(217, 128, 95, 0.5);
+}
+html[data-blog-theme="pixel"] .badge-interactive::before { background: var(--accent); box-shadow: none; }
+
+/* archive "cards" grid: re-assert the soft bar (base layout zeroes ::before width) */
+html[data-blog-theme="pixel"] .post-list.layout-cards .post-card::before { width: 5px; }
+
+/* ---- cards / const / subscribe / stat / cv: soft cream panels ---- */
+html[data-blog-theme="pixel"] .card,
+html[data-blog-theme="pixel"] .const-card,
+html[data-blog-theme="pixel"] .subscribe-card,
+html[data-blog-theme="pixel"] .stat-card,
+html[data-blog-theme="pixel"] .cv-item {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 26px rgba(90, 70, 55, 0.09);
+}
+html[data-blog-theme="pixel"] .const-card::before { box-shadow: none; }
+html[data-blog-theme="pixel"] .const-card:hover,
+html[data-blog-theme="pixel"] .card.ring:hover,
+html[data-blog-theme="pixel"] .card[data-tilt]:hover {
+  box-shadow: 0 18px 40px rgba(90, 70, 55, 0.15); border-color: var(--line-strong);
+}
+html[data-blog-theme="pixel"] .subscribe-form input,
+html[data-blog-theme="pixel"] .field input,
+html[data-blog-theme="pixel"] .field textarea {
+  background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 16px; color: var(--ink);
+}
+html[data-blog-theme="pixel"] .field input:focus,
+html[data-blog-theme="pixel"] .field textarea:focus,
+html[data-blog-theme="pixel"] .subscribe-form input:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(217, 128, 95, 0.15);
+}
+html[data-blog-theme="pixel"] .stat-card .stat-value { filter: none; }
+
+/* ---- buttons: soft rounded, gentle shadow ---- */
+html[data-blog-theme="pixel"] .btn { border-radius: 999px; }
+html[data-blog-theme="pixel"] .btn-primary {
+  background: #b85a3c; color: #fff; box-shadow: 0 10px 24px rgba(184, 90, 60, 0.28);
+}
+html[data-blog-theme="pixel"] .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(184, 90, 60, 0.36); }
+html[data-blog-theme="pixel"] .btn-ghost { background: var(--bg-1); color: var(--ink); border: 1px solid var(--line-strong); }
+html[data-blog-theme="pixel"] .btn-ghost:hover { border-color: var(--accent); color: #b85a3c; box-shadow: var(--glow-cyan); }
+
+/* ---- article body: roomy leading, warm links, soft dividers ---- */
+html[data-blog-theme="pixel"] .article-body { color: #3f342d; font-weight: 400; line-height: 1.9; }
+html[data-blog-theme="pixel"] .article-body strong { color: #241b15; }
+html[data-blog-theme="pixel"] .article-body a { color: #a54e34; border-bottom-color: rgba(165, 78, 52, 0.4); }
+html[data-blog-theme="pixel"] .article-body a:hover { text-shadow: none; border-bottom-color: #a54e34; }
+html[data-blog-theme="pixel"] .article-body h2 { border-top-color: var(--line-strong); }
+html[data-blog-theme="pixel"] .article-body li::marker { color: var(--accent); }
+html[data-blog-theme="pixel"] .article-body blockquote {
+  border-left: 5px solid var(--amber); border-radius: 0 16px 16px 0;
+  background: rgba(232, 185, 107, 0.12); color: #6a5544; font-style: italic; box-shadow: none; padding: 0.9em 1.2em;
+}
+html[data-blog-theme="pixel"] .article-body code { background: var(--bg-3); border-color: var(--line-strong); color: #6b4a2f; }
+html[data-blog-theme="pixel"] .article-body pre { background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 18px; }
+html[data-blog-theme="pixel"] .article-body hr {
+  height: 6px; border-radius: 6px; background: none;
+  background-image: radial-gradient(circle, var(--line-strong) 38%, transparent 40%);
+  background-size: 12px 6px; background-repeat: repeat-x; background-position: center;
+}
+html[data-blog-theme="pixel"] .article-body img { border-color: var(--line); box-shadow: 0 14px 34px rgba(90, 70, 55, 0.16); }
+
+/* ---- archive chrome ---- */
+html[data-blog-theme="pixel"] .archive-head .display { font-weight: 600; }
+html[data-blog-theme="pixel"] .rail-title { color: var(--ink-faint); }
+html[data-blog-theme="pixel"] .layout-select,
+html[data-blog-theme="pixel"] .wt-bar .wt-chip,
+html[data-blog-theme="pixel"] .chip,
+html[data-blog-theme="pixel"] .topic-btn {
+  color: var(--ink-dim); background: var(--bg-1); border: 1px solid var(--line-strong); border-radius: 16px;
+}
+html[data-blog-theme="pixel"] .filter-banner { background: rgba(217, 128, 95, 0.10); border-color: rgba(217, 128, 95, 0.35); color: var(--ink); border-radius: 16px; }
+html[data-blog-theme="pixel"] .chip.active,
+html[data-blog-theme="pixel"] .wt-bar .wt-chip.active,
+html[data-blog-theme="pixel"] .topic-btn.active {
+  color: #fff; background: #b85a3c; border-color: #b85a3c; box-shadow: 0 6px 16px rgba(184, 90, 60, 0.22);
+}
+html[data-blog-theme="pixel"] .chip.active .count,
+html[data-blog-theme="pixel"] .topic-btn.active .count { color: #fff; border-color: rgba(255, 255, 255, 0.55); }
+
+/* ---- post page ---- */
+html[data-blog-theme="pixel"] .post-hero .grid-lines { display: none; }
+html[data-blog-theme="pixel"] .post-hero .orbs { opacity: 0.5; }
+html[data-blog-theme="pixel"] .back-link,
+html[data-blog-theme="pixel"] .post-nav-link { border: 1px solid var(--line-strong); border-radius: 16px; color: var(--ink-dim); }
+html[data-blog-theme="pixel"] .back-link:hover,
+html[data-blog-theme="pixel"] .post-nav-link:hover { border-color: var(--accent); color: #b85a3c; }
+html[data-blog-theme="pixel"] .series-flag { color: #b85a3c; }
+html[data-blog-theme="pixel"] .post-cta { border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: 0 12px 30px rgba(90, 70, 55, 0.12); }
+
+/* ---- footer ---- */
+html[data-blog-theme="pixel"] .site-footer a:hover { color: #b85a3c; }
+
+/* ---- editorial flourish: illuminated drop-cap (default reading template only) ---- */
+html[data-blog-theme="pixel"] article[data-template="observatory"] .article-body > p:first-of-type::first-letter {
+  float: left; font-family: var(--font-display); font-weight: 600;
+  font-size: 3.2em; line-height: 0.72; padding: 0.05em 0.14em 0 0; color: var(--accent);
+}
+
+/* ---- motion ---- */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-blog-theme="pixel"] .masthead { animation: story-fade 0.9s ease both; }
+  @keyframes story-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+}

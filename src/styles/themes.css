@@ -26,10 +26,10 @@
 @import './themes/scrapbook.css';
 @import './themes/arcade.css';
 
-/* Kids & First Blogs */
-@import './themes/crayon.css';
+/* Kids & First Blogs (ages 10–15) */
+@import './themes/doodle.css';
 @import './themes/rocket.css';
-@import './themes/storybook.css';
+@import './themes/pixel.css';
 @import './themes/comic.css';
 
 /* Photo & Portfolio */

@@ -8,10 +8,13 @@ import { ViewTransitions } from 'astro:transitions';
 import Icon from '../components/Icon.astro';
 import { site, pageTitle } from '../lib/site';
 import { withBase } from '../lib/withBase';
+import { vocabFor } from '../lib/vocab';
 
 // Site-wide BLOG THEME (data-blog-theme on <html>). Chosen once at blog creation
 // via site.defaultTheme; the composer writes one of the ids in src/data/themes.json.
 // Unknown/absent → the base "observatory" look (existing blogs unchanged).
+// (QA note: Astro static mode strips URL search params — even in dev — so per-theme
+// screenshots work by mutating site.json defaultTheme; see .qa/qa-run.mjs.)
 const blogTheme = site.defaultTheme || 'observatory';
 // The legacy 7-palette reader switcher (data-site-theme) only makes sense for the
 // base look, so it ships ONLY with the observatory theme. Every other blog theme is
@@ -20,7 +23,7 @@ const paletteEnabled = blogTheme === 'observatory';
 
 // Kids themes ship two extras (see src/styles/themes/_kids-extras.css): a floating
 // dyslexia-friendly reading toggle and a one-time starburst on the newest post card.
-const KIDS_THEMES = ['crayon', 'rocket', 'storybook', 'comic'];
+const KIDS_THEMES = ['doodle', 'rocket', 'pixel', 'comic'];
 const isKidsTheme = KIDS_THEMES.includes(blogTheme);
 
 // Build footer socials from site.json (non-empty values only)
@@ -69,6 +72,22 @@ const NAV_FALLBACK = [
   { href: '/contact/', label: 'Contact' },
 ];
 const nav = (site.nav && site.nav.length ? site.nav : NAV_FALLBACK);
+
+// Per-theme chrome vocabulary. On the observatory theme the nav keeps its house labels
+// (and the palette switcher's client renamer handles "Observatory"); every other theme
+// relabels the writing/topics/about links in its own voice (server-side, so it's stable
+// and doesn't flash). Slugs/hrefs are unchanged — only the visible text.
+const vocab = vocabFor(blogTheme);
+const navLabel = (n: { href: string; label: string; themeLabel?: boolean }): string => {
+  if (blogTheme === 'observatory') return n.label;
+  if (n.themeLabel) return vocab.topicsLabel;
+  if (n.href === '/about/') return vocab.aboutLabel;
+  if (n.href === '/posts/') return vocab.postsTitle;
+  return n.label;
+};
+const featureNavLabel = blogTheme === 'observatory' ? 'Observatory' : vocab.topicsLabel;
+const postsNavLabel = blogTheme === 'observatory' ? 'Posts' : vocab.postsTitle;
+const aboutNavLabel = blogTheme === 'observatory' ? 'About' : vocab.aboutLabel;
 const path = Astro.url.pathname;
 const isCurrent = (href: string) => {
   if (href === '/') return path === '/';
@@ -135,12 +154,12 @@ const isCurrent = (href: string) => {
         {/* Mobile-only single quick-access row (primary items). Desktop hides it; the full nav is inline. */}
         <nav class="nav-primary" aria-label="Primary">
           {nav.filter((n) => n.primary).map((n) => (
-            <a href={withBase(n.href)} aria-current={isCurrent(n.href) ? 'page' : undefined} data-fixed-label={n.themeLabel ? undefined : ''}>{n.label}</a>
+            <a href={withBase(n.href)} aria-current={isCurrent(n.href) ? 'page' : undefined} data-fixed-label={n.themeLabel ? undefined : ''}>{navLabel(n)}</a>
           ))}
         </nav>
         <nav class="site-nav" id="site-nav" aria-label="Main">
           {nav.map((n) => (
-            <a href={withBase(n.href)} aria-current={isCurrent(n.href) ? 'page' : undefined} data-fixed-label={n.themeLabel ? undefined : ''}>{n.label}</a>
+            <a href={withBase(n.href)} aria-current={isCurrent(n.href) ? 'page' : undefined} data-fixed-label={n.themeLabel ? undefined : ''}>{navLabel(n)}</a>
           ))}
         </nav>
         {paletteEnabled && (
@@ -190,10 +209,10 @@ const isCurrent = (href: string) => {
         )}
         <nav aria-label="Footer">
           <a href={withBase('/')}>Home</a>
-          <a href={withBase('/posts/')}>Posts</a>
-          <a href={withBase('/observatory/')}>Observatory</a>
+          <a href={withBase('/posts/')}>{postsNavLabel}</a>
+          <a href={withBase('/observatory/')}>{featureNavLabel}</a>
           <a href={withBase('/apps/')}>Apps</a>
-          <a href={withBase('/about/')}>About</a>
+          <a href={withBase('/about/')}>{aboutNavLabel}</a>
           <a href={withBase('/darkroom/')}>Darkroom</a>
           <a href={withBase('/contact/')}>Contact</a>
           <a href={withBase('/rss.xml')}>RSS</a>
@@ -440,6 +459,10 @@ const isCurrent = (href: string) => {
         rivendell:   { page: 'The Map',         nav: 'The Map',       groups: 'Realms',         section: 'Every realm' },
       };
       function applyThemeTerms() {
+        // Only the observatory theme ships the palette switcher (and its vocabulary is
+        // renamed client-side per palette). Every other blog theme sets its nav/labels at
+        // build time from src/data/themes.json vocabulary — bail so we don't overwrite them.
+        if ((document.documentElement.dataset.blogTheme || 'observatory') !== 'observatory') return;
         const id = document.documentElement.dataset.siteTheme || 'observatory';
         const t = THEME_TERMS[id] || THEME_TERMS.observatory;
         // Only rename nav links that opted in (themeLabel → no data-fixed-label). The footer
@@ -475,7 +498,7 @@ const isCurrent = (href: string) => {
       // via localStorage and skipped entirely under reduced motion + non-kids themes.
       function initCelebrate() {
         if (reducedMotion) return;
-        const KIDS = ['crayon', 'rocket', 'storybook', 'comic'];
+        const KIDS = ['doodle', 'rocket', 'pixel', 'comic'];
         if (!KIDS.includes(document.documentElement.dataset.blogTheme || '')) return;
         const card = document.querySelector('.post-card[data-newest-slug]') as HTMLElement | null;
         if (!card) return;

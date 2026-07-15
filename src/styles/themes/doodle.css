@@ -1,0 +1,245 @@
+/* ============================================================
+   THEME · Crayon  (Kids & First Blogs)  — LIGHT
+   ------------------------------------------------------------
+   Bright primary-colour play: warm paper, doodle-red accent and
+   the rest of the doodle box (yellow / blue / green) driving the
+   per-post card hues. Signature = chunky rounded cards with THICK
+   coloured borders and an OFFSET HARD SHADOW (no blur), big
+   Fredoka headings and peel-off sticker dots. Loud and playful.
+   Drops the 3D hero for flat sunny whitespace.
+   ============================================================ */
+
+html[data-blog-theme="doodle"] {
+  color-scheme: light;
+
+  /* surfaces — clean off-white notebook paper */
+  --bg-0: #fbfcf7;
+  --bg-1: #ffffff;
+  --bg-2: #f4f7ee;
+  --bg-3: #e8eede;
+
+  /* ink — cool near-black + greys */
+  --ink: #20252b;
+  --ink-dim: #414852;
+  --ink-faint: #6f7a86;
+
+  /* the doodle box — biro-blue accent + per-post hues */
+  --teal: #2f5fd0;   /* biro blue */
+  --cyan: #2f5fd0;   /* biro blue */
+  --violet: #6a4fd0; /* ink violet */
+  --pink: #e0457b;
+  --amber: #f2b705;  /* highlighter yellow */
+  --accent: #2f5fd0; /* biro blue */
+  --accent-ink: #ffffff;
+  --grad: linear-gradient(100deg, #2f5fd0, #6a4fd0);
+
+  /* biro-blue hairlines + darker ink rule */
+  --line: rgba(47, 95, 208, 0.18);
+  --line-strong: rgba(32, 37, 43, 0.30);
+
+  /* glows → soft ambient colour shadows */
+  --glow-teal: 0 8px 24px rgba(47, 184, 101, 0.20);
+  --glow-cyan: 0 8px 24px rgba(45, 156, 255, 0.20);
+  --glow-violet: 0 8px 24px rgba(138, 99, 255, 0.18);
+
+  --radius: 10px;
+
+  /* chrome hotspots → light */
+  --header-bg: rgba(255, 254, 247, 0.86);
+  --header-blur: saturate(1.35) blur(12px);
+  --header-border: rgba(35, 38, 43, 0.12);
+  --selection-bg: rgba(255, 90, 95, 0.24);
+  --scrim-text-shadow: none;
+  --masthead-ink: var(--ink);
+  --masthead-shadow: 4px 4px 0 rgba(255, 90, 95, 0.22);
+
+  --font-display: 'Fredoka', 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible', 'Inter', system-ui, sans-serif;
+}
+
+html[data-blog-theme="doodle"] .section { padding-block: clamp(1.6rem, 4vw, 3rem); }
+
+/* ---- header: rounded, chunky ---- */
+html[data-blog-theme="doodle"] .logo { font-weight: 700; letter-spacing: 0; }
+html[data-blog-theme="doodle"] .site-nav a { color: var(--ink-dim); font-weight: 500; }
+html[data-blog-theme="doodle"] .site-nav a[aria-current="page"]::after {
+  box-shadow: none; height: 4px; border-radius: 4px; background: var(--accent);
+}
+
+/* ---- hero: drop the galaxy; sunny wash + fat rounded masthead ---- */
+html[data-blog-theme="doodle"] .three-hero { display: none; }
+html[data-blog-theme="doodle"] .hero { min-height: calc(56vh - var(--header-h)); }
+html[data-blog-theme="doodle"] .hero-scrim {
+  background:
+    radial-gradient(120% 92% at 20% 8%, rgba(255, 194, 31, 0.22), transparent 55%),
+    radial-gradient(120% 90% at 88% 20%, rgba(45, 156, 255, 0.16), transparent 55%),
+    radial-gradient(130% 100% at 50% 100%, rgba(255, 90, 95, 0.10), transparent 60%);
+}
+html[data-blog-theme="doodle"] .masthead { font-weight: 700; letter-spacing: -0.01em; }
+html[data-blog-theme="doodle"] .hero .lead { color: var(--ink-dim); }
+html[data-blog-theme="doodle"] .scroll-cue { border-color: var(--line-strong); border-width: 3px; }
+html[data-blog-theme="doodle"] .scroll-cue span { background: var(--accent); box-shadow: none; }
+
+/* ---- eyebrow / section heads: loud + readable ---- */
+html[data-blog-theme="doodle"] .eyebrow { color: #e5222f; text-shadow: none; letter-spacing: 0.18em; }
+html[data-blog-theme="doodle"] .section-title { font-weight: 700; letter-spacing: -0.01em; }
+html[data-blog-theme="doodle"] .section-head .rule {
+  background: repeating-linear-gradient(90deg, var(--line-strong) 0 10px, transparent 10px 18px);
+  height: 3px;
+}
+html[data-blog-theme="doodle"] .see-all { color: #1668d6; }
+html[data-blog-theme="doodle"] .see-all:hover { text-shadow: none; opacity: 0.75; }
+
+/* ---- post cards: chunky rounded panels, THICK accent border + hard offset shadow ---- */
+html[data-blog-theme="doodle"] .post-card {
+  background: var(--bg-1);
+  border: 3px solid color-mix(in srgb, var(--card-accent, var(--accent)) 62%, var(--ink));
+  border-radius: var(--radius);
+  overflow: visible;
+  box-shadow: 6px 6px 0 var(--card-accent, var(--accent));
+}
+/* sticker dot in the top-right corner */
+html[data-blog-theme="doodle"] .post-card::before {
+  content: ""; left: auto; right: 14px; top: 14px; bottom: auto;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--card-accent, var(--accent));
+  border: 3px solid var(--bg-1);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--card-accent, var(--accent)) 55%, var(--ink));
+  opacity: 1;
+}
+html[data-blog-theme="doodle"] .post-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 9px 9px 0 var(--card-accent, var(--accent));
+  border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 78%, var(--ink));
+}
+html[data-blog-theme="doodle"] .post-card:hover::before { width: 16px; }
+html[data-blog-theme="doodle"] .post-card h3 { color: var(--ink); font-weight: 600; font-size: 1.2rem; }
+html[data-blog-theme="doodle"] .post-card p { color: var(--ink-dim); }
+html[data-blog-theme="doodle"] .post-meta { color: var(--ink-faint); }
+html[data-blog-theme="doodle"] .tag-chip {
+  color: var(--ink); font-weight: 600;
+  background: color-mix(in srgb, var(--card-accent, var(--amber)) 30%, #fff);
+  border: 2px solid color-mix(in srgb, var(--card-accent, var(--amber)) 60%, var(--ink));
+}
+html[data-blog-theme="doodle"] .badge-interactive {
+  color: #8a5a00; background: rgba(255, 194, 31, 0.22); border: 2px solid rgba(255, 194, 31, 0.7);
+}
+html[data-blog-theme="doodle"] .badge-interactive::before { background: #f0a500; box-shadow: none; }
+
+/* archive "cards" grid: re-assert the sticker dot (base layout zeroes ::before width) */
+html[data-blog-theme="doodle"] .post-list.layout-cards .post-card {
+  border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 62%, var(--ink));
+}
+html[data-blog-theme="doodle"] .post-list.layout-cards .post-card::before { width: 16px; }
+html[data-blog-theme="doodle"] .post-list.layout-cards .post-card:hover {
+  border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 78%, var(--ink));
+}
+
+/* ---- cards / const / subscribe / stat / cv: chunky panels ---- */
+html[data-blog-theme="doodle"] .card,
+html[data-blog-theme="doodle"] .const-card,
+html[data-blog-theme="doodle"] .subscribe-card,
+html[data-blog-theme="doodle"] .stat-card,
+html[data-blog-theme="doodle"] .cv-item {
+  background: var(--bg-1);
+  border: 3px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: 5px 5px 0 rgba(35, 38, 43, 0.10);
+}
+html[data-blog-theme="doodle"] .const-card::before { box-shadow: none; }
+html[data-blog-theme="doodle"] .const-card:hover,
+html[data-blog-theme="doodle"] .card.ring:hover,
+html[data-blog-theme="doodle"] .card[data-tilt]:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 rgba(255, 90, 95, 0.30);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line-strong));
+}
+html[data-blog-theme="doodle"] .cv-item:hover { box-shadow: 5px 5px 0 rgba(45, 156, 255, 0.25); }
+html[data-blog-theme="doodle"] .subscribe-form input,
+html[data-blog-theme="doodle"] .field input,
+html[data-blog-theme="doodle"] .field textarea {
+  background: var(--bg-1); border: 3px solid var(--line-strong); border-radius: 16px; color: var(--ink);
+}
+html[data-blog-theme="doodle"] .field input:focus,
+html[data-blog-theme="doodle"] .field textarea:focus,
+html[data-blog-theme="doodle"] .subscribe-form input:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255, 90, 95, 0.16);
+}
+html[data-blog-theme="doodle"] .stat-card .stat-value { filter: none; }
+
+/* ---- buttons: fat rounded pills with a hard offset shadow ---- */
+html[data-blog-theme="doodle"] .btn { border-radius: 999px; font-weight: 600; }
+html[data-blog-theme="doodle"] .btn-primary {
+  background: #e5222f; color: #fff;
+  box-shadow: 4px 4px 0 #23262b;
+}
+html[data-blog-theme="doodle"] .btn-primary:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #23262b; }
+html[data-blog-theme="doodle"] .btn-ghost {
+  background: var(--bg-1); color: var(--ink); border: 3px solid var(--ink); box-shadow: 4px 4px 0 rgba(35, 38, 43, 0.16);
+}
+html[data-blog-theme="doodle"] .btn-ghost:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--accent); border-color: var(--accent); color: var(--accent); }
+
+/* ---- article body ---- */
+html[data-blog-theme="doodle"] .article-body { color: #2c2f36; font-weight: 400; }
+html[data-blog-theme="doodle"] .article-body strong { color: #14161a; }
+html[data-blog-theme="doodle"] .article-body a { color: #1668d6; border-bottom-color: rgba(22, 104, 214, 0.4); }
+html[data-blog-theme="doodle"] .article-body a:hover { text-shadow: none; border-bottom-color: #1668d6; }
+html[data-blog-theme="doodle"] .article-body h2 { border-top: 3px dashed var(--line-strong); }
+html[data-blog-theme="doodle"] .article-body li::marker { color: var(--accent); }
+html[data-blog-theme="doodle"] .article-body blockquote {
+  border-left: 6px solid var(--amber); border-radius: 0 14px 14px 0;
+  background: rgba(255, 194, 31, 0.12); color: #55503d; box-shadow: none; padding: 0.9em 1.2em;
+}
+html[data-blog-theme="doodle"] .article-body code { background: var(--bg-3); border: 2px solid rgba(255, 194, 31, 0.55); color: #6b4e00; }
+html[data-blog-theme="doodle"] .article-body pre { background: #fff; border: 3px solid var(--line-strong); border-radius: 16px; }
+html[data-blog-theme="doodle"] .article-body hr {
+  height: 4px; background: repeating-linear-gradient(90deg, var(--accent) 0 14px, var(--amber) 14px 28px, var(--cyan) 28px 42px);
+  border-radius: 4px;
+}
+html[data-blog-theme="doodle"] .article-body img { border: 3px solid var(--ink); box-shadow: 6px 6px 0 rgba(35, 38, 43, 0.12); }
+
+/* ---- archive chrome ---- */
+html[data-blog-theme="doodle"] .archive-head .display { font-weight: 700; }
+html[data-blog-theme="doodle"] .rail-title { color: var(--ink-faint); }
+html[data-blog-theme="doodle"] .layout-select,
+html[data-blog-theme="doodle"] .wt-bar .wt-chip,
+html[data-blog-theme="doodle"] .chip,
+html[data-blog-theme="doodle"] .topic-btn {
+  color: var(--ink-dim); background: var(--bg-1); border: 2px solid var(--line-strong); border-radius: 14px;
+}
+html[data-blog-theme="doodle"] .filter-banner { background: rgba(255, 90, 95, 0.10); border: 2px solid rgba(255, 90, 95, 0.4); color: var(--ink); border-radius: 14px; }
+html[data-blog-theme="doodle"] .chip.active,
+html[data-blog-theme="doodle"] .wt-bar .wt-chip.active,
+html[data-blog-theme="doodle"] .topic-btn.active {
+  color: #fff; background: var(--accent); border-color: var(--ink); box-shadow: 3px 3px 0 var(--ink);
+}
+html[data-blog-theme="doodle"] .chip.active .count,
+html[data-blog-theme="doodle"] .topic-btn.active .count { color: #fff; border-color: rgba(255, 255, 255, 0.6); }
+
+/* ---- post page ---- */
+html[data-blog-theme="doodle"] .post-hero .orbs { opacity: 0.5; }
+html[data-blog-theme="doodle"] .post-hero .grid-lines { display: none; }
+html[data-blog-theme="doodle"] .back-link,
+html[data-blog-theme="doodle"] .post-nav-link { border: 2px solid var(--line-strong); border-radius: 14px; color: var(--ink-dim); }
+html[data-blog-theme="doodle"] .back-link:hover,
+html[data-blog-theme="doodle"] .post-nav-link:hover { border-color: var(--accent); color: var(--accent); }
+html[data-blog-theme="doodle"] .series-flag { color: #1668d6; }
+html[data-blog-theme="doodle"] .post-cta { border: 3px solid var(--line-strong); border-radius: var(--radius); box-shadow: 5px 5px 0 rgba(255, 194, 31, 0.35); }
+
+/* ---- footer ---- */
+html[data-blog-theme="doodle"] .site-footer a:hover { color: var(--accent); }
+
+/* ---- editorial flourish (default reading template only) ---- */
+html[data-blog-theme="doodle"] article[data-template="observatory"] .article-body > p:first-of-type::first-letter {
+  float: left; font-family: var(--font-display); font-weight: 700;
+  font-size: 3em; line-height: 0.72; padding: 0.04em 0.12em 0 0; color: var(--accent);
+}
+
+/* ---- motion ---- */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-blog-theme="doodle"] .masthead { animation: doodle-pop 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+  @keyframes doodle-pop {
+    0% { opacity: 0; transform: scale(0.86) rotate(-2deg); }
+    100% { opacity: 1; transform: none; }
+  }
+}

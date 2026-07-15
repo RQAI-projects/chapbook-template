@@ -12,7 +12,7 @@ export interface SiteConfig {
     | 'observatory' | 'ledger' | 'air' | 'graphite'
     | 'broadsheet' | 'journal' | 'kiosk' | 'gazette'
     | 'neon' | 'zine' | 'scrapbook' | 'arcade'
-    | 'crayon' | 'rocket' | 'storybook' | 'comic'
+    | 'doodle' | 'rocket' | 'pixel' | 'comic'
     | 'gallery' | 'darkroom' | 'contact-sheet' | 'polaroid'
     | (string & {});
   socials: { linkedin?: string; instagram?: string; github?: string };
