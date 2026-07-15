@@ -7,7 +7,7 @@
    --teal/--cyan/--violet tokens) and leans into glow.
    ============================================================ */
 
-[data-blog-theme="neon"] {
+html[data-blog-theme="neon"] {
   color-scheme: dark;
 
   --bg-0: #08060f;
@@ -55,68 +55,68 @@
 }
 
 /* eyebrow / labels hum in cyan */
-[data-blog-theme="neon"] .eyebrow { color: var(--cyan); text-shadow: 0 0 12px rgba(34, 245, 255, 0.5); }
+html[data-blog-theme="neon"] .eyebrow { color: var(--cyan); text-shadow: 0 0 12px rgba(34, 245, 255, 0.5); }
 
 /* ---- header ---- */
-[data-blog-theme="neon"] .logo { text-shadow: 0 0 16px rgba(34, 245, 255, 0.4); }
-[data-blog-theme="neon"] .site-nav a[aria-current="page"]::after { box-shadow: 0 0 12px var(--cyan); }
+html[data-blog-theme="neon"] .logo { text-shadow: 0 0 16px rgba(34, 245, 255, 0.4); }
+html[data-blog-theme="neon"] .site-nav a[aria-current="page"]::after { box-shadow: 0 0 12px var(--cyan); }
 
 /* ---- hero: keep the 3D scene, add a magenta wash + scanline shimmer ---- */
-[data-blog-theme="neon"] .hero-scrim {
+html[data-blog-theme="neon"] .hero-scrim {
   background:
     radial-gradient(ellipse 70% 60% at 30% 50%, rgba(8, 6, 15, 0.82), transparent 70%),
     radial-gradient(ellipse 50% 50% at 78% 30%, rgba(255, 47, 185, 0.12), transparent 70%),
     linear-gradient(180deg, transparent 55%, var(--bg-0));
 }
-[data-blog-theme="neon"] .masthead { letter-spacing: -0.02em; }
+html[data-blog-theme="neon"] .masthead { letter-spacing: -0.02em; }
 
 /* ---- section heads ---- */
-[data-blog-theme="neon"] .section-head .rule { background: linear-gradient(90deg, var(--violet), transparent); }
-[data-blog-theme="neon"] .see-all { color: var(--cyan); }
+html[data-blog-theme="neon"] .section-head .rule { background: linear-gradient(90deg, var(--violet), transparent); }
+html[data-blog-theme="neon"] .see-all { color: var(--cyan); }
 
 /* ---- post cards: dark glass, neon edge on hover ---- */
-[data-blog-theme="neon"] .post-card {
+html[data-blog-theme="neon"] .post-card {
   background:
     linear-gradient(155deg, color-mix(in srgb, var(--card-accent, var(--cyan)) 20%, transparent), transparent 70%),
     linear-gradient(160deg, var(--bg-2), var(--bg-1));
   border-color: color-mix(in srgb, var(--card-accent, var(--cyan)) 40%, var(--line));
 }
-[data-blog-theme="neon"] .post-card::before {
+html[data-blog-theme="neon"] .post-card::before {
   background: var(--card-accent, var(--cyan));
   box-shadow: 0 0 16px var(--card-accent, var(--cyan)), 0 0 30px var(--card-accent, var(--cyan));
 }
-[data-blog-theme="neon"] .post-card:hover {
+html[data-blog-theme="neon"] .post-card:hover {
   border-color: var(--cyan);
   box-shadow: 0 0 0 1px rgba(34, 245, 255, 0.4), 0 12px 44px rgba(0, 0, 0, 0.6), 0 0 34px rgba(34, 245, 255, 0.28);
 }
-[data-blog-theme="neon"] .post-card h3 { color: #fff; }
-[data-blog-theme="neon"] .tag-chip {
+html[data-blog-theme="neon"] .post-card h3 { color: #fff; }
+html[data-blog-theme="neon"] .tag-chip {
   color: var(--pink); border-color: rgba(255, 47, 185, 0.4); background: rgba(255, 47, 185, 0.08);
 }
 
 /* cards grid (default layout) tiles glow on hover */
-[data-blog-theme="neon"] .const-card:hover { box-shadow: 0 0 30px rgba(178, 107, 255, 0.22), 0 12px 44px rgba(0, 0, 0, 0.5); }
+html[data-blog-theme="neon"] .const-card:hover { box-shadow: 0 0 30px rgba(178, 107, 255, 0.22), 0 12px 44px rgba(0, 0, 0, 0.5); }
 
 /* ---- buttons ---- */
-[data-blog-theme="neon"] .btn-primary {
+html[data-blog-theme="neon"] .btn-primary {
   background: var(--grad); color: #0a0416;
   box-shadow: 0 0 22px rgba(34, 245, 255, 0.5), 0 0 40px rgba(255, 47, 185, 0.3);
 }
-[data-blog-theme="neon"] .btn-primary:hover { box-shadow: 0 0 30px rgba(34, 245, 255, 0.7), 0 0 60px rgba(255, 47, 185, 0.45); }
-[data-blog-theme="neon"] .btn-ghost { border-color: rgba(34, 245, 255, 0.5); color: var(--cyan); background: rgba(34, 245, 255, 0.06); }
-[data-blog-theme="neon"] .btn-ghost:hover { box-shadow: var(--glow-cyan); border-color: var(--cyan); }
+html[data-blog-theme="neon"] .btn-primary:hover { box-shadow: 0 0 30px rgba(34, 245, 255, 0.7), 0 0 60px rgba(255, 47, 185, 0.45); }
+html[data-blog-theme="neon"] .btn-ghost { border-color: rgba(34, 245, 255, 0.5); color: var(--cyan); background: rgba(34, 245, 255, 0.06); }
+html[data-blog-theme="neon"] .btn-ghost:hover { box-shadow: var(--glow-cyan); border-color: var(--cyan); }
 
 /* ---- article ---- */
-[data-blog-theme="neon"] .article-body a { color: var(--cyan); border-bottom-color: rgba(34, 245, 255, 0.4); }
-[data-blog-theme="neon"] .article-body blockquote { border-left-color: var(--pink); box-shadow: inset 8px 0 24px -16px rgba(255, 47, 185, 0.5); }
-[data-blog-theme="neon"] .article-body h2 { border-top-color: rgba(160, 120, 255, 0.24); }
+html[data-blog-theme="neon"] .article-body a { color: var(--cyan); border-bottom-color: rgba(34, 245, 255, 0.4); }
+html[data-blog-theme="neon"] .article-body blockquote { border-left-color: var(--pink); box-shadow: inset 8px 0 24px -16px rgba(255, 47, 185, 0.5); }
+html[data-blog-theme="neon"] .article-body h2 { border-top-color: rgba(160, 120, 255, 0.24); }
 
 /* ---- footer ---- */
-[data-blog-theme="neon"] .site-footer a:hover { color: var(--cyan); text-shadow: 0 0 12px rgba(34, 245, 255, 0.6); }
+html[data-blog-theme="neon"] .site-footer a:hover { color: var(--cyan); text-shadow: 0 0 12px rgba(34, 245, 255, 0.6); }
 
 /* subtle sign-buzz on the masthead only */
 @media (prefers-reduced-motion: no-preference) {
-  [data-blog-theme="neon"] .masthead { animation: neon-buzz 6s ease-in-out infinite; }
+  html[data-blog-theme="neon"] .masthead { animation: neon-buzz 6s ease-in-out infinite; }
   @keyframes neon-buzz {
     0%, 100% { text-shadow: var(--masthead-shadow); }
     47% { text-shadow: var(--masthead-shadow); }
