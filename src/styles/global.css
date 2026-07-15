@@ -40,6 +40,25 @@
 
   --radius: 16px;
   --header-h: 56px;
+
+  /* Themeable surface hooks — blog themes (data-blog-theme) override these to
+     reskin the fixed chrome without touching component CSS. Defaults reproduce
+     today's dark "observatory" look exactly, so an unset/observatory theme is
+     byte-for-byte unchanged. */
+  --header-bg: rgba(4, 6, 12, 0.72);
+  --header-blur: blur(14px);
+  --header-border: var(--line);
+  --selection-bg: rgba(34, 211, 238, 0.3);
+  --scrim-text-shadow:
+    0 0 14px rgba(4, 6, 12, 0.9),
+    0 2px 28px rgba(4, 6, 12, 0.85),
+    0 0 60px rgba(34, 211, 238, 0.18);
+  --masthead-ink: #ffffff;
+  --masthead-shadow:
+    0 2px 6px rgba(4, 6, 12, 0.95),
+    0 6px 30px rgba(4, 6, 12, 0.9),
+    0 0 50px rgba(34, 211, 238, 0.45),
+    0 0 110px rgba(34, 211, 238, 0.25);
 }
 
 /* ---------- reset ---------- */
@@ -62,7 +81,7 @@ img, svg, canvas { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 
-::selection { background: rgba(34, 211, 238, 0.3); color: var(--ink); }
+::selection { background: var(--selection-bg); color: var(--ink); }
 
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-track { background: var(--bg-0); }
@@ -103,10 +122,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; letter-spa
 
 /* crisp headlines over busy/animated backgrounds */
 .scrim-text {
-  text-shadow:
-    0 0 14px rgba(4, 6, 12, 0.9),
-    0 2px 28px rgba(4, 6, 12, 0.85),
-    0 0 60px rgba(34, 211, 238, 0.18);
+  text-shadow: var(--scrim-text-shadow);
 }
 
 .grad-text {
@@ -121,10 +137,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; letter-spa
   position: fixed; inset: 0 0 auto 0; z-index: 100;
   height: var(--header-h);
   display: flex; align-items: center;
-  background: rgba(4, 6, 12, 0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line);
+  background: var(--header-bg);
+  backdrop-filter: var(--header-blur);
+  -webkit-backdrop-filter: var(--header-blur);
+  border-bottom: 1px solid var(--header-border);
 }
 .site-header .container { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 

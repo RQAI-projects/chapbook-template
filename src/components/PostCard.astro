@@ -20,8 +20,10 @@ interface Props {
   reveal?: boolean;
   delay?: number | string;
   readMins?: number;
+  // marks the single newest card (drives the kids-theme celebratory starburst)
+  newest?: boolean;
 }
-const { post, reveal = false, delay, readMins } = Astro.props;
+const { post, reveal = false, delay, readMins, newest = false } = Astro.props;
 const fmt = (d: Date) =>
   d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 const revealAttrs = reveal
@@ -32,6 +34,7 @@ const revealAttrs = reveal
   class="post-card"
   href={withBase(`/blog/${post.slug}/`)}
   data-tags={post.data.tags.join(',')}
+  data-newest-slug={newest ? post.slug : undefined}
   style={`--card-accent:${post.data.accent}`}
   {...revealAttrs}
 >

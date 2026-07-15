@@ -2,10 +2,26 @@
 import Base from '../../layouts/Base.astro';
 import PostCard from '../../components/PostCard.astro';
 import topics from '../../data/topics.json';
+import { site } from '../../lib/site';
 import { getCollection } from 'astro:content';
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+// Each blog theme opens the archive in the layout that suits its voice (editorial →
+// multi-column newspaper, photo → image-led grid, clean → compact). It's still just
+// the initial layout: the switcher + a reader's saved 'writing-layout' pref win.
+const LAYOUT_BY_THEME: Record<string, string> = {
+  observatory: 'reader', air: 'reader', journal: 'reader',
+  ledger: 'index', graphite: 'index',
+  broadsheet: 'newspaper', gazette: 'newspaper',
+  kiosk: 'magazine', zine: 'magazine',
+  neon: 'cards', arcade: 'terminal', scrapbook: 'cards',
+  crayon: 'cards', rocket: 'cards', storybook: 'cards', comic: 'cards',
+  gallery: 'cards', darkroom: 'cards', 'contact-sheet': 'cards', polaroid: 'cards',
+};
+const LAYOUT_KEYS = ['reader', 'index', 'newspaper', 'magazine', 'timeline', 'cards', 'terminal', 'headlines'];
+const themeLayout = LAYOUT_BY_THEME[site.defaultTheme] || 'reader';
 
 const readMins = (entry: any) => Math.max(1, Math.round((entry.body || '').split(/\s+/).filter(Boolean).length / 200));
 const tagCount = (tag: string) => posts.filter((p) => p.data.tags.includes(tag)).length;
@@ -100,9 +116,9 @@ const visibleTopics = topics
             </select>
           </div>
           <div id="filterBanner" class="filter-banner" hidden></div>
-          <div class="post-list layout-reader" id="post-list">
-            {posts.map((p) => (
-              <PostCard post={p} readMins={readMins(p)} />
+          <div class={`post-list layout-${themeLayout}`} id="post-list" data-theme-layout={themeLayout}>
+            {posts.map((p, i) => (
+              <PostCard post={p} readMins={readMins(p)} newest={i === 0} />
             ))}
             <p class="no-posts" id="no-posts" hidden>Nothing here yet — pick another topic.</p>
           </div>
@@ -468,8 +484,11 @@ const visibleTopics = topics
       try { localStorage.setItem('writing-layout', k); } catch (e) {}
     };
     sel.addEventListener('change', () => set(sel.value));
-    let saved = 'reader';
-    try { saved = localStorage.getItem('writing-layout') || 'reader'; } catch (e) {}
+    // Fresh readers get the theme's default layout (rendered server-side into the class +
+    // data-theme-layout); a saved pref overrides it.
+    const themeDefault = list.dataset.themeLayout || 'reader';
+    let saved = themeDefault;
+    try { saved = localStorage.getItem('writing-layout') || themeDefault; } catch (e) {}
     set(saved);
   }
 
