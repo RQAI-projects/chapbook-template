@@ -1,11 +1,26 @@
 {
   "$schema-note": "Blog theme registry. `id` matches src/styles/themes/<id>.css and the data-blog-theme value on <html>. `hero` names the homepage ARCHETYPE — index.astro renders src/components/home/Home<Archetype>.astro so every theme has a STRUCTURALLY distinct first screen (a front page, a start screen, a pinboard…), not just a recolour. The rings/torus WebGL hero (archetype `rings`) is reserved for `observatory`. `vocabulary` gives each theme its own words: postsTitle (the writing archive's name), topicsLabel (the noun for the topic set, replacing 'constellations'), aboutLabel, an optional demo tagline, and topicNames — a DISPLAY-NAME override map over the seed topic SLUGS in src/data/topics.json (slugs/URLs never change; unknown/user topics pass through). Chrome labels fall back to observatory's defaults when a key is absent. The Chapbook composer reads this list for its theme picker; preview{bg,ink,accent} are swatches only.",
   "categories": [
-    { "id": "clean", "name": "Clean & Simple" },
-    { "id": "editorial", "name": "Editorial" },
-    { "id": "creative", "name": "Creative & Fun" },
-    { "id": "kids", "name": "First Blogs (ages 10–15)" },
-    { "id": "photo", "name": "Photo & Portfolio" }
+    {
+      "id": "clean",
+      "name": "Clean & Simple"
+    },
+    {
+      "id": "editorial",
+      "name": "Editorial"
+    },
+    {
+      "id": "creative",
+      "name": "Creative & Fun"
+    },
+    {
+      "id": "kids",
+      "name": "First Blogs (ages 10–15)"
+    },
+    {
+      "id": "photo",
+      "name": "Photo & Portfolio"
+    }
   ],
   "themes": [
     {
@@ -14,7 +29,11 @@
       "category": "clean",
       "hero": "rings",
       "description": "The house style: near-black canvas, teal-to-violet accents and a fine grotesque. Calm, technical, and the default.",
-      "preview": { "bg": "#04060c", "ink": "#f4f7fd", "accent": "#22d3ee" },
+      "preview": {
+        "bg": "#04060c",
+        "ink": "#f4f7fd",
+        "accent": "#22d3ee"
+      },
       "vocabulary": {
         "postsTitle": "Posts",
         "topicsLabel": "Constellations",
@@ -29,13 +48,25 @@
       "category": "clean",
       "hero": "index",
       "description": "Ruled off-white paper with a disciplined grotesque and hairline rules. Reads like a well-kept notebook.",
-      "preview": { "bg": "#f6f5f0", "ink": "#1a1b1d", "accent": "#0f766e" },
+      "preview": {
+        "bg": "#f6f5f0",
+        "ink": "#1a1b1d",
+        "accent": "#0f766e"
+      },
       "vocabulary": {
         "postsTitle": "Entries",
         "topicsLabel": "Ledgers",
         "aboutLabel": "Flyleaf",
         "tagline": "A well-kept notebook, in public.",
-        "topicNames": { "marrow": "Days", "forge": "Work", "old-bones": "Kitchen", "marginalia": "Reading", "after-hours": "Culture", "atlas": "Journeys", "nebula": "Notes" }
+        "topicNames": {
+          "marrow": "Days",
+          "forge": "Work",
+          "old-bones": "Kitchen",
+          "marginalia": "Reading",
+          "after-hours": "Culture",
+          "atlas": "Journeys",
+          "nebula": "Notes"
+        }
       }
     },
     {
@@ -44,13 +75,25 @@
       "category": "clean",
       "hero": "solo",
       "description": "Maximum whitespace, a single soft-blue accent and quiet type. Nothing on the page you didn't ask for.",
-      "preview": { "bg": "#fbfbfd", "ink": "#1a1c22", "accent": "#2f6bff" },
+      "preview": {
+        "bg": "#fbfbfd",
+        "ink": "#1a1c22",
+        "accent": "#2f6bff"
+      },
       "vocabulary": {
         "postsTitle": "Writing",
         "topicsLabel": "Topics",
         "aboutLabel": "About",
         "tagline": "Less, but better.",
-        "topicNames": { "marrow": "Life", "forge": "Work", "old-bones": "Food", "marginalia": "Books", "after-hours": "Culture", "atlas": "Travel", "nebula": "Ideas" }
+        "topicNames": {
+          "marrow": "Life",
+          "forge": "Work",
+          "old-bones": "Food",
+          "marginalia": "Books",
+          "after-hours": "Culture",
+          "atlas": "Travel",
+          "nebula": "Ideas"
+        }
       }
     },
     {
@@ -59,13 +102,25 @@
       "category": "clean",
       "hero": "split",
       "description": "A monochrome slate room — cool greys, steel highlights, no colour to distract from the writing.",
-      "preview": { "bg": "#17191d", "ink": "#e9ebef", "accent": "#aeb7c2" },
+      "preview": {
+        "bg": "#17191d",
+        "ink": "#e9ebef",
+        "accent": "#aeb7c2"
+      },
       "vocabulary": {
         "postsTitle": "Index",
         "topicsLabel": "Disciplines",
         "aboutLabel": "Studio",
         "tagline": "Notes from the studio.",
-        "topicNames": { "marrow": "Practice", "forge": "Projects", "old-bones": "Material", "marginalia": "Studies", "after-hours": "Culture", "atlas": "Site Visits", "nebula": "Process" }
+        "topicNames": {
+          "marrow": "Practice",
+          "forge": "Projects",
+          "old-bones": "Material",
+          "marginalia": "Studies",
+          "after-hours": "Culture",
+          "atlas": "Site Visits",
+          "nebula": "Process"
+        }
       }
     },
     {
@@ -74,13 +129,25 @@
       "category": "editorial",
       "hero": "frontpage",
       "description": "A proper newspaper: a towering serif masthead, multi-column index with column rules and a drop-cap lede.",
-      "preview": { "bg": "#f5f2ea", "ink": "#1a1714", "accent": "#8a1f14" },
+      "preview": {
+        "bg": "#f5f2ea",
+        "ink": "#1a1714",
+        "accent": "#8a1f14"
+      },
       "vocabulary": {
         "postsTitle": "Front Page",
         "topicsLabel": "The Desks",
         "aboutLabel": "The Masthead",
         "tagline": "All the news that fits — and some that doesn't.",
-        "topicNames": { "marrow": "Living", "forge": "Technology", "old-bones": "Food & Drink", "marginalia": "Books", "after-hours": "Arts", "atlas": "Travel", "nebula": "Opinion" }
+        "topicNames": {
+          "marrow": "Living",
+          "forge": "Technology",
+          "old-bones": "Food & Drink",
+          "marginalia": "Books",
+          "after-hours": "Arts",
+          "atlas": "Travel",
+          "nebula": "Opinion"
+        }
       }
     },
     {
@@ -89,13 +156,25 @@
       "category": "editorial",
       "hero": "essay-cover",
       "description": "Stark black-on-cream, an oversized display serif and italic datelines. An unhurried literary quarterly.",
-      "preview": { "bg": "#f6efe1", "ink": "#2a2118", "accent": "#7c4a1e" },
+      "preview": {
+        "bg": "#f6efe1",
+        "ink": "#2a2118",
+        "accent": "#7c4a1e"
+      },
       "vocabulary": {
         "postsTitle": "The Journal",
         "topicsLabel": "Departments",
         "aboutLabel": "Colophon",
         "tagline": "Essays, unhurried.",
-        "topicNames": { "marrow": "Living", "forge": "Craft", "old-bones": "The Table", "marginalia": "Marginalia", "after-hours": "Arts & Letters", "atlas": "Correspondence", "nebula": "Essays" }
+        "topicNames": {
+          "marrow": "Living",
+          "forge": "Craft",
+          "old-bones": "The Table",
+          "marginalia": "Marginalia",
+          "after-hours": "Arts & Letters",
+          "atlas": "Correspondence",
+          "nebula": "Essays"
+        }
       }
     },
     {
@@ -104,13 +183,25 @@
       "category": "editorial",
       "hero": "news-wall",
       "description": "Newsstand energy: a wall of paper cards with accent ticks, condensed caps headlines and a hot tabloid red.",
-      "preview": { "bg": "#faf7f0", "ink": "#111111", "accent": "#e11d2a" },
+      "preview": {
+        "bg": "#faf7f0",
+        "ink": "#111111",
+        "accent": "#e11d2a"
+      },
       "vocabulary": {
         "postsTitle": "Headlines",
         "topicsLabel": "Sections",
-        "aboutLabel": "Contact",
+        "aboutLabel": "Masthead",
         "tagline": "Straight off the newsstand.",
-        "topicNames": { "marrow": "Life", "forge": "Tech", "old-bones": "Food", "marginalia": "Books", "after-hours": "Culture", "atlas": "Travel", "nebula": "Features" }
+        "topicNames": {
+          "marrow": "Life",
+          "forge": "Tech",
+          "old-bones": "Food",
+          "marginalia": "Books",
+          "after-hours": "Culture",
+          "atlas": "Travel",
+          "nebula": "Features"
+        }
       }
     },
     {
@@ -119,13 +210,25 @@
       "category": "editorial",
       "hero": "ticker",
       "description": "A boxed masthead, navy double-rules and a formal dateline. Old-world civic newsletter, buttoned up.",
-      "preview": { "bg": "#f3f0e8", "ink": "#191817", "accent": "#1f3a5f" },
+      "preview": {
+        "bg": "#f3f0e8",
+        "ink": "#191817",
+        "accent": "#1f3a5f"
+      },
       "vocabulary": {
         "postsTitle": "The Gazette",
         "topicsLabel": "Columns",
         "aboutLabel": "Masthead",
         "tagline": "Published for the record.",
-        "topicNames": { "marrow": "Home Life", "forge": "Industry", "old-bones": "Provisions", "marginalia": "Letters", "after-hours": "Society", "atlas": "Abroad", "nebula": "Notices" }
+        "topicNames": {
+          "marrow": "Home Life",
+          "forge": "Industry",
+          "old-bones": "Provisions",
+          "marginalia": "Letters",
+          "after-hours": "Society",
+          "atlas": "Abroad",
+          "nebula": "Notices"
+        }
       }
     },
     {
@@ -134,13 +237,25 @@
       "category": "creative",
       "hero": "marquee",
       "description": "After-dark and electric — inky violet-black, glowing cyan and magenta, and type that hums.",
-      "preview": { "bg": "#0a0812", "ink": "#f3ecff", "accent": "#22f5ff" },
+      "preview": {
+        "bg": "#0a0812",
+        "ink": "#f3ecff",
+        "accent": "#22f5ff"
+      },
       "vocabulary": {
         "postsTitle": "After Dark",
         "topicsLabel": "Frequencies",
         "aboutLabel": "Backstage",
         "tagline": "Broadcasting after hours.",
-        "topicNames": { "marrow": "Nightlife", "forge": "Signals", "old-bones": "Late Eats", "marginalia": "B-Sides", "after-hours": "The Scene", "atlas": "Neon Cities", "nebula": "Static" }
+        "topicNames": {
+          "marrow": "Nightlife",
+          "forge": "Signals",
+          "old-bones": "Late Eats",
+          "marginalia": "B-Sides",
+          "after-hours": "The Scene",
+          "atlas": "Neon Cities",
+          "nebula": "Static"
+        }
       }
     },
     {
@@ -149,13 +264,25 @@
       "category": "creative",
       "hero": "collage",
       "description": "Photocopied punk: high-contrast paper, one screaming spot colour, cut-and-paste rules and heavy caps.",
-      "preview": { "bg": "#ece9e2", "ink": "#0d0d0d", "accent": "#ff2d55" },
+      "preview": {
+        "bg": "#ece9e2",
+        "ink": "#0d0d0d",
+        "accent": "#ff2d55"
+      },
       "vocabulary": {
         "postsTitle": "Back Pages",
         "topicsLabel": "Cut & Paste",
         "aboutLabel": "Who We Are",
         "tagline": "Photocopied and proud.",
-        "topicNames": { "marrow": "Real Talk", "forge": "DIY", "old-bones": "Cheap Eats", "marginalia": "Zines", "after-hours": "Noise", "atlas": "On the Road", "nebula": "Rants" }
+        "topicNames": {
+          "marrow": "Real Talk",
+          "forge": "DIY",
+          "old-bones": "Cheap Eats",
+          "marginalia": "Zines",
+          "after-hours": "Noise",
+          "atlas": "On the Road",
+          "nebula": "Rants"
+        }
       }
     },
     {
@@ -164,13 +291,25 @@
       "category": "creative",
       "hero": "pinboard",
       "description": "Warm craft paper, taped-down cards and a friendly rounded hand. Everything looks lovingly stuck in.",
-      "preview": { "bg": "#f3ead8", "ink": "#3a2f26", "accent": "#d1495b" },
+      "preview": {
+        "bg": "#f3ead8",
+        "ink": "#3a2f26",
+        "accent": "#d1495b"
+      },
       "vocabulary": {
         "postsTitle": "Keepsakes",
         "topicsLabel": "Collections",
         "aboutLabel": "About Me",
         "tagline": "Everything worth sticking in.",
-        "topicNames": { "marrow": "Everyday", "forge": "Made", "old-bones": "Recipes", "marginalia": "Bookmarks", "after-hours": "Odds & Ends", "atlas": "Snapshots", "nebula": "Daydreams" }
+        "topicNames": {
+          "marrow": "Everyday",
+          "forge": "Made",
+          "old-bones": "Recipes",
+          "marginalia": "Bookmarks",
+          "after-hours": "Odds & Ends",
+          "atlas": "Snapshots",
+          "nebula": "Daydreams"
+        }
       }
     },
     {
@@ -179,13 +318,25 @@
       "category": "creative",
       "hero": "start-screen",
       "description": "Insert coin: midnight-blue cabinet, chunky pixel-era type and hot arcade yellow and pink.",
-      "preview": { "bg": "#0b0f2a", "ink": "#eafff5", "accent": "#ffcf33" },
+      "preview": {
+        "bg": "#0b0f2a",
+        "ink": "#eafff5",
+        "accent": "#ffcf33"
+      },
       "vocabulary": {
         "postsTitle": "High Scores",
         "topicsLabel": "Levels",
         "aboutLabel": "Credits",
         "tagline": "Insert coin to continue.",
-        "topicNames": { "marrow": "Player 1", "forge": "Power-Ups", "old-bones": "Snacks", "marginalia": "Lore", "after-hours": "Bonus Stage", "atlas": "World Map", "nebula": "Cheat Codes" }
+        "topicNames": {
+          "marrow": "Player 1",
+          "forge": "Power-Ups",
+          "old-bones": "Snacks",
+          "marginalia": "Lore",
+          "after-hours": "Bonus Stage",
+          "atlas": "World Map",
+          "nebula": "Cheat Codes"
+        }
       }
     },
     {
@@ -194,13 +345,25 @@
       "category": "kids",
       "hero": "notebook",
       "description": "Your notebook, but online: squared paper, biro-blue ink, highlighter swipes and hand-drawn arrows. Annotate everything.",
-      "preview": { "bg": "#fbfcf7", "ink": "#20252b", "accent": "#2f5fd0" },
+      "preview": {
+        "bg": "#fbfcf7",
+        "ink": "#20252b",
+        "accent": "#2f5fd0"
+      },
       "vocabulary": {
         "postsTitle": "Rough Work",
         "topicsLabel": "Subjects",
         "aboutLabel": "About Me",
         "tagline": "Your notebook, but online.",
-        "topicNames": { "marrow": "Life Stuff", "forge": "Tech Class", "old-bones": "Snack Break", "marginalia": "Book Reports", "after-hours": "Art Class", "atlas": "Field Trips", "nebula": "Margins" }
+        "topicNames": {
+          "marrow": "Life Stuff",
+          "forge": "Tech Class",
+          "old-bones": "Snack Break",
+          "marginalia": "Book Reports",
+          "after-hours": "Art Class",
+          "atlas": "Field Trips",
+          "nebula": "Margins"
+        }
       }
     },
     {
@@ -209,13 +372,25 @@
       "category": "kids",
       "hero": "mission-control",
       "description": "Mission-control console: telemetry rules, stencilled mission numbers and countdown date badges. All systems go.",
-      "preview": { "bg": "#0e1330", "ink": "#eef3ff", "accent": "#4dd6ff" },
+      "preview": {
+        "bg": "#0e1330",
+        "ink": "#eef3ff",
+        "accent": "#4dd6ff"
+      },
       "vocabulary": {
         "postsTitle": "Mission Log",
         "topicsLabel": "Systems",
         "aboutLabel": "Ground Control",
         "tagline": "All systems go.",
-        "topicNames": { "marrow": "Life Support", "forge": "Engineering", "old-bones": "Rations", "marginalia": "Archives", "after-hours": "Comms", "atlas": "Navigation", "nebula": "Telemetry" }
+        "topicNames": {
+          "marrow": "Life Support",
+          "forge": "Engineering",
+          "old-bones": "Rations",
+          "marginalia": "Archives",
+          "after-hours": "Comms",
+          "atlas": "Navigation",
+          "nebula": "Telemetry"
+        }
       }
     },
     {
@@ -224,13 +399,25 @@
       "category": "kids",
       "hero": "pixel-quest",
       "description": "Cosy retro-handheld: a chunky pixel wordmark, soft daylight palette, sprite accents and an XP-bar reading strip.",
-      "preview": { "bg": "#e8f4d6", "ink": "#2b2f24", "accent": "#5a9e3f" },
+      "preview": {
+        "bg": "#e8f4d6",
+        "ink": "#2b2f24",
+        "accent": "#5a9e3f"
+      },
       "vocabulary": {
         "postsTitle": "Quests",
         "topicsLabel": "Zones",
         "aboutLabel": "Player Info",
         "tagline": "Press start on your first blog.",
-        "topicNames": { "marrow": "Home Base", "forge": "Workshop", "old-bones": "The Inn", "marginalia": "Library", "after-hours": "Arcade", "atlas": "Overworld", "nebula": "Side Quests" }
+        "topicNames": {
+          "marrow": "Home Base",
+          "forge": "Workshop",
+          "old-bones": "The Inn",
+          "marginalia": "Library",
+          "after-hours": "Arcade",
+          "atlas": "Overworld",
+          "nebula": "Side Quests"
+        }
       }
     },
     {
@@ -239,13 +426,25 @@
       "category": "kids",
       "hero": "manga",
       "description": "Manga energy: screen-tone halftones, a dynamic panel grid and speech-bubble headlines. Every post a splash page.",
-      "preview": { "bg": "#fff8e6", "ink": "#14110c", "accent": "#ff3b3b" },
+      "preview": {
+        "bg": "#fff8e6",
+        "ink": "#14110c",
+        "accent": "#ff3b3b"
+      },
       "vocabulary": {
         "postsTitle": "Issues",
         "topicsLabel": "Story Arcs",
         "aboutLabel": "Origin Story",
         "tagline": "Every post a splash page.",
-        "topicNames": { "marrow": "Slice of Life", "forge": "Gadgets", "old-bones": "Cooking Arc", "marginalia": "Backstory", "after-hours": "Culture", "atlas": "On Location", "nebula": "Panels" }
+        "topicNames": {
+          "marrow": "Slice of Life",
+          "forge": "Gadgets",
+          "old-bones": "Cooking Arc",
+          "marginalia": "Backstory",
+          "after-hours": "Culture",
+          "atlas": "On Location",
+          "nebula": "Panels"
+        }
       }
     },
     {
@@ -254,13 +453,25 @@
       "category": "photo",
       "hero": "lead-grid",
       "description": "A white-cube gallery: pure white walls, near-black labels and an image-led grid. The work leads.",
-      "preview": { "bg": "#ffffff", "ink": "#14151a", "accent": "#2b2b2b" },
+      "preview": {
+        "bg": "#ffffff",
+        "ink": "#14151a",
+        "accent": "#2b2b2b"
+      },
       "vocabulary": {
         "postsTitle": "Works",
         "topicsLabel": "Series",
         "aboutLabel": "About",
         "tagline": "The work leads.",
-        "topicNames": { "marrow": "Life", "forge": "Studio", "old-bones": "Still Life", "marginalia": "Reading", "after-hours": "Culture", "atlas": "Location", "nebula": "Studies" }
+        "topicNames": {
+          "marrow": "Life",
+          "forge": "Studio",
+          "old-bones": "Still Life",
+          "marginalia": "Reading",
+          "after-hours": "Culture",
+          "atlas": "Location",
+          "nebula": "Studies"
+        }
       }
     },
     {
@@ -269,13 +480,25 @@
       "category": "photo",
       "hero": "lightbox",
       "description": "Near-black walls and silver labels so photographs glow. Minimal chrome, maximum image.",
-      "preview": { "bg": "#0b0b0d", "ink": "#ededf0", "accent": "#d4d4d8" },
+      "preview": {
+        "bg": "#0b0b0d",
+        "ink": "#ededf0",
+        "accent": "#d4d4d8"
+      },
       "vocabulary": {
         "postsTitle": "Exposures",
         "topicsLabel": "Contact Sheets",
         "aboutLabel": "About",
         "tagline": "Developed in the dark.",
-        "topicNames": { "marrow": "Daily", "forge": "Technical", "old-bones": "Still Life", "marginalia": "Notes", "after-hours": "Night", "atlas": "On Location", "nebula": "Prints" }
+        "topicNames": {
+          "marrow": "Daily",
+          "forge": "Technical",
+          "old-bones": "Still Life",
+          "marginalia": "Notes",
+          "after-hours": "Night",
+          "atlas": "On Location",
+          "nebula": "Prints"
+        }
       }
     },
     {
@@ -284,13 +507,25 @@
       "category": "photo",
       "hero": "contact-sheet",
       "description": "A film contact sheet: charcoal base, framed thumbnails with numbered edges and monospace grease-pencil labels.",
-      "preview": { "bg": "#161514", "ink": "#eae8e3", "accent": "#f4a11f" },
+      "preview": {
+        "bg": "#161514",
+        "ink": "#eae8e3",
+        "accent": "#f4a11f"
+      },
       "vocabulary": {
         "postsTitle": "Rolls",
         "topicsLabel": "Frames",
         "aboutLabel": "Colophon",
         "tagline": "Proof, frame by frame.",
-        "topicNames": { "marrow": "Everyday", "forge": "Gear", "old-bones": "Food", "marginalia": "Notes", "after-hours": "Night", "atlas": "Location", "nebula": "Proofs" }
+        "topicNames": {
+          "marrow": "Everyday",
+          "forge": "Gear",
+          "old-bones": "Food",
+          "marginalia": "Notes",
+          "after-hours": "Night",
+          "atlas": "Location",
+          "nebula": "Proofs"
+        }
       }
     },
     {
@@ -299,13 +534,25 @@
       "category": "photo",
       "hero": "photo-pile",
       "description": "Instant-photo charm: soft grey desk, white photo frames with a caption lip and a casual retro-blue accent.",
-      "preview": { "bg": "#e9e6df", "ink": "#26241f", "accent": "#3a7ca5" },
+      "preview": {
+        "bg": "#e9e6df",
+        "ink": "#26241f",
+        "accent": "#3a7ca5"
+      },
       "vocabulary": {
         "postsTitle": "Snapshots",
         "topicsLabel": "The Pile",
         "aboutLabel": "About",
         "tagline": "Shake it and see.",
-        "topicNames": { "marrow": "Moments", "forge": "Tinkering", "old-bones": "Meals", "marginalia": "Reads", "after-hours": "Fun", "atlas": "Trips", "nebula": "Captions" }
+        "topicNames": {
+          "marrow": "Moments",
+          "forge": "Tinkering",
+          "old-bones": "Meals",
+          "marginalia": "Reads",
+          "after-hours": "Fun",
+          "atlas": "Trips",
+          "nebula": "Captions"
+        }
       }
     }
   ]
