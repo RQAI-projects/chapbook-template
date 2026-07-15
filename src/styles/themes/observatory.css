@@ -1,0 +1,26 @@
+/* ============================================================
+   THEME · Observatory  (Clean & Simple)
+   ------------------------------------------------------------
+   The house style, formalised. Observatory IS the base look
+   defined by global.css :root, so this file intentionally adds
+   NO token overrides — that keeps the legacy 7-palette reader
+   switcher (data-site-theme) working on top, exactly as today.
+
+   Canonical token contract (defined in global.css :root):
+     surfaces  --bg-0 #04060c  --bg-1 #080c16  --bg-2 #0d1322  --bg-3 #131b2f
+     ink       --ink  #f4f7fd  --ink-dim #c0c9da  --ink-faint #9aa7c4
+     accent    --teal #2dd4bf  --cyan #22d3ee  --violet #818cf8
+               --accent var(--teal)   --grad teal→cyan→violet
+     lines     --line / --line-strong (cool, low-opacity)
+     type      --font-display Space Grotesk · --font-body Inter
+     shape     --radius 16px   --header-h 56px
+     chrome    --header-bg/-border · --scrim-text-shadow · --masthead-ink/-shadow
+
+   Every other theme in this folder overrides that layer under
+   html[data-blog-theme="<id>"]. Observatory leaves it untouched.
+   ============================================================ */
+
+/* Marker only — no visual effect; lets tooling confirm the theme loaded. */
+html[data-blog-theme="observatory"] {
+  --blog-theme: "observatory";
+}

@@ -1,0 +1,246 @@
+---
+// ARCHETYPE · contact-sheet — contact-sheet (Film Strip).
+// A LITERAL proof sheet fills the first viewport: a dense grid of numbered framed
+// "negatives" (colour plates from each post's accent) with sprocketed edges and mono
+// grease-pencil numbers (01A, 02A…). An orange grease-pencil loop circles the SELECTED
+// frame (the latest). The wordmark is a small taped sticker in the corner — not a hero.
+// Below the sheet, a compact monospace frame-log lists every post.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate, pad2 } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle } =
+  Astro.props as HomeProps;
+
+const liveTopics = topics.filter((t) => t.count > 0);
+---
+<section class="cs">
+  <div class="cs-sheet-wrap">
+    <div class="cs-sticker" aria-hidden="true">
+      <span class="cs-sticker-name">{masthead}</span>
+      <span class="cs-sticker-sub">{postsTitle} · roll 01</span>
+    </div>
+
+    <ol class="cs-sheet" aria-label={`${postsTitle} contact sheet`}>
+      {posts.map((p, i) => (
+        <li class={`cs-frame${i === 0 ? ' is-selected' : ''}`} style={`--pa:${p.accent}`}>
+          <a href={p.href}>
+            <span class="cs-neg" aria-hidden="true"></span>
+            <span class="cs-num">{pad2(i + 1)}A</span>
+            <span class="cs-cap">{p.title}</span>
+            {i === 0 && (
+              <>
+                <svg class="cs-mark" viewBox="0 0 120 96" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M96,20 C78,7 34,6 18,26 C4,44 9,74 38,88 C70,102 108,86 110,54 C111,35 100,22 84,15"
+                        fill="none" stroke="#f4a11f" stroke-width="3.4" stroke-linecap="round" />
+                </svg>
+                <svg class="cs-tick" viewBox="0 0 32 32" aria-hidden="true">
+                  <path d="M5,17 L13,25 L28,6" fill="none" stroke="#f4a11f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </>
+            )}
+          </a>
+        </li>
+      ))}
+    </ol>
+  </div>
+
+  <ol class="cs-log" aria-label={`${postsTitle} — frame log`}>
+    {posts.map((p, i) => (
+      <li class="cs-log-row">
+        <a href={p.href}>
+          <span class="cs-log-num">{pad2(i + 1)}A</span>
+          <span class="cs-log-title">{p.title}</span>
+          <span class="cs-log-meta">
+            {p.topic && <span class="cs-log-topic">{p.topic.name}</span>}
+            <time datetime={p.date.toISOString()}>{fmtDate(p.date)}</time>
+            <span class="cs-log-dot" aria-hidden="true">·</span>
+            <span>{p.readMins} min</span>
+          </span>
+        </a>
+      </li>
+    ))}
+  </ol>
+
+  <footer class="cs-foot">
+    <ul class="cs-topics">
+      {liveTopics.map((t) => (
+        <li><a href={t.href} style={`--c:${t.color}`}>{t.name}</a></li>
+      ))}
+    </ul>
+    <a class="cs-all" href={postsHref}>All {postsTitle.toLowerCase()} →</a>
+  </footer>
+</section>
+
+<style>
+  .cs {
+    --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    width: min(1240px, 100% - 2.4rem);
+    margin-inline: auto;
+    padding: clamp(1.2rem, 3vw, 2.2rem) 0 clamp(2rem, 5vw, 3.5rem);
+    color: #eae8e3;
+  }
+
+  /* ---------- the proof sheet ---------- */
+  .cs-sheet-wrap {
+    position: relative;
+    background: #0e0d0c;                 /* film base / gutters */
+    border: 1px solid rgba(230, 225, 215, 0.14);
+    border-radius: 4px;
+    padding: clamp(0.5rem, 1.4vw, 0.9rem);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+  }
+  .cs-sheet {
+    list-style: none; margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: clamp(5px, 0.9vw, 9px);
+  }
+
+  .cs-frame { position: relative; }
+  .cs-frame a {
+    position: relative; display: block;
+    border: 1px solid rgba(244, 161, 31, 0.34);
+    border-radius: 2px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+  }
+  .cs-neg {
+    display: block;
+    aspect-ratio: 3 / 2;
+    background:
+      repeating-linear-gradient(90deg, rgba(10, 9, 7, 0.92) 0 5px, transparent 5px 13px) left top / 100% 6px no-repeat,
+      repeating-linear-gradient(90deg, rgba(10, 9, 7, 0.92) 0 5px, transparent 5px 13px) left bottom / 100% 6px no-repeat,
+      linear-gradient(158deg, color-mix(in srgb, var(--pa) 40%, #161514) 0%, #161514 82%);
+    transition: filter 0.22s ease;
+  }
+  .cs-num {
+    position: absolute; top: 0; left: 0; z-index: 2;
+    font: 700 0.62rem/1 var(--mono);
+    letter-spacing: 0.06em; color: #f4a11f;
+    background: rgba(12, 10, 7, 0.82);
+    padding: 0.34em 0.5em;
+    border-bottom-right-radius: 3px;
+  }
+  .cs-cap {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+    padding: 0.7rem 0.5rem 0.4rem;
+    font: 500 0.66rem/1.2 var(--mono);
+    color: #f2efe9;
+    background: linear-gradient(to top, rgba(12, 10, 7, 0.92), rgba(12, 10, 7, 0.5) 60%, transparent);
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+  }
+  .cs-frame a:hover {
+    border-color: #f4a11f;
+    box-shadow: 0 0 0 1px rgba(244, 161, 31, 0.4), 0 0 22px rgba(244, 161, 31, 0.2);
+    transform: translateY(-2px);
+  }
+  .cs-frame a:hover .cs-neg { filter: brightness(1.08) saturate(1.1); }
+
+  /* grease-pencil "selected" loop + tick over the latest frame */
+  .cs-mark {
+    position: absolute; inset: -9px -7px; z-index: 3;
+    width: calc(100% + 14px); height: calc(100% + 18px);
+    pointer-events: none;
+    transform: rotate(-2deg);
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  }
+  .cs-tick {
+    position: absolute; top: -14px; right: -6px; z-index: 3;
+    width: 26px; height: 26px; pointer-events: none;
+    transform: rotate(6deg);
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  }
+
+  /* ---------- taped wordmark sticker (a corner, not a hero) ---------- */
+  .cs-sticker {
+    position: absolute; top: -0.7rem; right: 1.1rem; z-index: 4;
+    background: #eae8e3; color: #161514;
+    padding: 0.45rem 0.8rem 0.5rem;
+    border-radius: 2px;
+    transform: rotate(2.4deg);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    max-width: 60vw;
+  }
+  .cs-sticker::before {
+    /* a strip of tape across the top */
+    content: ""; position: absolute; top: -8px; left: 50%; transform: translateX(-50%) rotate(-3deg);
+    width: 54px; height: 16px; background: rgba(244, 161, 31, 0.42);
+    border: 1px solid rgba(244, 161, 31, 0.5);
+  }
+  .cs-sticker-name {
+    display: block;
+    font: 700 0.94rem/1 var(--mono); letter-spacing: 0.01em; color: #161514;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52vw;
+  }
+  .cs-sticker-sub {
+    display: block; margin-top: 0.22rem;
+    font: 500 0.6rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: #7a6a3a;
+  }
+
+  /* ---------- compact monospace frame-log ---------- */
+  .cs-log {
+    list-style: none; margin: clamp(1.4rem, 3.5vw, 2.4rem) 0 0; padding: 0;
+    border-top: 1px solid rgba(230, 225, 215, 0.16);
+  }
+  .cs-log-row { border-bottom: 1px solid rgba(230, 225, 215, 0.09); }
+  .cs-log-row a {
+    display: grid;
+    grid-template-columns: 3rem 1fr auto;
+    align-items: baseline;
+    gap: 0.4rem 1rem;
+    padding: 0.6rem 0.3rem;
+    cursor: pointer;
+    transition: background 0.18s ease, padding-left 0.18s ease;
+  }
+  .cs-log-row a:hover { background: rgba(244, 161, 31, 0.06); padding-left: 0.6rem; }
+  .cs-log-num { font: 700 0.78rem/1 var(--mono); color: #f4a11f; font-variant-numeric: tabular-nums; }
+  .cs-log-title {
+    font: 500 1rem/1.25 var(--font-display, sans-serif); color: #eae8e3; letter-spacing: -0.005em;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+  }
+  .cs-log-row a:hover .cs-log-title { color: #ffb84d; }
+  .cs-log-meta {
+    display: flex; align-items: baseline; gap: 0.45rem; justify-content: flex-end;
+    font: 500 0.72rem/1 var(--mono); color: #948f84; white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .cs-log-topic { color: #d98a1a; text-transform: uppercase; letter-spacing: 0.04em; }
+  .cs-log-dot { color: #5f5a50; }
+
+  /* ---------- footer ---------- */
+  .cs-foot {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 0.8rem 1.5rem;
+    margin-top: clamp(1.4rem, 3.5vw, 2.2rem);
+    padding-top: 1.1rem;
+    border-top: 1px solid rgba(230, 225, 215, 0.16);
+  }
+  .cs-topics { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
+  .cs-topics a {
+    display: inline-flex; align-items: baseline; gap: 0.4rem;
+    font: 600 0.68rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase;
+    color: #948f84; cursor: pointer; transition: color 0.2s ease;
+  }
+  .cs-topics a::before { content: ""; width: 8px; height: 8px; border-radius: 1px; background: var(--c, #f4a11f); align-self: center; }
+  .cs-topics a:hover { color: #eae8e3; }
+  .cs-all {
+    font: 600 0.72rem/1 var(--mono); letter-spacing: 0.06em; color: #f4a11f;
+    cursor: pointer; white-space: nowrap; transition: color 0.2s ease;
+  }
+  .cs-all:hover { color: #ffb84d; }
+
+  @media (max-width: 900px) { .cs-sheet { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 620px) { .cs-sheet { grid-template-columns: repeat(3, 1fr); } .cs-cap { display: none; } }
+  @media (max-width: 420px) {
+    .cs-sheet { grid-template-columns: repeat(2, 1fr); }
+    .cs-log-row a { grid-template-columns: 2.6rem 1fr; }
+    .cs-log-meta { grid-column: 1 / -1; justify-content: flex-start; margin-top: 0.1rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cs-frame a, .cs-neg { transition: none; }
+    .cs-frame a:hover { transform: none; }
+    .cs-frame a:hover .cs-neg { filter: none; }
+  }
+</style>

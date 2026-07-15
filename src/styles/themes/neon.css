@@ -1,0 +1,126 @@
+/* ============================================================
+   THEME · Neon  (Creative & Fun)  — DARK
+   ------------------------------------------------------------
+   After-dark and electric: inky violet-black, glowing cyan +
+   magenta, humming type. Reference implementation for a DARK
+   bold theme — it KEEPS the 3D hero (auto-recoloured from the
+   --teal/--cyan/--violet tokens) and leans into glow.
+   ============================================================ */
+
+html[data-blog-theme="neon"] {
+  color-scheme: dark;
+
+  --bg-0: #08060f;
+  --bg-1: #0d0a1a;
+  --bg-2: #140f24;
+  --bg-3: #1d1636;
+
+  --ink: #f3ecff;
+  --ink-dim: #c3b6e6;
+  --ink-faint: #8f82bd;
+
+  --teal: #22f5ff;
+  --cyan: #22f5ff;
+  --violet: #b26bff;
+  --pink: #ff2fb9;
+  --amber: #ffe14d;
+  --accent: #22f5ff;
+  --grad: linear-gradient(100deg, #22f5ff, #b26bff 50%, #ff2fb9);
+
+  --line: rgba(160, 120, 255, 0.20);
+  --line-strong: rgba(160, 120, 255, 0.38);
+
+  --glow-teal: 0 0 26px rgba(34, 245, 255, 0.55);
+  --glow-cyan: 0 0 26px rgba(34, 245, 255, 0.55);
+  --glow-violet: 0 0 26px rgba(178, 107, 255, 0.5);
+
+  --radius: 14px;
+
+  --header-bg: rgba(8, 6, 15, 0.72);
+  --header-border: rgba(160, 120, 255, 0.22);
+  --selection-bg: rgba(255, 47, 185, 0.35);
+  --scrim-text-shadow:
+    0 0 14px rgba(8, 6, 15, 0.9),
+    0 2px 24px rgba(8, 6, 15, 0.85),
+    0 0 46px rgba(34, 245, 255, 0.35);
+  --masthead-ink: #ffffff;
+  --masthead-shadow:
+    0 0 8px rgba(8, 6, 15, 0.9),
+    0 0 26px rgba(34, 245, 255, 0.55),
+    0 0 60px rgba(255, 47, 185, 0.45),
+    0 0 120px rgba(178, 107, 255, 0.3);
+
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter Variable', 'Inter', system-ui, sans-serif;
+}
+
+/* eyebrow / labels hum in cyan */
+html[data-blog-theme="neon"] .eyebrow { color: var(--cyan); text-shadow: 0 0 12px rgba(34, 245, 255, 0.5); }
+
+/* ---- header ---- */
+html[data-blog-theme="neon"] .logo { text-shadow: 0 0 16px rgba(34, 245, 255, 0.4); }
+html[data-blog-theme="neon"] .site-nav a[aria-current="page"]::after { box-shadow: 0 0 12px var(--cyan); }
+
+/* ---- hero: keep the 3D scene, add a magenta wash + scanline shimmer ---- */
+html[data-blog-theme="neon"] .hero-scrim {
+  background:
+    radial-gradient(ellipse 70% 60% at 30% 50%, rgba(8, 6, 15, 0.82), transparent 70%),
+    radial-gradient(ellipse 50% 50% at 78% 30%, rgba(255, 47, 185, 0.12), transparent 70%),
+    linear-gradient(180deg, transparent 55%, var(--bg-0));
+}
+html[data-blog-theme="neon"] .masthead { letter-spacing: -0.02em; }
+
+/* ---- section heads ---- */
+html[data-blog-theme="neon"] .section-head .rule { background: linear-gradient(90deg, var(--violet), transparent); }
+html[data-blog-theme="neon"] .see-all { color: var(--cyan); }
+
+/* ---- post cards: dark glass, neon edge on hover ---- */
+html[data-blog-theme="neon"] .post-card {
+  background:
+    linear-gradient(155deg, color-mix(in srgb, var(--card-accent, var(--cyan)) 20%, transparent), transparent 70%),
+    linear-gradient(160deg, var(--bg-2), var(--bg-1));
+  border-color: color-mix(in srgb, var(--card-accent, var(--cyan)) 40%, var(--line));
+}
+html[data-blog-theme="neon"] .post-card::before {
+  background: var(--card-accent, var(--cyan));
+  box-shadow: 0 0 16px var(--card-accent, var(--cyan)), 0 0 30px var(--card-accent, var(--cyan));
+}
+html[data-blog-theme="neon"] .post-card:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 1px rgba(34, 245, 255, 0.4), 0 12px 44px rgba(0, 0, 0, 0.6), 0 0 34px rgba(34, 245, 255, 0.28);
+}
+html[data-blog-theme="neon"] .post-card h3 { color: #fff; }
+html[data-blog-theme="neon"] .tag-chip {
+  color: var(--pink); border-color: rgba(255, 47, 185, 0.4); background: rgba(255, 47, 185, 0.08);
+}
+
+/* cards grid (default layout) tiles glow on hover */
+html[data-blog-theme="neon"] .const-card:hover { box-shadow: 0 0 30px rgba(178, 107, 255, 0.22), 0 12px 44px rgba(0, 0, 0, 0.5); }
+
+/* ---- buttons ---- */
+html[data-blog-theme="neon"] .btn-primary {
+  background: var(--grad); color: #0a0416;
+  box-shadow: 0 0 22px rgba(34, 245, 255, 0.5), 0 0 40px rgba(255, 47, 185, 0.3);
+}
+html[data-blog-theme="neon"] .btn-primary:hover { box-shadow: 0 0 30px rgba(34, 245, 255, 0.7), 0 0 60px rgba(255, 47, 185, 0.45); }
+html[data-blog-theme="neon"] .btn-ghost { border-color: rgba(34, 245, 255, 0.5); color: var(--cyan); background: rgba(34, 245, 255, 0.06); }
+html[data-blog-theme="neon"] .btn-ghost:hover { box-shadow: var(--glow-cyan); border-color: var(--cyan); }
+
+/* ---- article ---- */
+html[data-blog-theme="neon"] .article-body a { color: var(--cyan); border-bottom-color: rgba(34, 245, 255, 0.4); }
+html[data-blog-theme="neon"] .article-body blockquote { border-left-color: var(--pink); box-shadow: inset 8px 0 24px -16px rgba(255, 47, 185, 0.5); }
+html[data-blog-theme="neon"] .article-body h2 { border-top-color: rgba(160, 120, 255, 0.24); }
+
+/* ---- footer ---- */
+html[data-blog-theme="neon"] .site-footer a:hover { color: var(--cyan); text-shadow: 0 0 12px rgba(34, 245, 255, 0.6); }
+
+/* subtle sign-buzz on the masthead only */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-blog-theme="neon"] .masthead { animation: neon-buzz 6s ease-in-out infinite; }
+  @keyframes neon-buzz {
+    0%, 100% { text-shadow: var(--masthead-shadow); }
+    47% { text-shadow: var(--masthead-shadow); }
+    50% { text-shadow: 0 0 8px rgba(8,6,15,0.9), 0 0 14px rgba(34,245,255,0.35), 0 0 30px rgba(255,47,185,0.25); }
+    53% { text-shadow: var(--masthead-shadow); }
+  }
+}

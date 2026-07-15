@@ -5,6 +5,10 @@ import { renderOgCard } from '../../lib/og';
 import topics from '../../data/topics.json';
 
 export async function getStaticPaths() {
+  // Opt-in QA speedup: skip the (slow) satori/resvg OG-card render when QA_SKIP_OG is
+  // set, so the theme screenshot loop rebuilds fast. Off by default → real builds are
+  // unchanged and every post still gets its share card.
+  if (process.env.QA_SKIP_OG) return [];
   const posts = await getCollection('blog');
   return posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
 }

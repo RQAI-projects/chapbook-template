@@ -1,0 +1,149 @@
+/* ============================================================
+   THEME · Gazette  (Editorial)  — LIGHT
+   ------------------------------------------------------------
+   An old-world civic newsletter, buttoned up: a BOXED masthead
+   ruled with navy double-rules, small-caps labels, a formal
+   dateline and justified Newsreader body. Navy, not red; formal,
+   not shouting.
+   ============================================================ */
+
+html[data-blog-theme="gazette"] {
+  color-scheme: light;
+
+  --bg-0: #f3f0e8;
+  --bg-1: #faf8f1;
+  --bg-2: #faf8f1;
+  --bg-3: #e8e3d6;
+
+  --ink: #191817;
+  --ink-dim: #3d3a34;
+  --ink-faint: #736e63;
+
+  --teal: #1f3a5f;
+  --cyan: #1f3a5f;
+  --violet: #3a2f4f;
+  --pink: #7a3b3b;
+  --amber: #8a6a2a;
+  --accent: #1f3a5f;
+  --accent-ink: #f7f5ee;
+  --grad: linear-gradient(100deg, #1f3a5f, #2f5075);
+
+  --line: rgba(25, 24, 23, 0.18);
+  --line-strong: rgba(31, 58, 95, 0.5);
+
+  --glow-teal: 0 10px 26px rgba(25, 24, 23, 0.1);
+  --glow-cyan: 0 10px 26px rgba(25, 24, 23, 0.1);
+  --glow-violet: 0 10px 26px rgba(25, 24, 23, 0.1);
+
+  --radius: 2px;
+
+  --header-bg: rgba(243, 240, 232, 0.92);
+  --header-blur: blur(6px);
+  --header-border: rgba(31, 58, 95, 0.5);
+  --selection-bg: rgba(31, 58, 95, 0.18);
+  --scrim-text-shadow: none;
+  --masthead-ink: var(--ink);
+  --masthead-shadow: none;
+
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Newsreader', Georgia, 'Times New Roman', serif;
+}
+
+/* ---- header ---- */
+html[data-blog-theme="gazette"] .logo { font-family: var(--font-display); font-weight: 700; letter-spacing: 0.02em; }
+html[data-blog-theme="gazette"] .site-nav a { font-family: var(--font-display); color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.8rem; }
+html[data-blog-theme="gazette"] .site-nav a[aria-current="page"]::after { background: var(--accent); box-shadow: none; }
+
+/* ---- hero: BOXED masthead framed in navy double-rules ---- */
+html[data-blog-theme="gazette"] .three-hero { display: none; }
+html[data-blog-theme="gazette"] .hero { min-height: auto; }
+html[data-blog-theme="gazette"] .hero-scrim { background: none; }
+html[data-blog-theme="gazette"] .hero-content {
+  text-align: center;
+  border: 3px double var(--line-strong);
+  border-left: none; border-right: none;
+  padding-block: clamp(1.8rem, 4vw, 3rem);
+  margin-block: clamp(1.4rem, 3vw, 2.2rem);
+}
+html[data-blog-theme="gazette"] .masthead {
+  font-family: var(--font-display); font-weight: 700;
+  letter-spacing: 0.01em; font-size: clamp(2.6rem, 8vw, 5.2rem);
+  line-height: 1;
+}
+html[data-blog-theme="gazette"] .hero .lead {
+  margin-inline: auto; margin-top: 0.8rem; color: var(--ink-dim);
+  font-variant: small-caps; letter-spacing: 0.14em; font-size: 0.92rem;
+  text-transform: lowercase;
+}
+/* a formal "dateline" strip under the nameplate */
+html[data-blog-theme="gazette"] .hero-content::after {
+  content: "· Est. MMXXVI · Published in good faith ·";
+  display: block; margin-top: 1rem; padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-display); font-variant: small-caps; letter-spacing: 0.12em;
+  color: var(--ink-faint); font-size: 0.76rem;
+}
+html[data-blog-theme="gazette"] .hero-cues { justify-content: center; }
+html[data-blog-theme="gazette"] .scroll-cue { display: none; }
+html[data-blog-theme="gazette"] .eyebrow { color: var(--accent); font-family: var(--font-display); font-variant: small-caps; text-transform: lowercase; letter-spacing: 0.1em; }
+
+/* ---- section heads: navy double rule ---- */
+html[data-blog-theme="gazette"] .section-title { font-family: var(--font-display); font-weight: 700; }
+html[data-blog-theme="gazette"] .section-head { border-bottom: 3px double var(--line-strong); padding-bottom: 0.4rem; }
+html[data-blog-theme="gazette"] .section-head .rule { display: none; }
+html[data-blog-theme="gazette"] .see-all { color: var(--accent); font-family: var(--font-display); font-variant: small-caps; letter-spacing: 0.06em; }
+html[data-blog-theme="gazette"] .see-all:hover { text-shadow: none; text-decoration: underline; }
+
+/* ---- post cards ---- */
+html[data-blog-theme="gazette"] .post-card { --card-accent: var(--accent); background: var(--bg-1); border: 1px solid var(--line); box-shadow: none; }
+html[data-blog-theme="gazette"] .post-card::before { box-shadow: none; opacity: 1; }
+html[data-blog-theme="gazette"] .post-card:hover { box-shadow: 0 8px 20px rgba(25, 24, 23, 0.1); border-color: var(--line-strong); }
+html[data-blog-theme="gazette"] .post-card h3 { font-family: var(--font-display); font-weight: 700; color: var(--ink); }
+html[data-blog-theme="gazette"] .post-card p { color: var(--ink-dim); }
+html[data-blog-theme="gazette"] .post-meta { font-family: var(--font-display); font-variant: small-caps; letter-spacing: 0.06em; color: var(--ink-faint); }
+html[data-blog-theme="gazette"] .tag-chip { font-family: var(--font-display); font-variant: small-caps; color: var(--accent); border-color: rgba(31, 58, 95, 0.4); background: rgba(31, 58, 95, 0.06); border-radius: 2px; }
+html[data-blog-theme="gazette"] .badge-interactive { color: #7a5a10; border-color: rgba(138, 106, 42, 0.5); background: rgba(138, 106, 42, 0.08); border-radius: 2px; }
+html[data-blog-theme="gazette"] .badge-interactive::before { background: #8a6a2a; box-shadow: none; }
+
+/* ---- archive: newspaper columns with navy rules ---- */
+html[data-blog-theme="gazette"] .archive-head .display { font-family: var(--font-display); font-weight: 700; }
+html[data-blog-theme="gazette"] .post-list.layout-newspaper { column-rule: 1px solid var(--line-strong); }
+html[data-blog-theme="gazette"] .post-list.layout-newspaper .post-card { border-top: 3px double var(--line-strong); border-bottom: 1px solid var(--line); }
+html[data-blog-theme="gazette"] .post-list.layout-newspaper .post-card h3 { font-family: var(--font-display); font-weight: 700; color: var(--ink); }
+html[data-blog-theme="gazette"] .post-list.layout-newspaper .post-card:hover h3 { color: var(--accent); }
+html[data-blog-theme="gazette"] .layout-select { font-family: var(--font-display); background: var(--bg-1); color: var(--ink-dim); }
+html[data-blog-theme="gazette"] .filter-banner { background: rgba(31, 58, 95, 0.06); border-color: rgba(31, 58, 95, 0.3); }
+
+/* ---- post page ---- */
+html[data-blog-theme="gazette"] .post-hero .orbs, html[data-blog-theme="gazette"] .post-hero .grid-lines { display: none; }
+html[data-blog-theme="gazette"] .post-hero { border-bottom: 3px double var(--line-strong); }
+html[data-blog-theme="gazette"] .post-title-row h1 { font-family: var(--font-display); font-weight: 700; }
+html[data-blog-theme="gazette"] .post-hero-meta, html[data-blog-theme="gazette"] .back-link { font-family: var(--font-display); font-variant: small-caps; letter-spacing: 0.05em; color: var(--ink-dim); }
+html[data-blog-theme="gazette"] .article-body { color: #23211d; font-size: 1.12rem; line-height: 1.7; text-align: justify; hyphens: auto; }
+html[data-blog-theme="gazette"] .article-body h2 { font-family: var(--font-display); font-weight: 700; border-top: 3px double var(--line-strong); }
+html[data-blog-theme="gazette"] .article-body h3 { font-family: var(--font-display); font-weight: 700; }
+html[data-blog-theme="gazette"] .article-body a { color: var(--accent); border-bottom-color: rgba(31, 58, 95, 0.4); }
+html[data-blog-theme="gazette"] .article-body a:hover { text-shadow: none; border-bottom-color: var(--accent); }
+html[data-blog-theme="gazette"] .article-body blockquote { border-left-color: var(--accent); color: var(--ink-dim); box-shadow: none; font-style: italic; }
+html[data-blog-theme="gazette"] .article-body strong { color: #000; }
+html[data-blog-theme="gazette"] .article-body li::marker { color: var(--accent); }
+html[data-blog-theme="gazette"] .pn-label { color: var(--accent); font-family: var(--font-display); font-variant: small-caps; letter-spacing: 0.06em; }
+html[data-blog-theme="gazette"] .pn-title { font-family: var(--font-display); }
+html[data-blog-theme="gazette"] .post-nav-link:hover { border-color: var(--line-strong); box-shadow: none; }
+
+/* ---- buttons / cards / footer ---- */
+html[data-blog-theme="gazette"] .btn { font-family: var(--font-display); border-radius: 2px; }
+html[data-blog-theme="gazette"] .btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+html[data-blog-theme="gazette"] .btn-primary:hover { background: #2f5075; box-shadow: 0 6px 16px rgba(31, 58, 95, 0.28); }
+html[data-blog-theme="gazette"] .btn-ghost { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+html[data-blog-theme="gazette"] .btn-ghost:hover { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+html[data-blog-theme="gazette"] .card, html[data-blog-theme="gazette"] .const-card, html[data-blog-theme="gazette"] .subscribe-card,
+html[data-blog-theme="gazette"] .stat-card, html[data-blog-theme="gazette"] .cv-item { background: var(--bg-1); border: 1px solid var(--line); box-shadow: none; }
+html[data-blog-theme="gazette"] .const-card::before { box-shadow: none; }
+html[data-blog-theme="gazette"] .const-card-name { font-family: var(--font-display); font-weight: 700; }
+html[data-blog-theme="gazette"] .subscribe-card { border: 3px double var(--line-strong); }
+html[data-blog-theme="gazette"] .subscribe-title { font-family: var(--font-display); font-weight: 700; }
+html[data-blog-theme="gazette"] .subscribe-form input { background: #fff; border-color: var(--line-strong); }
+html[data-blog-theme="gazette"] .stat-card .stat-value { filter: none; }
+html[data-blog-theme="gazette"] .site-footer a { font-family: var(--font-display); font-variant: small-caps; letter-spacing: 0.04em; }
+html[data-blog-theme="gazette"] .site-footer a:hover { color: var(--accent); }

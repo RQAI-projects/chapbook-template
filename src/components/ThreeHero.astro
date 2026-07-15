@@ -63,9 +63,11 @@
     const C_CYAN = tone('--cyan', '#22d3ee');
     const C_VIOLET = tone('--violet', '#818cf8');
     // Light themes: dark-ink lines on a light page — additive blending would vanish, so use
-    // normal blending (and a touch more opacity for line weight).
+    // normal blending (and a touch more opacity for line weight). Detect both the legacy
+    // light palettes (data-site-theme) and any blog theme that declares color-scheme: light.
     const LIGHT = new Set(['daybreak', 'dune', 'rivendell']);
-    const isLight = LIGHT.has(document.documentElement.dataset.siteTheme || '');
+    const cssScheme = cs.getPropertyValue('color-scheme').trim();
+    const isLight = LIGHT.has(document.documentElement.dataset.siteTheme || '') || cssScheme.includes('light');
     const BLEND = isLight ? THREE.NormalBlending : THREE.AdditiveBlending;
 
     /* --- particle field --- */

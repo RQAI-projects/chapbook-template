@@ -1,0 +1,203 @@
+---
+// ARCHETYPE · marquee — neon.
+// A DARK electric marquee. A glowing neon-tube WORDMARK flickers ON on load (steady
+// glow under reduced-motion). Then every post title is an OVERSIZED neon SIGN stacked
+// FULL-WIDTH, one per row, glowing in the post's own accent; hairline dividers between,
+// hover intensifies the glow and reveals the meta line. Identity = a wall of giant signs.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate, pad2 } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle, topicsLabel } =
+  Astro.props as HomeProps;
+const liveTopics = topics.filter((t) => t.count > 0);
+---
+<section class="mq" aria-label={masthead}>
+  <div class="mq-bg" aria-hidden="true"></div>
+
+  <header class="mq-hero">
+    <p class="mq-eyebrow"><span class="mq-live" aria-hidden="true"></span>{postsTitle}</p>
+    <h1 class="mq-wordmark">{masthead}</h1>
+    <p class="mq-tagline">{tagline}</p>
+  </header>
+
+  <div class="mq-wall">
+    {posts.map((p, i) => (
+      <a class="mq-sign" href={p.href} style={`--sign:${p.accent}`}>
+        <span class="mq-idx">{pad2(i + 1)}</span>
+        <span class="mq-sign-body">
+          <span class="mq-title">{p.title}</span>
+          <span class="mq-meta">
+            <time class="mq-when" datetime={p.date.toISOString()}>{fmtDate(p.date)}</time>
+            <span class="mq-sep" aria-hidden="true">·</span>
+            <span class="mq-read">{p.readMins} min</span>
+            {p.topic && <span class="mq-sep" aria-hidden="true">·</span>}
+            {p.topic && <span class="mq-topic">{p.topic.name}</span>}
+          </span>
+        </span>
+      </a>
+    ))}
+  </div>
+
+  {liveTopics.length > 0 && (
+    <footer class="mq-foot">
+      <span class="mq-foot-label">{topicsLabel}</span>
+      <ul class="mq-topics">
+        {liveTopics.map((t) => (
+          <li><a href={t.href} style={`--sign:${t.color}`}>{t.name}</a></li>
+        ))}
+      </ul>
+      <a class="mq-all" href={postsHref}>All {postsTitle.toLowerCase()} →</a>
+    </footer>
+  )}
+</section>
+
+<style>
+  .mq { position: relative; background: #08060f; overflow: hidden; padding-bottom: 4rem; }
+  .mq-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(60% 48% at 18% 10%, rgba(34, 245, 255, 0.16), transparent 70%),
+      radial-gradient(52% 44% at 86% 6%, rgba(255, 47, 185, 0.16), transparent 72%),
+      radial-gradient(80% 60% at 50% 120%, rgba(178, 107, 255, 0.12), transparent 70%);
+  }
+  .mq > * { position: relative; z-index: 1; }
+
+  /* ---- hero: the flickering tube wordmark owns the top viewport ---- */
+  .mq-hero {
+    width: min(1180px, 100% - 2.5rem); margin-inline: auto;
+    min-height: calc(74vh - var(--header-h));
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+    padding-block: clamp(2.4rem, 7vh, 5.5rem);
+  }
+  .mq-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.28em; font-size: 0.78rem; color: #22f5ff;
+    text-shadow: 0 0 12px rgba(34, 245, 255, 0.6);
+  }
+  .mq-live { width: 9px; height: 9px; border-radius: 50%; background: #ff2fb9; box-shadow: 0 0 8px #ff2fb9, 0 0 16px rgba(255, 47, 185, 0.7); }
+  .mq-wordmark {
+    font-family: var(--font-display); font-weight: 700; text-transform: uppercase;
+    font-size: clamp(3rem, 13vw, 9rem); line-height: 0.9; letter-spacing: -0.01em;
+    margin: 0.7rem 0 0; color: #fff;
+    text-shadow:
+      0 0 6px rgba(255, 255, 255, 0.55),
+      0 0 16px #22f5ff,
+      0 0 38px rgba(34, 245, 255, 0.85),
+      0 0 74px rgba(34, 245, 255, 0.5),
+      0 0 110px rgba(255, 47, 185, 0.55);
+  }
+  .mq-tagline {
+    margin-top: 1.6rem; max-width: 46ch;
+    font-family: var(--font-body); font-size: clamp(1rem, 1.6vw, 1.18rem); line-height: 1.55;
+    color: #c3b6e6;
+  }
+
+  /* ---- the wall of stacked signs (every post, full width) ---- */
+  .mq-wall { width: min(1180px, 100% - 2.5rem); margin-inline: auto; margin-top: 1rem; }
+  .mq-sign {
+    display: grid; grid-template-columns: auto 1fr; align-items: baseline;
+    gap: 0 clamp(0.8rem, 2.4vw, 1.8rem);
+    padding: clamp(1rem, 2.6vw, 1.9rem) 0.2rem;
+    border-top: 1px solid rgba(160, 120, 255, 0.20);
+    cursor: pointer; transition: background 0.22s ease;
+  }
+  .mq-wall .mq-sign:last-child { border-bottom: 1px solid rgba(160, 120, 255, 0.20); }
+  .mq-sign:hover { background: color-mix(in srgb, var(--sign) 8%, transparent); }
+
+  .mq-idx {
+    font-family: var(--font-display); font-variant-numeric: tabular-nums;
+    font-size: clamp(0.82rem, 1.5vw, 1.05rem); color: var(--sign);
+    text-shadow: 0 0 10px var(--sign); opacity: 0.85; padding-top: 0.55em;
+  }
+  .mq-sign-body { min-width: 0; }
+  .mq-title {
+    display: block; font-family: var(--font-display); font-weight: 700;
+    text-transform: uppercase; line-height: 0.98; letter-spacing: -0.01em;
+    font-size: clamp(1.9rem, 8vw, 5rem);
+    color: color-mix(in srgb, var(--sign) 42%, #ffffff);
+    text-shadow:
+      0 0 8px color-mix(in srgb, var(--sign) 70%, transparent),
+      0 0 24px color-mix(in srgb, var(--sign) 42%, transparent);
+    transition: color 0.25s ease, text-shadow 0.25s ease;
+  }
+  .mq-sign:hover .mq-title,
+  .mq-sign:focus-visible .mq-title {
+    color: color-mix(in srgb, var(--sign) 22%, #ffffff);
+    text-shadow:
+      0 0 6px rgba(255, 255, 255, 0.6),
+      0 0 18px var(--sign),
+      0 0 40px var(--sign),
+      0 0 78px color-mix(in srgb, var(--sign) 70%, transparent);
+  }
+
+  .mq-meta {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.6rem;
+    margin-top: 0.55rem;
+    font-family: var(--font-display); font-variant-numeric: tabular-nums;
+    font-size: 0.82rem; letter-spacing: 0.05em; text-transform: uppercase; color: #c3b6e6;
+  }
+  .mq-sep { color: var(--sign); }
+  .mq-topic { display: inline-flex; align-items: center; gap: 0.4rem; color: #f3ecff; }
+  .mq-topic::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--sign); box-shadow: 0 0 8px var(--sign); }
+  /* meta stays hidden until hover on pointer devices; always visible on touch */
+  @media (hover: hover) {
+    .mq-meta { opacity: 0; transition: opacity 0.25s ease; }
+    .mq-sign:hover .mq-meta,
+    .mq-sign:focus-within .mq-meta { opacity: 1; }
+  }
+
+  /* ---- topics + archive footer ---- */
+  .mq-foot {
+    width: min(1180px, 100% - 2.5rem); margin: 3rem auto 0;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem;
+    padding-top: 1.6rem; border-top: 1px solid rgba(160, 120, 255, 0.20);
+  }
+  .mq-foot-label {
+    font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.2em; font-size: 0.72rem; color: #8f82bd; width: 100%;
+  }
+  .mq-topics { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.6rem; flex: 1; }
+  .mq-topics a {
+    display: inline-flex; align-items: center;
+    font-family: var(--font-display); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: color-mix(in srgb, var(--sign) 38%, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--sign) 50%, transparent); border-radius: 999px;
+    padding: 0.35em 0.95em; cursor: pointer;
+    box-shadow: inset 0 0 12px color-mix(in srgb, var(--sign) 22%, transparent);
+    transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .mq-topics a:hover {
+    color: #fff; border-color: var(--sign);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--sign) 50%, transparent), inset 0 0 14px color-mix(in srgb, var(--sign) 28%, transparent);
+  }
+  .mq-all {
+    font-family: var(--font-display); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: #22f5ff; white-space: nowrap; cursor: pointer; transition: text-shadow 0.2s ease;
+  }
+  .mq-all:hover { text-shadow: 0 0 14px rgba(34, 245, 255, 0.7); }
+
+  /* ---- the ON-load tube flicker; steady glow under reduced motion ---- */
+  @media (prefers-reduced-motion: no-preference) {
+    .mq-wordmark { animation: mq-flicker 1.5s steps(1, end) 1 both; }
+    @keyframes mq-flicker {
+      0% { opacity: 0; }
+      3% { opacity: 1; }
+      6% { opacity: 0.2; }
+      10% { opacity: 1; }
+      14% { opacity: 0.1; }
+      18% { opacity: 1; }
+      22% { opacity: 0.4; }
+      26% { opacity: 1; }
+      70% { opacity: 1; }
+      73% { opacity: 0.55; }
+      77% { opacity: 1; }
+      100% { opacity: 1; }
+    }
+  }
+
+  @media (max-width: 640px) {
+    .mq-hero { min-height: calc(58vh - var(--header-h)); }
+    .mq-sign { gap: 0 0.7rem; }
+  }
+</style>

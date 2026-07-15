@@ -1,0 +1,283 @@
+---
+// ARCHETYPE · lightbox — darkroom (Silver Print).
+// A contact-lightbox: near-black room lit by a RED SAFELIGHT glow. The latest print
+// hangs large on the lightbox and glows in its own colour; a CSS FILMSTRIP DIVIDER
+// (sprocket holes) separates it from a grid of thumbnails — thin-framed colour plates
+// that bloom + zoom on hover. Silver labels, minimal chrome, maximum image.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle } =
+  Astro.props as HomeProps;
+
+const lead = posts[0];
+const rest = posts.slice(1);
+const liveTopics = topics.filter((t) => t.count > 0);
+---
+<section class="lb">
+  <div class="lb-safelight" aria-hidden="true"></div>
+
+  <header class="lb-head">
+    <p class="lb-eyebrow">{postsTitle} · under the safelight</p>
+    <h1 class="lb-word">{masthead}</h1>
+    <p class="lb-tag">{tagline}</p>
+  </header>
+
+  {lead && (
+    <a class="lb-hero" href={lead.href} style={`--pa:${lead.accent}`}>
+      <span class="lb-hero-photo" aria-hidden="true"></span>
+      <span class="lb-hero-meta">
+        {lead.topic && <span class="lb-kicker">{lead.topic.name}</span>}
+        <span class="lb-hero-title">{lead.title}</span>
+        <span class="lb-sub">
+          <time datetime={lead.date.toISOString()}>{fmtDate(lead.date)}</time>
+          <span class="lb-dot" aria-hidden="true">·</span>
+          <span>{lead.readMins} min</span>
+        </span>
+      </span>
+    </a>
+  )}
+
+  <div class="lb-strip" role="separator" aria-label="filmstrip">
+    <span class="lb-strip-tag">36A</span>
+  </div>
+
+  <div class="lb-grid">
+    {rest.map((p) => (
+      <a class="lb-frame" href={p.href} style={`--pa:${p.accent}`}>
+        <span class="lb-photo" aria-hidden="true"></span>
+        <span class="lb-meta">
+          {p.topic && <span class="lb-kicker">{p.topic.name}</span>}
+          <span class="lb-title">{p.title}</span>
+          <span class="lb-sub">
+            <time datetime={p.date.toISOString()}>{fmtDate(p.date)}</time>
+            <span class="lb-dot" aria-hidden="true">·</span>
+            <span>{p.readMins} min</span>
+          </span>
+        </span>
+      </a>
+    ))}
+  </div>
+
+  <footer class="lb-foot">
+    <ul class="lb-topics">
+      {liveTopics.map((t) => (
+        <li><a href={t.href} style={`--c:${t.color}`}>{t.name}</a></li>
+      ))}
+    </ul>
+    <a class="lb-all" href={postsHref}>All {postsTitle.toLowerCase()} →</a>
+  </footer>
+</section>
+
+<style>
+  .lb {
+    position: relative;
+    width: 100%;
+    background: #0b0b0d;
+    color: #d4d4d8;
+    padding: clamp(1.6rem, 4vw, 3rem) 0 clamp(2rem, 5vw, 3.5rem);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  /* red safelight wash — the ambience */
+  .lb-safelight {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(48% 40% at 84% -6%, rgba(226, 42, 58, 0.22), transparent 62%),
+      radial-gradient(60% 50% at 8% 0%, rgba(226, 42, 58, 0.09), transparent 58%),
+      radial-gradient(120% 90% at 50% 120%, rgba(232, 232, 240, 0.04), transparent 60%);
+  }
+  .lb > *:not(.lb-safelight) { position: relative; z-index: 1; }
+
+  .lb-head {
+    width: min(1180px, 100% - 3rem);
+    margin-inline: auto;
+    text-align: center;
+    margin-bottom: clamp(1.2rem, 3vw, 2rem);
+  }
+  .lb-eyebrow {
+    font-family: var(--font-display, sans-serif);
+    font-size: 0.72rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #b45a63;
+  }
+  .lb-word {
+    font-family: var(--font-display, sans-serif);
+    font-weight: 500; letter-spacing: -0.01em; line-height: 1;
+    font-size: clamp(2rem, 5.5vw, 3.4rem);
+    color: #f4f4f6;
+    margin: 0.45rem 0 0.5rem;
+    text-shadow: 0 0 40px rgba(232, 232, 240, 0.14);
+  }
+  .lb-tag {
+    font-family: var(--font-body, sans-serif);
+    font-size: 1rem; line-height: 1.5; color: #b7b8bf;
+    max-width: 56ch; margin-inline: auto;
+  }
+
+  /* ---------- large hero print on the lightbox ---------- */
+  .lb-hero {
+    display: block;
+    width: min(1180px, 100% - 3rem);
+    margin: 0 auto;
+    background: #131316;
+    border: 1px solid rgba(220, 220, 228, 0.14);
+    border-radius: 8px;
+    padding: 12px 12px 1.1rem;
+    cursor: pointer;
+    transition: border-color 0.28s ease, box-shadow 0.28s ease, transform 0.28s ease;
+  }
+  .lb-hero-photo {
+    display: block;
+    aspect-ratio: 21 / 8;
+    min-height: 220px;
+    border-radius: 4px;
+    background:
+      radial-gradient(120% 130% at 50% 6%, color-mix(in srgb, var(--pa) 52%, #0b0b0d) 0%, #0b0b0d 76%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    transition: transform 0.28s ease, filter 0.28s ease;
+  }
+  .lb-hero-meta { display: block; padding: 0.9rem 0.4rem 0.1rem; }
+  .lb-hero-title {
+    display: block;
+    font-family: var(--font-display, sans-serif);
+    font-weight: 500; letter-spacing: -0.012em; line-height: 1.12;
+    font-size: clamp(1.2rem, 2.6vw, 1.8rem);
+    color: #f4f4f6;
+    margin-top: 0.2rem;
+  }
+  .lb-hero:hover {
+    border-color: rgba(232, 232, 240, 0.4);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--pa) 55%, transparent),
+      0 0 46px color-mix(in srgb, var(--pa) 34%, transparent),
+      0 22px 60px rgba(0, 0, 0, 0.62);
+  }
+  .lb-hero:hover .lb-hero-photo { filter: brightness(1.12) saturate(1.12); }
+
+  /* ---------- CSS filmstrip divider ---------- */
+  .lb-strip {
+    position: relative;
+    width: 100%;
+    height: 42px;
+    margin: clamp(1.6rem, 4vw, 2.6rem) 0;
+    background: linear-gradient(180deg, #24242a, #17171b);
+    border-top: 1px solid rgba(220, 220, 228, 0.10);
+    border-bottom: 1px solid rgba(220, 220, 228, 0.10);
+  }
+  .lb-strip::before,
+  .lb-strip::after {
+    content: "";
+    position: absolute; left: 0; right: 0; height: 8px;
+    background-image: radial-gradient(circle at center, #0b0b0d 3.4px, transparent 4px);
+    background-size: 22px 8px;
+    background-repeat: repeat-x;
+    background-position: center;
+  }
+  .lb-strip::before { top: 7px; }
+  .lb-strip::after { bottom: 7px; }
+  .lb-strip-tag {
+    position: absolute; top: 50%; right: clamp(0.8rem, 4vw, 2rem); transform: translateY(-50%);
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-size: 0.66rem; letter-spacing: 0.12em; color: #e22a3a;
+    background: #0b0b0d; padding: 0.2em 0.5em; border-radius: 2px;
+  }
+
+  /* ---------- grid of glowing thumbnails ---------- */
+  .lb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(200px, 26vw, 250px), 1fr));
+    gap: clamp(0.9rem, 2vw, 1.4rem);
+    width: min(1180px, 100% - 3rem);
+    margin-inline: auto;
+  }
+  .lb-frame {
+    display: block;
+    background: #131316;
+    border: 1px solid rgba(220, 220, 228, 0.13);
+    border-radius: 6px;
+    padding: 9px 9px 0.85rem;
+    cursor: pointer;
+    transition: border-color 0.26s ease, box-shadow 0.26s ease, transform 0.26s ease;
+  }
+  .lb-photo {
+    display: block;
+    aspect-ratio: 4 / 3;
+    border-radius: 3px;
+    background:
+      radial-gradient(120% 130% at 50% 8%, color-mix(in srgb, var(--pa) 48%, #0b0b0d) 0%, #0b0b0d 78%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    transition: filter 0.26s ease;
+  }
+  .lb-meta { display: block; padding: 0.75rem 0.3rem 0.1rem; }
+  .lb-kicker {
+    display: block;
+    font-family: var(--font-display, sans-serif);
+    font-size: 0.62rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: color-mix(in srgb, var(--pa) 62%, #d4d4d8);
+    margin-bottom: 0.28rem;
+  }
+  .lb-title {
+    display: block;
+    font-family: var(--font-display, sans-serif);
+    font-weight: 500; font-size: 1rem; line-height: 1.2; letter-spacing: -0.005em;
+    color: #ededf0;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .lb-sub {
+    display: flex; align-items: baseline; gap: 0.4rem;
+    margin-top: 0.4rem;
+    font-family: var(--font-display, sans-serif);
+    font-size: 0.72rem; color: #8b8d96;
+    font-variant-numeric: tabular-nums;
+  }
+  .lb-dot { color: #56575e; }
+  .lb-frame:hover {
+    border-color: rgba(232, 232, 240, 0.36);
+    transform: translateY(-3px);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--pa) 55%, transparent),
+      0 0 32px color-mix(in srgb, var(--pa) 34%, transparent),
+      0 18px 46px rgba(0, 0, 0, 0.6);
+  }
+  .lb-frame:hover .lb-photo { filter: brightness(1.14) saturate(1.14); }
+
+  /* ---------- footer ---------- */
+  .lb-foot {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 0.8rem 1.5rem;
+    width: min(1180px, 100% - 3rem);
+    margin: clamp(1.8rem, 4vw, 2.8rem) auto 0;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgba(220, 220, 228, 0.12);
+  }
+  .lb-topics { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 1.3rem; }
+  .lb-topics a {
+    display: inline-flex; align-items: baseline; gap: 0.4rem;
+    font-family: var(--font-display, sans-serif);
+    font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #8b8d96; cursor: pointer; transition: color 0.2s ease;
+  }
+  .lb-topics a::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--c, #d4d4d8); align-self: center;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--c, #d4d4d8) 60%, transparent);
+  }
+  .lb-topics a:hover { color: #ededf0; }
+  .lb-all {
+    font-family: var(--font-display, sans-serif);
+    font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #d4d4d8; cursor: pointer; white-space: nowrap; transition: color 0.2s ease;
+  }
+  .lb-all:hover { color: #fff; }
+
+  @media (max-width: 560px) {
+    .lb-hero-photo { aspect-ratio: 3 / 2; }
+    .lb-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.7rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lb-hero, .lb-hero-photo, .lb-frame, .lb-photo { transition: none; }
+    .lb-frame:hover { transform: none; }
+    .lb-hero:hover .lb-hero-photo, .lb-frame:hover .lb-photo { filter: none; }
+  }
+</style>

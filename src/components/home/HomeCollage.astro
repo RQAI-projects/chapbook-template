@@ -1,0 +1,207 @@
+---
+// ARCHETYPE · collage — zine.
+// Neo-Brutalist photocopied punk. Cream ground, THICK black borders, HARD zero-blur
+// offset shadows, blocks rotated a few degrees, clashing type sizes, stamped rotated
+// badges, ripped/hazard rules, ONE screaming spot colour. Posts are cut-and-paste
+// clippings tiled at angles with mono meta. Identity = a brutalist paste-up collage.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle, topicsLabel } =
+  Astro.props as HomeProps;
+const lead = posts[0];
+const rest = posts.slice(1);
+const liveTopics = topics.filter((t) => t.count > 0);
+---
+<section class="cl">
+  <header class="cl-head">
+    <p class="cl-stamp">Read this</p>
+    <h1 class="cl-masthead">{masthead}</h1>
+    <p class="cl-tagline">{tagline}</p>
+  </header>
+
+  <span class="cl-rip cl-rip--hazard" aria-hidden="true"></span>
+
+  {lead && (
+    <a class="cl-lead" href={lead.href} style={`--spot:${lead.accent}`}>
+      {lead.topic && <span class="cl-badge cl-badge--black">{lead.topic.name}</span>}
+      <h2 class="cl-lead-title">{lead.title}</h2>
+      <p class="cl-lead-desc">{lead.description}</p>
+      <span class="cl-meta">
+        <time datetime={lead.date.toISOString()}>{fmtDate(lead.date)}</time>
+        <span aria-hidden="true"> // </span>{lead.readMins} MIN
+      </span>
+    </a>
+  )}
+
+  {rest.length > 0 && (
+    <div class="cl-collage">
+      {rest.map((p) => (
+        <a class="cl-clip" href={p.href}>
+          <span class="cl-clip-badge">{p.topic ? p.topic.name : 'Clipping'}</span>
+          <h3 class="cl-clip-title">{p.title}</h3>
+          <p class="cl-clip-desc">{p.description}</p>
+          <span class="cl-meta">
+            <time datetime={p.date.toISOString()}>{fmtDate(p.date)}</time>
+            <span aria-hidden="true"> // </span>{p.readMins} MIN
+          </span>
+        </a>
+      ))}
+    </div>
+  )}
+
+  {liveTopics.length > 0 && (
+    <>
+      <span class="cl-rip cl-rip--pink" aria-hidden="true"></span>
+      <footer class="cl-foot">
+        <span class="cl-foot-label">{topicsLabel}</span>
+        <ul class="cl-tags">
+          {liveTopics.map((t) => (
+            <li><a class="cl-pill" href={t.href}>{t.name}</a></li>
+          ))}
+        </ul>
+        <a class="cl-all" href={postsHref}>All {postsTitle.toLowerCase()} →</a>
+      </footer>
+    </>
+  )}
+</section>
+
+<style>
+  .cl {
+    background: #ece9e2; overflow-x: clip;
+    padding: clamp(1.6rem, 4vw, 3rem) 0 4rem;
+  }
+  .cl > *,
+  .cl-collage { width: min(1120px, 100% - 2.5rem); margin-inline: auto; }
+
+  /* ---- head: black masthead bar slapped on paper + a rotated stamp ---- */
+  .cl-head { padding-top: clamp(0.5rem, 3vw, 1.5rem); }
+  .cl-stamp {
+    display: inline-block; margin-left: 0.4rem;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-weight: 700; font-size: 0.8rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #0d0d0d; background: #ff2d55; border: 3px solid #0d0d0d;
+    padding: 0.3em 0.7em; transform: rotate(3deg);
+  }
+  .cl-masthead {
+    display: inline-block; margin: 1.2rem 0 0;
+    font-family: var(--font-display); font-weight: 700; text-transform: uppercase;
+    letter-spacing: -0.01em; line-height: 0.9; font-size: clamp(2.6rem, 10vw, 6rem);
+    color: #ece9e2; background: #0d0d0d; padding: 0.06em 0.28em 0.12em;
+    transform: rotate(-1.6deg); box-shadow: 8px 8px 0 #ff2d55;
+  }
+  .cl-tagline {
+    margin-top: 1.5rem; max-width: 42ch;
+    font-family: var(--font-body); font-weight: 600; font-size: clamp(1.02rem, 2.4vw, 1.35rem);
+    line-height: 1.4; color: #2b2b2b;
+  }
+
+  /* ---- ripped / hazard rules ---- */
+  .cl-rip { display: block; height: 14px; margin: 1.8rem auto; }
+  .cl-rip--hazard { background: repeating-linear-gradient(-45deg, #0d0d0d 0 9px, transparent 9px 18px); }
+  .cl-rip--pink { height: 8px; background: #0d0d0d; box-shadow: 0 6px 0 -2px #ff2d55; }
+
+  /* ---- lead clipping ---- */
+  .cl-lead {
+    display: block; background: #faf8f3; color: #0d0d0d;
+    border: 4px solid #0d0d0d; box-shadow: 10px 10px 0 #ff2d55;
+    padding: clamp(1.4rem, 4vw, 2.4rem); transform: rotate(-0.7deg);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .cl-lead:hover { transform: rotate(0) translate(-2px, -2px); box-shadow: 14px 14px 0 #ff2d55; }
+  .cl-lead-title {
+    font-family: var(--font-display); font-weight: 700; text-transform: uppercase;
+    letter-spacing: -0.02em; line-height: 0.94; font-size: clamp(2rem, 6.4vw, 3.7rem);
+    margin: 0.5rem 0; color: #0d0d0d;
+  }
+  .cl-lead-desc {
+    font-family: var(--font-body); font-size: 1.1rem; line-height: 1.5; color: #2b2b2b; max-width: 54ch;
+  }
+  .cl-badge {
+    display: inline-block; font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-weight: 700; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 0.25em 0.6em; transform: rotate(-2deg);
+  }
+  .cl-badge--black { color: #faf8f3; background: #0d0d0d; }
+
+  /* ---- collage of clippings (multi-column paste-up, tiled at angles) ---- */
+  .cl-collage { columns: 260px; column-gap: 1.5rem; margin-top: 1.8rem; }
+  .cl-clip {
+    position: relative; display: block; break-inside: avoid; margin: 0 0 1.5rem;
+    background: #faf8f3; color: #0d0d0d; border: 3px solid #0d0d0d;
+    box-shadow: 6px 6px 0 #0d0d0d; padding: 1.5rem 1.15rem 1.15rem;
+    transform: rotate(-1.5deg); transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .cl-clip:nth-child(2n) { transform: rotate(1.7deg); box-shadow: 6px 6px 0 #ff2d55; }
+  .cl-clip:nth-child(3n) { transform: rotate(-0.6deg); }
+  .cl-clip:nth-child(4n) { transform: rotate(2deg); box-shadow: 5px 5px 0 #0d0d0d; }
+  .cl-clip:nth-child(5n) { transform: rotate(-2deg); }
+  .cl-clip:hover { transform: rotate(0) translate(-2px, -2px); box-shadow: 9px 9px 0 #ff2d55; }
+
+  .cl-clip-badge {
+    display: inline-block; font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-weight: 700; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #0d0d0d; background: #ff2d55; border: 2px solid #0d0d0d;
+    padding: 0.2em 0.5em; transform: rotate(-2.5deg);
+  }
+  .cl-clip:nth-child(2n) .cl-clip-badge { background: #faf8f3; transform: rotate(2.5deg); }
+  .cl-clip:nth-child(3n) .cl-clip-badge { transform: rotate(-1deg); }
+  .cl-clip-title {
+    font-family: var(--font-display); font-weight: 700; text-transform: uppercase;
+    line-height: 1; letter-spacing: -0.01em; font-size: 1.55rem; margin: 0.6rem 0 0.5rem; color: #0d0d0d;
+  }
+  .cl-clip:nth-child(3n) .cl-clip-title { font-size: 2rem; }
+  .cl-clip:nth-child(4n) .cl-clip-title { font-size: 1.25rem; }
+  .cl-clip:nth-child(5n) .cl-clip-title { font-size: 1.8rem; font-style: italic; }
+  .cl-clip-desc {
+    font-family: var(--font-body); font-size: 1rem; line-height: 1.5; color: #2b2b2b;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
+
+  .cl-meta {
+    display: block; margin-top: 0.9rem;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums; font-size: 0.72rem; letter-spacing: 0.04em;
+    text-transform: uppercase; color: #4a4a4a;
+  }
+
+  /* ---- topics / archive footer ---- */
+  .cl-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem 1rem; }
+  .cl-foot-label {
+    width: 100%; font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.72rem; color: #4a4a4a;
+  }
+  .cl-tags { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.6rem 0.7rem; flex: 1; }
+  .cl-pill {
+    display: inline-block; font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: #0d0d0d; background: #faf8f3; border: 2px solid #0d0d0d; box-shadow: 3px 3px 0 #0d0d0d;
+    padding: 0.3em 0.7em; transform: rotate(-1.5deg); cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  }
+  .cl-tags li:nth-child(2n) .cl-pill { transform: rotate(1.5deg); background: #ff2d55; }
+  .cl-tags li:nth-child(3n) .cl-pill { transform: rotate(-0.6deg); }
+  .cl-pill:hover { transform: rotate(0) translate(-1px, -1px); box-shadow: 5px 5px 0 #ff2d55; background: #ff2d55; }
+  .cl-all {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.82rem; color: #0d0d0d;
+    text-decoration: underline; text-decoration-color: #ff2d55; text-decoration-thickness: 3px;
+    white-space: nowrap; cursor: pointer;
+  }
+  .cl-all:hover { background: #ff2d55; }
+
+  /* the masthead slams in like a bad photocopy; static under reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    .cl-masthead { animation: cl-slam 0.5s steps(3, end) both; }
+    @keyframes cl-slam {
+      0% { opacity: 0; transform: rotate(-1.6deg) translate(7px, -7px); }
+      60% { opacity: 1; transform: rotate(-1.6deg) translate(-2px, 2px); }
+      100% { opacity: 1; transform: rotate(-1.6deg) translate(0, 0); }
+    }
+  }
+
+  @media (max-width: 560px) {
+    .cl-masthead { box-shadow: 6px 6px 0 #ff2d55; }
+    .cl-lead { box-shadow: 7px 7px 0 #ff2d55; }
+  }
+</style>

@@ -1,0 +1,228 @@
+/* ============================================================
+   THEME · Gallery  (White Cube)  — LIGHT · PHOTO/PORTFOLIO
+   ------------------------------------------------------------
+   Museum-quiet white walls. Every post is a framed colour-field
+   "plate" hung with a thin hairline frame and a white placard
+   label beneath (small-caps title + date). Huge grid gaps let
+   the work breathe. Near-black is the only accent; the images
+   lead, the type stays out of the way.
+
+   IMAGE-LED PLATE (no cover images exist): each .post-card is a
+   tile whose ::before is a pale duotone colour-field derived from
+   the post's --card-accent (the "art"); the title + date sit in a
+   solid white placard below it → dark-ink-on-white, always AA.
+   ============================================================ */
+
+html[data-blog-theme="gallery"] {
+  color-scheme: light;
+
+  /* surfaces — pure white cube */
+  --bg-0: #ffffff;
+  --bg-1: #ffffff;
+  --bg-2: #ffffff;
+  --bg-3: #f2f2f4;
+
+  /* ink — near-black with neutral grey steps */
+  --ink: #14151a;
+  --ink-dim: #3d3f47;
+  --ink-faint: #63656e;
+
+  /* accent — near-black, monochrome */
+  --teal: #2b2b2b;
+  --cyan: #2b2b2b;
+  --violet: #4a4a4a;
+  --pink: #2b2b2b;
+  --amber: #2b2b2b;
+  --accent: #2b2b2b;
+  --grad: linear-gradient(100deg, #2b2b2b, #444 60%, #2b2b2b);
+
+  /* lines — the frames. Hairline is the signature. */
+  --line: rgba(20, 21, 26, 0.14);
+  --line-strong: rgba(20, 21, 26, 0.28);
+
+  /* glows → soft ambient shadows on white */
+  --glow-teal: 0 8px 30px rgba(20, 21, 26, 0.08);
+  --glow-cyan: 0 8px 30px rgba(20, 21, 26, 0.08);
+  --glow-violet: 0 8px 30px rgba(20, 21, 26, 0.07);
+
+  --radius: 2px;                 /* sharp museum frames */
+
+  /* chrome hotspots → light */
+  --header-bg: rgba(255, 255, 255, 0.82);
+  --header-blur: saturate(1.2) blur(12px);
+  --header-border: rgba(20, 21, 26, 0.09);
+  --selection-bg: rgba(43, 43, 43, 0.16);
+  --scrim-text-shadow: none;
+  --masthead-ink: var(--ink);
+  --masthead-shadow: none;
+
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter Variable', 'Inter', system-ui, sans-serif;
+}
+
+/* generous museum rhythm */
+html[data-blog-theme="gallery"] .section { padding-block: clamp(2.2rem, 5.5vw, 4.5rem); }
+
+/* ---- header: whisper-quiet, letter-spaced ---- */
+html[data-blog-theme="gallery"] .logo { font-weight: 500; letter-spacing: 0.02em; }
+html[data-blog-theme="gallery"] .site-nav a { color: var(--ink-dim); }
+html[data-blog-theme="gallery"] .site-nav a[aria-current="page"]::after { box-shadow: none; background: var(--accent); }
+html[data-blog-theme="gallery"] .eyebrow {
+  color: var(--ink-faint); font-weight: 500; letter-spacing: 0.28em;
+}
+
+/* ---- hero: drop the 3D galaxy; a bare white wall + thin masthead ---- */
+html[data-blog-theme="gallery"] .three-hero { display: none; }
+html[data-blog-theme="gallery"] .hero { min-height: calc(48vh - var(--header-h)); }
+html[data-blog-theme="gallery"] .hero-scrim { background: #ffffff; }
+html[data-blog-theme="gallery"] .hero .orbs { display: none; }
+html[data-blog-theme="gallery"] .masthead { font-weight: 400; letter-spacing: -0.005em; }
+html[data-blog-theme="gallery"] .hero .lead { color: var(--ink-dim); }
+html[data-blog-theme="gallery"] .scroll-cue { border-color: var(--line-strong); }
+html[data-blog-theme="gallery"] .scroll-cue span { background: var(--accent); box-shadow: none; }
+
+/* ---- section heads: hairline rule, calm title ---- */
+html[data-blog-theme="gallery"] .section-title { font-weight: 500; letter-spacing: -0.015em; }
+html[data-blog-theme="gallery"] .section-head .rule { background: var(--line-strong); }
+html[data-blog-theme="gallery"] .see-all { color: var(--ink); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.18em; }
+html[data-blog-theme="gallery"] .see-all:hover { text-shadow: none; color: var(--accent); }
+
+/* ============================================================
+   POST-CARD PLATE (base rule → home "Latest" + archive cards)
+   The ::before is a static flex item = the framed colour-field
+   art. The placard (date + title) sits on white below it.
+   ============================================================ */
+html[data-blog-theme="gallery"] .post-card {
+  display: flex;
+  flex-direction: column;
+  min-height: clamp(260px, 30vw, 320px);
+  padding: 0 0 1rem;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgba(20, 21, 26, 0.04);
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+}
+/* ::before → the colour-field "art" as the first flex item */
+html[data-blog-theme="gallery"] .post-card::before {
+  content: "";
+  position: static;
+  width: auto;
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 150px;
+  background:
+    linear-gradient(158deg,
+      color-mix(in srgb, var(--card-accent, var(--accent)) 30%, #ffffff),
+      color-mix(in srgb, var(--card-accent, var(--accent)) 13%, #ffffff));
+  border-bottom: 1px solid var(--line);   /* mat line under the art */
+  box-shadow: none;
+  opacity: 1;
+  transition: none;
+}
+/* placard: tiny small-caps date + quiet title, on white */
+html[data-blog-theme="gallery"] .post-card .post-meta {
+  order: 1;                                /* date sits under the title */
+  margin: 0.55rem 1rem 0;
+  font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+html[data-blog-theme="gallery"] .post-card h3 {
+  margin: 0.85rem 1rem 0;
+  font-size: 1.02rem; font-weight: 500; letter-spacing: -0.01em;
+  color: var(--ink);
+}
+html[data-blog-theme="gallery"] .post-card p { display: none; }   /* image-led: no blurb */
+html[data-blog-theme="gallery"] .post-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: 0 14px 34px rgba(20, 21, 26, 0.10);
+}
+html[data-blog-theme="gallery"] .post-card:hover::before {
+  border-bottom-color: color-mix(in srgb, var(--card-accent, var(--accent)) 40%, var(--line-strong));
+}
+
+/* home "Latest" → a real grid of plates (archive keeps its own grid) */
+html[data-blog-theme="gallery"] .post-list:not(#post-list) {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: clamp(1.5rem, 3.5vw, 2.8rem);
+}
+
+/* archive cards grid: re-assert the plate over the layout-cards :global rules
+   (those land at (0,4,x); a.post-card / #post-list beat them) + huge gaps */
+html[data-blog-theme="gallery"] #post-list.layout-cards {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: clamp(1.5rem, 3.5vw, 2.8rem);
+}
+html[data-blog-theme="gallery"] .post-list.layout-cards a.post-card {
+  padding: 0 0 1rem;
+  border-color: var(--line);
+}
+html[data-blog-theme="gallery"] .post-list.layout-cards a.post-card::before {
+  width: auto; flex: 1 1 auto;
+}
+html[data-blog-theme="gallery"] .post-list.layout-cards a.post-card:hover {
+  border-color: var(--line-strong);
+}
+html[data-blog-theme="gallery"] .post-list.layout-cards a.post-card h3 { font-size: 1.02rem; }
+html[data-blog-theme="gallery"] .post-list.layout-cards a.post-card p { display: none; }
+
+/* ---- cards / const / subscribe / stat / cv: flat white ---- */
+html[data-blog-theme="gallery"] .card,
+html[data-blog-theme="gallery"] .const-card,
+html[data-blog-theme="gallery"] .subscribe-card,
+html[data-blog-theme="gallery"] .stat-card,
+html[data-blog-theme="gallery"] .cv-item {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(20, 21, 26, 0.04);
+}
+html[data-blog-theme="gallery"] .const-card::before { box-shadow: none; }
+html[data-blog-theme="gallery"] .const-card:hover,
+html[data-blog-theme="gallery"] .card.ring:hover,
+html[data-blog-theme="gallery"] .card[data-tilt]:hover {
+  box-shadow: 0 14px 34px rgba(20, 21, 26, 0.10);
+  border-color: var(--line-strong);
+}
+html[data-blog-theme="gallery"] .subscribe-form input,
+html[data-blog-theme="gallery"] .field input,
+html[data-blog-theme="gallery"] .field textarea { background: var(--bg-0); border-color: var(--line-strong); }
+html[data-blog-theme="gallery"] .stat-card .stat-value { filter: none; }
+
+/* ---- archive controls ---- */
+html[data-blog-theme="gallery"] .layout-select,
+html[data-blog-theme="gallery"] .wt-bar .wt-chip { background: rgba(20, 21, 26, 0.03); color: var(--ink-dim); }
+html[data-blog-theme="gallery"] .filter-banner { background: rgba(20, 21, 26, 0.04); border-color: var(--line-strong); }
+html[data-blog-theme="gallery"] .rail-title { color: var(--ink-faint); }
+html[data-blog-theme="gallery"] .chip.active,
+html[data-blog-theme="gallery"] .topic-btn.active {
+  background: rgba(20, 21, 26, 0.06); border-color: var(--line-strong); box-shadow: none; color: var(--ink);
+}
+
+/* ---- buttons: solid near-black + hairline outline ---- */
+html[data-blog-theme="gallery"] .btn-primary {
+  background: var(--accent); color: #fff; box-shadow: none;
+}
+html[data-blog-theme="gallery"] .btn-primary:hover { background: #000; box-shadow: 0 8px 22px rgba(20, 21, 26, 0.16); }
+html[data-blog-theme="gallery"] .btn-ghost {
+  background: transparent; border: 1px solid var(--line-strong); color: var(--ink);
+}
+html[data-blog-theme="gallery"] .btn-ghost:hover { border-color: var(--accent); box-shadow: none; color: var(--accent); }
+
+/* ---- article: dark ink on white, restrained links ---- */
+html[data-blog-theme="gallery"] .article-body { color: #23262d; font-weight: 400; }
+html[data-blog-theme="gallery"] .article-body strong { color: #000; }
+html[data-blog-theme="gallery"] .article-body a { color: var(--accent); border-bottom-color: var(--line-strong); }
+html[data-blog-theme="gallery"] .article-body a:hover { text-shadow: none; border-bottom-color: var(--accent); }
+html[data-blog-theme="gallery"] .article-body img { box-shadow: 0 14px 40px rgba(20, 21, 26, 0.14); border-color: var(--line); }
+html[data-blog-theme="gallery"] .post-hero .orbs { display: none; }
+html[data-blog-theme="gallery"] .post-hero .grid-lines { opacity: 0.25; }
+
+/* ---- footer ---- */
+html[data-blog-theme="gallery"] .site-footer a:hover { color: var(--accent); }
+
+/* a single quiet fade of the masthead — museum calm, motion-safe */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-blog-theme="gallery"] .masthead { animation: gallery-fade 0.9s ease both; }
+  @keyframes gallery-fade { from { opacity: 0; } to { opacity: 1; } }
+}

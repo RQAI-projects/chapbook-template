@@ -6,7 +6,15 @@ export interface SiteConfig {
   tagline: string;
   description: string;
   url: string;
-  defaultTheme: 'observatory' | 'vista' | 'blueprint' | 'atlas' | 'daybreak' | 'dune' | 'rivendell';
+  /** Site-wide blog theme id — one of the entries in src/data/themes.json, applied as
+   *  data-blog-theme on <html>. Unknown/absent falls back to the base 'observatory' look. */
+  defaultTheme:
+    | 'observatory' | 'ledger' | 'air' | 'graphite'
+    | 'broadsheet' | 'journal' | 'kiosk' | 'gazette'
+    | 'neon' | 'zine' | 'scrapbook' | 'arcade'
+    | 'doodle' | 'rocket' | 'pixel' | 'comic'
+    | 'gallery' | 'darkroom' | 'contact-sheet' | 'polaroid'
+    | (string & {});
   socials: { linkedin?: string; instagram?: string; github?: string };
   newsletter: { endpoint: string };
   contact: { endpoint: string };

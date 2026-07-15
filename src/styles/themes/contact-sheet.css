@@ -1,0 +1,240 @@
+/* ============================================================
+   THEME · Contact Sheet  (Film Strip)  — DARK · PHOTO/PORTFOLIO
+   ------------------------------------------------------------
+   A charcoal proof sheet of framed "negatives". Thin warm frames,
+   film-orange accents, grease-pencil MONOSPACE labels, and each
+   frame NUMBERED on its edge via a CSS counter. Tight grid, sprocket
+   notches top & bottom. Unmistakably a roll of film laid out to proof.
+
+   IMAGE-LED PLATE (no cover images exist): each .post-card is a
+   negative whose background is a duotone colour-field from the post's
+   --card-accent over charcoal; ::before is the frame number, ::after a
+   dark scrim so the mono title stays AA. Sprockets are background layers.
+   ============================================================ */
+
+html[data-blog-theme="contact-sheet"] {
+  color-scheme: dark;
+
+  /* surfaces — warm charcoal */
+  --bg-0: #161514;
+  --bg-1: #1c1a18;
+  --bg-2: #211f1c;
+  --bg-3: #2a2723;
+
+  /* ink — warm off-white */
+  --ink: #eae8e3;
+  --ink-dim: #cbc7bf;
+  --ink-faint: #948f84;
+
+  /* accent — film orange */
+  --teal: #f4a11f;
+  --cyan: #ffb84d;
+  --violet: #d98a1a;
+  --pink: #f4a11f;
+  --amber: #f4a11f;
+  --accent: #f4a11f;
+  --grad: linear-gradient(100deg, #ffb84d, #f4a11f 55%, #d98a1a);
+
+  /* lines — warm neutral hairlines + a strong warm frame */
+  --line: rgba(230, 225, 215, 0.12);
+  --line-strong: rgba(230, 225, 215, 0.22);
+
+  /* glows → soft warm */
+  --glow-teal: 0 0 22px rgba(244, 161, 31, 0.28);
+  --glow-cyan: 0 0 22px rgba(255, 184, 77, 0.3);
+  --glow-violet: 0 0 20px rgba(217, 138, 26, 0.26);
+
+  --radius: 2px;                 /* sharp film frames */
+
+  /* chrome hotspots */
+  --header-bg: rgba(22, 21, 20, 0.76);
+  --header-blur: blur(14px);
+  --header-border: rgba(230, 225, 215, 0.12);
+  --selection-bg: rgba(244, 161, 31, 0.28);
+  --scrim-text-shadow:
+    0 0 14px rgba(16, 14, 11, 0.9),
+    0 2px 22px rgba(16, 14, 11, 0.85);
+  --masthead-ink: #f6f2ea;
+  --masthead-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.85),
+    0 0 40px rgba(244, 161, 31, 0.28);
+
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter Variable', 'Inter', system-ui, sans-serif;
+}
+
+/* grease-pencil monospace labels throughout */
+html[data-blog-theme="contact-sheet"] .eyebrow {
+  color: var(--accent); font-weight: 700; letter-spacing: 0.18em;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+/* ---- header ---- */
+html[data-blog-theme="contact-sheet"] .logo {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-weight: 700; letter-spacing: 0.02em;
+}
+html[data-blog-theme="contact-sheet"] .site-nav a[aria-current="page"]::after { background: var(--accent); box-shadow: 0 0 8px rgba(244, 161, 31, 0.5); }
+
+/* ---- hero: drop the 3D galaxy; a quiet charcoal wall ---- */
+html[data-blog-theme="contact-sheet"] .three-hero { display: none; }
+html[data-blog-theme="contact-sheet"] .hero { min-height: calc(50vh - var(--header-h)); }
+html[data-blog-theme="contact-sheet"] .hero-scrim {
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(244, 161, 31, 0.08), transparent 55%),
+    linear-gradient(180deg, transparent 60%, var(--bg-0));
+}
+html[data-blog-theme="contact-sheet"] .hero .orbs { display: none; }
+html[data-blog-theme="contact-sheet"] .masthead { font-weight: 500; letter-spacing: -0.01em; }
+html[data-blog-theme="contact-sheet"] .scroll-cue span { background: var(--accent); box-shadow: none; }
+
+/* ---- section heads ---- */
+html[data-blog-theme="contact-sheet"] .section-head .rule { background: linear-gradient(90deg, var(--accent), transparent); opacity: 0.5; }
+html[data-blog-theme="contact-sheet"] .see-all { color: var(--accent); font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 0.82rem; }
+
+/* ============================================================
+   POST-CARD PLATE (base rule → home "Latest" + archive cards)
+   Colour-field negative + sprocket edges + counter frame number.
+   ============================================================ */
+html[data-blog-theme="contact-sheet"] .post-list { counter-reset: frame; }
+
+html[data-blog-theme="contact-sheet"] .post-card {
+  counter-increment: frame;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: clamp(210px, 24vw, 260px);
+  padding: 1rem 1rem 0.9rem;
+  background:
+    repeating-linear-gradient(90deg, rgba(10, 9, 7, 0.92) 0 5px, transparent 5px 13px) left top / 100% 7px no-repeat,
+    repeating-linear-gradient(90deg, rgba(10, 9, 7, 0.92) 0 5px, transparent 5px 13px) left bottom / 100% 7px no-repeat,
+    linear-gradient(158deg,
+      color-mix(in srgb, var(--card-accent, var(--accent)) 34%, #161514),
+      #161514 80%);
+  border: 1px solid rgba(244, 161, 31, 0.34);   /* warm film frame */
+  border-radius: var(--radius);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+}
+/* ::before → grease-pencil frame number on the edge */
+html[data-blog-theme="contact-sheet"] .post-card::before {
+  content: counter(frame, decimal-leading-zero) "A";
+  position: absolute; top: 0; left: 0; z-index: 2;
+  width: auto; height: auto;
+  font: 700 0.68rem/1 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  letter-spacing: 0.06em; color: var(--accent);
+  background: rgba(12, 10, 7, 0.82);
+  padding: 0.35em 0.55em; border-bottom-right-radius: 3px;
+  box-shadow: none; opacity: 1; transition: none;
+}
+/* ::after → dark scrim so the mono title stays AA over any negative */
+html[data-blog-theme="contact-sheet"] .post-card::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 70%;
+  background: linear-gradient(to top,
+    rgba(12, 10, 7, 0.94), rgba(12, 10, 7, 0.85) 24%, rgba(12, 10, 7, 0.4) 56%, transparent 88%);
+  pointer-events: none; z-index: 0;
+}
+html[data-blog-theme="contact-sheet"] .post-card .post-meta,
+html[data-blog-theme="contact-sheet"] .post-card h3 { position: relative; z-index: 1; }
+html[data-blog-theme="contact-sheet"] .post-card .post-meta {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 0.68rem; letter-spacing: 0.04em; color: var(--accent);
+}
+html[data-blog-theme="contact-sheet"] .post-card h3 {
+  margin-top: 0.35rem; font-size: 1rem; font-weight: 500; color: #fff;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
+}
+html[data-blog-theme="contact-sheet"] .post-card p { display: none; }
+html[data-blog-theme="contact-sheet"] .post-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(244, 161, 31, 0.4), 0 12px 34px rgba(0, 0, 0, 0.6), 0 0 26px rgba(244, 161, 31, 0.18);
+}
+
+/* home "Latest" → tight proof grid */
+html[data-blog-theme="contact-sheet"] .post-list:not(#post-list) {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+
+/* archive cards grid: tight film-strip proof + re-assert plate over :global rules */
+html[data-blog-theme="contact-sheet"] #post-list.layout-cards {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+html[data-blog-theme="contact-sheet"] .post-list.layout-cards a.post-card {
+  padding: 1rem 1rem 0.9rem;
+  border-color: rgba(244, 161, 31, 0.34);
+}
+html[data-blog-theme="contact-sheet"] .post-list.layout-cards a.post-card::before { width: auto; }
+html[data-blog-theme="contact-sheet"] .post-list.layout-cards a.post-card:hover { border-color: var(--accent); }
+html[data-blog-theme="contact-sheet"] .post-list.layout-cards a.post-card h3 { font-size: 1rem; }
+html[data-blog-theme="contact-sheet"] .post-list.layout-cards a.post-card p { display: none; }
+
+/* ---- cards / const / subscribe / stat / cv ---- */
+html[data-blog-theme="contact-sheet"] .card,
+html[data-blog-theme="contact-sheet"] .const-card,
+html[data-blog-theme="contact-sheet"] .subscribe-card,
+html[data-blog-theme="contact-sheet"] .stat-card,
+html[data-blog-theme="contact-sheet"] .cv-item {
+  background: linear-gradient(160deg, var(--bg-2), var(--bg-1));
+  border: 1px solid var(--line);
+}
+html[data-blog-theme="contact-sheet"] .const-card::before { background: var(--accent); box-shadow: 0 0 12px rgba(244, 161, 31, 0.4); }
+html[data-blog-theme="contact-sheet"] .const-card:hover,
+html[data-blog-theme="contact-sheet"] .card.ring:hover,
+html[data-blog-theme="contact-sheet"] .card[data-tilt]:hover {
+  border-color: rgba(244, 161, 31, 0.4);
+  box-shadow: 0 0 24px rgba(244, 161, 31, 0.14), 0 12px 34px rgba(0, 0, 0, 0.5);
+}
+html[data-blog-theme="contact-sheet"] .stat-card .stat-value { filter: none; }
+
+/* ---- archive controls (mono) ---- */
+html[data-blog-theme="contact-sheet"] .layout-select,
+html[data-blog-theme="contact-sheet"] .rail-title,
+html[data-blog-theme="contact-sheet"] .layout-label {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+html[data-blog-theme="contact-sheet"] .chip.active,
+html[data-blog-theme="contact-sheet"] .topic-btn.active {
+  color: #fff; background: rgba(244, 161, 31, 0.12);
+  border-color: rgba(244, 161, 31, 0.42);
+  box-shadow: inset 0 0 18px rgba(244, 161, 31, 0.06), 0 0 14px rgba(244, 161, 31, 0.1);
+}
+html[data-blog-theme="contact-sheet"] .chip.active .count,
+html[data-blog-theme="contact-sheet"] .topic-btn.active .count { color: var(--accent); border-color: rgba(244, 161, 31, 0.45); }
+html[data-blog-theme="contact-sheet"] .filter-banner { background: rgba(244, 161, 31, 0.06); border-color: rgba(244, 161, 31, 0.28); }
+html[data-blog-theme="contact-sheet"] .tag-chip {
+  color: var(--accent); border-color: rgba(244, 161, 31, 0.4); background: rgba(244, 161, 31, 0.08);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+/* ---- buttons ---- */
+html[data-blog-theme="contact-sheet"] .btn-primary {
+  background: var(--accent); color: #14110c; box-shadow: 0 0 20px rgba(244, 161, 31, 0.3);
+}
+html[data-blog-theme="contact-sheet"] .btn-primary:hover { box-shadow: 0 0 30px rgba(244, 161, 31, 0.45); }
+html[data-blog-theme="contact-sheet"] .btn-ghost { border-color: rgba(244, 161, 31, 0.45); color: var(--accent); background: rgba(244, 161, 31, 0.06); }
+html[data-blog-theme="contact-sheet"] .btn-ghost:hover { border-color: var(--accent); box-shadow: var(--glow-cyan); }
+
+/* ---- article: warm orange links, warm rules ---- */
+html[data-blog-theme="contact-sheet"] .article-body a { color: var(--cyan); border-bottom-color: rgba(244, 161, 31, 0.4); }
+html[data-blog-theme="contact-sheet"] .article-body a:hover { text-shadow: 0 0 12px rgba(244, 161, 31, 0.4); border-bottom-color: var(--cyan); }
+html[data-blog-theme="contact-sheet"] .article-body blockquote {
+  border-left-color: var(--accent); box-shadow: inset 8px 0 24px -16px rgba(244, 161, 31, 0.4);
+}
+html[data-blog-theme="contact-sheet"] .article-body h2 { border-top-color: var(--line-strong); }
+html[data-blog-theme="contact-sheet"] .article-body li::marker { color: var(--accent); }
+html[data-blog-theme="contact-sheet"] .post-hero .orbs { display: none; }
+html[data-blog-theme="contact-sheet"] .post-hero .grid-lines { opacity: 0.3; }
+
+/* ---- footer ---- */
+html[data-blog-theme="contact-sheet"] .site-footer a:hover { color: var(--accent); }
+
+/* the masthead flashes up like a proof under the loupe — motion-safe */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-blog-theme="contact-sheet"] .masthead { animation: cs-proof 0.8s steps(4, end) both; }
+  @keyframes cs-proof { from { opacity: 0; } to { opacity: 1; } }
+}

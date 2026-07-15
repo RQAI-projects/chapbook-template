@@ -1,0 +1,251 @@
+/* ============================================================
+   THEME · Zine  (Creative & Fun)  — LIGHT
+   ------------------------------------------------------------
+   Photocopied punk. Xerox-grey paper, dead-black ink, and ONE
+   screaming spot colour. High-contrast cut-and-paste: heavy black
+   bars, ransom-note UPPERCASE display, slightly rotated scraps
+   pasted at angles, and a faint toner grain over everything. No
+   glow, no gradients-as-decoration — this is a stapled flyer.
+
+   Duotone by design: text-bearing tokens resolve to BLACK so prose
+   always clears AA on the pale paper; the pink (#ff2d55) is used as
+   FILLS / BARS / BORDERS (large areas) + black-on-pink ransom
+   highlights, never as small text on paper (that pairing is only
+   ~3:1). Archive opens `magazine`; the 3D hero is dropped for a
+   black masthead bar slapped on the page.
+   ============================================================ */
+
+html[data-blog-theme="zine"] {
+  color-scheme: light;
+
+  /* surfaces — xerox paper + bright pasted scraps */
+  --bg-0: #ece9e2;   /* photocopy paper */
+  --bg-1: #faf8f3;   /* white scrap (cards) */
+  --bg-2: #faf8f3;
+  --bg-3: #e2ded4;   /* inputs / code */
+
+  /* ink — dead black + toner greys (all AA-safe on paper) */
+  --ink: #0d0d0d;
+  --ink-dim: #2b2b2b;   /* 11.7:1 on paper */
+  --ink-faint: #4a4a4a; /* 7.3:1 on paper */
+
+  /* accent family — DUOTONE. Text vars stay black; pink is a fill. */
+  --teal: #0d0d0d;
+  --cyan: #0d0d0d;
+  --violet: #0d0d0d;
+  --pink: #ff2d55;
+  --amber: #ff2d55;
+  --accent: #ff2d55;          /* the one screaming spot colour */
+  --accent-ink: #0d0d0d;      /* BLACK on pink = 5.8:1 (brief asked #fff,
+                                 but white is only 3.6:1 → fails AA-normal;
+                                 black-on-hot-pink is peak ransom-note anyway) */
+  --grad: linear-gradient(100deg, #0d0d0d, #ff2d55 55%, #0d0d0d);
+
+  /* lines — bold black hairlines, not grey wisps */
+  --line: rgba(13, 13, 13, 0.22);
+  --line-strong: rgba(13, 13, 13, 0.48);
+
+  /* "glows" → hard photocopy paste-shadows (no blur) */
+  --glow-teal: 4px 4px 0 rgba(13, 13, 13, 0.9);
+  --glow-cyan: 4px 4px 0 var(--accent);
+  --glow-violet: 4px 4px 0 rgba(13, 13, 13, 0.9);
+
+  --radius: 0;   /* cut edges — nothing is rounded */
+
+  /* chrome hotspots → paper + black */
+  --header-bg: rgba(236, 233, 226, 0.86);
+  --header-blur: saturate(1) blur(6px);
+  --header-border: #0d0d0d;
+  --selection-bg: rgba(255, 45, 85, 0.45);
+  --scrim-text-shadow: none;
+  --masthead-ink: #ece9e2;
+  --masthead-shadow: none;
+
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter Variable', 'Inter', system-ui, sans-serif;
+}
+
+/* faint photocopy toner grain across the whole page */
+html[data-blog-theme="zine"] body {
+  background-color: var(--bg-0);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(13, 13, 13, 0.045) 0, rgba(13, 13, 13, 0.045) 1px, transparent 1px, transparent 4px),
+    repeating-linear-gradient(90deg, rgba(13, 13, 13, 0.028) 0, rgba(13, 13, 13, 0.028) 1px, transparent 1px, transparent 5px);
+}
+
+/* ---- header: heavy black rule, blunt type ---- */
+html[data-blog-theme="zine"] .logo { font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; color: var(--ink); }
+html[data-blog-theme="zine"] .site-nav a { color: var(--ink-dim); font-weight: 600; }
+html[data-blog-theme="zine"] .site-nav a[aria-current="page"] { color: var(--ink); }
+html[data-blog-theme="zine"] .site-nav a[aria-current="page"]::after { background: var(--accent); box-shadow: none; height: 3px; }
+html[data-blog-theme="zine"] .theme-menu-panel button[aria-pressed="true"] { background: #0d0d0d; color: var(--bg-0); }
+
+/* ---- hero: drop the 3D galaxy; slap a black masthead bar on paper ---- */
+html[data-blog-theme="zine"] .three-hero { display: none; }
+html[data-blog-theme="zine"] .hero { min-height: calc(52vh - var(--header-h)); }
+html[data-blog-theme="zine"] .hero-scrim {
+  background: radial-gradient(120% 90% at 28% 18%, #f6f4ee, transparent 62%);
+}
+html[data-blog-theme="zine"] .masthead {
+  display: inline-block;
+  background: #0d0d0d;
+  color: var(--masthead-ink);
+  padding: 0.06em 0.32em 0.12em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  transform: rotate(-1.6deg);
+  box-shadow: 8px 8px 0 var(--accent);
+}
+html[data-blog-theme="zine"] .hero .lead { color: var(--ink-dim); font-weight: 500; }
+html[data-blog-theme="zine"] .scroll-cue { border-color: #0d0d0d; border-radius: 0; }
+html[data-blog-theme="zine"] .scroll-cue span { background: var(--accent); box-shadow: none; }
+
+/* ---- eyebrow / section heads: ransom highlights + solid black rules ---- */
+html[data-blog-theme="zine"] .eyebrow {
+  display: inline-block; color: #0d0d0d; background: var(--accent);
+  padding: 0.16em 0.55em; transform: rotate(-1.5deg); letter-spacing: 0.14em;
+}
+html[data-blog-theme="zine"] .section-title { text-transform: uppercase; font-weight: 700; letter-spacing: -0.01em; }
+html[data-blog-theme="zine"] .section-head .rule { background: #0d0d0d; height: 3px; }
+html[data-blog-theme="zine"] .see-all { color: var(--ink); font-weight: 700; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 3px; }
+html[data-blog-theme="zine"] .see-all:hover { text-shadow: none; background: var(--accent); color: #0d0d0d; }
+
+/* ---- post cards: white scraps pasted at angles, hard shadow, pink cut-edge ---- */
+html[data-blog-theme="zine"] .post-card {
+  --card-accent: var(--accent);      /* uniform pink bar — not a rainbow */
+  background: var(--bg-1);
+  border: 3px solid #0d0d0d;
+  border-radius: 0;
+  box-shadow: 5px 5px 0 rgba(13, 13, 13, 0.9);
+  transform: rotate(-1.2deg);
+}
+html[data-blog-theme="zine"] .post-card:nth-child(even) { transform: rotate(1deg); }
+html[data-blog-theme="zine"] .post-card:nth-child(3n) { transform: rotate(-0.5deg); }
+html[data-blog-theme="zine"] .post-card::before { width: 6px; background: var(--accent); box-shadow: none; opacity: 1; }
+html[data-blog-theme="zine"] .post-card:hover {
+  border-color: #0d0d0d;
+  box-shadow: 9px 9px 0 var(--accent);
+  transform: rotate(0) translate(-2px, -2px);
+}
+html[data-blog-theme="zine"] .post-card:hover::before { width: 8px; }
+html[data-blog-theme="zine"] .post-card h3 { color: var(--ink); text-transform: uppercase; font-weight: 700; letter-spacing: -0.01em; }
+html[data-blog-theme="zine"] .post-card p { color: var(--ink-dim); }
+html[data-blog-theme="zine"] .post-meta { font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; color: var(--ink-faint); text-transform: uppercase; }
+
+/* ransom-note chips: black cut-outs + a pink highlight for "Interactive" */
+html[data-blog-theme="zine"] .tag-chip {
+  color: #0d0d0d; background: transparent; border: 2px solid #0d0d0d;
+  border-radius: 0; text-transform: uppercase; transform: rotate(-1.5deg);
+}
+html[data-blog-theme="zine"] .badge-interactive {
+  color: #0d0d0d; background: var(--accent); border: 2px solid #0d0d0d; border-radius: 0;
+}
+html[data-blog-theme="zine"] .badge-interactive::before { background: #0d0d0d; box-shadow: none; }
+
+/* ---- archive: MAGAZINE — pasted-up flyer wall ---- */
+html[data-blog-theme="zine"] .archive-head .display { text-transform: uppercase; font-weight: 700; }
+html[data-blog-theme="zine"] #post-list.layout-magazine .post-card:first-of-type {
+  border: 4px solid #0d0d0d;
+  box-shadow: 10px 10px 0 var(--accent);
+  transform: rotate(-0.7deg);
+}
+html[data-blog-theme="zine"] #post-list.layout-magazine .post-card:first-of-type h3 { text-transform: uppercase; }
+
+/* archive controls / filters → squared, black-ruled */
+html[data-blog-theme="zine"] .layout-select,
+html[data-blog-theme="zine"] .filter-banner { border-radius: 0; border-color: #0d0d0d; color: var(--ink-dim); background: var(--bg-1); }
+html[data-blog-theme="zine"] .filter-banner b { color: var(--ink); }
+html[data-blog-theme="zine"] .rail-title { color: var(--ink); text-transform: uppercase; }
+html[data-blog-theme="zine"] .topic-btn { color: var(--ink-dim); border-radius: 0; }
+html[data-blog-theme="zine"] .topic-btn:hover { color: var(--ink); background: rgba(13, 13, 13, 0.06); }
+html[data-blog-theme="zine"] .topic-btn.active { color: #0d0d0d; background: var(--accent); border-color: #0d0d0d; box-shadow: none; }
+html[data-blog-theme="zine"] .chip,
+html[data-blog-theme="zine"] .wt-bar .wt-chip { border-radius: 0; border-color: #0d0d0d; color: var(--ink-dim); }
+html[data-blog-theme="zine"] .chip.active,
+html[data-blog-theme="zine"] .wt-bar .wt-chip.active { color: #0d0d0d; background: var(--accent); border-color: #0d0d0d; box-shadow: none; }
+
+/* ---- generic cards / stats / cv / subscribe ---- */
+html[data-blog-theme="zine"] .card,
+html[data-blog-theme="zine"] .const-card,
+html[data-blog-theme="zine"] .subscribe-card,
+html[data-blog-theme="zine"] .stat-card,
+html[data-blog-theme="zine"] .cv-item {
+  background: var(--bg-1); border: 3px solid #0d0d0d; border-radius: 0;
+  box-shadow: 5px 5px 0 rgba(13, 13, 13, 0.9);
+}
+html[data-blog-theme="zine"] .const-card::before { box-shadow: none; background: var(--accent); }
+html[data-blog-theme="zine"] .const-card:hover,
+html[data-blog-theme="zine"] .card.ring:hover,
+html[data-blog-theme="zine"] .card[data-tilt]:hover { box-shadow: 8px 8px 0 var(--accent); border-color: #0d0d0d; }
+html[data-blog-theme="zine"] .stat-card .stat-value { background: none; -webkit-text-fill-color: currentColor; color: var(--ink); filter: none; }
+html[data-blog-theme="zine"] .subscribe-form input,
+html[data-blog-theme="zine"] .field input,
+html[data-blog-theme="zine"] .field textarea { background: var(--bg-0); border: 2px solid #0d0d0d; border-radius: 0; color: var(--ink); }
+html[data-blog-theme="zine"] .field input:focus,
+html[data-blog-theme="zine"] .field textarea:focus { border-color: var(--accent); box-shadow: 4px 4px 0 var(--accent); }
+
+/* ---- buttons: chunky screaming print blocks ---- */
+html[data-blog-theme="zine"] .btn { border-radius: 0; text-transform: uppercase; font-weight: 700; letter-spacing: 0.02em; }
+html[data-blog-theme="zine"] .btn-primary {
+  background: var(--accent); color: var(--accent-ink);
+  border: 3px solid #0d0d0d; box-shadow: 5px 5px 0 #0d0d0d;
+}
+html[data-blog-theme="zine"] .btn-primary:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 #0d0d0d; }
+html[data-blog-theme="zine"] .btn-ghost {
+  background: var(--bg-1); color: var(--ink); border: 3px solid #0d0d0d; box-shadow: none;
+}
+html[data-blog-theme="zine"] .btn-ghost:hover { background: var(--accent); color: #0d0d0d; border-color: #0d0d0d; box-shadow: 5px 5px 0 #0d0d0d; }
+
+/* ---- post page: kill the ambient glow orbs, keep it flat & printed ---- */
+html[data-blog-theme="zine"] .post-hero .orbs { display: none; }
+html[data-blog-theme="zine"] .post-hero .grid-lines { opacity: 0.18; }
+html[data-blog-theme="zine"] .post-title-row h1 { text-transform: uppercase; font-weight: 700; }
+html[data-blog-theme="zine"] .post-hero-meta,
+html[data-blog-theme="zine"] .back-link { color: var(--ink-dim); }
+html[data-blog-theme="zine"] .back-link:hover { background: var(--accent); color: #0d0d0d; }
+html[data-blog-theme="zine"] .series-flag { border-radius: 0; border: 2px solid #0d0d0d; background: var(--bg-1); color: var(--ink-dim); }
+html[data-blog-theme="zine"] .series-flag:hover { border-color: #0d0d0d; box-shadow: 4px 4px 0 var(--accent); color: var(--ink); }
+html[data-blog-theme="zine"] .sf-part { color: #0d0d0d; font-weight: 700; }
+html[data-blog-theme="zine"] .post-nav-link { border-radius: 0; border: 2px solid #0d0d0d; }
+html[data-blog-theme="zine"] .post-nav-link:hover { border-color: #0d0d0d; box-shadow: 5px 5px 0 var(--accent); }
+
+/* ---- article body: black ink on paper, pink slashes ---- */
+html[data-blog-theme="zine"] .article-body { color: #161616; font-weight: 420; }
+html[data-blog-theme="zine"] .article-body strong { color: #000; }
+html[data-blog-theme="zine"] .article-body a { color: var(--ink); border-bottom: 3px solid var(--accent); }
+html[data-blog-theme="zine"] .article-body a:hover { background: var(--accent); color: #0d0d0d; border-bottom-color: #0d0d0d; text-shadow: none; }
+html[data-blog-theme="zine"] .article-body h2 { border-top: 3px solid #0d0d0d; color: var(--ink); }
+html[data-blog-theme="zine"] .article-body h3 { color: var(--ink); }
+html[data-blog-theme="zine"] .article-body blockquote {
+  border-left: 5px solid var(--accent); color: var(--ink-dim); box-shadow: none; font-style: normal;
+}
+html[data-blog-theme="zine"] .article-body code { background: var(--bg-3); border: 2px solid #0d0d0d; border-radius: 0; color: #161616; }
+html[data-blog-theme="zine"] .article-body pre { background: var(--bg-1); border: 3px solid #0d0d0d; border-radius: 0; }
+html[data-blog-theme="zine"] .article-body hr { height: 3px; background: #0d0d0d; }
+html[data-blog-theme="zine"] .article-body img { border: 3px solid #0d0d0d; border-radius: 0; box-shadow: 6px 6px 0 rgba(13, 13, 13, 0.85); }
+html[data-blog-theme="zine"] .article-body li::marker { color: var(--accent); }
+
+/* editorial flourish — ONLY the default reading template, so a reader who
+   picks parchment/manuscript/etc. keeps that template's own styling */
+html[data-blog-theme="zine"] article[data-template="observatory"] .article-body h2 { text-transform: uppercase; letter-spacing: -0.01em; }
+html[data-blog-theme="zine"] article[data-template="observatory"] .article-body > p:first-of-type::first-letter {
+  float: left; font-family: var(--font-display); font-weight: 700; font-size: 3.4em; line-height: 0.72;
+  padding: 0.06em 0.16em; margin: 0.02em 0.1em 0 0;
+  background: #0d0d0d; color: var(--bg-0); text-transform: uppercase;
+}
+
+/* ---- footer ---- */
+html[data-blog-theme="zine"] .site-footer { border-top: 3px solid #0d0d0d; }
+html[data-blog-theme="zine"] .site-footer a:hover { background: var(--accent); color: #0d0d0d; }
+
+/* Static tilts above are transforms, not motion — safe for reduced-motion.
+   The only animated flourish: the masthead "shudders" once like a bad photocopy. */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-blog-theme="zine"] .masthead { animation: zine-slam 0.5s steps(3, end) both; }
+  @keyframes zine-slam {
+    0% { opacity: 0; transform: rotate(-1.6deg) translate(6px, -6px); }
+    60% { opacity: 1; transform: rotate(-1.6deg) translate(-2px, 2px); }
+    100% { opacity: 1; transform: rotate(-1.6deg) translate(0, 0); }
+  }
+}

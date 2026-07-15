@@ -40,6 +40,25 @@
 
   --radius: 16px;
   --header-h: 56px;
+
+  /* Themeable surface hooks — blog themes (data-blog-theme) override these to
+     reskin the fixed chrome without touching component CSS. Defaults reproduce
+     today's dark "observatory" look exactly, so an unset/observatory theme is
+     byte-for-byte unchanged. */
+  --header-bg: rgba(4, 6, 12, 0.72);
+  --header-blur: blur(14px);
+  --header-border: var(--line);
+  --selection-bg: rgba(34, 211, 238, 0.3);
+  --scrim-text-shadow:
+    0 0 14px rgba(4, 6, 12, 0.9),
+    0 2px 28px rgba(4, 6, 12, 0.85),
+    0 0 60px rgba(34, 211, 238, 0.18);
+  --masthead-ink: #ffffff;
+  --masthead-shadow:
+    0 2px 6px rgba(4, 6, 12, 0.95),
+    0 6px 30px rgba(4, 6, 12, 0.9),
+    0 0 50px rgba(34, 211, 238, 0.45),
+    0 0 110px rgba(34, 211, 238, 0.25);
 }
 
 /* ---------- reset ---------- */
@@ -62,7 +81,7 @@ img, svg, canvas { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 
-::selection { background: rgba(34, 211, 238, 0.3); color: var(--ink); }
+::selection { background: var(--selection-bg); color: var(--ink); }
 
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-track { background: var(--bg-0); }
@@ -103,10 +122,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; letter-spa
 
 /* crisp headlines over busy/animated backgrounds */
 .scrim-text {
-  text-shadow:
-    0 0 14px rgba(4, 6, 12, 0.9),
-    0 2px 28px rgba(4, 6, 12, 0.85),
-    0 0 60px rgba(34, 211, 238, 0.18);
+  text-shadow: var(--scrim-text-shadow);
 }
 
 .grad-text {
@@ -121,10 +137,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; letter-spa
   position: fixed; inset: 0 0 auto 0; z-index: 100;
   height: var(--header-h);
   display: flex; align-items: center;
-  background: rgba(4, 6, 12, 0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line);
+  background: var(--header-bg);
+  backdrop-filter: var(--header-blur);
+  -webkit-backdrop-filter: var(--header-blur);
+  border-bottom: 1px solid var(--header-border);
 }
 .site-header .container { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 
@@ -429,11 +445,11 @@ main { padding-top: var(--header-h); }
 }
 .topic-btn.active {
   color: var(--ink);
-  background: rgba(34, 211, 238, 0.08);
-  border-color: rgba(34, 211, 238, 0.35);
-  box-shadow: inset 0 0 18px rgba(34, 211, 238, 0.06), 0 0 14px rgba(34, 211, 238, 0.1);
+  background: color-mix(in srgb, var(--cyan) 9%, transparent);
+  border-color: color-mix(in srgb, var(--cyan) 38%, transparent);
+  box-shadow: inset 0 0 18px color-mix(in srgb, var(--cyan) 7%, transparent), 0 0 14px color-mix(in srgb, var(--cyan) 12%, transparent);
 }
-.topic-btn.active .count { color: var(--cyan); border-color: rgba(34, 211, 238, 0.45); }
+.topic-btn.active .count { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 45%, transparent); }
 .topic-sub { list-style: none; margin: 0.1rem 0 0.35rem 1rem; display: grid; gap: 0.1rem; }
 .topic-sub .topic-btn { font-size: 0.86rem; padding: 0.38em 0.8em; }
 
@@ -441,8 +457,11 @@ main { padding-top: var(--header-h); }
    inside <article data-template>, so a template's colour-var overrides would
    otherwise cascade into the rail and make it illegible on its dark backing
    (e.g. Parchment's warm ink on the dark rail). Re-assert the normal dark
-   palette on the rail under EVERY template so it stays readable. */
-article[data-template] .topic-rail {
+   palette on the rail under the recolouring templates so it stays readable.
+   EXCLUDES the default 'observatory' template: under it the rail should inherit
+   the active BLOG THEME's palette (so a light blog theme gets a legible light
+   rail, not this hardcoded dark ink). */
+article[data-template]:not([data-template="observatory"]) .topic-rail {
   --ink: #f4f7fd;
   --ink-dim: #c0c9da;
   --ink-faint: #9aa7c4;
@@ -475,11 +494,11 @@ article[data-template] .topic-rail {
 }
 .chip.active {
   color: var(--ink);
-  background: rgba(34, 211, 238, 0.1);
-  border-color: rgba(34, 211, 238, 0.4);
-  box-shadow: inset 0 0 18px rgba(34, 211, 238, 0.06), 0 0 14px rgba(34, 211, 238, 0.1);
+  background: color-mix(in srgb, var(--cyan) 10%, transparent);
+  border-color: color-mix(in srgb, var(--cyan) 40%, transparent);
+  box-shadow: inset 0 0 18px color-mix(in srgb, var(--cyan) 6%, transparent), 0 0 14px color-mix(in srgb, var(--cyan) 10%, transparent);
 }
-.chip.active .count { color: var(--cyan); border-color: rgba(34, 211, 238, 0.45); }
+.chip.active .count { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 45%, transparent); }
 
 /* ---------- topic nav as a native <details> accordion ----------
    Desktop: always-open sidebar (toggle chrome hidden). Mobile: a collapsed,

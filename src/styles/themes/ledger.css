@@ -1,0 +1,274 @@
+/* ============================================================
+   THEME · Ledger  (Clean & Simple)  — LIGHT
+   ------------------------------------------------------------
+   A well-kept ledger. Warm off-white paper ruled with faint
+   hairlines, disciplined grotesque type, ink-teal-green accent,
+   and TABULAR figures for every date and count. The archive
+   opens as a compact one-line `index` — ruled rows with
+   right-aligned tabular datelines, like columns in a book.
+   Orderly, restrained, quiet. Sibling of Air, but where Air is
+   cool/blue/airy-white, Ledger is warm/green-ink/ruled/dense.
+   ============================================================ */
+
+html[data-blog-theme="ledger"] {
+  color-scheme: light;
+
+  /* surfaces — warm off-white paper */
+  --bg-0: #f6f5f0;
+  --bg-1: #fffefb;
+  --bg-2: #faf9f3;
+  --bg-3: #ecebe3;
+
+  /* ink — near-black warm greys */
+  --ink: #1a1b1d;
+  --ink-dim: #494c52;
+  --ink-faint: #64676e;
+
+  /* accent — ink-teal-green, held as a single disciplined hue */
+  --teal: #0f766e;
+  --cyan: #0f766e;
+  --violet: #12796f;
+  --pink: #0f766e;
+  --amber: #8a6a2c;              /* muted ochre — the lone warm mark (Interactive) */
+  --accent: #0f766e;
+  --accent-ink: #ffffff;         /* AA white on the green accent (5.5:1) */
+  --grad: linear-gradient(100deg, #0f766e, #157a70 55%, #1f8b7e);
+
+  /* lines — warm hairlines, the ruling ink */
+  --line: rgba(38, 34, 24, 0.12);
+  --line-strong: rgba(38, 34, 24, 0.22);
+
+  /* glows → soft ambient shadows on paper (never neon) */
+  --glow-teal: 0 8px 24px rgba(15, 118, 110, 0.12);
+  --glow-cyan: 0 8px 24px rgba(15, 118, 110, 0.12);
+  --glow-violet: 0 8px 24px rgba(15, 118, 110, 0.10);
+
+  --radius: 6px;                 /* crisp, book-like corners */
+
+  /* chrome hotspots → warm light */
+  --header-bg: rgba(246, 245, 240, 0.82);
+  --header-blur: saturate(1.2) blur(12px);
+  --header-border: rgba(38, 34, 24, 0.12);
+  --selection-bg: rgba(15, 118, 110, 0.18);
+  --scrim-text-shadow: none;
+  --masthead-ink: var(--ink);
+  --masthead-shadow: none;
+
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter Variable', 'Inter', system-ui, sans-serif;
+
+  /* the ruling tint — a faint green-ink hairline, spaced like ruled paper */
+  --rule-ink: rgba(15, 118, 110, 0.055);
+}
+
+/* ---- ruled paper: faint horizontal rules across the whole page ---- */
+html[data-blog-theme="ledger"] body {
+  background-color: var(--bg-0);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 29px,
+    var(--rule-ink) 29px,
+    var(--rule-ink) 30px
+  );
+}
+
+/* orderly rhythm between sections */
+html[data-blog-theme="ledger"] .section { padding-block: clamp(1.6rem, 4vw, 3rem); }
+
+/* ---- header: quiet nameplate, letter-spaced nav ---- */
+html[data-blog-theme="ledger"] .logo { font-weight: 600; letter-spacing: -0.005em; }
+html[data-blog-theme="ledger"] .site-nav a { color: var(--ink-dim); }
+html[data-blog-theme="ledger"] .site-nav a[aria-current="page"]::after {
+  box-shadow: none; background: var(--accent);
+}
+/* header theme dropdown → light paper panel */
+html[data-blog-theme="ledger"] .theme-menu-panel {
+  background: rgba(255, 254, 251, 0.97);
+  border-color: var(--line-strong);
+  box-shadow: 0 18px 44px rgba(50, 44, 30, 0.18);
+}
+html[data-blog-theme="ledger"] .theme-menu-panel button[aria-pressed="true"] {
+  color: var(--accent-ink); background: var(--accent);
+}
+
+/* ---- hero: drop the 3D galaxy for a calm ruled sheet ---- */
+html[data-blog-theme="ledger"] .three-hero { display: none; }
+html[data-blog-theme="ledger"] .hero { min-height: calc(54vh - var(--header-h)); }
+html[data-blog-theme="ledger"] .hero-scrim {
+  background:
+    radial-gradient(120% 92% at 50% 0%, #fdfcf6, transparent 62%),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 37px,
+      rgba(15, 118, 110, 0.07) 37px,
+      rgba(15, 118, 110, 0.07) 38px
+    );
+}
+html[data-blog-theme="ledger"] .masthead {
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+html[data-blog-theme="ledger"] .hero .lead { color: var(--ink-dim); }
+html[data-blog-theme="ledger"] .scroll-cue { border-color: var(--line-strong); }
+html[data-blog-theme="ledger"] .scroll-cue span { background: var(--accent); box-shadow: none; }
+
+/* ---- section heads: a thin ruling line ---- */
+html[data-blog-theme="ledger"] .section-title { font-weight: 600; letter-spacing: -0.015em; }
+html[data-blog-theme="ledger"] .section-head .rule { background: var(--line-strong); }
+html[data-blog-theme="ledger"] .eyebrow { color: var(--accent); letter-spacing: 0.2em; }
+html[data-blog-theme="ledger"] .see-all { color: var(--accent); }
+html[data-blog-theme="ledger"] .see-all:hover { text-shadow: none; opacity: 0.7; }
+
+/* ---- TABULAR figures — the ledger's disciplined datelines & counts ---- */
+html[data-blog-theme="ledger"] .post-meta,
+html[data-blog-theme="ledger"] .post-meta time,
+html[data-blog-theme="ledger"] .pc-read,
+html[data-blog-theme="ledger"] .cv-item .cv-year,
+html[data-blog-theme="ledger"] .stat-card .stat-value,
+html[data-blog-theme="ledger"] .topic-btn .count,
+html[data-blog-theme="ledger"] .chip .count {
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+html[data-blog-theme="ledger"] .post-meta time {
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+
+/* ---- post cards: flat warm sheet, hairline rule, uniform green ledger-bar ---- */
+html[data-blog-theme="ledger"] .post-card {
+  --card-accent: var(--accent);          /* orderly: one ink, not a rainbow */
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(50, 44, 30, 0.03);
+}
+html[data-blog-theme="ledger"] .post-card::before {
+  box-shadow: none; opacity: 1; width: 3px;
+  background: var(--accent);
+}
+html[data-blog-theme="ledger"] .post-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line-strong));
+  box-shadow: 0 10px 26px rgba(50, 44, 30, 0.08);
+}
+html[data-blog-theme="ledger"] .post-card h3 { color: var(--ink); font-weight: 600; }
+html[data-blog-theme="ledger"] .tag-chip {
+  color: var(--accent); background: rgba(15, 118, 110, 0.07);
+  border: 1px solid rgba(15, 118, 110, 0.28);
+}
+html[data-blog-theme="ledger"] .badge-interactive {
+  color: #7a5a1e; background: rgba(138, 106, 44, 0.12);
+  border-color: rgba(138, 106, 44, 0.4);
+}
+html[data-blog-theme="ledger"] .badge-interactive::before { background: #8a6a2c; box-shadow: none; }
+
+/* ---- ARCHIVE (index layout): ruled rows + right-aligned tabular dates ---- */
+html[data-blog-theme="ledger"] .post-list.layout-index {
+  border-top: 1px solid var(--line-strong);   /* the ledger's header rule */
+}
+html[data-blog-theme="ledger"] .post-list.layout-index .post-card {
+  border-bottom: 1px solid var(--line);        /* every entry ruled off */
+  background: none;
+}
+html[data-blog-theme="ledger"] .post-list.layout-index .post-card::before {
+  box-shadow: none;                            /* no glow — a clean margin tick */
+}
+html[data-blog-theme="ledger"] .post-list.layout-index .post-card:hover {
+  background: rgba(15, 118, 110, 0.05);
+}
+html[data-blog-theme="ledger"] .post-list.layout-index .post-card h3 { font-weight: 600; }
+html[data-blog-theme="ledger"] .post-list.layout-index .post-meta time {
+  font-variant-numeric: tabular-nums slashed-zero;
+  letter-spacing: 0.04em;
+}
+
+/* archive chrome → warm paper */
+html[data-blog-theme="ledger"] .layout-select,
+html[data-blog-theme="ledger"] .wt-bar .wt-chip {
+  background: rgba(38, 34, 24, 0.03); color: var(--ink-dim);
+  border-color: var(--line-strong);
+}
+html[data-blog-theme="ledger"] .filter-banner {
+  background: rgba(15, 118, 110, 0.06); border-color: rgba(15, 118, 110, 0.28);
+}
+html[data-blog-theme="ledger"] .archive-head .display { letter-spacing: -0.015em; }
+html[data-blog-theme="ledger"] .rail-title { color: var(--ink-faint); }
+html[data-blog-theme="ledger"] .topic-btn.active,
+html[data-blog-theme="ledger"] .chip.active {
+  color: var(--ink);
+  background: rgba(15, 118, 110, 0.08);
+  border-color: rgba(15, 118, 110, 0.35);
+  box-shadow: none;
+}
+html[data-blog-theme="ledger"] .topic-btn.active .count,
+html[data-blog-theme="ledger"] .chip.active .count {
+  color: var(--accent); border-color: rgba(15, 118, 110, 0.4);
+}
+
+/* ---- cards / const-cards / subscribe / stat / cv: warm surfaces ---- */
+html[data-blog-theme="ledger"] .card,
+html[data-blog-theme="ledger"] .const-card,
+html[data-blog-theme="ledger"] .subscribe-card,
+html[data-blog-theme="ledger"] .stat-card,
+html[data-blog-theme="ledger"] .cv-item {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(50, 44, 30, 0.03);
+}
+html[data-blog-theme="ledger"] .const-card::before { box-shadow: none; }
+html[data-blog-theme="ledger"] .const-card:hover,
+html[data-blog-theme="ledger"] .card.ring:hover,
+html[data-blog-theme="ledger"] .card[data-tilt]:hover {
+  box-shadow: 0 12px 30px rgba(50, 44, 30, 0.10);
+  border-color: var(--line-strong);
+}
+html[data-blog-theme="ledger"] .subscribe-form input { background: var(--bg-0); border-color: var(--line-strong); }
+html[data-blog-theme="ledger"] .stat-card .stat-value { filter: none; }
+html[data-blog-theme="ledger"] .cv-item:hover { box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.12); border-color: rgba(15, 118, 110, 0.3); }
+
+/* ---- buttons: solid ink-green + clean outline ---- */
+html[data-blog-theme="ledger"] .btn-primary {
+  background: var(--accent); color: var(--accent-ink);
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.22);
+}
+html[data-blog-theme="ledger"] .btn-primary:hover { box-shadow: 0 10px 24px rgba(15, 118, 110, 0.3); }
+html[data-blog-theme="ledger"] .btn-ghost {
+  background: transparent; border: 1px solid var(--line-strong); color: var(--ink);
+}
+html[data-blog-theme="ledger"] .btn-ghost:hover { border-color: var(--accent); box-shadow: none; color: var(--accent); }
+
+/* ---- article: dark ink on ruled paper, restrained green links ---- */
+html[data-blog-theme="ledger"] .article-body { color: #26272b; font-weight: 400; }
+html[data-blog-theme="ledger"] .article-body strong { color: #000; }
+html[data-blog-theme="ledger"] .article-body a { color: var(--accent); border-bottom-color: rgba(15, 118, 110, 0.35); }
+html[data-blog-theme="ledger"] .article-body a:hover { text-shadow: none; border-bottom-color: var(--accent); }
+html[data-blog-theme="ledger"] .article-body li::marker { color: var(--accent); }
+html[data-blog-theme="ledger"] .article-body blockquote {
+  border-left-color: var(--accent); color: var(--ink-dim); box-shadow: none;
+}
+html[data-blog-theme="ledger"] .article-body img { box-shadow: 0 10px 30px rgba(50, 44, 30, 0.14); border-color: var(--line); }
+html[data-blog-theme="ledger"] .post-hero .orbs { opacity: 0.22; }
+html[data-blog-theme="ledger"] .post-hero .grid-lines { display: none; }
+
+/* ledger reading flourish — a firm ruled break above each section head.
+   Scoped to the observatory reading template so parchment/manuscript/etc.
+   readers keep their own treatment (HARD RULE 8). */
+html[data-blog-theme="ledger"] article[data-template="observatory"] .article-body h2 {
+  border-top: 2px solid var(--line-strong);
+  padding-top: 1em;
+}
+html[data-blog-theme="ledger"] article[data-template="observatory"] .article-body h3 { color: var(--ink); }
+
+/* ---- neutralise the base cyan hotspots that aren't token-driven ---- */
+html[data-blog-theme="ledger"] .progress-bar { box-shadow: none; }
+html[data-blog-theme="ledger"] .marquee-item .dot-sep { color: var(--accent); text-shadow: none; }
+
+/* ---- footer ---- */
+html[data-blog-theme="ledger"] .site-footer a:hover { color: var(--accent); }
+
+/* subtle fade-up of the masthead, respecting reduced motion */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-blog-theme="ledger"] .masthead { animation: ledger-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  @keyframes ledger-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+}

@@ -2,22 +2,42 @@
 import Base from '../../layouts/Base.astro';
 import PostCard from '../../components/PostCard.astro';
 import topics from '../../data/topics.json';
+import { site } from '../../lib/site';
 import { getCollection } from 'astro:content';
+import { vocabFor, topicName } from '../../lib/vocab';
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+// Each blog theme opens the archive in the layout that suits its voice (editorial →
+// multi-column newspaper, photo → image-led grid, clean → compact). It's still just
+// the initial layout: the switcher + a reader's saved 'writing-layout' pref win.
+const LAYOUT_BY_THEME: Record<string, string> = {
+  observatory: 'reader', air: 'reader', journal: 'reader',
+  ledger: 'index', graphite: 'index',
+  broadsheet: 'newspaper', gazette: 'newspaper',
+  kiosk: 'magazine', zine: 'magazine',
+  neon: 'cards', arcade: 'terminal', scrapbook: 'cards',
+  doodle: 'cards', rocket: 'cards', pixel: 'cards', comic: 'cards',
+  gallery: 'cards', darkroom: 'cards', 'contact-sheet': 'cards', polaroid: 'cards',
+};
+const LAYOUT_KEYS = ['reader', 'index', 'newspaper', 'magazine', 'timeline', 'cards', 'terminal', 'headlines'];
+const activeTheme = site.defaultTheme || 'observatory';
+const themeLayout = LAYOUT_BY_THEME[activeTheme] || 'reader';
+const vocab = vocabFor(activeTheme);
 
 const readMins = (entry: any) => Math.max(1, Math.round((entry.body || '').split(/\s+/).filter(Boolean).length / 200));
 const tagCount = (tag: string) => posts.filter((p) => p.data.tags.includes(tag)).length;
 const visibleTopics = topics
   .map((t) => ({
     ...t,
+    name: topicName(vocab, t.tag, t.name),
     count: tagCount(t.tag),
-    sub: (t.sub || []).map((s) => ({ ...s, count: tagCount(s.tag) })).filter((s) => s.count > 0),
+    sub: (t.sub || []).map((s) => ({ ...s, name: topicName(vocab, s.tag, s.name), count: tagCount(s.tag) })).filter((s) => s.count > 0),
   }))
   .filter((t) => t.count > 0 || t.sub.length > 0);
 ---
-<Base title="Posts" description="Every post, newest first — browse by topic." progress>
+<Base title={vocab.postsTitle} description="Every post, newest first — browse by topic." progress>
   <section class="section writing-archive">
     <div class="orbs"><div class="orb orb-b" style="opacity:0.3"></div></div>
     <div class="container">
@@ -27,7 +47,7 @@ const visibleTopics = topics
              own), mobile collapsible accordion -->
         <aside class="topic-rail">
           <details class="topic-acc">
-            <summary class="rail-title">Topics <span class="acc-caret" aria-hidden="true">▾</span></summary>
+            <summary class="rail-title">{vocab.topicsLabel} <span class="acc-caret" aria-hidden="true">▾</span></summary>
             <ul class="topic-list" id="topic-list">
               <li>
                 <button class="topic-btn active" data-filter="*">
@@ -69,8 +89,8 @@ const visibleTopics = topics
 
         <div class="post-col">
           <header class="archive-head" data-reveal>
-            <h1 class="display">Posts</h1>
-            <p class="lead">My blog.</p>
+            <h1 class="display">{vocab.postsTitle}</h1>
+            <p class="lead">Everything, newest first.</p>
           </header>
           <!-- mobile-only topic bar (top) — tap a topic to filter; topics with subtopics reveal them -->
           <nav class="wt-bar" aria-label="Browse by topic">
@@ -100,9 +120,9 @@ const visibleTopics = topics
             </select>
           </div>
           <div id="filterBanner" class="filter-banner" hidden></div>
-          <div class="post-list layout-reader" id="post-list">
-            {posts.map((p) => (
-              <PostCard post={p} readMins={readMins(p)} />
+          <div class={`post-list layout-${themeLayout}`} id="post-list" data-theme-layout={themeLayout}>
+            {posts.map((p, i) => (
+              <PostCard post={p} readMins={readMins(p)} newest={i === 0} />
             ))}
             <p class="no-posts" id="no-posts" hidden>Nothing here yet — pick another topic.</p>
           </div>
@@ -468,8 +488,11 @@ const visibleTopics = topics
       try { localStorage.setItem('writing-layout', k); } catch (e) {}
     };
     sel.addEventListener('change', () => set(sel.value));
-    let saved = 'reader';
-    try { saved = localStorage.getItem('writing-layout') || 'reader'; } catch (e) {}
+    // Fresh readers get the theme's default layout (rendered server-side into the class +
+    // data-theme-layout); a saved pref overrides it.
+    const themeDefault = list.dataset.themeLayout || 'reader';
+    let saved = themeDefault;
+    try { saved = localStorage.getItem('writing-layout') || themeDefault; } catch (e) {}
     set(saved);
   }
 

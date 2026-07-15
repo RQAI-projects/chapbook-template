@@ -1,0 +1,134 @@
+/* ============================================================
+   THEME · Kiosk  (Editorial)  — LIGHT
+   ------------------------------------------------------------
+   Newsstand energy: heavy black Fraunces headlines that SHOUT,
+   a hot tabloid red, kicker labels and a big lead story. Louder
+   and punchier than Broadsheet.
+   ============================================================ */
+
+html[data-blog-theme="kiosk"] {
+  color-scheme: light;
+
+  --bg-0: #faf7f0;
+  --bg-1: #ffffff;
+  --bg-2: #ffffff;
+  --bg-3: #efece3;
+
+  --ink: #111111;
+  --ink-dim: #34322e;
+  --ink-faint: #6e6a62;
+
+  --teal: #e11d2a;
+  --cyan: #e11d2a;
+  --violet: #111111;
+  --pink: #e11d2a;
+  --amber: #d98a00;
+  --accent: #e11d2a;
+  --accent-ink: #ffffff;
+  --grad: linear-gradient(100deg, #e11d2a, #ff4133);
+
+  --line: rgba(17, 17, 17, 0.16);
+  --line-strong: rgba(17, 17, 17, 0.4);
+
+  --glow-teal: 0 10px 26px rgba(17, 17, 17, 0.14);
+  --glow-cyan: 0 10px 26px rgba(17, 17, 17, 0.14);
+  --glow-violet: 0 10px 26px rgba(17, 17, 17, 0.14);
+
+  --radius: 2px;
+
+  --header-bg: rgba(250, 247, 240, 0.94);
+  --header-blur: blur(6px);
+  --header-border: #111111;
+  --selection-bg: rgba(225, 29, 42, 0.22);
+  --scrim-text-shadow: none;
+  --masthead-ink: var(--ink);
+  --masthead-shadow: none;
+
+  --font-display: 'Fraunces', 'Arial Black', Georgia, serif;
+  --font-body: 'Newsreader', Georgia, 'Times New Roman', serif;
+}
+
+/* thick black underline on the header — a newsstand banner */
+html[data-blog-theme="kiosk"] .site-header { border-bottom-width: 3px; }
+html[data-blog-theme="kiosk"] .logo { font-family: var(--font-display); font-weight: 900; letter-spacing: -0.02em; text-transform: uppercase; }
+html[data-blog-theme="kiosk"] .site-nav a { font-family: var(--font-display); font-weight: 600; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.02em; font-size: 0.82rem; }
+html[data-blog-theme="kiosk"] .site-nav a[aria-current="page"]::after { background: var(--accent); box-shadow: none; height: 3px; }
+
+/* ---- hero: giant black shouting nameplate ---- */
+html[data-blog-theme="kiosk"] .three-hero { display: none; }
+html[data-blog-theme="kiosk"] .hero { min-height: auto; border-bottom: 6px solid var(--ink); }
+html[data-blog-theme="kiosk"] .hero-scrim { background: none; }
+html[data-blog-theme="kiosk"] .hero-content { padding-block: clamp(2rem, 5vw, 3.6rem); }
+html[data-blog-theme="kiosk"] .masthead {
+  font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+  letter-spacing: -0.03em; line-height: 0.9;
+  font-size: clamp(3.2rem, 12vw, 7rem);
+}
+html[data-blog-theme="kiosk"] .hero .lead {
+  color: #fff; background: var(--accent); display: inline-block;
+  padding: 0.2em 0.7em; margin-top: 1rem; font-weight: 600;
+  font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.04em;
+  font-size: clamp(0.85rem, 1.4vw, 1.05rem);
+}
+html[data-blog-theme="kiosk"] .hero-cues { margin-top: 1.6rem; }
+html[data-blog-theme="kiosk"] .scroll-cue { display: none; }
+html[data-blog-theme="kiosk"] .eyebrow { color: #fff; background: var(--accent); padding: 0.15em 0.5em; font-family: var(--font-display); font-weight: 700; }
+
+/* ---- section heads: red kicker + black rule ---- */
+html[data-blog-theme="kiosk"] .section-title { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; }
+html[data-blog-theme="kiosk"] .section-head { border-bottom: 4px solid var(--ink); padding-bottom: 0.35rem; }
+html[data-blog-theme="kiosk"] .section-head .rule { display: none; }
+html[data-blog-theme="kiosk"] .see-all { color: var(--accent); font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 0.82rem; }
+html[data-blog-theme="kiosk"] .see-all:hover { text-shadow: none; }
+
+/* ---- post cards ---- */
+html[data-blog-theme="kiosk"] .post-card { --card-accent: var(--accent); background: var(--bg-1); border: 1px solid var(--line-strong); box-shadow: none; }
+html[data-blog-theme="kiosk"] .post-card::before { box-shadow: none; opacity: 1; background: var(--accent); }
+html[data-blog-theme="kiosk"] .post-card:hover { box-shadow: 0 8px 22px rgba(17, 17, 17, 0.14); border-color: var(--ink); }
+html[data-blog-theme="kiosk"] .post-card h3 { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; color: var(--ink); }
+html[data-blog-theme="kiosk"] .post-card p { color: var(--ink-dim); }
+html[data-blog-theme="kiosk"] .post-meta { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-faint); }
+html[data-blog-theme="kiosk"] .tag-chip { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; color: #fff; background: var(--accent); border-color: var(--accent); border-radius: 2px; }
+html[data-blog-theme="kiosk"] .badge-interactive { color: #fff; background: #111; border-color: #111; border-radius: 2px; }
+html[data-blog-theme="kiosk"] .badge-interactive::before { background: var(--accent); box-shadow: none; }
+
+/* ---- archive: magazine (big lead story) ---- */
+html[data-blog-theme="kiosk"] .archive-head .display { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; }
+html[data-blog-theme="kiosk"] .post-list.layout-magazine .post-card:first-of-type { border: 2px solid var(--ink); background: var(--bg-1); }
+html[data-blog-theme="kiosk"] .post-list.layout-magazine .post-card:first-of-type h3 { font-size: clamp(1.6rem, 4vw, 2.6rem); }
+html[data-blog-theme="kiosk"] .layout-select { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; background: var(--bg-1); color: var(--ink-dim); }
+html[data-blog-theme="kiosk"] .filter-banner { background: rgba(225, 29, 42, 0.08); border-color: var(--accent); }
+
+/* ---- post page ---- */
+html[data-blog-theme="kiosk"] .post-hero .orbs, html[data-blog-theme="kiosk"] .post-hero .grid-lines { display: none; }
+html[data-blog-theme="kiosk"] .post-hero { border-bottom: 4px solid var(--ink); }
+html[data-blog-theme="kiosk"] .post-title-row h1 { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; line-height: 0.98; }
+html[data-blog-theme="kiosk"] .post-hero-meta, html[data-blog-theme="kiosk"] .back-link { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; color: var(--ink-dim); }
+html[data-blog-theme="kiosk"] .article-body { color: #26241f; font-size: 1.14rem; line-height: 1.62; }
+html[data-blog-theme="kiosk"] .article-body h2 { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; border-top: 3px solid var(--ink); }
+html[data-blog-theme="kiosk"] .article-body h3 { font-family: var(--font-display); font-weight: 700; }
+html[data-blog-theme="kiosk"] .article-body a { color: var(--accent); border-bottom-color: rgba(225, 29, 42, 0.4); }
+html[data-blog-theme="kiosk"] .article-body a:hover { text-shadow: none; border-bottom-color: var(--accent); }
+html[data-blog-theme="kiosk"] .article-body blockquote { border-left: 4px solid var(--accent); color: var(--ink-dim); box-shadow: none; }
+html[data-blog-theme="kiosk"] .article-body strong { color: #000; }
+html[data-blog-theme="kiosk"] .article-body li::marker { color: var(--accent); }
+html[data-blog-theme="kiosk"] .pn-label { color: var(--accent); font-family: var(--font-display); font-weight: 700; text-transform: uppercase; }
+html[data-blog-theme="kiosk"] .pn-title { font-family: var(--font-display); font-weight: 700; }
+html[data-blog-theme="kiosk"] .post-nav-link:hover { border-color: var(--ink); box-shadow: none; }
+
+/* ---- buttons / cards / footer ---- */
+html[data-blog-theme="kiosk"] .btn { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; border-radius: 2px; }
+html[data-blog-theme="kiosk"] .btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+html[data-blog-theme="kiosk"] .btn-primary:hover { background: #111; box-shadow: none; }
+html[data-blog-theme="kiosk"] .btn-ghost { background: transparent; border: 2px solid var(--ink); color: var(--ink); }
+html[data-blog-theme="kiosk"] .btn-ghost:hover { background: var(--ink); color: #fff; box-shadow: none; }
+html[data-blog-theme="kiosk"] .card, html[data-blog-theme="kiosk"] .const-card, html[data-blog-theme="kiosk"] .subscribe-card,
+html[data-blog-theme="kiosk"] .stat-card, html[data-blog-theme="kiosk"] .cv-item { background: var(--bg-1); border: 1px solid var(--line-strong); box-shadow: none; }
+html[data-blog-theme="kiosk"] .const-card::before { box-shadow: none; }
+html[data-blog-theme="kiosk"] .const-card-name { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; }
+html[data-blog-theme="kiosk"] .subscribe-card { border: 2px solid var(--ink); }
+html[data-blog-theme="kiosk"] .subscribe-title { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; }
+html[data-blog-theme="kiosk"] .subscribe-form input { background: #fff; border-color: var(--line-strong); }
+html[data-blog-theme="kiosk"] .stat-card .stat-value { filter: none; }
+html[data-blog-theme="kiosk"] .site-footer a { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; font-size: 0.78rem; }
+html[data-blog-theme="kiosk"] .site-footer a:hover { color: var(--accent); }

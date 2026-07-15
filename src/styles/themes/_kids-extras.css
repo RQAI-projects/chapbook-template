@@ -1,0 +1,126 @@
+/* ============================================================
+   Kids extras — shared by doodle / rocket / pixel / comic
+   (a) dyslexia-friendly reading toggle (floating "Aa" button)
+   (b) one-time celebratory starburst on the newest post card
+   The button + burst are only rendered by Base.astro when the
+   active blog theme is one of the four kids themes; these rules
+   are additionally scoped to kids themes so nothing leaks.
+   ============================================================ */
+
+/* ---------- (a) dyslexia toggle ---------- */
+
+/* Floating round button, bottom-right, above content. */
+.kids-aa {
+  position: fixed;
+  right: clamp(0.9rem, 3vw, 1.6rem);
+  bottom: clamp(0.9rem, 3vw, 1.6rem);
+  z-index: 300;
+  width: 52px; height: 52px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  border: 3px solid var(--ink);
+  background: var(--bg-1);
+  color: var(--ink);
+  font-family: 'Atkinson Hyperlegible', var(--font-display, system-ui), sans-serif;
+  font-weight: 700; font-size: 1.15rem; line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.14), 0 10px 24px rgba(0, 0, 0, 0.18);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease, color 0.15s ease;
+}
+.kids-aa small { font-size: 0.62em; font-weight: 700; }
+.kids-aa:hover { transform: translateY(-2px); }
+.kids-aa:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.18); }
+.kids-aa[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink, #fff);
+  border-color: var(--ink);
+}
+.kids-aa .kids-aa-dot {
+  position: absolute; top: -3px; right: -3px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--accent); border: 2px solid var(--bg-1);
+  opacity: 0; transform: scale(0.4); transition: opacity 0.15s, transform 0.15s;
+}
+.kids-aa[aria-pressed="true"] .kids-aa-dot { opacity: 1; transform: scale(1); }
+@media (prefers-reduced-motion: reduce) {
+  .kids-aa { transition: background 0.15s ease, color 0.15s ease; }
+}
+
+/* Dyslexia reading mode: ensure the hyperlegible face + open spacing on reading
+   surfaces. Scoped to the four kids themes. */
+html[data-dyslexia="1"] :is([data-blog-theme="doodle"], [data-blog-theme="rocket"], [data-blog-theme="pixel"], [data-blog-theme="comic"]) {
+  --font-body: 'Atkinson Hyperlegible', 'Inter', system-ui, sans-serif;
+}
+html[data-dyslexia="1"] :is([data-blog-theme="doodle"], [data-blog-theme="rocket"], [data-blog-theme="pixel"], [data-blog-theme="comic"]) .article-body {
+  font-family: 'Atkinson Hyperlegible', 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.035em;
+  word-spacing: 0.12em;
+  line-height: 2;
+}
+html[data-dyslexia="1"] :is([data-blog-theme="doodle"], [data-blog-theme="rocket"], [data-blog-theme="pixel"], [data-blog-theme="comic"]) .article-body > * + * {
+  margin-top: 1.5em;
+}
+html[data-dyslexia="1"] :is([data-blog-theme="doodle"], [data-blog-theme="rocket"], [data-blog-theme="pixel"], [data-blog-theme="comic"]) .post-card h3,
+html[data-dyslexia="1"] :is([data-blog-theme="doodle"], [data-blog-theme="rocket"], [data-blog-theme="pixel"], [data-blog-theme="comic"]) .post-card p {
+  font-family: 'Atkinson Hyperlegible', 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- (b) newest-post starburst ---------- */
+
+/* JS adds .celebrate to the newest card once per post (localStorage-gated) and only
+   when motion is allowed. The rays + ring emanate from the card, then clean up. */
+.post-card.celebrate { position: relative; }
+.post-card.celebrate::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 10px; height: 10px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 5;
+  background:
+    radial-gradient(circle, var(--accent, #ff5a5f) 0 30%, transparent 32%);
+  box-shadow:
+    0 0 0 0 color-mix(in srgb, var(--accent, #ff5a5f) 70%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .post-card.celebrate::after {
+    animation: kids-burst 900ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  /* a spray of little sparks via a second layer */
+  .post-card.celebrate::before {
+    content: "";
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 8px; height: 8px;
+    margin: -4px 0 0 -4px;
+    z-index: 5;
+    pointer-events: none;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, #ffd23f 40%, transparent 42%);
+    box-shadow:
+      22px -14px 0 -1px var(--accent, #ff5a5f),
+      -22px -14px 0 -1px #4dd6ff,
+      26px 12px 0 -1px #ffd23f,
+      -26px 12px 0 -1px #7bd88f,
+      0 -30px 0 -2px var(--accent, #ff5a5f),
+      0 30px 0 -2px #4dd6ff;
+    opacity: 0;
+    animation: kids-spark 900ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  @keyframes kids-burst {
+    0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent, #ff5a5f) 70%, transparent); }
+    60% { opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; box-shadow: 0 0 0 46px color-mix(in srgb, var(--accent, #ff5a5f) 0%, transparent); }
+  }
+  @keyframes kids-spark {
+    0% { opacity: 0; transform: scale(0.3); }
+    30% { opacity: 1; }
+    100% { opacity: 0; transform: scale(1.9); }
+  }
+}

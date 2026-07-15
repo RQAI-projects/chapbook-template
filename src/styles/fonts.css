@@ -1,0 +1,146 @@
+/* ============================================================
+   Self-hosted theme fonts (OFL, latin subset, woff2)
+   Files + licenses live in /public/fonts/. No external CDNs.
+
+   Inter + Space Grotesk are self-hosted separately via the
+   @fontsource-variable packages imported in Base.astro (they
+   power the default "observatory" look and the Clean/Photo
+   themes). The families below are the extra pairings the theme
+   catalogue leans on:
+
+     • Fraunces               — Editorial display serif (mastheads)
+     • Newsreader             — Editorial body serif (reading)
+     • Fredoka                — Kids/Creative rounded display
+     • Atkinson Hyperlegible  — Kids body + dyslexia-friendly toggle
+
+   Loaded site-wide but only *rendered* by the themes that name
+   them in --font-display / --font-body, so unused faces on a
+   given theme cost nothing (font-display: swap, lazy fetch).
+   ============================================================ */
+
+/* ---------- Fraunces (display serif) ---------- */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin-900-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin-400-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/fonts/fraunces-latin-900-italic.woff2') format('woff2');
+}
+
+/* ---------- Newsreader (body serif) ---------- */
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/newsreader-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/newsreader-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Newsreader';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/newsreader-latin-400-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Newsreader';
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/newsreader-latin-600-italic.woff2') format('woff2');
+}
+
+/* ---------- Fredoka (rounded display) ---------- */
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/fredoka-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/fredoka-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/fredoka-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/fredoka-latin-700-normal.woff2') format('woff2');
+}
+
+/* ---------- Atkinson Hyperlegible (body + dyslexia toggle) ---------- */
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/atkinson-hyperlegible-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/atkinson-hyperlegible-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/atkinson-hyperlegible-latin-400-italic.woff2') format('woff2');
+}

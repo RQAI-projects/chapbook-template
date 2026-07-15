@@ -1,0 +1,133 @@
+/* ============================================================
+   THEME · Journal  (Editorial)  — LIGHT
+   ------------------------------------------------------------
+   An unhurried literary quarterly: warm cream stock, elegant
+   lighter-weight Fraunces, Newsreader prose with generous
+   leading, italic datelines and a lot of quiet whitespace.
+   Deliberately gentler than Broadsheet (no red, no columns).
+   ============================================================ */
+
+html[data-blog-theme="journal"] {
+  color-scheme: light;
+
+  --bg-0: #f6efe1;
+  --bg-1: #fbf6ea;
+  --bg-2: #fbf6ea;
+  --bg-3: #efe6d3;
+
+  --ink: #2a2118;
+  --ink-dim: #574a38;
+  --ink-faint: #8a7a60;
+
+  --teal: #7c4a1e;
+  --cyan: #7c4a1e;
+  --violet: #6a5230;
+  --pink: #9a5a4a;
+  --amber: #a06a24;
+  --accent: #7c4a1e;
+  --accent-ink: #fbf6ea;
+  --grad: linear-gradient(100deg, #7c4a1e, #a06a24);
+
+  --line: rgba(60, 42, 22, 0.16);
+  --line-strong: rgba(60, 42, 22, 0.3);
+
+  --glow-teal: 0 10px 30px rgba(60, 42, 22, 0.1);
+  --glow-cyan: 0 10px 30px rgba(60, 42, 22, 0.1);
+  --glow-violet: 0 10px 30px rgba(60, 42, 22, 0.1);
+
+  --radius: 6px;
+
+  --header-bg: rgba(246, 239, 225, 0.86);
+  --header-blur: blur(8px);
+  --header-border: rgba(60, 42, 22, 0.16);
+  --selection-bg: rgba(124, 74, 30, 0.16);
+  --scrim-text-shadow: none;
+  --masthead-ink: var(--ink);
+  --masthead-shadow: none;
+
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Newsreader', Georgia, 'Times New Roman', serif;
+}
+
+/* ---- header ---- */
+html[data-blog-theme="journal"] .logo { font-family: var(--font-display); font-weight: 600; font-style: italic; letter-spacing: 0; }
+html[data-blog-theme="journal"] .site-nav a { font-family: var(--font-display); color: var(--ink-dim); }
+html[data-blog-theme="journal"] .site-nav a[aria-current="page"]::after { background: var(--accent); box-shadow: none; }
+
+/* ---- hero: calm cream, centred, lighter serif ---- */
+html[data-blog-theme="journal"] .three-hero { display: none; }
+html[data-blog-theme="journal"] .hero { min-height: calc(52vh - var(--header-h)); }
+html[data-blog-theme="journal"] .hero-scrim { background: radial-gradient(120% 90% at 50% 0%, #fdf8ec, transparent 62%); }
+html[data-blog-theme="journal"] .hero-content { text-align: center; }
+html[data-blog-theme="journal"] .masthead {
+  font-family: var(--font-display); font-weight: 400; font-style: italic;
+  letter-spacing: -0.01em; font-size: clamp(2.6rem, 7vw, 4.8rem);
+}
+html[data-blog-theme="journal"] .hero .lead {
+  margin-inline: auto; color: var(--ink-dim); font-style: italic;
+  letter-spacing: 0.03em;
+}
+html[data-blog-theme="journal"] .hero-cues { justify-content: center; }
+html[data-blog-theme="journal"] .scroll-cue span { background: var(--accent); box-shadow: none; }
+html[data-blog-theme="journal"] .eyebrow { color: var(--accent); font-family: var(--font-display); font-style: italic; text-transform: none; letter-spacing: 0.06em; }
+
+/* ---- generous section rhythm ---- */
+html[data-blog-theme="journal"] .section { padding-block: clamp(2rem, 5vw, 4rem); }
+html[data-blog-theme="journal"] .section-title { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; }
+html[data-blog-theme="journal"] .section-head .rule { background: var(--line-strong); }
+html[data-blog-theme="journal"] .see-all { color: var(--accent); font-family: var(--font-display); font-style: italic; }
+html[data-blog-theme="journal"] .see-all:hover { text-shadow: none; }
+
+/* ---- post cards ---- */
+html[data-blog-theme="journal"] .post-card {
+  --card-accent: var(--accent);
+  background: var(--bg-1); border: 1px solid var(--line); box-shadow: none;
+}
+html[data-blog-theme="journal"] .post-card::before { box-shadow: none; opacity: 0.7; }
+html[data-blog-theme="journal"] .post-card:hover { box-shadow: 0 10px 26px rgba(60, 42, 22, 0.1); border-color: var(--line-strong); }
+html[data-blog-theme="journal"] .post-card h3 { font-family: var(--font-display); font-weight: 600; color: var(--ink); }
+html[data-blog-theme="journal"] .post-card p { color: var(--ink-dim); }
+html[data-blog-theme="journal"] .post-meta { font-family: var(--font-display); font-style: italic; color: var(--ink-faint); }
+html[data-blog-theme="journal"] .tag-chip { font-family: var(--font-display); color: var(--accent); border-color: rgba(124, 74, 30, 0.35); background: rgba(124, 74, 30, 0.06); }
+html[data-blog-theme="journal"] .badge-interactive { color: #8a5a1a; border-color: rgba(160, 106, 36, 0.45); background: rgba(160, 106, 36, 0.08); }
+html[data-blog-theme="journal"] .badge-interactive::before { background: #a06a24; box-shadow: none; }
+
+/* ---- archive: single-column reader, italic datelines ---- */
+html[data-blog-theme="journal"] .archive-head .display { font-family: var(--font-display); font-weight: 400; font-style: italic; }
+html[data-blog-theme="journal"] .post-list.layout-reader .post-card { border: none; border-bottom: 1px solid var(--line); background: none; border-radius: 0; }
+html[data-blog-theme="journal"] .post-list.layout-reader .post-card:hover { box-shadow: none; background: rgba(124, 74, 30, 0.04); }
+html[data-blog-theme="journal"] .post-list.layout-reader .post-card::before { opacity: 0; }
+html[data-blog-theme="journal"] .layout-select { font-family: var(--font-display); background: var(--bg-1); color: var(--ink-dim); }
+html[data-blog-theme="journal"] .filter-banner { background: rgba(124, 74, 30, 0.06); border-color: rgba(124, 74, 30, 0.25); }
+
+/* ---- post page: serene serif reading ---- */
+html[data-blog-theme="journal"] .post-hero .orbs, html[data-blog-theme="journal"] .post-hero .grid-lines { display: none; }
+html[data-blog-theme="journal"] .post-title-row h1 { font-family: var(--font-display); font-weight: 400; }
+html[data-blog-theme="journal"] .post-hero-meta, html[data-blog-theme="journal"] .back-link { font-family: var(--font-display); font-style: italic; color: var(--ink-dim); }
+html[data-blog-theme="journal"] .article-body { color: #302619; font-size: 1.18rem; line-height: 1.85; }
+html[data-blog-theme="journal"] .article-body h2 { font-family: var(--font-display); font-weight: 600; border-top-color: var(--line); }
+html[data-blog-theme="journal"] .article-body h3 { font-family: var(--font-display); font-weight: 600; }
+html[data-blog-theme="journal"] .article-body a { color: var(--accent); border-bottom-color: rgba(124, 74, 30, 0.35); }
+html[data-blog-theme="journal"] .article-body a:hover { text-shadow: none; border-bottom-color: var(--accent); }
+html[data-blog-theme="journal"] .article-body blockquote { border-left-color: var(--accent); color: var(--ink-dim); box-shadow: none; font-style: italic; }
+html[data-blog-theme="journal"] .article-body strong { color: #1c150c; }
+html[data-blog-theme="journal"] .article-body li::marker { color: var(--accent); }
+html[data-blog-theme="journal"] .pn-label { color: var(--accent); font-family: var(--font-display); font-style: italic; }
+html[data-blog-theme="journal"] .pn-title { font-family: var(--font-display); }
+html[data-blog-theme="journal"] .post-nav-link:hover { border-color: var(--line-strong); box-shadow: none; }
+
+/* ---- buttons / cards / footer ---- */
+html[data-blog-theme="journal"] .btn { font-family: var(--font-display); }
+html[data-blog-theme="journal"] .btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+html[data-blog-theme="journal"] .btn-primary:hover { box-shadow: 0 8px 20px rgba(124, 74, 30, 0.24); }
+html[data-blog-theme="journal"] .btn-ghost { background: transparent; border: 1px solid var(--line-strong); color: var(--ink); }
+html[data-blog-theme="journal"] .btn-ghost:hover { border-color: var(--accent); color: var(--accent); box-shadow: none; }
+html[data-blog-theme="journal"] .card, html[data-blog-theme="journal"] .const-card, html[data-blog-theme="journal"] .subscribe-card,
+html[data-blog-theme="journal"] .stat-card, html[data-blog-theme="journal"] .cv-item { background: var(--bg-1); border: 1px solid var(--line); box-shadow: none; }
+html[data-blog-theme="journal"] .const-card::before { box-shadow: none; }
+html[data-blog-theme="journal"] .const-card-name { font-family: var(--font-display); font-weight: 600; }
+html[data-blog-theme="journal"] .subscribe-title { font-family: var(--font-display); font-weight: 400; font-style: italic; }
+html[data-blog-theme="journal"] .subscribe-form input { background: #fff; border-color: var(--line-strong); }
+html[data-blog-theme="journal"] .stat-card .stat-value { filter: none; }
+html[data-blog-theme="journal"] .site-footer a { font-family: var(--font-display); }
+html[data-blog-theme="journal"] .site-footer a:hover { color: var(--accent); }

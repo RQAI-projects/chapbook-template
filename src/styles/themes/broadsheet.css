@@ -1,0 +1,163 @@
+/* ============================================================
+   THEME · Broadsheet  (Editorial)  — LIGHT
+   ------------------------------------------------------------
+   A proper newspaper: a towering Fraunces nameplate, a real
+   multi-column index with column rules, and a drop-cap lede.
+   ============================================================ */
+
+html[data-blog-theme="broadsheet"] {
+  color-scheme: light;
+
+  --bg-0: #f5f2ea;
+  --bg-1: #fbf9f3;
+  --bg-2: #fbf9f3;
+  --bg-3: #ece7db;
+
+  --ink: #1a1714;
+  --ink-dim: #423b32;
+  --ink-faint: #7a7063;
+
+  --teal: #8a1f14;
+  --cyan: #8a1f14;
+  --violet: #5a3216;
+  --pink: #8a1f14;
+  --amber: #9a5a1a;
+  --accent: #8a1f14;
+  --accent-ink: #fdf6ee;
+  --grad: linear-gradient(100deg, #8a1f14, #a8351f);
+
+  --line: rgba(26, 23, 20, 0.16);
+  --line-strong: rgba(26, 23, 20, 0.34);
+
+  --glow-teal: 0 10px 26px rgba(26, 23, 20, 0.12);
+  --glow-cyan: 0 10px 26px rgba(26, 23, 20, 0.12);
+  --glow-violet: 0 10px 26px rgba(26, 23, 20, 0.12);
+
+  --radius: 3px;
+
+  --header-bg: rgba(245, 242, 234, 0.9);
+  --header-blur: blur(6px);
+  --header-border: rgba(26, 23, 20, 0.28);
+  --selection-bg: rgba(138, 31, 20, 0.18);
+  --scrim-text-shadow: none;
+  --masthead-ink: var(--ink);
+  --masthead-shadow: none;
+
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Newsreader', Georgia, 'Times New Roman', serif;
+}
+
+/* ---- header: serif nameplate ---- */
+html[data-blog-theme="broadsheet"] .logo { font-family: var(--font-display); font-weight: 900; letter-spacing: -0.01em; }
+html[data-blog-theme="broadsheet"] .site-nav a { font-family: var(--font-display); color: var(--ink-dim); }
+html[data-blog-theme="broadsheet"] .site-nav a[aria-current="page"]::after { background: var(--accent); box-shadow: none; }
+
+/* ---- hero: nameplate over newsprint, no 3D ---- */
+html[data-blog-theme="broadsheet"] .three-hero { display: none; }
+html[data-blog-theme="broadsheet"] .hero { min-height: auto; border-bottom: 3px double var(--line-strong); }
+html[data-blog-theme="broadsheet"] .hero-scrim { background: none; }
+html[data-blog-theme="broadsheet"] .hero-content { padding-block: clamp(2.4rem, 5vw, 4rem); text-align: center; }
+html[data-blog-theme="broadsheet"] .masthead {
+  font-family: var(--font-display); font-weight: 900;
+  letter-spacing: -0.02em; line-height: 0.98;
+  font-size: clamp(3rem, 9vw, 6rem);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line-strong);
+}
+html[data-blog-theme="broadsheet"] .hero .lead {
+  margin-inline: auto; margin-top: 0.9rem; color: var(--ink-dim);
+  font-style: italic; font-size: clamp(1rem, 1.6vw, 1.2rem);
+  letter-spacing: 0.02em;
+}
+html[data-blog-theme="broadsheet"] .hero-cues { justify-content: center; }
+html[data-blog-theme="broadsheet"] .scroll-cue { display: none; }
+html[data-blog-theme="broadsheet"] .eyebrow { color: var(--accent); font-family: var(--font-display); }
+
+/* ---- section heads: thin-over-thick editorial rules ---- */
+html[data-blog-theme="broadsheet"] .section-title {
+  font-family: var(--font-display); font-weight: 900; letter-spacing: -0.01em;
+}
+html[data-blog-theme="broadsheet"] .section-head {
+  border-bottom: 3px solid var(--ink); padding-bottom: 0.4rem; align-items: baseline;
+}
+html[data-blog-theme="broadsheet"] .section-head .rule { display: none; }
+html[data-blog-theme="broadsheet"] .see-all { color: var(--accent); font-family: var(--font-display); }
+html[data-blog-theme="broadsheet"] .see-all:hover { text-shadow: none; text-decoration: underline; }
+
+/* ---- post cards (base + home) ---- */
+html[data-blog-theme="broadsheet"] .post-card {
+  --card-accent: var(--accent);
+  background: var(--bg-1); border: 1px solid var(--line);
+  box-shadow: none;
+}
+html[data-blog-theme="broadsheet"] .post-card::before { box-shadow: none; opacity: 1; }
+html[data-blog-theme="broadsheet"] .post-card:hover { box-shadow: 0 8px 22px rgba(26, 23, 20, 0.1); border-color: var(--line-strong); }
+html[data-blog-theme="broadsheet"] .post-card h3 { font-family: var(--font-display); font-weight: 700; color: var(--ink); }
+html[data-blog-theme="broadsheet"] .post-card p { color: var(--ink-dim); }
+html[data-blog-theme="broadsheet"] .post-meta { font-family: var(--font-display); color: var(--ink-faint); }
+html[data-blog-theme="broadsheet"] .tag-chip {
+  font-family: var(--font-display); color: var(--accent);
+  border-color: rgba(138, 31, 20, 0.4); background: rgba(138, 31, 20, 0.06); border-radius: 2px;
+}
+html[data-blog-theme="broadsheet"] .badge-interactive { color: #7a4a10; border-color: rgba(154, 90, 26, 0.5); background: rgba(154, 90, 26, 0.08); border-radius: 2px; }
+html[data-blog-theme="broadsheet"] .badge-interactive::before { background: #9a5a1a; box-shadow: none; }
+
+/* ---- ARCHIVE: multi-column newspaper index (default layout) ---- */
+html[data-blog-theme="broadsheet"] .archive-head .display { font-family: var(--font-display); font-weight: 900; }
+html[data-blog-theme="broadsheet"] .post-list.layout-newspaper { column-rule: 1px solid var(--line-strong); }
+html[data-blog-theme="broadsheet"] .post-list.layout-newspaper .post-card {
+  border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line);
+}
+html[data-blog-theme="broadsheet"] .post-list.layout-newspaper .post-card h3 {
+  font-family: var(--font-display); font-weight: 700; color: var(--ink);
+}
+html[data-blog-theme="broadsheet"] .post-list.layout-newspaper .post-card:hover h3 { color: var(--accent); }
+html[data-blog-theme="broadsheet"] .layout-select { font-family: var(--font-display); background: var(--bg-1); color: var(--ink-dim); border-radius: 2px; }
+html[data-blog-theme="broadsheet"] .filter-banner { background: rgba(138, 31, 20, 0.06); border-color: rgba(138, 31, 20, 0.3); border-radius: 2px; }
+
+/* ---- POST PAGE: serif body + drop-cap lede (default reading template only) ---- */
+html[data-blog-theme="broadsheet"] .post-hero .orbs,
+html[data-blog-theme="broadsheet"] .post-hero .grid-lines { display: none; }
+html[data-blog-theme="broadsheet"] .post-hero { border-bottom: 3px double var(--line-strong); }
+html[data-blog-theme="broadsheet"] .post-title-row h1 { font-family: var(--font-display); font-weight: 900; letter-spacing: -0.015em; }
+html[data-blog-theme="broadsheet"] .post-hero-meta,
+html[data-blog-theme="broadsheet"] .back-link { font-family: var(--font-display); color: var(--ink-dim); }
+html[data-blog-theme="broadsheet"] .article-body { color: #24201b; font-size: 1.16rem; line-height: 1.68; }
+html[data-blog-theme="broadsheet"] .article-body h2 { font-family: var(--font-display); font-weight: 700; border-top-color: var(--line-strong); }
+html[data-blog-theme="broadsheet"] .article-body h3 { font-family: var(--font-display); font-weight: 700; }
+html[data-blog-theme="broadsheet"] .article-body a { color: var(--accent); border-bottom-color: rgba(138, 31, 20, 0.4); }
+html[data-blog-theme="broadsheet"] .article-body a:hover { text-shadow: none; border-bottom-color: var(--accent); }
+html[data-blog-theme="broadsheet"] .article-body blockquote { border-left-color: var(--accent); color: var(--ink-dim); box-shadow: none; }
+html[data-blog-theme="broadsheet"] .article-body strong { color: #000; }
+html[data-blog-theme="broadsheet"] .article-body li::marker { color: var(--accent); }
+/* drop-cap opening — only on the default (observatory) reading template so
+   parchment/manuscript/etc. keep their own treatment */
+html[data-blog-theme="broadsheet"] article[data-template="observatory"] .article-body > p:first-of-type::first-letter {
+  float: left; font-family: var(--font-display); font-weight: 900;
+  font-size: 3.6em; line-height: 0.7; padding: 0.02em 0.1em 0 0; color: var(--accent);
+}
+html[data-blog-theme="broadsheet"] .post-nav-link { border-radius: 2px; }
+html[data-blog-theme="broadsheet"] .post-nav-link:hover { border-color: var(--line-strong); box-shadow: none; }
+html[data-blog-theme="broadsheet"] .pn-label { color: var(--accent); font-family: var(--font-display); }
+html[data-blog-theme="broadsheet"] .pn-title { font-family: var(--font-display); }
+
+/* ---- buttons ---- */
+html[data-blog-theme="broadsheet"] .btn { border-radius: 2px; font-family: var(--font-display); }
+html[data-blog-theme="broadsheet"] .btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+html[data-blog-theme="broadsheet"] .btn-primary:hover { background: #a8351f; box-shadow: 0 6px 16px rgba(138, 31, 20, 0.28); }
+html[data-blog-theme="broadsheet"] .btn-ghost { background: transparent; border: 1px solid var(--ink); color: var(--ink); }
+html[data-blog-theme="broadsheet"] .btn-ghost:hover { border-color: var(--accent); color: var(--accent); box-shadow: none; }
+
+/* ---- cards / subscribe / footer ---- */
+html[data-blog-theme="broadsheet"] .card,
+html[data-blog-theme="broadsheet"] .const-card,
+html[data-blog-theme="broadsheet"] .subscribe-card,
+html[data-blog-theme="broadsheet"] .stat-card,
+html[data-blog-theme="broadsheet"] .cv-item { background: var(--bg-1); border: 1px solid var(--line); box-shadow: none; }
+html[data-blog-theme="broadsheet"] .const-card::before { box-shadow: none; }
+html[data-blog-theme="broadsheet"] .const-card-name { font-family: var(--font-display); color: var(--ink); }
+html[data-blog-theme="broadsheet"] .subscribe-title { font-family: var(--font-display); font-weight: 900; }
+html[data-blog-theme="broadsheet"] .subscribe-form input { background: #fff; border-color: var(--line-strong); }
+html[data-blog-theme="broadsheet"] .stat-card .stat-value { filter: none; }
+html[data-blog-theme="broadsheet"] .site-footer a { font-family: var(--font-display); }
+html[data-blog-theme="broadsheet"] .site-footer a:hover { color: var(--accent); }

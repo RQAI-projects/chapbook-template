@@ -1,0 +1,157 @@
+/* ============================================================
+   THEME · Air  (Clean & Simple)  — LIGHT
+   ------------------------------------------------------------
+   Maximum whitespace, one soft-blue accent, quiet grotesque type.
+   The reference implementation for a LIGHT blog theme: it shows
+   how to relight every hardcoded-dark hotspot via the tokens
+   added in global.css (header / masthead / scrim / selection),
+   drop the 3D hero, and flatten the dark card chrome.
+   ============================================================ */
+
+html[data-blog-theme="air"] {
+  color-scheme: light;
+
+  /* surfaces — soft near-white, cool paper */
+  --bg-0: #fbfbfd;
+  --bg-1: #ffffff;
+  --bg-2: #ffffff;
+  --bg-3: #eef1f6;
+
+  /* ink — near-black with cool grey steps */
+  --ink: #16181d;
+  --ink-dim: #4a4f59;
+  --ink-faint: #7c828d;
+
+  /* accent — a single soft blue */
+  --teal: #2f6bff;
+  --cyan: #2f6bff;
+  --violet: #6b8cff;
+  --pink: #2f6bff;
+  --amber: #2f6bff;
+  --accent: #2f6bff;
+  --grad: linear-gradient(100deg, #2f6bff, #5b83ff 60%, #7d9bff);
+
+  /* lines — hairline cool grey */
+  --line: rgba(20, 30, 60, 0.10);
+  --line-strong: rgba(20, 30, 60, 0.18);
+
+  /* glows → soft ambient shadows on light */
+  --glow-teal: 0 8px 26px rgba(47, 107, 255, 0.14);
+  --glow-cyan: 0 8px 26px rgba(47, 107, 255, 0.14);
+  --glow-violet: 0 8px 26px rgba(47, 107, 255, 0.12);
+
+  --radius: 14px;
+
+  /* chrome hotspots → light */
+  --header-bg: rgba(255, 255, 255, 0.78);
+  --header-blur: saturate(1.4) blur(14px);
+  --header-border: rgba(20, 30, 60, 0.08);
+  --selection-bg: rgba(47, 107, 255, 0.18);
+  --scrim-text-shadow: none;
+  --masthead-ink: var(--ink);
+  --masthead-shadow: none;
+
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter Variable', 'Inter', system-ui, sans-serif;
+}
+
+/* Airy rhythm: more breathing room between sections */
+html[data-blog-theme="air"] .section { padding-block: clamp(2rem, 5vw, 4rem); }
+
+/* ---- header: quiet, letter-spaced ---- */
+html[data-blog-theme="air"] .logo { font-weight: 600; letter-spacing: 0.01em; }
+html[data-blog-theme="air"] .site-nav a { color: var(--ink-dim); }
+html[data-blog-theme="air"] .site-nav a[aria-current="page"]::after { box-shadow: none; background: var(--accent); }
+
+/* ---- hero: drop the 3D galaxy; pure whitespace + thin masthead ---- */
+html[data-blog-theme="air"] .three-hero { display: none; }
+html[data-blog-theme="air"] .hero { min-height: calc(56vh - var(--header-h)); }
+html[data-blog-theme="air"] .hero-scrim {
+  background: radial-gradient(120% 90% at 50% 0%, #f2f5ff, transparent 60%);
+}
+html[data-blog-theme="air"] .masthead {
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+html[data-blog-theme="air"] .hero .lead { color: var(--ink-dim); }
+html[data-blog-theme="air"] .scroll-cue { border-color: var(--line-strong); }
+html[data-blog-theme="air"] .scroll-cue span { background: var(--accent); box-shadow: none; }
+
+/* ---- section heads: thin rule, calm title ---- */
+html[data-blog-theme="air"] .section-title { font-weight: 600; letter-spacing: -0.02em; }
+html[data-blog-theme="air"] .section-head .rule { background: var(--line-strong); }
+html[data-blog-theme="air"] .see-all { color: var(--accent); }
+html[data-blog-theme="air"] .see-all:hover { text-shadow: none; opacity: 0.7; }
+
+/* ---- post cards: flat white, hairline, no dark glow ---- */
+html[data-blog-theme="air"] .post-card {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(20, 30, 60, 0.03);
+}
+html[data-blog-theme="air"] .post-card::before { box-shadow: none; opacity: 1; width: 3px; }
+html[data-blog-theme="air"] .post-card:hover {
+  border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 45%, var(--line-strong));
+  box-shadow: 0 12px 30px rgba(20, 30, 60, 0.08);
+}
+html[data-blog-theme="air"] .post-card h3 { color: var(--ink); font-weight: 600; }
+html[data-blog-theme="air"] .tag-chip {
+  color: var(--ink-dim); background: rgba(20, 30, 60, 0.04);
+  border-color: var(--line-strong);
+}
+html[data-blog-theme="air"] .badge-interactive {
+  color: #9a6a00; background: rgba(255, 176, 32, 0.12); border-color: rgba(255, 176, 32, 0.4);
+}
+html[data-blog-theme="air"] .badge-interactive::before { background: #f0a500; box-shadow: none; }
+
+/* index/reader layout accents on light */
+html[data-blog-theme="air"] .layout-select,
+html[data-blog-theme="air"] .wt-bar .wt-chip { background: rgba(20, 30, 60, 0.03); color: var(--ink-dim); }
+html[data-blog-theme="air"] .filter-banner { background: rgba(47, 107, 255, 0.06); border-color: rgba(47, 107, 255, 0.25); }
+
+/* ---- cards / const-cards / subscribe: white surfaces ---- */
+html[data-blog-theme="air"] .card,
+html[data-blog-theme="air"] .const-card,
+html[data-blog-theme="air"] .subscribe-card,
+html[data-blog-theme="air"] .stat-card,
+html[data-blog-theme="air"] .cv-item {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(20, 30, 60, 0.03);
+}
+html[data-blog-theme="air"] .const-card::before { box-shadow: none; }
+html[data-blog-theme="air"] .const-card:hover,
+html[data-blog-theme="air"] .card.ring:hover,
+html[data-blog-theme="air"] .card[data-tilt]:hover {
+  box-shadow: 0 14px 34px rgba(20, 30, 60, 0.10);
+  border-color: var(--line-strong);
+}
+html[data-blog-theme="air"] .subscribe-form input { background: var(--bg-0); border-color: var(--line-strong); }
+html[data-blog-theme="air"] .stat-card .stat-value { filter: none; }
+
+/* ---- buttons: solid accent + clean outline ---- */
+html[data-blog-theme="air"] .btn-primary {
+  background: var(--accent); color: #fff; box-shadow: 0 6px 18px rgba(47, 107, 255, 0.24);
+}
+html[data-blog-theme="air"] .btn-primary:hover { box-shadow: 0 10px 26px rgba(47, 107, 255, 0.32); }
+html[data-blog-theme="air"] .btn-ghost {
+  background: transparent; border: 1px solid var(--line-strong); color: var(--ink);
+}
+html[data-blog-theme="air"] .btn-ghost:hover { border-color: var(--accent); box-shadow: none; color: var(--accent); }
+
+/* ---- article body: dark ink on white, restrained links ---- */
+html[data-blog-theme="air"] .article-body { color: #23262d; font-weight: 400; }
+html[data-blog-theme="air"] .article-body strong { color: #000; }
+html[data-blog-theme="air"] .article-body a { color: var(--accent); border-bottom-color: rgba(47, 107, 255, 0.35); }
+html[data-blog-theme="air"] .article-body a:hover { text-shadow: none; border-bottom-color: var(--accent); }
+html[data-blog-theme="air"] .article-body img { box-shadow: 0 12px 34px rgba(20, 30, 60, 0.12); border-color: var(--line); }
+html[data-blog-theme="air"] .post-hero .orbs { opacity: 0.35; }
+
+/* ---- footer ---- */
+html[data-blog-theme="air"] .site-footer a:hover { color: var(--accent); }
+
+/* subtle fade-up of the masthead, respecting reduced motion */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-blog-theme="air"] .masthead { animation: air-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  @keyframes air-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+}

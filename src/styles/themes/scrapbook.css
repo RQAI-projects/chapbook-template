@@ -1,0 +1,254 @@
+/* ============================================================
+   THEME · Scrapbook  (Creative & Fun)  — LIGHT
+   ------------------------------------------------------------
+   Craft collage. Warm kraft-paper page, cocoa ink, a rosy accent
+   and a drawer of friendly pastels. Everything looks TAPED DOWN:
+   cards sit at gentle angles under a translucent strip of washi
+   tape (a ::after strip), held by soft dashed borders, set in
+   rounded Fredoka. Lovingly stuck-in, warm and handmade — the
+   opposite of a slick grid. Archive opens `cards` (a pinboard of
+   taped notes). The 3D hero is dropped for a paper masthead.
+
+   Text-bearing tokens resolve to a deep berry so links/labels
+   clear AA on the pale kraft; the airy pastels (--teal/--violet/
+   --pink/--amber) are decorative fills only — tape, tints, borders.
+   ============================================================ */
+
+html[data-blog-theme="scrapbook"] {
+  color-scheme: light;
+
+  /* surfaces — warm kraft paper + brighter note paper */
+  --bg-0: #f3ead8;   /* kraft page */
+  --bg-1: #faf3e6;   /* note paper (cards) */
+  --bg-2: #faf3e6;
+  --bg-3: #e9dcc2;   /* inputs / code */
+
+  /* ink — cocoa browns (all AA-safe on kraft) */
+  --ink: #3a2f26;
+  --ink-dim: #574838;   /* 7.3:1 */
+  --ink-faint: #75604a; /* 5.0:1 */
+
+  /* accents — rosy primary, deep berry for text, pastels for fills */
+  --teal: #7ba891;   /* sage pastel (decorative) */
+  --cyan: #a12d43;   /* deep berry — links / labels / markers (5.9:1) */
+  --violet: #b58cc4; /* lilac pastel (decorative) */
+  --pink: #e79aa6;   /* rose pastel (washi tape) */
+  --amber: #e0a95a;  /* amber pastel (washi tape) */
+  --accent: #cf4257; /* rosy — brief's #d1495b family, nudged for AA */
+  --accent-ink: #ffffff;   /* white on rosy = 4.6:1 ✓ */
+  --grad: linear-gradient(100deg, #cf4257, #e0a95a 55%, #b58cc4);
+
+  /* lines — warm, a touch heavier for the dashed hand-drawn look */
+  --line: rgba(90, 72, 50, 0.28);
+  --line-strong: rgba(90, 72, 50, 0.46);
+
+  /* glows → soft warm ambient shadows (no neon) */
+  --glow-teal: 0 8px 22px rgba(120, 90, 50, 0.18);
+  --glow-cyan: 0 8px 22px rgba(207, 66, 87, 0.18);
+  --glow-violet: 0 8px 22px rgba(120, 90, 50, 0.16);
+
+  --radius: 10px;   /* rounded, friendly */
+
+  /* chrome hotspots → warm paper */
+  --header-bg: rgba(243, 234, 216, 0.82);
+  --header-blur: saturate(1.2) blur(12px);
+  --header-border: rgba(90, 72, 50, 0.22);
+  --selection-bg: rgba(207, 66, 87, 0.22);
+  --scrim-text-shadow: 0 1px 0 rgba(255, 252, 244, 0.9);
+  --masthead-ink: var(--ink);
+  --masthead-shadow: none;
+
+  --font-display: 'Fredoka', 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+}
+
+/* faint paper-fibre fleck across the page */
+html[data-blog-theme="scrapbook"] body {
+  background-color: var(--bg-0);
+  background-image:
+    radial-gradient(rgba(120, 90, 50, 0.05) 1px, transparent 1.4px),
+    radial-gradient(rgba(120, 90, 50, 0.035) 1px, transparent 1.4px);
+  background-size: 15px 15px, 23px 23px;
+  background-position: 0 0, 8px 11px;
+}
+
+/* ---- header: rounded, warm ---- */
+html[data-blog-theme="scrapbook"] .logo { font-family: var(--font-display); font-weight: 600; color: var(--ink); }
+html[data-blog-theme="scrapbook"] .site-nav a { color: var(--ink-dim); }
+html[data-blog-theme="scrapbook"] .site-nav a[aria-current="page"] { color: var(--ink); }
+html[data-blog-theme="scrapbook"] .site-nav a[aria-current="page"]::after { background: var(--accent); box-shadow: none; height: 3px; border-radius: 3px; }
+html[data-blog-theme="scrapbook"] .theme-menu-panel button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+/* ---- hero: drop the 3D galaxy; warm paper + doodled masthead ---- */
+html[data-blog-theme="scrapbook"] .three-hero { display: none; }
+html[data-blog-theme="scrapbook"] .hero { min-height: calc(54vh - var(--header-h)); }
+html[data-blog-theme="scrapbook"] .hero-scrim {
+  background: radial-gradient(120% 95% at 50% 0%, #fbf5ea, transparent 62%);
+}
+html[data-blog-theme="scrapbook"] .masthead {
+  font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: underline; text-decoration-style: wavy;
+  text-decoration-color: var(--accent); text-underline-offset: 0.16em;
+  text-decoration-thickness: 0.06em;
+}
+html[data-blog-theme="scrapbook"] .hero .lead { color: var(--ink-dim); }
+html[data-blog-theme="scrapbook"] .scroll-cue { border-color: var(--line-strong); }
+html[data-blog-theme="scrapbook"] .scroll-cue span { background: var(--accent); box-shadow: none; }
+
+/* ---- eyebrow / section heads ---- */
+html[data-blog-theme="scrapbook"] .eyebrow { color: var(--cyan); }
+html[data-blog-theme="scrapbook"] .section-title { font-family: var(--font-display); font-weight: 600; }
+html[data-blog-theme="scrapbook"] .section-head .rule { background: repeating-linear-gradient(90deg, var(--line-strong) 0 6px, transparent 6px 11px); }
+html[data-blog-theme="scrapbook"] .see-all { color: var(--cyan); font-weight: 600; }
+html[data-blog-theme="scrapbook"] .see-all:hover { text-shadow: none; text-decoration: underline wavy var(--accent); }
+
+/* ---- post cards: taped-down notes at gentle angles ---- */
+html[data-blog-theme="scrapbook"] .post-card {
+  background: var(--bg-1);
+  border: 2px dashed color-mix(in srgb, var(--card-accent, var(--accent)) 48%, var(--ink-faint));
+  border-radius: var(--radius);
+  box-shadow: 0 6px 16px rgba(120, 90, 50, 0.14);
+  overflow: visible;                 /* let the washi tape overhang the top edge */
+  transform: rotate(-1.4deg);
+}
+html[data-blog-theme="scrapbook"] .post-card:nth-child(even) { transform: rotate(1.2deg); }
+html[data-blog-theme="scrapbook"] .post-card:nth-child(3n) { transform: rotate(-0.6deg); }
+html[data-blog-theme="scrapbook"] .post-card:nth-child(4n) { transform: rotate(0.8deg); }
+html[data-blog-theme="scrapbook"] .post-card:hover {
+  transform: rotate(0) translateY(-3px);
+  box-shadow: 0 14px 30px rgba(120, 90, 50, 0.22);
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 70%, transparent);
+}
+html[data-blog-theme="scrapbook"] .post-card::before { box-shadow: none; opacity: 0.9; border-radius: 3px; }
+/* the washi tape strip (::after — untouched by the layout rules) */
+html[data-blog-theme="scrapbook"] .post-card::after {
+  content: ""; position: absolute; top: -9px; left: 24px; z-index: 3;
+  width: 74px; height: 22px; transform: rotate(-7deg);
+  background-color: rgba(231, 154, 166, 0.55);
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.4) 0 5px, rgba(207, 66, 87, 0.14) 5px 10px);
+  border: 1px solid rgba(90, 72, 50, 0.16);
+  box-shadow: 0 2px 4px rgba(90, 72, 50, 0.16);
+  pointer-events: none;
+}
+html[data-blog-theme="scrapbook"] .post-card:nth-child(even)::after { left: auto; right: 24px; transform: rotate(6deg); background-color: rgba(181, 140, 196, 0.5); }
+html[data-blog-theme="scrapbook"] .post-card:nth-child(3n)::after { background-color: rgba(224, 169, 90, 0.5); transform: rotate(-4deg); }
+html[data-blog-theme="scrapbook"] .post-card h3 { font-family: var(--font-display); font-weight: 600; color: var(--ink); }
+html[data-blog-theme="scrapbook"] .post-card p { color: var(--ink-dim); }
+html[data-blog-theme="scrapbook"] .post-meta { color: var(--ink-faint); }
+html[data-blog-theme="scrapbook"] .tag-chip {
+  color: var(--cyan); background: rgba(207, 66, 87, 0.09);
+  border: 1px dashed color-mix(in srgb, var(--accent) 45%, var(--line-strong));
+  text-transform: none; transform: rotate(-1deg);
+}
+html[data-blog-theme="scrapbook"] .badge-interactive {
+  color: #7a4a12; background: rgba(224, 169, 90, 0.22);
+  border: 1px dashed rgba(180, 120, 40, 0.5); text-transform: none;
+}
+html[data-blog-theme="scrapbook"] .badge-interactive::before { background: #cf4257; box-shadow: none; }
+
+/* ---- archive: CARDS — a pinboard of taped notes ---- */
+html[data-blog-theme="scrapbook"] .archive-head .display { font-family: var(--font-display); font-weight: 600; }
+html[data-blog-theme="scrapbook"] .post-list.layout-cards { gap: 1.5rem 1.3rem; }
+html[data-blog-theme="scrapbook"] .post-list.layout-cards .post-card { padding: 1.2rem 1.2rem 1.3rem; }
+html[data-blog-theme="scrapbook"] .post-list.layout-cards .post-card:nth-child(5n) { transform: rotate(-1.9deg); }
+html[data-blog-theme="scrapbook"] .post-list.layout-cards .post-card:nth-child(7n) { transform: rotate(1.6deg); }
+
+/* archive controls / filters → rounded, warm, dashed accents */
+html[data-blog-theme="scrapbook"] .layout-select,
+html[data-blog-theme="scrapbook"] .filter-banner { border-color: var(--line-strong); color: var(--ink-dim); background: var(--bg-1); }
+html[data-blog-theme="scrapbook"] .filter-banner { border-style: dashed; border-color: color-mix(in srgb, var(--accent) 40%, var(--line-strong)); background: rgba(207, 66, 87, 0.06); }
+html[data-blog-theme="scrapbook"] .filter-banner b { color: var(--ink); }
+html[data-blog-theme="scrapbook"] .rail-title { color: var(--ink-faint); }
+html[data-blog-theme="scrapbook"] .topic-btn { color: var(--ink-dim); }
+html[data-blog-theme="scrapbook"] .topic-btn:hover { color: var(--ink); background: rgba(120, 90, 50, 0.07); }
+html[data-blog-theme="scrapbook"] .topic-btn.active { color: var(--ink); background: rgba(207, 66, 87, 0.12); border-color: color-mix(in srgb, var(--accent) 40%, var(--line-strong)); box-shadow: none; }
+html[data-blog-theme="scrapbook"] .chip,
+html[data-blog-theme="scrapbook"] .wt-bar .wt-chip { border-color: var(--line-strong); color: var(--ink-dim); }
+html[data-blog-theme="scrapbook"] .chip.active,
+html[data-blog-theme="scrapbook"] .wt-bar .wt-chip.active { color: #fff; background: var(--accent); border-color: var(--accent); box-shadow: none; }
+
+/* ---- generic cards / stats / cv / subscribe: dashed, taped feel ---- */
+html[data-blog-theme="scrapbook"] .card,
+html[data-blog-theme="scrapbook"] .const-card,
+html[data-blog-theme="scrapbook"] .subscribe-card,
+html[data-blog-theme="scrapbook"] .stat-card,
+html[data-blog-theme="scrapbook"] .cv-item {
+  background: var(--bg-1); border: 2px dashed var(--line-strong); border-radius: var(--radius);
+  box-shadow: 0 6px 16px rgba(120, 90, 50, 0.13);
+}
+html[data-blog-theme="scrapbook"] .const-card::before { box-shadow: none; border-radius: 3px; }
+html[data-blog-theme="scrapbook"] .const-card:hover,
+html[data-blog-theme="scrapbook"] .card.ring:hover,
+html[data-blog-theme="scrapbook"] .card[data-tilt]:hover { box-shadow: 0 14px 30px rgba(120, 90, 50, 0.2); border-color: color-mix(in srgb, var(--accent) 45%, var(--line-strong)); }
+html[data-blog-theme="scrapbook"] .stat-card .stat-value { background: none; -webkit-text-fill-color: currentColor; color: var(--cyan); filter: none; }
+html[data-blog-theme="scrapbook"] .subscribe-form input,
+html[data-blog-theme="scrapbook"] .field input,
+html[data-blog-theme="scrapbook"] .field textarea { background: var(--bg-0); border: 2px dashed var(--line-strong); color: var(--ink); }
+html[data-blog-theme="scrapbook"] .field input:focus,
+html[data-blog-theme="scrapbook"] .field textarea:focus { border-color: var(--accent); border-style: solid; box-shadow: 0 0 0 3px rgba(207, 66, 87, 0.14); }
+
+/* ---- buttons: rounded, warm, hand-pressed ---- */
+html[data-blog-theme="scrapbook"] .btn { font-family: var(--font-display); font-weight: 600; border-radius: 12px; }
+html[data-blog-theme="scrapbook"] .btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 16px rgba(207, 66, 87, 0.28); }
+html[data-blog-theme="scrapbook"] .btn-primary:hover { box-shadow: 0 10px 24px rgba(207, 66, 87, 0.36); transform: translateY(-2px) rotate(-1deg); }
+html[data-blog-theme="scrapbook"] .btn-ghost { background: transparent; color: var(--cyan); border: 2px dashed color-mix(in srgb, var(--accent) 55%, var(--line-strong)); }
+html[data-blog-theme="scrapbook"] .btn-ghost:hover { border-style: solid; border-color: var(--accent); color: var(--cyan); box-shadow: none; transform: translateY(-2px); }
+
+/* ---- post page: soften the ambient glow orbs to warm confetti ---- */
+html[data-blog-theme="scrapbook"] .post-hero .orbs { opacity: 0.4; }
+html[data-blog-theme="scrapbook"] .post-hero .grid-lines { display: none; }
+html[data-blog-theme="scrapbook"] .post-title-row h1 { font-family: var(--font-display); font-weight: 600; }
+html[data-blog-theme="scrapbook"] .post-hero-meta,
+html[data-blog-theme="scrapbook"] .back-link { color: var(--ink-dim); }
+html[data-blog-theme="scrapbook"] .back-link:hover { color: var(--cyan); }
+html[data-blog-theme="scrapbook"] .series-flag { border: 2px dashed color-mix(in srgb, var(--accent) 40%, var(--line-strong)); background: rgba(207, 66, 87, 0.07); color: var(--ink-dim); }
+html[data-blog-theme="scrapbook"] .series-flag:hover { border-color: var(--accent); box-shadow: var(--glow-cyan); color: var(--ink); }
+html[data-blog-theme="scrapbook"] .sf-part { color: var(--cyan); }
+html[data-blog-theme="scrapbook"] .sf-name { color: var(--ink); }
+html[data-blog-theme="scrapbook"] .post-nav-link { border: 2px dashed var(--line-strong); }
+html[data-blog-theme="scrapbook"] .post-nav-link:hover { border-color: var(--accent); box-shadow: var(--glow-cyan); }
+
+/* ---- article body: warm ink, berry links, dashed rules ---- */
+html[data-blog-theme="scrapbook"] .article-body { color: #40352a; font-weight: 400; }
+html[data-blog-theme="scrapbook"] .article-body strong { color: var(--ink); }
+html[data-blog-theme="scrapbook"] .article-body a { color: var(--cyan); border-bottom-color: rgba(161, 45, 67, 0.4); }
+html[data-blog-theme="scrapbook"] .article-body a:hover { color: var(--cyan); border-bottom-color: var(--accent); border-bottom-width: 2px; text-shadow: none; }
+html[data-blog-theme="scrapbook"] .article-body h2 { border-top: 2px dashed var(--line-strong); color: var(--ink); }
+html[data-blog-theme="scrapbook"] .article-body h3 { color: var(--ink); }
+html[data-blog-theme="scrapbook"] .article-body blockquote {
+  border-left: 4px dashed var(--accent); color: var(--ink-dim); box-shadow: none; font-style: italic;
+}
+html[data-blog-theme="scrapbook"] .article-body code { background: var(--bg-3); border-color: var(--line-strong); color: #4a3c2c; }
+html[data-blog-theme="scrapbook"] .article-body pre { background: var(--bg-1); border: 2px dashed var(--line-strong); }
+html[data-blog-theme="scrapbook"] .article-body hr { height: 0; border-top: 2px dashed var(--line-strong); background: none; }
+html[data-blog-theme="scrapbook"] .article-body img { border: 3px solid #fff; border-radius: 8px; box-shadow: 0 10px 26px rgba(120, 90, 50, 0.22); }
+html[data-blog-theme="scrapbook"] .article-body li::marker { color: var(--accent); }
+
+/* editorial flourish — ONLY the default reading template */
+html[data-blog-theme="scrapbook"] article[data-template="observatory"] .article-body h2 {
+  border-top: none; padding-top: 0.4em;
+}
+html[data-blog-theme="scrapbook"] article[data-template="observatory"] .article-body h2::after {
+  content: ""; display: block; width: 3.5rem; height: 0; margin-top: 0.35rem;
+  border-top: 3px dashed var(--accent);
+}
+html[data-blog-theme="scrapbook"] article[data-template="observatory"] .article-body > p:first-of-type::first-letter {
+  float: left; font-family: var(--font-display); font-weight: 700; font-size: 3em; line-height: 0.72;
+  padding: 0.02em 0.1em 0 0; color: var(--accent);
+}
+
+/* ---- footer ---- */
+html[data-blog-theme="scrapbook"] .site-footer { border-top: 2px dashed var(--line-strong); }
+html[data-blog-theme="scrapbook"] .site-footer a:hover { color: var(--cyan); }
+
+/* Static tilts are transforms, not motion — safe for reduced motion.
+   The only animated flourish: the masthead settles in like a pasted note. */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-blog-theme="scrapbook"] .masthead { animation: scrap-drop 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  @keyframes scrap-drop {
+    from { opacity: 0; transform: rotate(-3deg) translateY(-10px); }
+    to { opacity: 1; transform: rotate(0) translateY(0); }
+  }
+}

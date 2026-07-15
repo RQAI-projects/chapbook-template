@@ -1,0 +1,240 @@
+/* ============================================================
+   THEME · Comic  (Kids & First Blogs)  — LIGHT
+   ------------------------------------------------------------
+   Comic-book POW: halftone-cream paper, bold BLACK INK OUTLINES,
+   a faint halftone dot pattern and panel-style cards with a hard
+   black shadow. Signature = 3px black borders everywhere, heavy
+   UPPERCASE Fredoka headings, speech-bubble quotes and primary
+   red / blue / yellow pops. Clearly heavier than Crayon (black
+   ink + halftone + panels vs. coloured borders). Drops the 3D hero.
+   ============================================================ */
+
+html[data-blog-theme="comic"] {
+  color-scheme: light;
+
+  /* surfaces — halftone cream + white panels */
+  --bg-0: #fff8e6;
+  --bg-1: #ffffff;
+  --bg-2: #fffdf5;
+  --bg-3: #fff0c2;
+
+  /* ink — comic black */
+  --ink: #14110c;
+  --ink-dim: #2e2a22;
+  --ink-faint: #5a5348;
+
+  /* primary pops */
+  --teal: #2b6cff;   /* blue */
+  --cyan: #2b6cff;
+  --violet: #7b3ff2;
+  --pink: #ff5aa0;
+  --amber: #ffd21f;  /* yellow */
+  --accent: #ff3b3b; /* comic red */
+  --accent-ink: #ffffff;
+  --grad: linear-gradient(100deg, #ff3b3b, #ffd21f 50%, #2b6cff);
+
+  /* lines → heavy black ink */
+  --line: rgba(20, 17, 12, 0.22);
+  --line-strong: #14110c;
+
+  --glow-teal: 0 0 0 rgba(0, 0, 0, 0);
+  --glow-cyan: 0 0 0 rgba(0, 0, 0, 0);
+  --glow-violet: 0 0 0 rgba(0, 0, 0, 0);
+
+  --radius: 10px;
+
+  --header-bg: rgba(255, 248, 230, 0.9);
+  --header-blur: saturate(1.3) blur(8px);
+  --header-border: #14110c;
+  --selection-bg: rgba(255, 59, 59, 0.24);
+  --scrim-text-shadow: none;
+  --masthead-ink: #14110c;
+  --masthead-shadow: 3px 3px 0 #ff3b3b, 6px 6px 0 rgba(20, 17, 12, 0.9);
+
+  --font-display: 'Fredoka', 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible', 'Inter', system-ui, sans-serif;
+}
+
+html[data-blog-theme="comic"] .section { padding-block: clamp(1.6rem, 4vw, 3rem); }
+
+/* ---- header: inked bottom rule ---- */
+html[data-blog-theme="comic"] .site-header { border-bottom-width: 3px; }
+html[data-blog-theme="comic"] .logo { font-weight: 700; letter-spacing: 0; text-transform: uppercase; }
+html[data-blog-theme="comic"] .site-nav a { color: var(--ink-dim); font-weight: 600; }
+html[data-blog-theme="comic"] .site-nav a[aria-current="page"]::after { box-shadow: none; height: 4px; border-radius: 0; background: var(--accent); }
+
+/* ---- hero: drop the galaxy; halftone sky + inked title ---- */
+html[data-blog-theme="comic"] .three-hero { display: none; }
+html[data-blog-theme="comic"] .hero { min-height: calc(56vh - var(--header-h)); }
+html[data-blog-theme="comic"] .hero-scrim {
+  background:
+    radial-gradient(circle, rgba(255, 59, 59, 0.16) 1.2px, transparent 1.6px) 0 0 / 9px 9px,
+    radial-gradient(120% 96% at 82% 8%, rgba(255, 210, 31, 0.28), transparent 55%),
+    radial-gradient(120% 96% at 16% 24%, rgba(43, 108, 255, 0.12), transparent 55%);
+}
+html[data-blog-theme="comic"] .masthead { font-weight: 700; text-transform: uppercase; letter-spacing: 0.01em; }
+html[data-blog-theme="comic"] .hero .lead { color: var(--ink-dim); }
+html[data-blog-theme="comic"] .scroll-cue { border-color: var(--ink); border-width: 3px; }
+html[data-blog-theme="comic"] .scroll-cue span { background: var(--accent); box-shadow: none; }
+
+/* ---- eyebrow / section heads: bold inked ---- */
+html[data-blog-theme="comic"] .eyebrow { color: #d11414; text-shadow: none; font-weight: 600; letter-spacing: 0.16em; }
+html[data-blog-theme="comic"] .section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.01em; }
+html[data-blog-theme="comic"] .section-head .rule { background: var(--ink); height: 3px; }
+html[data-blog-theme="comic"] .see-all { color: #1a56e6; font-weight: 600; }
+html[data-blog-theme="comic"] .see-all:hover { text-shadow: none; opacity: 0.75; }
+
+/* ---- post cards: comic panels — 3px black ink + hard black shadow + faint halftone ---- */
+html[data-blog-theme="comic"] .post-card {
+  background:
+    radial-gradient(circle, rgba(20, 17, 12, 0.08) 1px, transparent 1.5px) 0 0 / 8px 8px,
+    var(--bg-1);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 6px 6px 0 var(--ink);
+  overflow: hidden;
+}
+html[data-blog-theme="comic"] .post-card::before {
+  width: 8px; border-radius: 0;
+  background: var(--card-accent, var(--accent));
+  border-right: 3px solid var(--ink);
+  box-shadow: none; opacity: 1;
+}
+html[data-blog-theme="comic"] .post-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 9px 9px 0 var(--ink);
+  border-color: var(--ink);
+}
+html[data-blog-theme="comic"] .post-card:hover::before { width: 8px; }
+html[data-blog-theme="comic"] .post-card h3 { color: var(--ink); font-weight: 700; }
+html[data-blog-theme="comic"] .post-card p { color: var(--ink-dim); }
+html[data-blog-theme="comic"] .post-meta { color: var(--ink-faint); }
+html[data-blog-theme="comic"] .tag-chip {
+  color: var(--ink); font-weight: 700; text-transform: uppercase;
+  background: var(--amber); border: 2px solid var(--ink); border-radius: 6px;
+}
+html[data-blog-theme="comic"] .badge-interactive {
+  color: var(--ink); font-weight: 700; background: #fff; border: 2px solid var(--ink); border-radius: 6px;
+}
+html[data-blog-theme="comic"] .badge-interactive::before { background: var(--accent); box-shadow: none; }
+
+/* archive "cards" grid: re-assert the panel tab (base layout zeroes ::before width) */
+html[data-blog-theme="comic"] .post-list.layout-cards .post-card { border-color: var(--ink); }
+html[data-blog-theme="comic"] .post-list.layout-cards .post-card::before { width: 8px; }
+html[data-blog-theme="comic"] .post-list.layout-cards .post-card:hover { border-color: var(--ink); }
+
+/* ---- cards / const / subscribe / stat / cv: inked panels ---- */
+html[data-blog-theme="comic"] .card,
+html[data-blog-theme="comic"] .const-card,
+html[data-blog-theme="comic"] .subscribe-card,
+html[data-blog-theme="comic"] .stat-card,
+html[data-blog-theme="comic"] .cv-item {
+  background: var(--bg-1);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+html[data-blog-theme="comic"] .const-card::before { box-shadow: none; }
+html[data-blog-theme="comic"] .const-card:hover,
+html[data-blog-theme="comic"] .card.ring:hover,
+html[data-blog-theme="comic"] .card[data-tilt]:hover {
+  transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--accent); border-color: var(--ink);
+}
+html[data-blog-theme="comic"] .cv-item:hover { box-shadow: 5px 5px 0 var(--cyan); }
+html[data-blog-theme="comic"] .subscribe-form input,
+html[data-blog-theme="comic"] .field input,
+html[data-blog-theme="comic"] .field textarea {
+  background: var(--bg-1); border: 3px solid var(--ink); border-radius: 10px; color: var(--ink);
+}
+html[data-blog-theme="comic"] .field input:focus,
+html[data-blog-theme="comic"] .field textarea:focus,
+html[data-blog-theme="comic"] .subscribe-form input:focus {
+  border-color: var(--accent); box-shadow: 4px 4px 0 var(--accent);
+}
+html[data-blog-theme="comic"] .stat-card .stat-value { filter: none; }
+
+/* ---- buttons: inked panels with a hard black shadow ---- */
+html[data-blog-theme="comic"] .btn { border-radius: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
+html[data-blog-theme="comic"] .btn-primary {
+  background: #e01212; color: #fff; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+}
+html[data-blog-theme="comic"] .btn-primary:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+html[data-blog-theme="comic"] .btn-ghost {
+  background: var(--amber); color: var(--ink); border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+}
+html[data-blog-theme="comic"] .btn-ghost:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--accent); border-color: var(--ink); color: var(--ink); }
+
+/* ---- article body: uppercase inked headings + speech-bubble quotes ---- */
+html[data-blog-theme="comic"] .article-body { color: #211d16; font-weight: 400; }
+html[data-blog-theme="comic"] .article-body strong { color: #000; }
+html[data-blog-theme="comic"] .article-body a { color: #1a56e6; border-bottom-color: rgba(26, 86, 230, 0.4); font-weight: 600; }
+html[data-blog-theme="comic"] .article-body a:hover { text-shadow: none; border-bottom-color: #1a56e6; }
+html[data-blog-theme="comic"] .article-body h2 {
+  border-top: 3px solid var(--ink); text-transform: uppercase; font-weight: 700; letter-spacing: 0.01em;
+}
+html[data-blog-theme="comic"] .article-body h3 { font-weight: 700; }
+html[data-blog-theme="comic"] .article-body li::marker { color: var(--accent); }
+html[data-blog-theme="comic"] .article-body blockquote {
+  position: relative;
+  border: 3px solid var(--ink); border-left-width: 3px; border-radius: 14px;
+  background: #fff; color: var(--ink); font-style: normal; font-weight: 500;
+  padding: 1em 1.2em; box-shadow: 4px 4px 0 var(--ink); margin-bottom: 1.6em;
+}
+html[data-blog-theme="comic"] .article-body blockquote::before {
+  content: ""; position: absolute; left: 2.2em; bottom: -18px;
+  width: 22px; height: 18px; background: #fff;
+  border-right: 3px solid var(--ink); border-bottom: 3px solid var(--ink);
+  transform: skewX(-18deg); border-radius: 0 0 6px 0;
+}
+html[data-blog-theme="comic"] .article-body code { background: var(--amber); border: 2px solid var(--ink); color: var(--ink); border-radius: 5px; }
+html[data-blog-theme="comic"] .article-body pre { background: #fff; border: 3px solid var(--ink); border-radius: 10px; box-shadow: 5px 5px 0 var(--ink); }
+html[data-blog-theme="comic"] .article-body hr { height: 4px; background: var(--ink); border-radius: 0; }
+html[data-blog-theme="comic"] .article-body img { border: 3px solid var(--ink); border-radius: 8px; box-shadow: 6px 6px 0 var(--ink); }
+
+/* ---- archive chrome ---- */
+html[data-blog-theme="comic"] .archive-head .display { font-weight: 700; text-transform: uppercase; }
+html[data-blog-theme="comic"] .rail-title { color: var(--ink-faint); }
+html[data-blog-theme="comic"] .layout-select,
+html[data-blog-theme="comic"] .wt-bar .wt-chip,
+html[data-blog-theme="comic"] .chip,
+html[data-blog-theme="comic"] .topic-btn {
+  color: var(--ink-dim); background: var(--bg-1); border: 2px solid var(--ink); border-radius: 8px; font-weight: 600;
+}
+html[data-blog-theme="comic"] .filter-banner { background: var(--amber); border: 3px solid var(--ink); color: var(--ink); border-radius: 8px; }
+html[data-blog-theme="comic"] .chip.active,
+html[data-blog-theme="comic"] .wt-bar .wt-chip.active,
+html[data-blog-theme="comic"] .topic-btn.active {
+  color: #fff; background: var(--accent); border-color: var(--ink); box-shadow: 3px 3px 0 var(--ink);
+}
+html[data-blog-theme="comic"] .chip.active .count,
+html[data-blog-theme="comic"] .topic-btn.active .count { color: #fff; border-color: rgba(255, 255, 255, 0.6); }
+
+/* ---- post page ---- */
+html[data-blog-theme="comic"] .post-hero .grid-lines { display: none; }
+html[data-blog-theme="comic"] .post-hero .orbs { opacity: 0.4; }
+html[data-blog-theme="comic"] .back-link,
+html[data-blog-theme="comic"] .post-nav-link { border: 2px solid var(--ink); border-radius: 8px; color: var(--ink-dim); }
+html[data-blog-theme="comic"] .back-link:hover,
+html[data-blog-theme="comic"] .post-nav-link:hover { border-color: var(--accent); color: #d11414; }
+html[data-blog-theme="comic"] .series-flag { color: #1a56e6; }
+html[data-blog-theme="comic"] .post-cta { border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 6px 6px 0 var(--ink); }
+
+/* ---- footer ---- */
+html[data-blog-theme="comic"] .site-footer { border-top-width: 3px; }
+html[data-blog-theme="comic"] .site-footer a:hover { color: #d11414; }
+
+/* ---- editorial flourish: inked drop-cap (default reading template only) ---- */
+html[data-blog-theme="comic"] article[data-template="observatory"] .article-body > p:first-of-type::first-letter {
+  float: left; font-family: var(--font-display); font-weight: 700;
+  font-size: 3.1em; line-height: 0.7; padding: 0.02em 0.12em 0 0;
+  color: var(--accent); -webkit-text-stroke: 2px var(--ink);
+}
+
+/* ---- motion: POW pop ---- */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-blog-theme="comic"] .masthead { animation: comic-pow 0.5s cubic-bezier(0.2, 1.5, 0.35, 1) both; }
+  @keyframes comic-pow {
+    0% { opacity: 0; transform: scale(0.8) rotate(-3deg); }
+    100% { opacity: 1; transform: none; }
+  }
+}
