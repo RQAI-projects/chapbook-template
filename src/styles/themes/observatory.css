@@ -17,10 +17,10 @@
      chrome    --header-bg/-border · --scrim-text-shadow · --masthead-ink/-shadow
 
    Every other theme in this folder overrides that layer under
-   [data-blog-theme="<id>"]. Observatory leaves it untouched.
+   html[data-blog-theme="<id>"]. Observatory leaves it untouched.
    ============================================================ */
 
 /* Marker only — no visual effect; lets tooling confirm the theme loaded. */
-[data-blog-theme="observatory"] {
+html[data-blog-theme="observatory"] {
   --blog-theme: "observatory";
 }
