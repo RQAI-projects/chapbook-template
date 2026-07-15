@@ -1,0 +1,457 @@
+---
+import Base from '../../layouts/Base.astro';
+import TopicRail from '../../components/TopicRail.astro';
+import GlyphBadge from '../../components/GlyphBadge.astro';
+import { getCollection } from 'astro:content';
+import topics from '../../data/topics.json';
+import { site } from '../../lib/site';
+import { withBase } from '../../lib/withBase';
+import profile from '../../data/profile.json';
+import { seriesContextFor, seriesSlug } from '../../lib/series';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+
+const all = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const idx = all.findIndex((p) => p.slug === post.slug);
+const prev = idx < all.length - 1 ? all[idx + 1] : null;
+const next = idx > 0 ? all[idx - 1] : null;
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const readMins = Math.max(1, Math.round(post.body.split(/\s+/).length / 220));
+
+// Series context — the indicator ("Part N of M · <Series>"), the contents list and
+// the within-series prev/next. Null for a standalone post (renders nothing).
+const series = seriesContextFor(post, all);
+
+// Resolve broad topic for the glyph badge.
+const broadTags = new Set(topics.map((t) => t.tag));
+const topic = (post.data.tags || []).find((t) => broadTags.has(t)) || 'forge';
+
+// --- Reading templates ---------------------------------------------------
+// Six reading-surface treatments. Precedence: frontmatter `template` (a per-post
+// LOCK) > the reader's global `localStorage 'post-template'` pref > 'observatory'
+// (default dark house style). The server renders the *frontmatter or default*
+// value into data-template; an inline no-flash script swaps in the saved pref
+// when the post is NOT locked. The fixed nav stays dark (it lives outside the
+// post root, so the surface overrides never reach it).
+const TEMPLATES = ['observatory', 'parchment', 'manuscript', 'newsprint', 'slate', 'focus'] as const;
+const TEMPLATE_LABELS: Record<(typeof TEMPLATES)[number], string> = {
+  observatory: 'Observatory',
+  parchment: 'Parchment',
+  manuscript: 'Manuscript',
+  newsprint: 'Newsprint',
+  slate: 'Slate',
+  focus: 'Focus',
+};
+const lockedTemplate = post.data.template ?? null;       // frontmatter lock, or null
+const initialTemplate = lockedTemplate ?? 'observatory'; // SSR default before JS
+
+// --- SEO/AEO: canonical + share image + BlogPosting JSON-LD ---
+// These resolve against `site` (not base-aware), so base-prefix the paths so a
+// Pages sub-path deploy emits correct absolute URLs. No-op at base '/'.
+const canonical = new URL(withBase(`/blog/${post.slug}/`), Astro.site).href;
+// Per-post generated share card (real photo in frontmatter wins, if a post sets one).
+const shareImage = post.data.image ?? `/og/${post.slug}.png`;
+const imageUrl = new URL(withBase(shareImage), Astro.site).href;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.date.toISOString(),
+  dateModified: post.data.date.toISOString(),
+  url: canonical,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+  image: imageUrl,
+  keywords: (post.data.tags || []).join(', '),
+  author: {
+    '@type': 'Person',
+    name: site.name,
+    jobTitle: profile.role,
+    url: `${site.url}/about/`,
+  },
+  publisher: {
+    '@type': 'Person',
+    name: site.name,
+    url: `${site.url}/`,
+  },
+  isPartOf: {
+    '@type': 'Blog',
+    name: site.masthead,
+    url: `${site.url}/`,
+  },
+};
+---
+<Base
+  title={post.data.title}
+  description={post.data.description}
+  ogImage={shareImage}
+  ogType="article"
+  progress
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <article
+    style={`--post-accent:${post.data.accent}`}
+    data-post-theme={post.data.theme}
+    data-template={initialTemplate}
+    data-template-locked={lockedTemplate ? '' : undefined}
+  >
+    {/* No-flash: apply the saved global template BEFORE paint, unless this post
+        locks one. As the first child it runs synchronously the moment <article>
+        is parsed, so the surface never flips after first render. The page-load
+        binder below re-syncs after view transitions + wires the switcher. */}
+    <script is:inline define:vars={{ locked: lockedTemplate }}>
+      (function () {
+        if (locked) return; // frontmatter lock wins — keep the SSR value
+        var ok = ['observatory', 'parchment', 'manuscript', 'newsprint', 'slate', 'focus'];
+        try {
+          var saved = localStorage.getItem('post-template');
+          var a = document.currentScript.closest('article[data-template]');
+          if (a && saved && ok.indexOf(saved) !== -1) a.setAttribute('data-template', saved);
+        } catch (e) {}
+      })();
+    </script>
+    <div class="container article-grid">
+      <TopicRail activeTags={post.data.tags} />
+      <div class="article-col">
+        <header class="post-hero">
+          <div class="orbs">
+            <div class="orb orb-a" style="background:color-mix(in srgb, var(--post-accent) 18%, transparent); opacity:0.7"></div>
+            <div class="orb orb-b" style="opacity:0.4"></div>
+          </div>
+          <div class="grid-lines" aria-hidden="true"></div>
+          <div class="post-hero-inner">
+            <a class="back-link" href={withBase('/posts/')} data-reveal>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M19 12H5m6 6-6-6 6-6"/></svg>
+              All Posts
+            </a>
+            <div class="post-title-row">
+              <h1 class="display scrim-text" data-reveal data-delay="0.06">{post.data.title}</h1>
+              <GlyphBadge glyph={post.data.glyph} topic={topic} />
+            </div>
+            <div class="post-hero-meta" data-reveal data-delay="0.12">
+              <time datetime={post.data.date.toISOString()}>{fmt(post.data.date)}</time>
+              <span aria-hidden="true">·</span>
+              <span>{readMins} min read</span>
+              {post.data.tags.includes('interactive') && <span class="badge-interactive">Interactive</span>}
+              {post.data.tags.filter((t) => t !== 'interactive').map((t) => (
+                <a class="tag-chip" href={withBase(`/c/${t}/`)}>{t}</a>
+              ))}
+            </div>
+            {series && (
+              <a class="series-flag" href={withBase(`/series/${series.slug}/`)} data-reveal data-delay="0.16">
+                <span class="sf-part">Part {series.part} of {series.total}</span>
+                <span class="sf-dot" aria-hidden="true">·</span>
+                <span class="sf-name">{series.name}</span>
+              </a>
+            )}
+            <div class="template-control" data-reveal data-delay="0.2">
+              <label class="template-label" for="template-select">Template</label>
+              <select
+                id="template-select"
+                class="template-select"
+                aria-label="Reading template"
+                disabled={lockedTemplate ? true : undefined}
+              >
+                {TEMPLATES.map((t) => (
+                  <option value={t} selected={t === initialTemplate}>{TEMPLATE_LABELS[t]}</option>
+                ))}
+              </select>
+              {lockedTemplate && <span class="template-lock" title="This post sets its own template">locked</span>}
+            </div>
+          </div>
+        </header>
+        <div class="article-body" data-reveal data-delay="0.1">
+        <Content />
+        {series && (
+          <aside class="series-contents" aria-label={`${series.name} — series contents`}>
+            <div class="sc-head">
+              <span class="sc-eyebrow">Series</span>
+              <a class="sc-title" href={withBase(`/series/${series.slug}/`)}>{series.name}</a>
+            </div>
+            <ol class="sc-list">
+              {series.posts.map((p, i) => (
+                <li class={p.slug === post.slug ? 'sc-current' : ''}>
+                  <span class="sc-n" aria-hidden="true">{i + 1}</span>
+                  {p.slug === post.slug
+                    ? <span class="sc-this" aria-current="true">{p.data.title}<span class="sc-here"> — you’re here</span></span>
+                    : <a href={withBase(`/blog/${p.slug}/`)}>{p.data.title}</a>}
+                </li>
+              ))}
+            </ol>
+          </aside>
+        )}
+        </div>
+      </div>
+    </div>
+
+    <footer class="post-footer">
+      <div class="container">
+        {series && (series.prev || series.next) && (
+          <nav class="series-nav" aria-label={`${series.name} series`}>
+            {series.prev ? (
+              <a class="series-nav-link" href={withBase(`/blog/${series.prev.slug}/`)}>
+                <span class="sn-label">← Previous in series</span>
+                <span class="sn-title">{series.prev.data.title}</span>
+              </a>
+            ) : <span />}
+            {series.next ? (
+              <a class="series-nav-link sn-next" href={withBase(`/blog/${series.next.slug}/`)}>
+                <span class="sn-label">Next in series →</span>
+                <span class="sn-title">{series.next.data.title}</span>
+              </a>
+            ) : <span />}
+          </nav>
+        )}
+        <nav class="post-nav" aria-label="More posts">
+          {prev ? (
+            <a class="post-nav-link" href={withBase(`/blog/${prev.slug}/`)}>
+              <span class="pn-label">← Older</span>
+              <span class="pn-title">{prev.data.title}</span>
+            </a>
+          ) : <span />}
+          {next ? (
+            <a class="post-nav-link pn-next" href={withBase(`/blog/${next.slug}/`)}>
+              <span class="pn-label">Newer →</span>
+              <span class="pn-title">{next.data.title}</span>
+            </a>
+          ) : <span />}
+        </nav>
+        <div class="post-cta">
+          <p>Thoughts, corrections, disagreements — all welcome.</p>
+          <div class="post-cta-btns">
+            <a class="btn btn-primary" href={withBase('/contact/')}>Get in touch</a>
+            <a class="btn btn-ghost" href={withBase('/posts/')}>More writing</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </article>
+
+  <script>
+    // Reading-template switcher. Applies the chosen key via data-template on the
+    // <article> root (CSS in global.css restyles only the reading surface). The
+    // choice is a GLOBAL preference (localStorage 'post-template') so it follows
+    // the reader across every post — never in the URL. A post that LOCKS a template
+    // (data-template-locked, set from frontmatter) ignores + disables the switcher.
+    function initPostTemplate() {
+      const article = document.querySelector('article[data-template]');
+      const sel = document.getElementById('template-select') as HTMLSelectElement | null;
+      if (!article || !sel || sel.dataset.bound) return;
+      sel.dataset.bound = '1';
+      const KEYS = ['observatory', 'parchment', 'manuscript', 'newsprint', 'slate', 'focus'];
+      const locked = article.hasAttribute('data-template-locked');
+
+      if (locked) {
+        // Frontmatter forces this template — reflect it, lock the control, stop.
+        sel.value = article.getAttribute('data-template') || 'observatory';
+        sel.disabled = true;
+        return;
+      }
+
+      const apply = (key: string) => {
+        const k = KEYS.includes(key) ? key : 'observatory';
+        article.setAttribute('data-template', k);
+        sel.value = k;
+        try { localStorage.setItem('post-template', k); } catch (e) {}
+      };
+      sel.addEventListener('change', () => apply(sel.value));
+      // Sync to the saved pref on load (covers view-transition navigations where the
+      // inline no-flash script of the new page already ran, but keeps the two in step).
+      let saved = 'observatory';
+      try { saved = localStorage.getItem('post-template') || 'observatory'; } catch (e) {}
+      apply(saved);
+    }
+    document.addEventListener('astro:page-load', initPostTemplate);
+  </script>
+</Base>
+
+<style>
+  /* Hero now lives INSIDE the content column (right of the full-height rail), so the
+     rail spans hero+article from the very top. Decorative orbs/grid-lines bleed within
+     the column; a hairline divides hero from the article body. */
+  .post-hero {
+    position: relative; overflow: hidden;
+    margin-bottom: clamp(1.4rem, 3vw, 2.2rem);
+    padding-bottom: clamp(1.2rem, 3vw, 1.8rem);
+    border-bottom: 1px solid var(--line);
+  }
+  .post-hero-inner { position: relative; z-index: 1; max-width: 860px; }
+
+  /* Reading-template switcher — styled like the archive's LAYOUT control. Sits in
+     the hero, right-aligned. Uses the surface vars so it adapts to each template
+     (dark-on-light on parchment/newsprint, light-on-dark elsewhere). */
+  .template-control {
+    display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end;
+    margin-top: 1.1rem;
+  }
+  .template-label {
+    font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  .template-select {
+    font-family: var(--font-display); font-size: 0.8rem; color: var(--ink);
+    padding: 0.34em 2em 0.34em 0.8em; border: 1px solid var(--line-strong);
+    border-radius: 99px; background-color: rgba(140, 160, 200, 0.06);
+    cursor: pointer; -webkit-tap-highlight-color: transparent; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2322d3ee' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.7em center;
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+  }
+  .template-select:hover { border-color: color-mix(in srgb, var(--cyan) 45%, var(--line-strong)); }
+  .template-select:disabled { opacity: 0.65; cursor: default; }
+  .template-select option { background: var(--bg-2); color: var(--ink); }
+  .template-lock {
+    font-family: var(--font-display); font-size: 0.66rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-faint);
+    border: 1px solid var(--line-strong); border-radius: 99px; padding: 0.2em 0.6em;
+  }
+
+  /* Title + glyph badge row */
+  .post-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin-top: 0.7rem;
+  }
+  .post-title-row h1 {
+    flex: 1 1 0;
+    font-size: clamp(1.75rem, 4vw, 2.7rem);
+    margin-top: 0; /* row handles vertical rhythm */
+  }
+  /* Badge sits to the right of the title on desktop */
+  .post-title-row :global(.glyph-badge) {
+    flex-shrink: 0;
+    align-self: center;
+    opacity: 0.9;
+  }
+  /* On narrow screens: stack — badge centred above title */
+  @media (max-width: 640px) {
+    .post-title-row {
+      flex-direction: column-reverse;
+      align-items: center;
+      text-align: center;
+    }
+    .post-title-row h1 { text-align: left; }
+  }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 0.45em;
+    font-family: var(--font-display); font-size: 0.9rem; color: var(--ink-dim);
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--cyan); }
+  .post-hero-meta {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.85rem;
+    margin-top: 0.85rem;
+    font-family: var(--font-display); font-size: 0.9rem; color: var(--ink-dim);
+  }
+
+  /* Series indicator under the hero meta — "Part N of M · <Series>" */
+  .series-flag {
+    display: inline-flex; align-items: baseline; gap: 0.5em; flex-wrap: wrap;
+    margin-top: 0.85rem; padding: 0.4em 0.85em;
+    border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 99px;
+    background: rgba(34, 211, 238, 0.07);
+    font-family: var(--font-display); font-size: 0.85rem; color: var(--ink-dim);
+    transition: border-color 0.25s, box-shadow 0.25s, color 0.2s;
+  }
+  .series-flag:hover { border-color: rgba(34, 211, 238, 0.55); box-shadow: var(--glow-cyan); color: var(--ink); }
+  .sf-part { color: var(--cyan); font-weight: 700; letter-spacing: 0.02em; }
+  .sf-dot { color: var(--ink-faint); }
+  .sf-name { color: var(--ink); }
+
+  /* The grid itself owns no top padding — the rail (sticky, top:var(--header-h),
+     full-height) and the content column both start flush at the very top. */
+  article > .container.article-grid { padding-block: 0 clamp(1.6rem, 3.5vw, 2.6rem); }
+  .article-grid {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    gap: 1.8rem;
+    align-items: start;
+  }
+  /* content column holds the hero + article body; the rail is its full-height sibling */
+  .article-col { min-width: 0; padding-top: clamp(1.6rem, 3.5vw, 2.6rem); }
+  .article-grid .article-body { margin-inline: 0; }
+  @media (max-width: 880px) {
+    .article-grid { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
+    /* write-up first; the collapsible Topics accordion sits AFTER the article.
+       .topic-rail is a child component (own scope) → :global to reach it. */
+    .article-grid > .article-col { order: 1; }
+    .article-grid > :global(.topic-rail) { order: 2; }
+  }
+
+  .post-footer { border-top: 1px solid var(--line); padding-block: 2.6rem 1rem; }
+  .post-nav {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    max-width: 860px; margin-inline: auto;
+  }
+  .post-nav-link {
+    display: grid; gap: 0.25rem; padding: 1rem 1.2rem;
+    border: 1px solid var(--line); border-radius: 12px;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .post-nav-link:hover { border-color: rgba(34, 211, 238, 0.4); box-shadow: var(--glow-cyan); }
+  .pn-next { text-align: right; }
+  .pn-label { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); }
+  .pn-title { font-family: var(--font-display); font-size: 0.95rem; color: var(--ink); }
+  @media (max-width: 560px) { .post-nav { grid-template-columns: 1fr; } .pn-next { text-align: left; } }
+
+  /* Series contents — compact "other parts" list at the end of the write-up */
+  .series-contents {
+    margin-top: 2.4rem; padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line); border-left: 3px solid var(--cyan);
+    border-radius: 12px; background: rgba(34, 211, 238, 0.04);
+  }
+  .sc-head { display: flex; align-items: baseline; gap: 0.6em; flex-wrap: wrap; margin-bottom: 0.7rem; }
+  .sc-eyebrow {
+    font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--cyan); font-weight: 700;
+  }
+  .sc-title { font-family: var(--font-display); font-size: 1.02rem; color: var(--ink); }
+  .sc-title:hover { color: var(--cyan); }
+  .sc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; counter-reset: none; }
+  .sc-list li { display: flex; align-items: baseline; gap: 0.7em; font-size: 0.95rem; }
+  .sc-n {
+    flex: 0 0 auto; width: 1.5em; height: 1.5em; display: inline-flex;
+    align-items: center; justify-content: center; border-radius: 50%;
+    border: 1px solid var(--line-strong); font-family: var(--font-display);
+    font-size: 0.72rem; color: var(--ink-dim);
+  }
+  .sc-list li.sc-current .sc-n { background: var(--cyan); border-color: var(--cyan); color: var(--bg-0); font-weight: 700; }
+  .sc-list a { color: var(--ink-dim); transition: color 0.2s; }
+  .sc-list a:hover { color: var(--cyan); }
+  .sc-this { color: var(--ink); font-weight: 600; }
+  .sc-here { color: var(--ink-faint); font-weight: 400; font-style: italic; }
+
+  /* Within-series prev/next — mirrors .post-nav but cyan-accented */
+  .series-nav {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    max-width: 860px; margin: 0 auto 1.5rem;
+  }
+  .series-nav-link {
+    display: grid; gap: 0.25rem; padding: 0.9rem 1.1rem;
+    border: 1px solid rgba(34, 211, 238, 0.28); border-radius: 12px;
+    background: rgba(34, 211, 238, 0.05);
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .series-nav-link:hover { border-color: rgba(34, 211, 238, 0.55); box-shadow: var(--glow-cyan); }
+  .sn-next { text-align: right; }
+  .sn-label { font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); }
+  .sn-title { font-family: var(--font-display); font-size: 0.92rem; color: var(--ink); }
+  @media (max-width: 560px) { .series-nav { grid-template-columns: 1fr; } .sn-next { text-align: left; } }
+
+  .post-cta { text-align: center; margin-top: 3rem; }
+  .post-cta p { color: var(--ink-dim); }
+  .post-cta-btns { display: flex; gap: 0.9rem; justify-content: center; flex-wrap: wrap; margin-top: 1.2rem; }
+</style>
