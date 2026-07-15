@@ -1,0 +1,113 @@
+---
+// ARCHETYPE · index — ledger.
+// NO hero. A quiet typographic table-of-contents: a small masthead line, then a
+// numbered post index with hairline rules, tabular-nums dates, reading-time and tiny
+// topic labels. Stripe-docs / Minimalism-Life calm. First screen = a disciplined list.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate, pad2 } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle, topicsLabel } =
+  Astro.props as HomeProps;
+---
+<section class="ledger-home">
+  <div class="container">
+    <header class="lx-masthead">
+      <div class="lx-brand">
+        <p class="lx-kicker">{postsTitle}</p>
+        <h1 class="lx-wordmark">{masthead}</h1>
+      </div>
+      <p class="lx-tagline">{tagline}</p>
+    </header>
+
+    <ol class="lx-index">
+      {posts.map((p, i) => (
+        <li class="lx-row">
+          <a class="lx-link" href={p.href}>
+            <span class="lx-num">{pad2(i + 1)}</span>
+            <span class="lx-body">
+              <span class="lx-title">{p.title}</span>
+              <span class="lx-desc">{p.description}</span>
+            </span>
+            <span class="lx-meta">
+              {p.topic && <span class="lx-topic" style={`--c:${p.topic.color}`}>{p.topic.name}</span>}
+              <span class="lx-read">{p.readMins} min</span>
+              <time class="lx-date" datetime={p.date.toISOString()}>{fmtDate(p.date)}</time>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
+
+    <footer class="lx-foot">
+      <div class="lx-topics">
+        <span class="lx-topics-label">{topicsLabel}</span>
+        <ul>
+          {topics.filter((t) => t.count > 0).map((t) => (
+            <li><a href={t.href} style={`--c:${t.color}`}>{t.name}<span class="lx-count">{t.count}</span></a></li>
+          ))}
+        </ul>
+      </div>
+      <a class="lx-all" href={postsHref}>All {postsTitle.toLowerCase()} →</a>
+    </footer>
+  </div>
+</section>
+
+<style>
+  .ledger-home { padding-block: clamp(1.6rem, 4vw, 3rem) 4rem; }
+  .container { width: min(940px, 100% - 2.5rem); }
+
+  .lx-masthead {
+    display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+    gap: 0.6rem 1.4rem; padding-bottom: 1.1rem; margin-bottom: 0.4rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .lx-kicker {
+    font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 0.35rem;
+  }
+  .lx-wordmark { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.9rem, 4.4vw, 2.9rem); letter-spacing: -0.02em; line-height: 1; color: var(--ink); }
+  .lx-tagline { font-family: var(--font-display); font-size: 0.98rem; color: var(--ink-dim); max-width: 32ch; text-align: right; }
+
+  .lx-index { list-style: none; margin: 0; padding: 0; }
+  .lx-row { border-bottom: 1px solid var(--line-strong); }
+  .lx-link {
+    display: grid; grid-template-columns: 2.4rem 1fr auto; align-items: baseline; gap: 0 1.2rem;
+    padding: 1rem 0.35rem 1.05rem; cursor: pointer;
+    transition: background 0.18s ease, padding-left 0.18s ease;
+  }
+  .lx-link:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); padding-left: 0.7rem; }
+  .lx-num {
+    font-family: var(--font-display); font-variant-numeric: tabular-nums;
+    font-size: 0.85rem; color: var(--ink-faint); padding-top: 0.15rem;
+  }
+  .lx-link:hover .lx-num { color: var(--accent); }
+  .lx-body { min-width: 0; }
+  .lx-title { display: block; font-family: var(--font-display); font-weight: 600; font-size: clamp(1.06rem, 2vw, 1.3rem); line-height: 1.22; letter-spacing: -0.01em; color: var(--ink); }
+  .lx-link:hover .lx-title { color: var(--accent); }
+  .lx-desc { display: block; margin-top: 0.3rem; font-size: 0.94rem; line-height: 1.5; color: var(--ink-dim); max-width: 62ch;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+  .lx-meta { display: flex; align-items: baseline; gap: 0.55rem 0.9rem; flex-wrap: wrap; justify-content: flex-end; text-align: right; white-space: nowrap; }
+  .lx-topic { font-family: var(--font-display); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c, var(--ink-faint)); }
+  .lx-read { font-family: var(--font-display); font-variant-numeric: tabular-nums; font-size: 0.72rem; color: var(--ink-faint); }
+  .lx-date { font-family: var(--font-display); font-variant-numeric: tabular-nums; font-size: 0.78rem; color: var(--ink-faint); }
+
+  .lx-foot {
+    display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+    gap: 1.2rem; margin-top: 2rem; padding-top: 1.2rem; border-top: 2px solid var(--ink);
+  }
+  .lx-topics-label { font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); display: block; margin-bottom: 0.6rem; }
+  .lx-topics ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; }
+  .lx-topics a { font-family: var(--font-display); font-size: 0.92rem; color: var(--ink-dim); display: inline-flex; align-items: baseline; gap: 0.35rem; cursor: pointer; transition: color 0.18s; }
+  .lx-topics a::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--accent)); align-self: center; }
+  .lx-topics a:hover { color: var(--ink); }
+  .lx-count { font-variant-numeric: tabular-nums; font-size: 0.72rem; color: var(--ink-faint); }
+  .lx-all { font-family: var(--font-display); font-size: 0.92rem; color: var(--accent); cursor: pointer; white-space: nowrap; }
+  .lx-all:hover { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    .lx-masthead { flex-direction: column; align-items: flex-start; }
+    .lx-tagline { text-align: left; }
+    .lx-link { grid-template-columns: 1.9rem 1fr; }
+    .lx-meta { grid-column: 1 / -1; justify-content: flex-start; text-align: left; margin-top: 0.4rem; padding-left: 0; }
+  }
+</style>

@@ -1,0 +1,175 @@
+---
+// ARCHETYPE · pinboard — scrapbook.
+// A warm PINBOARD. Posts are paper scraps at gentle rotations on a textured kraft
+// ground (CSS dot/paper gradients). Every scrap wears a semi-transparent washi-TAPE
+// corner, a handwritten annotation in the berry accent, and a little reading-time
+// sticker. One consistent scrap size/padding. Identity = a taped-down board of scraps.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle, topicsLabel } =
+  Astro.props as HomeProps;
+const liveTopics = topics.filter((t) => t.count > 0);
+// marginalia — a person's little hand-notes, cycled per scrap (no emoji)
+const notes = ['read this one!', 'a favourite →', 'come back to this', 'so good', 'keep for later', 'loved this'];
+---
+<section class="pb">
+  <header class="pb-head">
+    <div class="pb-head-note">
+      <span class="pb-tape pb-tape--head" aria-hidden="true"></span>
+      <p class="pb-kicker">{postsTitle}</p>
+      <h1 class="pb-masthead">{masthead}</h1>
+      <p class="pb-tagline">{tagline}</p>
+    </div>
+  </header>
+
+  <div class="pb-board">
+    {posts.map((p, i) => (
+      <a class="pb-scrap" href={p.href} style={`--tape:${p.topic?.color || p.accent}`}>
+        <span class="pb-tape" aria-hidden="true"></span>
+        <span class="pb-sticker">{p.readMins} min</span>
+        {p.topic && <span class="pb-cat">{p.topic.name}</span>}
+        <h2 class="pb-title">{p.title}</h2>
+        <p class="pb-desc">{p.description}</p>
+        <span class="pb-note">{notes[i % notes.length]}</span>
+        <span class="pb-foot">
+          <time class="pb-date" datetime={p.date.toISOString()}>{fmtDate(p.date)}</time>
+        </span>
+      </a>
+    ))}
+  </div>
+
+  {liveTopics.length > 0 && (
+    <footer class="pb-topics-row">
+      <span class="pb-topics-label">{topicsLabel}</span>
+      <ul class="pb-topics">
+        {liveTopics.map((t) => (
+          <li><a class="pb-chip" href={t.href} style={`--tape:${t.color}`}>{t.name}<span class="pb-chip-count">{t.count}</span></a></li>
+        ))}
+      </ul>
+      <a class="pb-all" href={postsHref}>See all {postsTitle.toLowerCase()} →</a>
+    </footer>
+  )}
+</section>
+
+<style>
+  .pb {
+    position: relative;
+    background-color: #f3ead8;
+    background-image:
+      radial-gradient(rgba(120, 90, 50, 0.06) 1.4px, transparent 1.7px),
+      radial-gradient(rgba(120, 90, 50, 0.04) 1.4px, transparent 1.7px);
+    background-size: 18px 18px, 27px 27px;
+    background-position: 0 0, 9px 13px;
+    padding: clamp(1.6rem, 4vw, 3rem) 0 4rem;
+    overflow-x: clip;
+  }
+
+  /* ---- washi tape (shared) ---- */
+  .pb-tape {
+    position: absolute; top: -10px; left: 20px; width: 76px; height: 24px; z-index: 3;
+    transform: rotate(-6deg);
+    background-color: color-mix(in srgb, var(--tape) 40%, transparent);
+    background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.45) 0 6px, rgba(255, 255, 255, 0) 6px 12px);
+    border: 1px solid rgba(90, 72, 50, 0.16);
+    box-shadow: 0 2px 5px rgba(90, 72, 50, 0.16);
+    pointer-events: none;
+  }
+
+  /* ---- head scrap ---- */
+  .pb-head { width: min(1120px, 100% - 2.5rem); margin: 0.5rem auto clamp(1.8rem, 5vw, 3rem); display: flex; justify-content: center; }
+  .pb-head-note {
+    --tape: #e0a95a; position: relative; max-width: min(680px, 100%); text-align: center;
+    background: #faf3e6; border-radius: 12px; padding: clamp(1.8rem, 5vw, 2.8rem) clamp(1.6rem, 5vw, 3rem);
+    box-shadow: 0 10px 28px rgba(120, 90, 50, 0.2); transform: rotate(-1.1deg);
+  }
+  .pb-tape--head { left: 50%; margin-left: -46px; top: -13px; width: 92px; height: 28px; transform: rotate(-3deg); }
+  .pb-kicker {
+    font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.14em; font-size: 0.78rem; color: #a12d43; margin-bottom: 0.5rem;
+  }
+  .pb-masthead {
+    font-family: var(--font-display); font-weight: 700; line-height: 1;
+    font-size: clamp(2.4rem, 8vw, 4.4rem); color: #3a2f26;
+    text-decoration: underline; text-decoration-style: wavy; text-decoration-color: #cf4257;
+    text-underline-offset: 0.16em; text-decoration-thickness: 0.05em;
+  }
+  .pb-tagline { margin: 1rem auto 0; max-width: 46ch; font-family: var(--font-body); font-size: 1.05rem; line-height: 1.5; color: #574838; }
+
+  /* ---- the board (one consistent scrap system) ---- */
+  .pb-board {
+    width: min(1120px, 100% - 2.5rem); margin-inline: auto;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 2.1rem 1.6rem;
+  }
+  .pb-scrap {
+    position: relative; display: flex; flex-direction: column; min-height: 232px;
+    background: #faf3e6; border-radius: 10px; padding: 1.6rem 1.3rem 1.4rem;
+    box-shadow: 0 6px 16px rgba(120, 90, 50, 0.16); color: #3a2f26; cursor: pointer;
+    transform: rotate(-2deg); transition: transform 0.22s ease, box-shadow 0.22s ease;
+  }
+  .pb-scrap:nth-child(2n) { transform: rotate(1.6deg); }
+  .pb-scrap:nth-child(2n) .pb-tape { left: auto; right: 20px; transform: rotate(6deg); }
+  .pb-scrap:nth-child(3n) { transform: rotate(-1deg); }
+  .pb-scrap:nth-child(3n) .pb-tape { transform: rotate(-3deg); }
+  .pb-scrap:nth-child(4n) { transform: rotate(2.4deg); }
+  .pb-scrap:nth-child(5n) { transform: rotate(-2.6deg); }
+  .pb-scrap:hover { transform: rotate(0) translateY(-4px); box-shadow: 0 16px 32px rgba(120, 90, 50, 0.24); }
+
+  .pb-sticker {
+    position: absolute; bottom: 14px; right: 12px;
+    font-family: var(--font-display); font-weight: 600; font-variant-numeric: tabular-nums;
+    font-size: 0.72rem; color: #ffffff; background: #cf4257; padding: 0.32em 0.62em;
+    border-radius: 999px; transform: rotate(-4deg); box-shadow: 0 3px 8px rgba(207, 66, 87, 0.3);
+  }
+  .pb-cat {
+    font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; font-size: 0.7rem; color: #a12d43;
+  }
+  .pb-title { font-family: var(--font-display); font-weight: 600; font-size: 1.4rem; line-height: 1.14; color: #3a2f26; margin: 0.3rem 0 0.5rem; }
+  .pb-desc {
+    font-family: var(--font-body); font-size: 1rem; line-height: 1.5; color: #574838;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
+  .pb-note {
+    font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 1.05rem;
+    color: #cf4257; margin-top: 0.7rem; transform: rotate(-1.4deg); align-self: flex-start;
+  }
+  .pb-foot {
+    display: flex; align-items: baseline; margin-top: auto; padding-top: 0.85rem; padding-right: 3.4rem;
+    border-top: 1px dashed rgba(90, 72, 50, 0.46);
+  }
+  .pb-date { font-family: var(--font-body); font-variant-numeric: tabular-nums; font-size: 0.8rem; color: #75604a; }
+
+  /* ---- topics row (taped chips) ---- */
+  .pb-topics-row {
+    width: min(1120px, 100% - 2.5rem); margin: 3rem auto 0;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem 1rem;
+    padding-top: 1.6rem; border-top: 2px dashed rgba(90, 72, 50, 0.46);
+  }
+  .pb-topics-label {
+    width: 100%; font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.14em; font-size: 0.74rem; color: #75604a;
+  }
+  .pb-topics { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.6rem 0.7rem; flex: 1; }
+  .pb-chip {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    font-family: var(--font-display); font-weight: 500; font-size: 0.9rem; color: #3a2f26;
+    background: #faf3e6; border: 2px dashed color-mix(in srgb, var(--tape) 55%, rgba(90, 72, 50, 0.46));
+    border-radius: 999px; padding: 0.3em 0.85em; cursor: pointer;
+    box-shadow: 0 3px 8px rgba(120, 90, 50, 0.12);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+  .pb-chip:hover { transform: translateY(-2px) rotate(-1.5deg); box-shadow: 0 8px 16px rgba(120, 90, 50, 0.2); border-color: color-mix(in srgb, var(--tape) 75%, transparent); }
+  .pb-chip-count { font-variant-numeric: tabular-nums; font-size: 0.72rem; color: #75604a; }
+  .pb-all { font-family: var(--font-display); font-weight: 600; font-size: 0.92rem; color: #a12d43; white-space: nowrap; cursor: pointer; }
+  .pb-all:hover { text-decoration: underline wavy #cf4257; }
+
+  /* the head note settles in like a freshly pasted scrap; static under reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    .pb-head-note { animation: pb-settle 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    @keyframes pb-settle {
+      from { opacity: 0; transform: rotate(-3.5deg) translateY(-12px); }
+      to { opacity: 1; transform: rotate(-1.1deg) translateY(0); }
+    }
+  }
+</style>

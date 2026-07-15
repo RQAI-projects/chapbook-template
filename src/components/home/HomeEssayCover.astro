@@ -1,0 +1,189 @@
+---
+// ARCHETYPE · essay-cover — journal.
+// A literary-quarterly COVER in the register of "Fyrre Magazine": stark, confident,
+// oversized Fraunces display, and a lot of air. ONE commanding essay (posts[0]) set
+// enormous over a hairline registration grid, its opening lines in large italic
+// Newsreader, a giant faint index numeral as art direction — then a sparse, elegant
+// numbered "Contents" of the remaining essays. Deliberately the opposite of the
+// broadsheet front page: one essay + a quiet index, not a busy multi-column news wall.
+import type { HomeProps } from '../../lib/home';
+import { fmtDateLong, pad2 } from '../../lib/home';
+
+const { posts, masthead, tagline, postsHref, postsTitle } = Astro.props as HomeProps;
+const lead = posts[0];
+const rest = posts.slice(1);
+---
+<section class="ec">
+  <div class="container">
+    {lead && (
+      <header class="ec-cover">
+        <div class="ec-top">
+          <span class="ec-vol">Vol. MMXXVI · Issue {pad2(posts.length)}</span>
+          <span class="ec-mast">{masthead}</span>
+        </div>
+        <div class="ec-grid" aria-hidden="true"></div>
+
+        <a class="ec-lead" href={lead.href}>
+          <span class="ec-numeral" aria-hidden="true">01</span>
+          {lead.topic && <span class="ec-kicker" style={`--c:${lead.topic.color}`}>{lead.topic.name}</span>}
+          <h1 class="ec-title">{lead.title}</h1>
+          <p class="ec-standfirst">{lead.description}</p>
+          <p class="ec-dateline">
+            <time datetime={lead.date.toISOString()}>{fmtDateLong(lead.date)}</time>
+            <span class="ec-sep">·</span>
+            <span class="ec-read">{lead.readMins} min</span>
+          </p>
+        </a>
+      </header>
+    )}
+
+    {rest.length > 0 && (
+      <section class="ec-contents" aria-label="Contents">
+        <div class="ec-contents-head">
+          <h2>Contents</h2>
+          <a class="ec-all" href={postsHref}>All {postsTitle.toLowerCase()} →</a>
+        </div>
+        <ol class="ec-list">
+          {rest.map((p, i) => (
+            <li class="ec-row">
+              <a href={p.href}>
+                <span class="ec-num">{pad2(i + 2)}</span>
+                <span class="ec-row-body">
+                  <span class="ec-row-title">{p.title}</span>
+                  <span class="ec-row-meta">
+                    <time datetime={p.date.toISOString()}>{fmtDateLong(p.date)}</time>
+                    {p.topic && <><span class="ec-sep">·</span>{p.topic.name}</>}
+                  </span>
+                </span>
+                <span class="ec-row-read">{p.readMins} min</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+  </div>
+</section>
+
+<style>
+  .ec { padding-block: clamp(1.4rem, 3.5vw, 3rem) 4.5rem; }
+  .container { width: min(1120px, 100% - 2.5rem); }
+
+  /* ---- cover ---- */
+  .ec-cover { position: relative; padding-bottom: clamp(2.4rem, 6vw, 4.5rem); }
+  .ec-top {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+  }
+  .ec-vol {
+    font-family: var(--font-display); font-weight: 600; font-size: 0.78rem;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .ec-mast {
+    font-family: var(--font-body); font-style: italic; font-size: 0.92rem;
+    color: var(--ink-faint); letter-spacing: 0.02em;
+  }
+  /* a hairline registration grid under the kicker */
+  .ec-grid {
+    height: 9px; margin-top: 0.55rem;
+    border-top: 1px solid var(--ink);
+    background-image: repeating-linear-gradient(90deg, var(--line-strong) 0 1px, transparent 1px 46px);
+  }
+
+  .ec-lead {
+    display: block; position: relative; margin-top: clamp(2rem, 5vw, 3.4rem);
+    cursor: pointer;
+  }
+  .ec-numeral {
+    position: absolute; top: -0.32em; right: 0; z-index: 0; pointer-events: none;
+    font-family: var(--font-display); font-weight: 900; line-height: 1;
+    font-size: clamp(7rem, 20vw, 15rem); letter-spacing: -0.02em;
+    color: color-mix(in srgb, var(--accent) 9%, transparent);
+    font-variant-numeric: tabular-nums;
+  }
+  .ec-kicker {
+    position: relative; z-index: 1; display: block;
+    font-family: var(--font-display); font-weight: 700; font-size: 0.76rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--c, var(--accent));
+    margin-bottom: 0.7rem;
+  }
+  .ec-title {
+    position: relative; z-index: 1; margin: 0;
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(2.6rem, 8.4vw, 5.6rem); line-height: 0.95;
+    letter-spacing: -0.025em; color: var(--ink);
+    max-width: 15ch; text-wrap: balance;
+    transition: color 0.2s ease;
+  }
+  .ec-lead:hover .ec-title { color: var(--accent); }
+  .ec-standfirst {
+    position: relative; z-index: 1; margin: clamp(1.1rem, 2.4vw, 1.6rem) 0 0;
+    font-family: var(--font-body); font-style: italic;
+    font-size: clamp(1.15rem, 2.5vw, 1.6rem); line-height: 1.45;
+    color: var(--ink-dim); max-width: 46ch;
+  }
+  .ec-dateline {
+    position: relative; z-index: 1; margin: 1.1rem 0 0;
+    display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;
+    font-family: var(--font-body); font-style: italic; font-size: 0.98rem;
+    color: var(--ink-faint);
+  }
+  .ec-read { font-variant-numeric: tabular-nums; }
+  .ec-sep { color: var(--line-strong); font-style: normal; }
+
+  /* ---- contents ---- */
+  .ec-contents { margin-top: clamp(1rem, 3vw, 2rem); }
+  .ec-contents-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; padding-bottom: 0.55rem; border-bottom: 2px solid var(--ink);
+  }
+  .ec-contents-head h2 {
+    margin: 0; font-family: var(--font-display); font-weight: 600;
+    font-size: 0.82rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink);
+  }
+  .ec-all {
+    font-family: var(--font-body); font-style: italic; font-size: 0.95rem;
+    color: var(--accent); cursor: pointer; white-space: nowrap; transition: opacity 0.2s ease;
+  }
+  .ec-all:hover { text-decoration: underline; }
+
+  .ec-list { list-style: none; margin: 0; padding: 0; }
+  .ec-row { border-bottom: 1px solid var(--line); }
+  .ec-row a {
+    display: grid; grid-template-columns: 3rem 1fr auto; align-items: baseline;
+    gap: 0 1.3rem; padding: clamp(1rem, 2.2vw, 1.5rem) 0.4rem;
+    cursor: pointer; transition: background 0.2s ease, padding-left 0.2s ease;
+  }
+  .ec-row a:hover { background: color-mix(in srgb, var(--accent) 5%, transparent); padding-left: 0.9rem; }
+  .ec-num {
+    font-family: var(--font-display); font-weight: 900; font-size: 1.05rem;
+    color: var(--accent); font-variant-numeric: tabular-nums; padding-top: 0.1rem;
+  }
+  .ec-row-body { min-width: 0; }
+  .ec-row-title {
+    display: block; font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(1.15rem, 2.1vw, 1.5rem); line-height: 1.18;
+    letter-spacing: -0.01em; color: var(--ink); transition: color 0.2s ease;
+  }
+  .ec-row a:hover .ec-row-title { color: var(--accent); }
+  .ec-row-meta {
+    display: block; margin-top: 0.35rem;
+    font-family: var(--font-body); font-style: italic; font-size: 0.94rem;
+    color: var(--ink-faint); font-variant-numeric: tabular-nums;
+  }
+  .ec-row-read {
+    font-family: var(--font-display); font-size: 0.78rem; color: var(--ink-faint);
+    font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right;
+  }
+
+  @media (max-width: 640px) {
+    .ec-numeral { display: none; }
+    .ec-row a { grid-template-columns: 2.3rem 1fr; }
+    .ec-row-read { grid-column: 2; justify-self: start; text-align: left; margin-top: 0.35rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ec-lead, .ec-title, .ec-row a, .ec-row-title, .ec-all { transition: none; }
+  }
+</style>

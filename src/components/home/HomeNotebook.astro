@@ -1,0 +1,218 @@
+---
+// ARCHETYPE · notebook — doodle.
+// An OPEN SCHOOL-NOTEBOOK spread on squared grid paper: biro-blue ink doodles
+// (arrows, a circled label, wavy underlines), a highlighter swipe behind the wordmark,
+// and posts as cards "taped" onto the page at slight rotations with hand-drawn
+// annotations. Reads like a cool 13-year-old's annotated notebook — smart, not nursery.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle, topicsLabel } =
+  Astro.props as HomeProps;
+const cards = posts;
+const topicList = topics.filter((t) => t.count > 0);
+---
+<section class="nb">
+  <div class="nb-sheet">
+    <header class="nb-head">
+      <p class="nb-kicker">{postsTitle} · notebook</p>
+      <h1 class="nb-wordmark">
+        <span class="nb-word">{masthead}</span>
+        <svg class="nb-squiggle" viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M2 8 Q 22 1 42 8 T 82 8 T 122 8 T 162 8 T 202 8 T 242 8 T 282 8 T 298 8" />
+        </svg>
+      </h1>
+      <p class="nb-tagline">
+        <svg class="nb-star" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2l2.4 6.3L21 9l-5 4.2L17.6 20 12 16.3 6.4 20 8 13.2 3 9l6.6-.7z"/></svg>
+        {tagline}
+      </p>
+    </header>
+
+    <div class="nb-board">
+      {cards.map((p, i) => (
+        <a class="nb-card" href={p.href} style={`--card-accent:${p.topic?.color || p.accent}`}>
+          <span class="nb-tape" aria-hidden="true"></span>
+          {p.topic && <span class="nb-cat">{p.topic.name}</span>}
+          <h2 class="nb-card-title"><span class="nb-hl">{p.title}</span></h2>
+          <p class="nb-desc">{p.description}</p>
+          <span class="nb-meta">
+            <time datetime={p.date.toISOString()}>{fmtDate(p.date)}</time>
+            <span class="nb-dot" aria-hidden="true">·</span>
+            <span class="nb-read">{p.readMins} min</span>
+          </span>
+          {i === 0 && (
+            <span class="nb-annot" aria-hidden="true">
+              read this!
+              <svg viewBox="0 0 48 40" width="46" height="38">
+                <path d="M4 6 C 20 4 34 12 40 30" fill="none" />
+                <path d="M40 30 l-9 -3 M40 30 l-2 -9" fill="none" />
+              </svg>
+            </span>
+          )}
+        </a>
+      ))}
+    </div>
+
+    <footer class="nb-foot">
+      <div class="nb-topics">
+        <h2 class="nb-topics-label"><span class="nb-circle">{topicsLabel}</span></h2>
+        <ul>
+          {topicList.map((t) => (
+            <li><a href={t.href} style={`--c:${t.color}`}><span class="nb-tick" aria-hidden="true"></span>{t.name}<span class="nb-count">{t.count}</span></a></li>
+          ))}
+        </ul>
+      </div>
+      <a class="nb-all" href={postsHref}>
+        All {postsTitle.toLowerCase()}
+        <svg viewBox="0 0 40 20" width="40" height="20" aria-hidden="true"><path d="M2 10 H 32 M32 10 l-7 -6 M32 10 l-7 6" fill="none"/></svg>
+      </a>
+    </footer>
+  </div>
+</section>
+
+<style>
+  .nb {
+    padding-block: clamp(1.4rem, 4vw, 2.8rem) 4rem;
+    overflow: hidden; /* keep taped cards + doodles from causing horizontal scroll */
+  }
+  .nb-sheet {
+    width: min(1120px, 100% - 2rem);
+    margin-inline: auto;
+    padding: clamp(1.4rem, 4vw, 2.6rem) clamp(1rem, 3.5vw, 2.4rem) clamp(1.6rem, 4vw, 3rem);
+    border-radius: var(--radius);
+    /* squared / grid paper with a biro-red left margin rule */
+    background-color: var(--bg-1);
+    background-image:
+      linear-gradient(90deg, transparent 0 42px, color-mix(in srgb, var(--pink) 45%, transparent) 42px 44px, transparent 44px),
+      repeating-linear-gradient(0deg, transparent 0 27px, color-mix(in srgb, var(--accent) 14%, transparent) 27px 28px),
+      repeating-linear-gradient(90deg, transparent 0 27px, color-mix(in srgb, var(--accent) 14%, transparent) 27px 28px);
+    border: 1px solid var(--line);
+    box-shadow: 0 18px 40px rgba(32, 37, 43, 0.08);
+  }
+
+  /* ---- masthead ---- */
+  .nb-head { margin-bottom: clamp(1.6rem, 4vw, 2.6rem); padding-left: clamp(0.4rem, 3vw, 1.4rem); }
+  .nb-kicker {
+    font-family: var(--font-body); font-size: 0.9rem; letter-spacing: 0.02em;
+    color: var(--accent); margin-bottom: 0.3rem; transform: rotate(-1deg); display: inline-block;
+  }
+  .nb-wordmark { position: relative; display: inline-block; margin: 0; line-height: 1; }
+  .nb-word {
+    font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em;
+    font-size: clamp(2.1rem, 6vw, 3.4rem); color: var(--ink);
+    /* highlighter swipe behind the lower half of the wordmark */
+    background: linear-gradient(transparent 56%, color-mix(in srgb, var(--amber) 55%, transparent) 56% 92%, transparent 92%);
+    padding: 0 0.12em; box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+  .nb-squiggle {
+    display: block; width: min(100%, 320px); height: 12px; margin-top: 0.15rem;
+    stroke: var(--accent); stroke-width: 3; fill: none; stroke-linecap: round;
+  }
+  .nb-tagline {
+    display: flex; align-items: center; gap: 0.5rem; margin-top: 0.8rem;
+    font-family: var(--font-body); font-size: 1.02rem; line-height: 1.5;
+    color: var(--ink-dim); max-width: 56ch;
+  }
+  .nb-star { fill: var(--amber); flex: none; }
+
+  /* ---- taped card board ---- */
+  .nb-board {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 244px), 1fr));
+    gap: clamp(1.2rem, 3vw, 1.8rem); padding-top: 0.8rem;
+    padding-left: clamp(0.4rem, 3vw, 1.4rem);
+  }
+  .nb-card {
+    position: relative; display: flex; flex-direction: column; min-height: 176px;
+    background: var(--bg-1); border: 1.5px solid var(--line-strong); border-radius: 8px;
+    padding: 1.35rem 1.2rem 1.05rem; cursor: pointer;
+    box-shadow: 3px 4px 0 rgba(32, 37, 43, 0.10);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  }
+  .nb-card:nth-child(3n+1) { transform: rotate(-1.3deg); }
+  .nb-card:nth-child(3n+2) { transform: rotate(0.9deg); }
+  .nb-card:nth-child(3n)   { transform: rotate(-0.5deg); }
+  .nb-card:hover {
+    transform: rotate(0deg) translateY(-3px);
+    box-shadow: 5px 7px 0 color-mix(in srgb, var(--card-accent, var(--accent)) 40%, rgba(32, 37, 43, 0.14));
+    border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 55%, var(--line-strong));
+  }
+  /* washi tape holding the card to the page */
+  .nb-tape {
+    position: absolute; top: -11px; left: 50%; transform: translateX(-50%) rotate(-3deg);
+    width: 70px; height: 22px;
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.35) 0 4px, transparent 4px 8px),
+      color-mix(in srgb, var(--card-accent, var(--accent)) 30%, transparent);
+    border: 1px solid color-mix(in srgb, var(--card-accent, var(--accent)) 30%, transparent);
+  }
+  .nb-card:nth-child(even) .nb-tape { transform: translateX(-50%) rotate(4deg); }
+  .nb-cat {
+    font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; font-size: 0.68rem; color: var(--card-accent, var(--accent));
+    margin-top: 0.35rem;
+  }
+  .nb-card-title { margin: 0.3rem 0 0; }
+  .nb-hl {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.16rem; line-height: 1.22;
+    color: var(--ink);
+    background: linear-gradient(transparent 62%, color-mix(in srgb, var(--amber) 48%, transparent) 62% 96%, transparent 96%);
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+  .nb-desc {
+    margin: 0.55rem 0 auto; font-family: var(--font-body); font-size: 0.95rem; line-height: 1.5;
+    color: var(--ink-dim);
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
+  .nb-meta {
+    display: flex; align-items: center; gap: 0.45rem; margin-top: 0.9rem;
+    font-family: var(--font-body); font-variant-numeric: tabular-nums;
+    font-size: 0.8rem; color: var(--ink-faint);
+  }
+  .nb-dot { color: var(--card-accent, var(--accent)); }
+  .nb-read { color: var(--ink-faint); }
+  .nb-annot {
+    position: absolute; right: -6px; bottom: -18px; display: flex; align-items: flex-end; gap: 0.15rem;
+    font-family: var(--font-body); font-size: 0.92rem; color: var(--accent); transform: rotate(-4deg);
+  }
+  .nb-annot svg { stroke: var(--accent); stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---- footer margin ---- */
+  .nb-foot {
+    display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+    gap: 1.2rem 2rem; margin-top: clamp(2rem, 5vw, 3rem);
+    padding: clamp(1.2rem, 3vw, 1.6rem) 0 0 clamp(0.4rem, 3vw, 1.4rem);
+    border-top: 2px dashed var(--line-strong);
+  }
+  .nb-topics-label { margin: 0 0 0.9rem; }
+  .nb-circle {
+    position: relative; display: inline-block; font-family: var(--font-display); font-weight: 600;
+    font-size: 1.05rem; color: var(--ink); padding: 0.1em 0.5em;
+  }
+  .nb-circle::after {
+    content: ""; position: absolute; inset: -6px -10px -4px -10px;
+    border: 2px solid var(--accent); border-radius: 60% 40% 55% 45% / 55% 55% 45% 45%;
+    transform: rotate(-2deg); opacity: 0.85; pointer-events: none;
+  }
+  .nb-topics ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 1.1rem; }
+  .nb-topics a {
+    display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer;
+    font-family: var(--font-body); font-size: 0.98rem; color: var(--ink-dim);
+    transition: color 0.18s ease;
+  }
+  .nb-tick { width: 10px; height: 10px; border-radius: 3px; background: var(--c, var(--accent)); flex: none; }
+  .nb-topics a:hover { color: var(--ink); }
+  .nb-count { font-variant-numeric: tabular-nums; font-size: 0.78rem; color: var(--ink-faint); }
+  .nb-all {
+    display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;
+    font-family: var(--font-display); font-weight: 600; font-size: 1rem; color: var(--accent);
+    transition: gap 0.2s ease, color 0.2s ease;
+  }
+  .nb-all svg { stroke: var(--accent); stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .nb-all:hover { gap: 0.8rem; color: color-mix(in srgb, var(--accent) 78%, var(--ink)); }
+
+  @media (max-width: 560px) {
+    .nb-card:nth-child(n) { transform: none; } /* flat on phones — no rotation overhang */
+    .nb-tape { transform: translateX(-50%) rotate(-3deg); }
+    .nb-annot { position: static; margin-top: 0.6rem; transform: none; justify-content: flex-start; }
+  }
+</style>

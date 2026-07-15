@@ -1,0 +1,268 @@
+---
+// ARCHETYPE · mission-control — rocket.
+// A MISSION-CONTROL CONSOLE (NASA-punk, aged-up): dark navy ground, sky-blue + star-yellow,
+// a status header ("ALL SYSTEMS GO" + monospace telemetry readouts) over a fine telemetry
+// grid, one PRIMARY MISSION feature, then posts as a MISSION LOG — stencilled mission
+// numbers, one-line briefs and countdown-style boxed date badges. Big friendly buttons.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle, topicsLabel } =
+  Astro.props as HomeProps;
+const lead = posts[0];
+const log = posts.slice(1);
+const total = posts.length;
+const topicList = topics.filter((t) => t.count > 0);
+const missionNo = (i: number) => String(total - i).padStart(3, '0');
+---
+<section class="mc">
+  <div class="mc-console">
+    <header class="mc-status" role="status">
+      <span class="mc-lamp"><span class="mc-lamp-dot" aria-hidden="true"></span>ALL SYSTEMS GO</span>
+      <dl class="mc-tele" aria-label="Telemetry">
+        <div><dt>PAYLOAD</dt><dd>{String(total).padStart(3, '0')}</dd></div>
+        <div><dt>CHANNELS</dt><dd>{String(topicList.length).padStart(2, '0')}</dd></div>
+        <div class="mc-tele-wide"><dt>UPLINK</dt><dd>STABLE</dd></div>
+      </dl>
+    </header>
+
+    <div class="mc-masthead">
+      <p class="mc-eyebrow">Mission control</p>
+      <h1 class="mc-name">{masthead}</h1>
+      <p class="mc-tagline">{tagline}</p>
+    </div>
+
+    {lead && (
+      <article class="mc-feature">
+        <div class="mc-feature-body">
+          <p class="mc-feature-tag">PRIMARY MISSION · {missionNo(0)}</p>
+          {lead.topic && <span class="mc-feature-topic" style={`--c:${lead.topic.color}`}>{lead.topic.name}</span>}
+          <h2 class="mc-feature-title"><a href={lead.href}>{lead.title}</a></h2>
+          <p class="mc-feature-desc">{lead.description}</p>
+          <div class="mc-feature-row">
+            <a class="mc-btn" href={lead.href}>
+              Open mission
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <span class="mc-date">{fmtDate(lead.date)}</span>
+            <span class="mc-read">{lead.readMins} min</span>
+          </div>
+        </div>
+        <div class="mc-feature-viz" aria-hidden="true">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke-dasharray="3 6" />
+            <circle cx="60" cy="60" r="38" fill="none" />
+            <path class="mc-viz-rocket" d="M60 24c9 8 13 20 13 33 0 7-2 13-5 18l-8 6-8-6c-3-5-5-11-5-18 0-13 4-25 13-33z" fill="none" />
+            <path d="M55 78l-6 12 11-5 11 5-6-12" fill="none" />
+            <circle cx="60" cy="52" r="6" fill="none" />
+            <path d="M60 8v10M60 102v10M8 60h10M102 60h10" />
+          </svg>
+        </div>
+      </article>
+    )}
+
+    <div class="mc-log">
+      <div class="mc-log-head">
+        <h2 class="mc-log-title">Mission log</h2>
+        <span class="mc-log-rule" aria-hidden="true"></span>
+      </div>
+      <ol class="mc-log-list">
+        {log.map((p, i) => (
+          <li class="mc-row">
+            <a href={p.href}>
+              <span class="mc-badge">
+                <time datetime={p.date.toISOString()}>{fmtDate(p.date)}</time>
+                <span class="mc-badge-read">T+ {p.readMins} min</span>
+              </span>
+              <span class="mc-row-body">
+                <span class="mc-row-head">
+                  <span class="mc-no">MISSION {missionNo(i + 1)}</span>
+                  <span class="mc-dash" aria-hidden="true">—</span>
+                  <span class="mc-row-title">{p.title}</span>
+                </span>
+                <span class="mc-row-desc">{p.description}</span>
+                {p.topic && <span class="mc-row-topic" style={`--c:${p.topic.color}`}>{p.topic.name}</span>}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    <footer class="mc-foot">
+      <div class="mc-channels">
+        <p class="mc-channels-label">{topicsLabel} · systems online</p>
+        <ul>
+          {topicList.map((t) => (
+            <li><a href={t.href} style={`--c:${t.color}`}><span class="mc-ch-dot" aria-hidden="true"></span>{t.name}<span class="mc-ch-count">{String(t.count).padStart(2, '0')}</span></a></li>
+          ))}
+        </ul>
+      </div>
+      <a class="mc-btn mc-btn-ghost" href={postsHref}>
+        Open full log
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </footer>
+  </div>
+</section>
+
+<style>
+  .mc {
+    --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+    padding-block: clamp(1.4rem, 4vw, 2.6rem) 4rem;
+  }
+  .mc-console {
+    position: relative; width: min(1080px, 100% - 2rem); margin-inline: auto;
+    padding: clamp(1.2rem, 3.5vw, 2rem) clamp(1rem, 3.5vw, 2.2rem) clamp(1.6rem, 4vw, 2.6rem);
+    background: linear-gradient(180deg, var(--bg-1), var(--bg-0));
+    border: 1px solid var(--line-strong); border-radius: var(--radius);
+    box-shadow: 0 24px 60px rgba(4, 8, 26, 0.5), inset 0 0 0 1px rgba(120, 150, 255, 0.06);
+    overflow: hidden;
+  }
+  /* fine telemetry grid behind everything */
+  .mc-console::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 31px, rgba(77, 214, 255, 0.06) 31px 32px),
+      repeating-linear-gradient(90deg, transparent 0 31px, rgba(77, 214, 255, 0.06) 31px 32px);
+    mask-image: linear-gradient(180deg, #000 0 60%, transparent);
+  }
+  .mc-console > * { position: relative; }
+
+  /* ---- status header ---- */
+  .mc-status {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 0.7rem 1.2rem; padding-bottom: 0.9rem; margin-bottom: 1.2rem;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .mc-lamp {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: var(--mono); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.16em;
+    color: var(--amber);
+  }
+  .mc-lamp-dot { width: 9px; height: 9px; border-radius: 50%; background: #4be08a; box-shadow: 0 0 10px #4be08a; flex: none; }
+  .mc-tele { display: flex; flex-wrap: wrap; gap: 0.4rem 0.5rem; margin: 0; }
+  .mc-tele div {
+    display: flex; align-items: baseline; gap: 0.4rem;
+    border: 1px solid var(--line-strong); border-radius: 6px; padding: 0.28rem 0.55rem;
+    background: rgba(77, 214, 255, 0.04);
+  }
+  .mc-tele dt { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em; color: var(--ink-faint); }
+  .mc-tele dd { margin: 0; font-family: var(--mono); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .mc-tele-wide dd { color: #4be08a; }
+
+  /* ---- masthead ---- */
+  .mc-masthead { margin-bottom: clamp(1.4rem, 3.5vw, 2.2rem); }
+  .mc-eyebrow { font-family: var(--mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--accent); }
+  .mc-name {
+    font-family: 'Space Grotesk Variable', 'Space Grotesk', var(--font-display), sans-serif;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.01em; line-height: 0.98;
+    font-size: clamp(2.2rem, 6.5vw, 3.8rem); color: var(--ink); margin: 0.3rem 0 0.5rem;
+  }
+  .mc-tagline { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.5; color: var(--ink-dim); max-width: 56ch; }
+
+  /* ---- primary mission feature ---- */
+  .mc-feature {
+    display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.4rem;
+    padding: clamp(1.2rem, 3vw, 1.8rem); margin-bottom: clamp(1.6rem, 4vw, 2.4rem);
+    background: linear-gradient(150deg, rgba(77, 214, 255, 0.12), transparent 62%), var(--bg-2);
+    border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line)); border-radius: calc(var(--radius) - 4px);
+  }
+  .mc-feature-tag { font-family: var(--mono); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; color: var(--accent); }
+  .mc-feature-topic {
+    display: inline-block; margin-top: 0.5rem; font-family: var(--mono); font-size: 0.64rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--c, var(--amber));
+    border: 1px solid color-mix(in srgb, var(--c, var(--amber)) 55%, transparent); border-radius: 4px; padding: 0.15rem 0.45rem;
+  }
+  .mc-feature-title { margin: 0.6rem 0 0.5rem; }
+  .mc-feature-title a {
+    font-family: 'Space Grotesk Variable', 'Space Grotesk', var(--font-display), sans-serif;
+    font-weight: 700; letter-spacing: -0.01em; line-height: 1.04; font-size: clamp(1.5rem, 3.4vw, 2.3rem);
+    color: #fff; cursor: pointer; transition: color 0.2s ease;
+  }
+  .mc-feature-title a:hover { color: var(--accent); }
+  .mc-feature-desc { font-family: var(--font-body); font-size: 1rem; line-height: 1.55; color: var(--ink-dim); max-width: 54ch; }
+  .mc-feature-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem 1rem; margin-top: 1.1rem; }
+  .mc-date, .mc-read { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 0.78rem; color: var(--ink-faint); }
+  .mc-date { border: 1px solid var(--line-strong); border-radius: 5px; padding: 0.28rem 0.5rem; color: var(--ink-dim); }
+  .mc-feature-viz { flex: none; }
+  .mc-feature-viz svg { stroke: color-mix(in srgb, var(--accent) 70%, transparent); stroke-width: 1.6; }
+  .mc-viz-rocket { stroke: var(--amber); }
+
+  /* ---- big friendly buttons ---- */
+  .mc-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;
+    font-family: 'Space Grotesk Variable', 'Space Grotesk', var(--font-display), sans-serif;
+    font-weight: 700; font-size: 0.95rem; letter-spacing: 0.01em;
+    color: var(--accent-ink); background: var(--accent); border: 0; border-radius: 999px;
+    padding: 0.72rem 1.3rem; box-shadow: 0 0 20px rgba(77, 214, 255, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .mc-btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(77, 214, 255, 0.6); }
+  .mc-btn-ghost { background: transparent; color: var(--accent); border: 1.5px solid color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: none; }
+  .mc-btn-ghost:hover { border-color: var(--accent); box-shadow: 0 0 22px rgba(77, 214, 255, 0.28); }
+
+  /* ---- mission log ---- */
+  .mc-log-head { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.4rem; }
+  .mc-log-title { font-family: var(--mono); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); }
+  .mc-log-rule { flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--line-strong) 0 8px, transparent 8px 14px); }
+  .mc-log-list { list-style: none; margin: 0; padding: 0; }
+  .mc-row { border-bottom: 1px solid var(--line); }
+  .mc-row a {
+    display: grid; grid-template-columns: 8.2rem 1fr; gap: 0 1.2rem; align-items: start;
+    padding: 1rem 0.4rem; cursor: pointer;
+    transition: background 0.2s ease, padding-left 0.2s ease;
+  }
+  .mc-row a:hover { background: rgba(77, 214, 255, 0.06); padding-left: 0.8rem; }
+  .mc-badge { display: flex; flex-direction: column; gap: 0.3rem; }
+  .mc-badge time {
+    font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 0.74rem; color: var(--ink-dim);
+    border: 1px solid var(--line-strong); border-radius: 5px; padding: 0.25rem 0.4rem; text-align: center;
+  }
+  .mc-badge-read { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 0.66rem; color: var(--ink-faint); text-align: center; letter-spacing: 0.04em; }
+  .mc-row-body { min-width: 0; }
+  .mc-row-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 0.6rem; }
+  .mc-no {
+    font-family: 'Space Grotesk Variable', 'Space Grotesk', var(--font-display), sans-serif;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.92rem;
+    color: var(--accent); font-variant-numeric: tabular-nums;
+  }
+  .mc-dash { color: var(--ink-faint); }
+  .mc-row-title {
+    font-family: 'Space Grotesk Variable', 'Space Grotesk', var(--font-display), sans-serif;
+    font-weight: 700; font-size: 1.06rem; line-height: 1.2; color: #fff; letter-spacing: -0.005em;
+    transition: color 0.2s ease;
+  }
+  .mc-row a:hover .mc-row-title { color: var(--accent); }
+  .mc-row-desc {
+    display: block; margin-top: 0.3rem; font-family: var(--font-body); font-size: 0.94rem; line-height: 1.5; color: var(--ink-dim); max-width: 64ch;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+  }
+  .mc-row-topic { display: inline-block; margin-top: 0.4rem; font-family: var(--mono); font-size: 0.64rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c, var(--ink-faint)); }
+
+  /* ---- channels footer ---- */
+  .mc-foot {
+    display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+    gap: 1.4rem 2rem; margin-top: clamp(1.8rem, 4vw, 2.6rem); padding-top: 1.3rem;
+    border-top: 1px solid var(--line-strong);
+  }
+  .mc-channels-label { font-family: var(--mono); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 0.7rem; }
+  .mc-channels ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 1.1rem; }
+  .mc-channels a { display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer; font-family: var(--mono); font-size: 0.85rem; color: var(--ink-dim); transition: color 0.18s ease; }
+  .mc-ch-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--accent)); box-shadow: 0 0 8px var(--c, var(--accent)); flex: none; }
+  .mc-channels a:hover { color: var(--ink); }
+  .mc-ch-count { font-variant-numeric: tabular-nums; font-size: 0.72rem; color: var(--ink-faint); }
+
+  @media (max-width: 640px) {
+    .mc-feature { grid-template-columns: 1fr; }
+    .mc-feature-viz { justify-self: start; }
+    .mc-feature-viz svg { width: 84px; height: 84px; }
+    .mc-row a { grid-template-columns: 1fr; gap: 0.6rem; }
+    .mc-badge { flex-direction: row; align-items: center; gap: 0.5rem; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .mc-lamp-dot { animation: mc-blink 2.4s ease-in-out infinite; }
+    @keyframes mc-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  }
+</style>
