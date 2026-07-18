@@ -760,16 +760,30 @@ article[data-post-theme="parchment"] .article-body [data-footnotes]::before { co
 article[data-post-theme="parchment"] .article-body [data-footnotes] li { color: var(--parch-soft); }
 article[data-post-theme="parchment"] .article-body [data-footnotes] li::marker { color: var(--parch-accent); }
 
-/* side-floated figures (The Helm composer: image placement Left/Right) */
+/* side-floated media (The Helm composer: placement Left/Right) — figures plus the
+   div wrappers the pipeline builds (.gallery via rehype-gallery, .embed-16x9)
+   share the same float rules, so a placed gallery/embed floats like a figure */
 .article-body figure.img-left,
-.article-body figure.img-right { max-width: 46%; margin: 0.4rem 0 1rem; }
-.article-body figure.img-left { float: left; margin-right: 1.6rem; }
-.article-body figure.img-right { float: right; margin-left: 1.6rem; }
+.article-body figure.img-right,
+.article-body .gallery.img-left,
+.article-body .gallery.img-right,
+.article-body .embed-16x9.img-left,
+.article-body .embed-16x9.img-right { max-width: 46%; margin: 0.4rem 0 1rem; }
+.article-body figure.img-left,
+.article-body .gallery.img-left,
+.article-body .embed-16x9.img-left { float: left; margin-right: 1.6rem; }
+.article-body figure.img-right,
+.article-body .gallery.img-right,
+.article-body .embed-16x9.img-right { float: right; margin-left: 1.6rem; }
 .article-body figure.img-left img,
 .article-body figure.img-right img { width: 100%; height: auto; }
 @media (max-width: 640px) {
   .article-body figure.img-left,
-  .article-body figure.img-right { float: none; max-width: 100%; margin: 1rem 0; }
+  .article-body figure.img-right,
+  .article-body .gallery.img-left,
+  .article-body .gallery.img-right,
+  .article-body .embed-16x9.img-left,
+  .article-body .embed-16x9.img-right { float: none; max-width: 100%; margin: 1rem 0; }
 }
 
 /* image size (The Helm composer: Small / Medium / Large). Large = column width (no class).

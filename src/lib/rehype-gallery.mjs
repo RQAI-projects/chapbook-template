@@ -5,18 +5,27 @@
 // that marker, apply `--blk-w` + `data-align` to the gallery wrapper (honoured by
 // the site CSS, responsive — full width ≤640px), then drop the marker node. No
 // marker = today's behaviour exactly.
-const MARKER = /^\[\[blk-gallery:w=(\d{1,3}),a=(left|center|right)\]\]$/;
+// PLACEMENT rides the same sentinel as an optional trailing `,p=wide|left|right`
+// token (`[[blk-gallery:w=NN,a=X,p=…]]`) or on its own (`[[blk-gallery:p=…]]`),
+// mapping to the image-path placement classes on the wrapper:
+// wide → breakout, left → img-left, right → img-right.
+const MARKER =
+  /^\[\[blk-gallery:(?:w=(\d{1,3}),a=(left|center|right)(?:,p=(wide|left|right))?|p=(wide|left|right))\]\]$/;
 
-// A paragraph whose only text content is the gallery marker → { w, align }, else null.
+// A paragraph whose only text content is the gallery marker → { w, align, place }
+// (w/align null for the placement-only form, place null when absent), else null.
 function galleryMarker(n) {
   if (!n || n.tagName !== 'p' || !n.children) return null;
   const kids = n.children.filter((c) => !(c.type === 'text' && !String(c.value).trim()));
   if (kids.length !== 1 || kids[0].type !== 'text') return null;
   const m = MARKER.exec(String(kids[0].value).trim());
   if (!m) return null;
-  const w = Math.max(20, Math.min(99, Number(m[1])));
-  return { w, align: m[2] };
+  const w = m[1] != null ? Math.max(20, Math.min(99, Number(m[1]))) : null;
+  return { w, align: m[2] ?? null, place: m[3] ?? m[4] ?? null };
 }
+
+// p token → wrapper class (appended after 'gallery' / 'gallery--one').
+const placeClass = (place) => (place === 'wide' ? 'breakout' : place ? `img-${place}` : null);
 
 export default function rehypeGallery() {
   return (tree) => {
@@ -35,20 +44,25 @@ export default function rehypeGallery() {
     };
 
     const flush = () => {
+      const pc = pending ? placeClass(pending.place) : null;
       if (run.length >= 2) {
         const properties = { className: ['gallery'] };
-        if (pending) {
+        if (pending && pending.w != null) {
           properties.style = `--blk-w:${pending.w}%`;
           properties['data-align'] = pending.align;
         }
+        if (pc) properties.className.push(pc);
         out.push({ type: 'element', tagName: 'div', properties, children: run });
       } else if (run.length === 1) {
-        // a single image still honours a width hint (becomes a sized figure-like p)
+        // a single image still honours a width/placement hint (becomes a sized figure-like p)
         const properties = {};
         if (pending) {
           properties.className = ['gallery', 'gallery--one'];
-          properties.style = `--blk-w:${pending.w}%`;
-          properties['data-align'] = pending.align;
+          if (pending.w != null) {
+            properties.style = `--blk-w:${pending.w}%`;
+            properties['data-align'] = pending.align;
+          }
+          if (pc) properties.className.push(pc);
           out.push({ type: 'element', tagName: 'div', properties, children: [run[0]] });
         } else {
           out.push({ type: 'element', tagName: 'p', properties, children: [run[0]] }); // lone image stays inline
