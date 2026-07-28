@@ -917,6 +917,14 @@ article[data-post-theme="parchment"] .article-body [data-footnotes] li::marker {
 .article-body .fig--sticker:has(img) svg { max-width: none; }
 
 /* ---------- playgrounds (interactive embeds) ---------- */
+.playground-frame {
+  display: block;
+  width: 100%;
+  min-height: 220px;
+  margin-block: 2rem;
+  border: 0;
+  background: transparent;
+}
 .playground {
   margin-block: 2rem;
   background:

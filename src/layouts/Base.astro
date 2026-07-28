@@ -352,15 +352,91 @@ const isCurrent = (href: string) => {
         update();
       }
 
-      // Interactive playground scripts inside markdown use
-      // <script type="application/pg"> so Astro leaves them alone.
-      // Execute them after each page load.
+      // Interactive blocks arrive as a .playground followed by an inert
+      // <script type="application/pg">. Move each pair into an opaque-origin
+      // iframe before executing it: the widget keeps working, but its code
+      // cannot read the blog page, cookies, storage, or other interactives.
+      const playgroundFrames = new Map<Window, HTMLIFrameElement>();
+      let playgroundResizeBound = false;
+      function bindPlaygroundResize() {
+        if (playgroundResizeBound) return;
+        playgroundResizeBound = true;
+        window.addEventListener('message', (event) => {
+          const frame = playgroundFrames.get(event.source as Window);
+          const data = event.data;
+          if (!frame || !data || data.type !== 'chapbook:playground-height') return;
+          const height = Math.max(180, Math.min(1600, Number(data.height) || 0));
+          if (height) frame.style.height = `${Math.ceil(height)}px`;
+        });
+      }
       function initPlaygrounds() {
         document.querySelectorAll<HTMLScriptElement>('script[type="application/pg"]:not([data-run])').forEach((s) => {
           s.dataset.run = '1';
-          try { new Function(s.textContent || '')(); }
-          catch (e) { console.error('playground error', e); }
+          // The serializer emits wrapper → optional scoped <style> → inert script.
+          // Walk over that style rather than assuming the wrapper is adjacent.
+          const style = s.previousElementSibling instanceof HTMLStyleElement ? s.previousElementSibling : null;
+          const playground = style ? style.previousElementSibling : s.previousElementSibling;
+          if (!(playground instanceof HTMLElement) || !playground.classList.contains('playground')) return;
+
+          const computed = getComputedStyle(playground);
+          const vars = [
+            '--bg-0','--bg-1','--bg-2','--bg-3','--ink','--ink-dim','--ink-faint',
+            '--teal','--cyan','--violet','--line','--line-strong','--radius','--font-display',
+          ].map((name) => `${name}:${computed.getPropertyValue(name)};`).join('');
+          const id = `pg-frame-${Math.random().toString(36).slice(2)}`;
+          const code = (s.textContent || '').replace(/<\/script/gi, '<\\/script');
+          const widgetCss = (style?.textContent || '').replace(/<\/style/gi, '<\\/style');
+          const baseCss = `
+            :root{${vars}color-scheme:dark}
+            *{box-sizing:border-box}
+            html,body{margin:0;min-width:0;background:transparent;color:var(--ink-dim);
+              font:15px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+            body{overflow:hidden}
+            button,input,select,textarea{font:inherit;color:inherit}
+            button{cursor:pointer}
+            .playground{margin:0;background:
+              radial-gradient(ellipse 80% 60% at 50% 0%,rgba(34,211,238,.07),transparent 60%),
+              linear-gradient(165deg,var(--bg-2),var(--bg-0));
+              border:1px solid rgba(34,211,238,.28);border-radius:var(--radius);
+              padding:1.4rem;box-shadow:inset 0 0 40px rgba(34,211,238,.04);overflow:auto}
+            .playground svg{width:100%;height:auto}
+            .pg-row{display:flex;flex-wrap:wrap;align-items:center;gap:1rem 1.6rem}
+            .playground label{display:block;font-family:var(--font-display);font-size:.78rem;
+              letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:.35em}
+            .pg-readout{font-family:var(--font-display);font-size:.92rem;color:var(--ink-dim);
+              border:1px solid var(--line-strong);border-radius:12px;
+              background:rgba(8,12,22,.8);padding:.6em 1em}
+            .pg-readout b{color:var(--ink);font-weight:600}
+          `;
+          const csp = "default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; "
+            + "style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:";
+          const resize = `
+            const report=()=>parent.postMessage({type:'chapbook:playground-height',
+              height:document.documentElement.scrollHeight},'*');
+            new ResizeObserver(report).observe(document.documentElement);
+            addEventListener('load',report);requestAnimationFrame(report);
+          `;
+          const frame = document.createElement('iframe');
+          frame.className = ['playground-frame', ...[...playground.classList].filter((x) => x !== 'playground')].join(' ');
+          frame.title = playground.getAttribute('aria-label') || 'Interactive block';
+          frame.setAttribute('sandbox', 'allow-scripts');
+          frame.setAttribute('data-pg-frame', id);
+          frame.loading = 'lazy';
+          for (const attr of ['style', 'data-align']) {
+            const value = playground.getAttribute(attr);
+            if (value != null) frame.setAttribute(attr, value);
+          }
+          frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8">`
+            + `<meta http-equiv="Content-Security-Policy" content="${csp}">`
+            + `<meta name="viewport" content="width=device-width,initial-scale=1">`
+            + `<style>${baseCss}${widgetCss}</style></head><body>${playground.outerHTML}`
+            + `<script>${code}<\/script><script>${resize}<\/script></body></html>`;
+          playground.replaceWith(frame);
+          style?.remove();
+          s.remove();
+          if (frame.contentWindow) playgroundFrames.set(frame.contentWindow, frame);
         });
+        bindPlaygroundResize();
       }
 
       function initSvgDraw() {
@@ -532,8 +608,14 @@ const isCurrent = (href: string) => {
       }
 
       document.addEventListener('astro:page-load', initAll);
+      // On a direct static-page load, Astro's initial page-load event may fire
+      // before this hoisted module has registered its listener. Interactives are
+      // security-sensitive, so sandbox them immediately as well; the selector is
+      // idempotent and later client-side navigations still use initAll.
+      initPlaygrounds();
       document.addEventListener('astro:before-swap', () => {
         ScrollTrigger.getAll().forEach((t) => t.kill());
+        playgroundFrames.clear();
       });
     </script>
   </body>
