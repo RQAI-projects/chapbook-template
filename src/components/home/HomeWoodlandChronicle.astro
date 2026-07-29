@@ -1,0 +1,88 @@
+---
+// ARCHETYPE · woodland-trail — Woodland Chronicle.
+// The home page grows vertically like a trail through a forest: an organic canopy,
+// a featured clearing, alternating story markers on a central path, and seed-like
+// topic links at the forest floor.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate, pad2 } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle, topicsLabel } =
+  Astro.props as HomeProps;
+const lead = posts[0];
+const trail = posts.slice(1);
+const groves = topics.filter((t) => t.count > 0);
+---
+<section class="wc">
+  <header class="wc-canopy">
+    <div class="wc-rings" aria-hidden="true"></div>
+    <p class="wc-kicker">WOODLAND CHRONICLE · {posts.length} STORIES</p>
+    <h1>{masthead}</h1>
+    <p class="wc-tagline">{tagline}</p>
+  </header>
+
+  {lead && (
+    <article class="wc-clearing">
+      <div class="wc-leaf" aria-hidden="true"></div>
+      <p>{lead.topic?.name || 'From the clearing'}</p>
+      <h2><a href={lead.href}>{lead.title}</a></h2>
+      <p>{lead.description}</p>
+      <footer><time datetime={lead.date.toISOString()}>{fmtDate(lead.date)}</time><span>{lead.readMins} min</span><a href={lead.href}>Enter the story →</a></footer>
+    </article>
+  )}
+
+  <div class="wc-trail">
+    <div class="wc-trunk" aria-hidden="true"></div>
+    {trail.map((p, i) => (
+      <article class={`wc-marker ${i % 2 ? 'wc-right' : 'wc-left'}`}>
+        <span class="wc-node" aria-hidden="true">{pad2(i + 2)}</span>
+        <div class="wc-card">
+          <p>{p.topic?.name || postsTitle}</p>
+          <h2><a href={p.href}>{p.title}</a></h2>
+          <p>{p.description}</p>
+          <footer><time datetime={p.date.toISOString()}>{fmtDate(p.date)}</time><span>{p.readMins} min</span></footer>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <footer class="wc-floor">
+    <div>
+      <p>{topicsLabel} / groves</p>
+      <h2>Follow another path.</h2>
+    </div>
+    <ul>
+      {groves.map((t) => <li><a href={t.href} style={`--leaf:${t.color}`}>{t.name}<span>{t.count}</span></a></li>)}
+    </ul>
+    <a class="wc-all" href={postsHref}>All {postsTitle.toLowerCase()} →</a>
+  </footer>
+</section>
+
+<style>
+  .wc { width:min(1180px,calc(100% - 2rem)); margin-inline:auto; padding:clamp(1.5rem,4vw,3rem) 0 4rem; }
+  .wc-canopy { position:relative; min-height:440px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; overflow:hidden; border-radius:48% 48% 18px 18px/24% 24% 18px 18px; background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--accent) 28%,transparent),transparent 48%),var(--bg-1); border:1px solid var(--line); }
+  .wc-rings { position:absolute;width:min(720px,92vw);aspect-ratio:1;border:1px solid var(--line-strong);border-radius:50%;opacity:.42; }
+  .wc-rings::before,.wc-rings::after{content:"";position:absolute;border:1px solid var(--line-strong);border-radius:50%;inset:12%}.wc-rings::after{inset:27%}
+  .wc-kicker,.wc-clearing>p:first-of-type,.wc-card>p:first-child,.wc-floor>div>p { font:700 .68rem var(--font-display); letter-spacing:.16em; text-transform:uppercase; color:var(--accent); position:relative; }
+  .wc-canopy h1 { position:relative; max-width:12ch; margin:.5rem 0; font:650 clamp(3.2rem,9vw,7.2rem)/.87 var(--font-display); letter-spacing:-.06em; color:var(--ink); text-wrap:balance; }
+  .wc-tagline { position:relative; max-width:50ch; color:var(--ink-dim); font-size:1.1rem; }
+  .wc-clearing { position:relative; width:min(760px,92%); margin:-3rem auto 0; padding:clamp(1.4rem,4vw,2.8rem); background:var(--bg-2); border:1px solid var(--line-strong); border-radius:24px 4px 24px 4px; box-shadow:0 24px 70px rgba(20,28,16,.24); z-index:2; overflow:hidden; }
+  .wc-leaf { position:absolute; width:180px; height:90px; border:1px solid var(--accent); border-radius:100% 0 100% 0; right:-35px; top:-20px; transform:rotate(-18deg); opacity:.15; }
+  .wc-clearing h2{margin:.5rem 0}.wc-clearing h2 a{font:650 clamp(2rem,5vw,3.5rem)/1 var(--font-display);letter-spacing:-.04em;color:var(--ink)}.wc-clearing h2 a:hover{color:var(--accent)}
+  .wc-clearing>p:nth-of-type(2){max-width:58ch;color:var(--ink-dim)}.wc-clearing footer{display:flex;flex-wrap:wrap;gap:.7rem 1.2rem;margin-top:1.2rem;padding-top:.8rem;border-top:1px solid var(--line);font:600 .72rem var(--font-display);color:var(--ink-faint)}.wc-clearing footer a{margin-left:auto;color:var(--accent)}
+  .wc-trail { position:relative; margin:clamp(3rem,7vw,6rem) auto; max-width:1020px; padding:1rem 0; }
+  .wc-trunk { position:absolute;left:50%;top:0;bottom:0;width:3px;transform:translateX(-50%);background:linear-gradient(var(--accent),var(--line-strong) 12%,var(--line-strong) 88%,var(--accent));border-radius:3px; }
+  .wc-marker { position:relative; width:50%; padding:0 3.2rem 2.2rem 0; }
+  .wc-marker.wc-right { margin-left:50%; padding:0 0 2.2rem 3.2rem; }
+  .wc-node { position:absolute; right:-1.05rem; top:.9rem; width:2.1rem; height:2.1rem; display:grid; place-items:center; border-radius:50% 4px 50% 50%; background:var(--bg-2); border:1px solid var(--accent); color:var(--accent); font:700 .62rem var(--font-display); transform:rotate(45deg); }
+  .wc-node::first-line{transform:rotate(-45deg)}.wc-right .wc-node{right:auto;left:-1.05rem}
+  .wc-card { padding:1.2rem 1.25rem; background:color-mix(in srgb,var(--bg-1) 92%,transparent); border:1px solid var(--line); border-radius:18px 3px 18px 3px; transition:transform .2s ease,border-color .2s ease; }
+  .wc-card:hover{transform:translateY(-3px);border-color:var(--accent)}.wc-card h2{margin:.4rem 0}.wc-card h2 a{font:650 1.25rem/1.16 var(--font-display);color:var(--ink)}.wc-card h2 a:hover{color:var(--accent)}
+  .wc-card>p:nth-of-type(2){color:var(--ink-dim);font-size:.92rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.wc-card footer{display:flex;justify-content:space-between;margin-top:.8rem;padding-top:.6rem;border-top:1px solid var(--line);font:600 .68rem var(--font-display);color:var(--ink-faint)}
+  .wc-floor { display:grid;grid-template-columns:.7fr 1.3fr;gap:1.5rem 4rem;padding:clamp(1.4rem,4vw,2.6rem);background:var(--bg-1);border:1px solid var(--line);border-radius:4px 4px 48px 48px; }
+  .wc-floor h2{margin:.5rem 0;font:650 clamp(2rem,4vw,3.1rem)/1 var(--font-display);color:var(--ink)}
+  .wc-floor ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}.wc-floor li a{display:flex;justify-content:space-between;gap:.7rem;padding:.8rem 1rem;border:1px solid var(--line);border-radius:999px;color:var(--ink-dim);font:600 .86rem var(--font-display)}.wc-floor li a::before{content:"";width:10px;height:15px;border-radius:100% 0 100% 0;background:var(--leaf,var(--accent));transform:rotate(-35deg)}.wc-floor li a span{margin-left:auto;color:var(--ink-faint)}.wc-floor li a:hover{border-color:var(--accent);color:var(--ink)}
+  .wc-all{grid-column:2;color:var(--accent);font:700 .78rem var(--font-display);text-transform:uppercase;letter-spacing:.08em}
+  @media(max-width:760px){.wc-trunk{left:1.05rem}.wc-marker,.wc-marker.wc-right{width:100%;margin-left:0;padding:0 0 1.2rem 3.2rem}.wc-node,.wc-right .wc-node{left:0;right:auto}.wc-floor{grid-template-columns:1fr}.wc-all{grid-column:1}.wc-clearing footer a{margin-left:0;width:100%}}
+  @media(max-width:520px){.wc-floor ul{grid-template-columns:1fr}.wc-canopy{min-height:360px}}
+  @media(prefers-reduced-motion:reduce){.wc-card{transition:none}.wc-card:hover{transform:none}}
+</style>

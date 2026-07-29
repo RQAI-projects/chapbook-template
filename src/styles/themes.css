@@ -12,19 +12,19 @@
 @import './themes/observatory.css';
 @import './themes/ledger.css';
 @import './themes/air.css';
-@import './themes/graphite.css';
+@import './themes/blueprint-workshop.css';
 
 /* Editorial */
 @import './themes/broadsheet.css';
 @import './themes/journal.css';
 @import './themes/kiosk.css';
-@import './themes/gazette.css';
+@import './themes/desert-archive.css';
 
 /* Creative & Fun */
 @import './themes/neon.css';
 @import './themes/zine.css';
 @import './themes/scrapbook.css';
-@import './themes/arcade.css';
+@import './themes/woodland-chronicle.css';
 
 /* Kids & First Blogs (ages 10–15) */
 @import './themes/doodle.css';
@@ -33,7 +33,7 @@
 @import './themes/comic.css';
 
 /* Photo & Portfolio */
-@import './themes/gallery.css';
+@import './themes/field-atlas.css';
 @import './themes/darkroom.css';
 @import './themes/contact-sheet.css';
 @import './themes/polaroid.css';

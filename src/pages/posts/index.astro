@@ -14,12 +14,12 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
 // the initial layout: the switcher + a reader's saved 'writing-layout' pref win.
 const LAYOUT_BY_THEME: Record<string, string> = {
   observatory: 'reader', air: 'reader', journal: 'reader',
-  ledger: 'index', graphite: 'index',
-  broadsheet: 'newspaper', gazette: 'newspaper',
+  ledger: 'index', 'blueprint-workshop': 'index',
+  broadsheet: 'newspaper', 'desert-archive': 'timeline',
   kiosk: 'magazine', zine: 'magazine',
-  neon: 'cards', arcade: 'terminal', scrapbook: 'cards',
+  neon: 'cards', 'woodland-chronicle': 'timeline', scrapbook: 'cards',
   doodle: 'cards', rocket: 'cards', pixel: 'cards', comic: 'cards',
-  gallery: 'cards', darkroom: 'cards', 'contact-sheet': 'cards', polaroid: 'cards',
+  'field-atlas': 'index', darkroom: 'cards', 'contact-sheet': 'cards', polaroid: 'cards',
 };
 const LAYOUT_KEYS = ['reader', 'index', 'newspaper', 'magazine', 'timeline', 'cards', 'terminal', 'headlines'];
 const activeTheme = site.defaultTheme || 'observatory';

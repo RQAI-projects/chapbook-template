@@ -1,0 +1,44 @@
+/* THEME · Desert Archive — panoramic, warm and editorial. */
+html[data-blog-theme="desert-archive"] {
+  color-scheme:light;
+  --bg-0:#d9ae76; --bg-1:#f1dfc3; --bg-2:#f8ead2; --bg-3:#c98554;
+  --ink:#301b12; --ink-dim:#60402d; --ink-faint:#87664f;
+  --teal:#995a35; --cyan:#b2613e; --violet:#7a565c; --pink:#a1483f; --amber:#c77a35;
+  --accent:#a94f35; --accent-ink:#fff8ec;
+  --grad:linear-gradient(100deg,#d89444,#b15b3b 55%,#87545a);
+  --line:rgba(83,47,28,.18); --line-strong:rgba(83,47,28,.34);
+  --glow-teal:0 12px 36px rgba(74,38,20,.13); --glow-cyan:0 12px 36px rgba(74,38,20,.13); --glow-violet:0 12px 36px rgba(74,38,20,.1);
+  --radius:2px; --header-bg:rgba(248,234,210,.88); --header-border:var(--line-strong);
+  --selection-bg:rgba(169,79,53,.2); --scrim-text-shadow:none; --masthead-shadow:none;
+  --font-display:'Fraunces',Georgia,serif; --font-body:'Newsreader',Georgia,serif;
+}
+html[data-blog-theme="desert-archive"] body { background:linear-gradient(180deg,#efd7b4,var(--bg-0)) fixed; }
+html[data-blog-theme="desert-archive"] .logo { font-family:var(--font-display); font-weight:700; }
+html[data-blog-theme="desert-archive"] .site-nav a { font-family:var(--font-display); letter-spacing:.04em; color:var(--ink-dim); }
+html[data-blog-theme="desert-archive"] .site-nav a[aria-current="page"]::after { background:var(--accent); box-shadow:none; }
+html[data-blog-theme="desert-archive"] .section-title,
+html[data-blog-theme="desert-archive"] .archive-head .display,
+html[data-blog-theme="desert-archive"] .post-title-row h1 { font-family:var(--font-display); font-weight:650; letter-spacing:-.035em; }
+html[data-blog-theme="desert-archive"] .post-card,
+html[data-blog-theme="desert-archive"] .card,
+html[data-blog-theme="desert-archive"] .const-card,
+html[data-blog-theme="desert-archive"] .subscribe-card,
+html[data-blog-theme="desert-archive"] .stat-card,
+html[data-blog-theme="desert-archive"] .cv-item { background:rgba(248,234,210,.78); border:1px solid var(--line); border-radius:2px; box-shadow:0 12px 30px rgba(74,38,20,.08); }
+html[data-blog-theme="desert-archive"] .post-card:hover { transform:translateY(-2px); border-color:var(--accent); box-shadow:0 18px 38px rgba(74,38,20,.14); }
+html[data-blog-theme="desert-archive"] .tag-chip { border-radius:999px; background:rgba(169,79,53,.07); color:var(--accent); border-color:rgba(169,79,53,.3); }
+html[data-blog-theme="desert-archive"] .post-hero { background:linear-gradient(150deg,var(--bg-2),var(--bg-1)); border-bottom:1px solid var(--line-strong); }
+html[data-blog-theme="desert-archive"] .post-hero .orbs { opacity:.2; filter:sepia(1); }
+html[data-blog-theme="desert-archive"] .post-hero .grid-lines { display:none; }
+html[data-blog-theme="desert-archive"] .article-body { color:var(--ink); font-family:var(--font-body); font-size:1.17rem; line-height:1.82; }
+html[data-blog-theme="desert-archive"] .article-body h2,
+html[data-blog-theme="desert-archive"] .article-body h3 { font-family:var(--font-display); color:var(--ink); }
+html[data-blog-theme="desert-archive"] .article-body h2 { border-top:1px solid var(--line-strong); }
+html[data-blog-theme="desert-archive"] .article-body blockquote { border-left:4px solid var(--accent); color:var(--ink-dim); font-style:italic; box-shadow:none; }
+html[data-blog-theme="desert-archive"] .article-body a { color:var(--accent); border-bottom-color:rgba(169,79,53,.38); }
+html[data-blog-theme="desert-archive"] .article-body a:hover { text-shadow:none; border-bottom-color:var(--accent); }
+html[data-blog-theme="desert-archive"] .article-body pre { background:#321f16; border-color:#6d4631; }
+html[data-blog-theme="desert-archive"] .btn-primary { background:var(--accent); color:var(--accent-ink); box-shadow:none; border-radius:2px; }
+html[data-blog-theme="desert-archive"] .btn-ghost { border:1px solid var(--accent); color:var(--accent); border-radius:2px; }
+html[data-blog-theme="desert-archive"] .subscribe-form input { background:var(--bg-2); border-color:var(--line-strong); color:var(--ink); }
+html[data-blog-theme="desert-archive"] .site-footer { border-top:1px solid var(--line-strong); }

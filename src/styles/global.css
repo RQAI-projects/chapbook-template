@@ -156,32 +156,6 @@ h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; letter-spa
 
 .site-nav { display: flex; align-items: center; gap: 0.4rem; margin-left: auto; }
 
-/* Header theme dropdown — prominent "Choose theme" control (footer chooser still exists). */
-.theme-menu { position: relative; flex: none; margin-left: 0.85rem; }
-.theme-menu-btn {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  background: rgba(140, 160, 200, 0.06); border: 1px solid var(--line);
-  color: var(--ink-dim); font: 600 0.78rem var(--font-display); letter-spacing: 0.02em;
-  padding: 0.42em 0.72em; border-radius: 99px; cursor: pointer;
-  transition: color 0.2s, border-color 0.2s, background 0.2s;
-}
-.theme-menu-btn:hover { color: var(--ink); border-color: var(--line-strong); background: rgba(140, 160, 200, 0.1); }
-.theme-menu-btn svg:first-child { color: var(--accent); }
-.theme-menu-caret { opacity: 0.65; transition: transform 0.2s; }
-.theme-menu-btn[aria-expanded="true"] .theme-menu-caret { transform: rotate(180deg); }
-.theme-menu-panel {
-  position: absolute; right: 0; top: calc(100% + 0.5rem);
-  display: flex; flex-direction: column; gap: 0.12rem; min-width: 158px; z-index: 200;
-  background: rgba(8, 12, 22, 0.97); border: 1px solid var(--line); border-radius: 12px; padding: 0.35rem;
-  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-}
-.theme-menu-panel[hidden] { display: none; }
-.theme-menu-panel button {
-  text-align: left; background: transparent; border: 0; color: var(--ink-dim);
-  font: 500 0.86rem var(--font-display); padding: 0.5em 0.7em; border-radius: 8px; cursor: pointer;
-}
-.theme-menu-panel button:hover { background: rgba(140, 160, 200, 0.1); color: var(--ink); }
-.theme-menu-panel button[aria-pressed="true"] { color: var(--bg-0); background: var(--grad); font-weight: 700; }
 .site-nav a {
   font-family: var(--font-display);
   font-size: 0.92rem;
@@ -222,12 +196,6 @@ h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; letter-spa
   }
   .logo { order: 1; flex: 1 1 auto; text-align: left; }
   .nav-toggle { display: inline-flex; order: 3; }
-  /* show the theme switcher in the top bar on mobile too (compact: palette icon + caret) */
-  .theme-menu { display: block; order: 2; margin: 0 0.4rem 0 0; }
-  .theme-menu-btn { padding: 0.42em 0.55em; }
-  .theme-menu-label { display: none; }   /* icon + caret only on mobile */
-  .theme-menu-panel { right: 0; min-width: 150px; }
-
   /* the single visible row of primary items */
   .nav-primary {
     order: 3; width: 100%;
@@ -1094,155 +1062,6 @@ article[data-post-theme="parchment"] .article-body [data-footnotes] li::marker {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* ============================================================
-   Switchable site themes (environments)
-   Default = "Observatory" (the :root tokens above).
-   Vista = a deep-ocean environment — still dark, per the house rule.
-   Selected via <html data-site-theme="…"> (footer chooser, localStorage).
-   ============================================================ */
-:root[data-site-theme="vista"] {
-  --bg-0: #02060f;
-  --bg-1: #04101d;
-  --bg-2: #07202f;
-  --bg-3: #0b3043;
-  --ink: #eaf6ff;
-  --ink-dim: #b6d2e2;
-  --ink-faint: #7ea7be;
-  --teal: #2ee6c8;
-  --cyan: #38d0ff;
-  --violet: #6aa9ff;
-  --accent: var(--cyan);
-  --grad: linear-gradient(100deg, var(--teal), var(--cyan) 50%, var(--violet));
-  --line: rgba(120, 180, 220, 0.14);
-  --line-strong: rgba(120, 180, 220, 0.26);
-  --glow-teal: 0 0 26px rgba(46, 230, 200, 0.4);
-  --glow-cyan: 0 0 26px rgba(56, 208, 255, 0.42);
-  --glow-violet: 0 0 26px rgba(106, 169, 255, 0.4);
-}
-
-/* footer theme chooser */
-.theme-chooser { display: inline-flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
-.theme-chooser .tc-label { font: 600 0.68rem var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
-.theme-chooser button { font: 600 0.78rem var(--font-display); color: var(--ink-dim); background: transparent;
-  border: 1px solid var(--line); border-radius: 999px; padding: 0.25em 0.8em; cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
-.theme-chooser button:hover { color: var(--ink); border-color: var(--line-strong); }
-.theme-chooser button[aria-pressed="true"] { color: #04211c; background: var(--grad); border-color: transparent; }
-
-/* ── Blueprint theme — cyanotype drafting table (switchable) ─────────────── */
-:root[data-site-theme="blueprint"] {
-  --bg-0: #071a33;
-  --bg-1: #0a2347;
-  --bg-2: #0e2c57;
-  --bg-3: #123769;
-  --ink: #eaf2ff;
-  --ink-dim: #bcd2f0;
-  --ink-faint: #84a6d6;
-  --teal: #7fdbff;
-  --cyan: #a9d6ff;
-  --violet: #cfe3ff;
-  --accent: #a9d6ff;
-  --grad: linear-gradient(100deg, #7fdbff, #a9d6ff 50%, #dbeafe);
-  --line: rgba(150, 190, 240, 0.18);
-  --line-strong: rgba(150, 190, 240, 0.34);
-  --glow-teal: 0 0 24px rgba(127, 219, 255, 0.35);
-  --glow-cyan: 0 0 24px rgba(169, 214, 255, 0.4);
-  --glow-violet: 0 0 24px rgba(207, 227, 255, 0.32);
-  /* technical/drafting type for headings & labels */
-  --font-display: ui-monospace, 'SF Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
-}
-/* faint blueprint grid paper behind everything */
-:root[data-site-theme="blueprint"] body {
-  background-color: #071a33;
-  background-image:
-    linear-gradient(rgba(150, 190, 240, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(150, 190, 240, 0.06) 1px, transparent 1px);
-  background-size: 28px 28px;
-  background-attachment: fixed;
-}
-
-/* ── Atlas theme — anatomical engraving (switchable; recolours the 3D explore too) ── */
-:root[data-site-theme="atlas"] {
-  --bg-0: #0b0a08;
-  --bg-1: #12100c;
-  --bg-2: #191510;
-  --bg-3: #221c15;
-  --ink: #f2ead6;
-  --ink-dim: #d8caa8;
-  --ink-faint: #a7986f;
-  --teal: #c9a36b;
-  --cyan: #d8c39a;
-  --violet: #b5654d;
-  --pink: #c96a6a;
-  --amber: #d8c39a;
-  --accent: #9e3b3b;
-  --grad: linear-gradient(100deg, #d8c39a, #c9a36b 50%, #9e3b3b);
-  --line: rgba(180, 160, 120, 0.16);
-  --line-strong: rgba(180, 160, 120, 0.30);
-  --glow-teal: 0 0 22px rgba(201, 163, 107, 0.3);
-  --glow-cyan: 0 0 22px rgba(216, 195, 154, 0.32);
-  --glow-violet: 0 0 22px rgba(158, 59, 59, 0.34);
-  /* engraved-plate serif for headings & labels */
-  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Georgia', serif;
-}
-
-/* ── LIGHT themes — light backgrounds, dark ink (override the dark defaults) ── */
-:root[data-site-theme="daybreak"] {
-  color-scheme: light;
-  --bg-0: #c3dcf3; --bg-1: #e7f2fc; --bg-2: #f6fbfe; --bg-3: #d3e4f4;
-  --ink: #0f1d36; --ink-dim: #293a58; --ink-faint: #475a7c;
-  --teal: #1f6f9e; --cyan: #2f88c0; --violet: #5a7bbf; --pink: #c47650; --amber: #e0a838;
-  --accent: #1a5f8a;
-  --grad: linear-gradient(100deg, #e0a838, #2f88c0 55%, #5a7bbf);
-  --line: rgba(30, 70, 120, 0.24); --line-strong: rgba(30, 70, 120, 0.4);
-  --glow-teal: 0 6px 22px rgba(30, 70, 120, 0.12);
-  --glow-cyan: 0 6px 22px rgba(30, 70, 120, 0.12);
-  --glow-violet: 0 6px 22px rgba(30, 70, 120, 0.12);
-}
-:root[data-site-theme="dune"] {
-  color-scheme: light;
-  --bg-0: #e3cfa8; --bg-1: #f2e7d2; --bg-2: #faf4e8; --bg-3: #d7c099;
-  --ink: #2f2110; --ink-dim: #54401f; --ink-faint: #74603c;
-  --teal: #8a5a2c; --cyan: #a8702f; --violet: #9a5a5a; --pink: #a8513c; --amber: #b87a2c;
-  --accent: #9a4a32;
-  --grad: linear-gradient(100deg, #c98a3c, #b5654d 55%, #a86a6a);
-  --line: rgba(90, 60, 30, 0.28); --line-strong: rgba(90, 60, 30, 0.44);
-  --glow-teal: 0 6px 22px rgba(90, 60, 30, 0.14);
-  --glow-cyan: 0 6px 22px rgba(90, 60, 30, 0.14);
-  --glow-violet: 0 6px 22px rgba(90, 60, 30, 0.14);
-}
-:root[data-site-theme="rivendell"] {
-  color-scheme: light;
-  --bg-0: #ddd0ad; --bg-1: #eee5cf; --bg-2: #f6f0e1; --bg-3: #d2c4a0;
-  --ink: #262112; --ink-dim: #443a22; --ink-faint: #645737;
-  --teal: #3f6b4a; --cyan: #54702f; --violet: #7a5d28; --pink: #8a4a3c; --amber: #8a6a2c;
-  --accent: #3a6b3a;
-  --grad: linear-gradient(100deg, #9a7b3c, #3f6b4a 55%, #5a7b3c);
-  --line: rgba(80, 64, 36, 0.3); --line-strong: rgba(80, 64, 36, 0.44);
-  --glow-teal: 0 6px 22px rgba(80, 64, 36, 0.14);
-  --glow-cyan: 0 6px 22px rgba(80, 64, 36, 0.14);
-  --glow-violet: 0 6px 22px rgba(80, 64, 36, 0.14);
-  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Georgia', serif;
-}
-
-/* light-theme surface fixes: the header bg + headline scrim are hardcoded for dark */
-:root[data-site-theme="daybreak"] .site-header,
-:root[data-site-theme="dune"] .site-header,
-:root[data-site-theme="rivendell"] .site-header {
-  background: rgba(255, 255, 255, 0.62);
-  border-bottom-color: var(--line);
-}
-:root[data-site-theme="daybreak"] .scrim-text,
-:root[data-site-theme="dune"] .scrim-text,
-:root[data-site-theme="rivendell"] .scrim-text {
-  text-shadow: 0 0 14px rgba(255, 255, 255, 0.95), 0 2px 22px rgba(255, 255, 255, 0.85), 0 0 50px rgba(255, 255, 255, 0.55);
-}
-/* light themes: the header "Choose theme" dropdown panel is dark by default — make it light */
-:is([data-site-theme="daybreak"], [data-site-theme="dune"], [data-site-theme="rivendell"]) .theme-menu-panel {
-  background: rgba(255, 255, 255, 0.96);
-  border-color: var(--line-strong);
-  box-shadow: 0 18px 44px rgba(60, 70, 90, 0.22);
 }
 
 /* ============================================================

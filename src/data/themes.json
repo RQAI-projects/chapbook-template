@@ -97,29 +97,29 @@
       }
     },
     {
-      "id": "graphite",
-      "name": "Graphite",
+      "id": "blueprint-workshop",
+      "name": "Blueprint Workshop",
       "category": "clean",
-      "hero": "split",
-      "description": "A monochrome slate room — cool greys, steel highlights, no colour to distract from the writing.",
+      "hero": "blueprint-board",
+      "description": "A working drafting table: gridded plans, numbered project sheets, specifications and cool cyan linework.",
       "preview": {
-        "bg": "#17191d",
-        "ink": "#e9ebef",
-        "accent": "#aeb7c2"
+        "bg": "#06172c",
+        "ink": "#eef7ff",
+        "accent": "#9bdcff"
       },
       "vocabulary": {
-        "postsTitle": "Index",
-        "topicsLabel": "Disciplines",
-        "aboutLabel": "Studio",
-        "tagline": "Notes from the studio.",
+        "postsTitle": "Drawing Register",
+        "topicsLabel": "Specifications",
+        "aboutLabel": "The Workshop",
+        "tagline": "Ideas drawn, tested and issued.",
         "topicNames": {
-          "marrow": "Practice",
-          "forge": "Projects",
-          "old-bones": "Material",
-          "marginalia": "Studies",
-          "after-hours": "Culture",
-          "atlas": "Site Visits",
-          "nebula": "Process"
+          "marrow": "Human Factors",
+          "forge": "Builds",
+          "old-bones": "Materials",
+          "marginalia": "References",
+          "after-hours": "Experiments",
+          "atlas": "Field Work",
+          "nebula": "Concepts"
         }
       }
     },
@@ -205,29 +205,29 @@
       }
     },
     {
-      "id": "gazette",
-      "name": "Gazette",
+      "id": "desert-archive",
+      "name": "Desert Archive",
       "category": "editorial",
-      "hero": "ticker",
-      "description": "A boxed masthead, navy double-rules and a formal dateline. Old-world civic newsletter, buttoned up.",
+      "hero": "desert-scroll",
+      "description": "A panoramic field journal with a sunlit horizon, horizontal folios and route-based story navigation.",
       "preview": {
-        "bg": "#f3f0e8",
-        "ink": "#191817",
-        "accent": "#1f3a5f"
+        "bg": "#d9ae76",
+        "ink": "#301b12",
+        "accent": "#a94f35"
       },
       "vocabulary": {
-        "postsTitle": "The Gazette",
-        "topicsLabel": "Columns",
-        "aboutLabel": "Masthead",
-        "tagline": "Published for the record.",
+        "postsTitle": "Field Notes",
+        "topicsLabel": "Routes",
+        "aboutLabel": "The Expedition",
+        "tagline": "Stories carried across open ground.",
         "topicNames": {
-          "marrow": "Home Life",
-          "forge": "Industry",
+          "marrow": "Shelter",
+          "forge": "Craft",
           "old-bones": "Provisions",
-          "marginalia": "Letters",
-          "after-hours": "Society",
-          "atlas": "Abroad",
-          "nebula": "Notices"
+          "marginalia": "Fragments",
+          "after-hours": "Night Camp",
+          "atlas": "Routes",
+          "nebula": "Horizons"
         }
       }
     },
@@ -313,29 +313,29 @@
       }
     },
     {
-      "id": "arcade",
-      "name": "Arcade",
+      "id": "woodland-chronicle",
+      "name": "Woodland Chronicle",
       "category": "creative",
-      "hero": "start-screen",
-      "description": "Insert coin: midnight-blue cabinet, chunky pixel-era type and hot arcade yellow and pink.",
+      "hero": "woodland-trail",
+      "description": "An organic story trail with a layered canopy, featured clearing, branching chronology and botanical details.",
       "preview": {
-        "bg": "#0b0f2a",
-        "ink": "#eafff5",
-        "accent": "#ffcf33"
+        "bg": "#d9ddc5",
+        "ink": "#202719",
+        "accent": "#3f7048"
       },
       "vocabulary": {
-        "postsTitle": "High Scores",
-        "topicsLabel": "Levels",
-        "aboutLabel": "Credits",
-        "tagline": "Insert coin to continue.",
+        "postsTitle": "Chronicles",
+        "topicsLabel": "Groves",
+        "aboutLabel": "The Keeper",
+        "tagline": "Stories gathered along the path.",
         "topicNames": {
-          "marrow": "Player 1",
-          "forge": "Power-Ups",
-          "old-bones": "Snacks",
-          "marginalia": "Lore",
-          "after-hours": "Bonus Stage",
-          "atlas": "World Map",
-          "nebula": "Cheat Codes"
+          "marrow": "Roots",
+          "forge": "Handwork",
+          "old-bones": "Forage",
+          "marginalia": "Leaves",
+          "after-hours": "Dusk",
+          "atlas": "Trails",
+          "nebula": "Canopy"
         }
       }
     },
@@ -448,29 +448,29 @@
       }
     },
     {
-      "id": "gallery",
-      "name": "Gallery",
+      "id": "field-atlas",
+      "name": "Field Atlas",
       "category": "photo",
-      "hero": "lead-grid",
-      "description": "A white-cube gallery: pure white walls, near-black labels and an image-led grid. The work leads.",
+      "hero": "field-atlas",
+      "description": "A cartographer's table with topographic contours, coordinate-led records and a colour-keyed field legend.",
       "preview": {
-        "bg": "#ffffff",
-        "ink": "#14151a",
-        "accent": "#2b2b2b"
+        "bg": "#d9d4bd",
+        "ink": "#20251f",
+        "accent": "#2f6f67"
       },
       "vocabulary": {
-        "postsTitle": "Works",
-        "topicsLabel": "Series",
-        "aboutLabel": "About",
-        "tagline": "The work leads.",
+        "postsTitle": "Field Records",
+        "topicsLabel": "Map Legend",
+        "aboutLabel": "The Surveyor",
+        "tagline": "Every story has a coordinate.",
         "topicNames": {
-          "marrow": "Life",
-          "forge": "Studio",
-          "old-bones": "Still Life",
-          "marginalia": "Reading",
-          "after-hours": "Culture",
-          "atlas": "Location",
-          "nebula": "Studies"
+          "marrow": "Habitat",
+          "forge": "Equipment",
+          "old-bones": "Specimens",
+          "marginalia": "Annotations",
+          "after-hours": "Night Survey",
+          "atlas": "Coordinates",
+          "nebula": "Unmapped"
         }
       }
     },

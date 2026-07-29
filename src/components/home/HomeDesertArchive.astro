@@ -1,0 +1,90 @@
+---
+// ARCHETYPE · desert-scroll — Desert Archive.
+// A panoramic editorial landscape: the lead story sits on the horizon and the
+// archive unfolds as a horizontal sequence of field folios before resolving into
+// a compact route index.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate, pad2 } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle, topicsLabel } =
+  Astro.props as HomeProps;
+const lead = posts[0];
+const folios = posts.slice(1, 7);
+const routes = topics.filter((t) => t.count > 0);
+---
+<section class="da">
+  <header class="da-horizon">
+    <div class="da-sun" aria-hidden="true"></div>
+    <div class="da-dune da-dune-one" aria-hidden="true"></div>
+    <div class="da-dune da-dune-two" aria-hidden="true"></div>
+    <div class="da-head">
+      <p class="da-mark">DESERT ARCHIVE · FIELD EDITION</p>
+      <h1>{masthead}</h1>
+      <p>{tagline}</p>
+    </div>
+    {lead && (
+      <article class="da-lead">
+        <span>FOLIO 01 · {lead.topic?.name || postsTitle}</span>
+        <h2><a href={lead.href}>{lead.title}</a></h2>
+        <p>{lead.description}</p>
+        <footer><time datetime={lead.date.toISOString()}>{fmtDate(lead.date)}</time><a href={lead.href}>Read the field note →</a></footer>
+      </article>
+    )}
+  </header>
+
+  <div class="da-strip-wrap">
+    <div class="da-strip" aria-label={`${postsTitle} folios`}>
+      {folios.map((p, i) => (
+        <article class="da-folio">
+          <div class="da-folio-no">{pad2(i + 2)}</div>
+          <p class="da-folio-topic">{p.topic?.name || 'Uncharted'}</p>
+          <h2><a href={p.href}>{p.title}</a></h2>
+          <p>{p.description}</p>
+          <footer><time datetime={p.date.toISOString()}>{fmtDate(p.date)}</time><span>{p.readMins} min</span></footer>
+        </article>
+      ))}
+    </div>
+  </div>
+
+  <div class="da-routes">
+    <div>
+      <p class="da-routes-label">{topicsLabel} / routes</p>
+      <h2>Choose a trail through the archive.</h2>
+    </div>
+    <ol>
+      {routes.map((t, i) => (
+        <li><a href={t.href}><span>{pad2(i + 1)}</span><strong>{t.name}</strong><em>{t.count} notes</em></a></li>
+      ))}
+    </ol>
+    <a class="da-all" href={postsHref}>View all {postsTitle.toLowerCase()} →</a>
+  </div>
+</section>
+
+<style>
+  .da { overflow:hidden; padding-bottom:4rem; }
+  .da-horizon { position:relative; min-height:min(760px,calc(100vh - var(--header-h))); display:grid; align-content:space-between; padding:clamp(2rem,6vw,5rem) max(1.2rem,calc((100vw - 1180px)/2)); overflow:hidden; isolation:isolate; }
+  .da-horizon::before { content:""; position:absolute; inset:0; z-index:-4; background:linear-gradient(180deg,var(--bg-2) 0 48%,var(--bg-0) 48%); }
+  .da-sun { position:absolute; width:clamp(170px,28vw,390px); aspect-ratio:1; border-radius:50%; right:10%; top:8%; background:linear-gradient(#f1b865,#c8653f); box-shadow:0 0 90px color-mix(in srgb,var(--amber) 35%,transparent); z-index:-3; }
+  .da-dune { position:absolute; left:-10%; width:120%; height:48%; bottom:-22%; border-radius:50% 50% 0 0/70% 70% 0 0; transform:rotate(-4deg); z-index:-2; }
+  .da-dune-one { background:var(--bg-3); bottom:-16%; }
+  .da-dune-two { background:var(--bg-0); bottom:-30%; left:18%; transform:rotate(5deg); }
+  .da-head { max-width:760px; }
+  .da-mark { font:700 .68rem var(--font-display); letter-spacing:.2em; color:var(--accent); }
+  .da-head h1 { margin:.45rem 0; max-width:11ch; font:700 clamp(3.4rem,11vw,8.7rem)/.82 var(--font-display); letter-spacing:-.065em; color:var(--ink); text-wrap:balance; }
+  .da-head>p:last-child { max-width:45ch; color:var(--ink-dim); font-size:clamp(1rem,2vw,1.25rem); }
+  .da-lead { width:min(610px,100%); margin:3rem 0 0 auto; padding:1.3rem 1.4rem; background:color-mix(in srgb,var(--bg-1) 88%,transparent); border-left:5px solid var(--accent); box-shadow:0 20px 60px rgba(64,35,18,.22); backdrop-filter:blur(8px); }
+  .da-lead>span,.da-folio-topic,.da-routes-label { font:700 .68rem var(--font-display); letter-spacing:.15em; text-transform:uppercase; color:var(--accent); }
+  .da-lead h2 { margin:.45rem 0; }.da-lead h2 a{font:650 clamp(1.6rem,4vw,2.7rem)/1.02 var(--font-display);color:var(--ink)}.da-lead h2 a:hover{color:var(--accent)}
+  .da-lead>p{color:var(--ink-dim);max-width:52ch}.da-lead footer{display:flex;justify-content:space-between;gap:1rem;margin-top:1rem;padding-top:.7rem;border-top:1px solid var(--line);font:600 .72rem var(--font-display);color:var(--ink-faint)}.da-lead footer a{color:var(--accent)}
+  .da-strip-wrap { background:var(--bg-1); border-block:1px solid var(--line-strong); padding:clamp(1.4rem,3vw,2.2rem) max(1rem,calc((100vw - 1180px)/2)); }
+  .da-strip { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(260px,1fr); overflow-x:auto; gap:1px; background:var(--line-strong); scroll-snap-type:x proximity; }
+  .da-folio { min-height:310px; display:flex; flex-direction:column; padding:1.25rem; background:var(--bg-1); scroll-snap-align:start; }
+  .da-folio-no { font:700 clamp(2.2rem,5vw,4.2rem)/1 var(--font-display); color:color-mix(in srgb,var(--accent) 30%,transparent); }
+  .da-folio-topic { margin-top:1.6rem; }.da-folio h2{margin:.4rem 0}.da-folio h2 a{font:650 1.25rem/1.15 var(--font-display);color:var(--ink)}.da-folio h2 a:hover{color:var(--accent)}
+  .da-folio>p:last-of-type{font-size:.92rem;color:var(--ink-dim);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.da-folio footer{display:flex;justify-content:space-between;margin-top:auto;padding-top:.8rem;border-top:1px solid var(--line);font:600 .68rem var(--font-display);color:var(--ink-faint)}
+  .da-routes { width:min(1120px,calc(100% - 2rem));margin:clamp(2.5rem,7vw,5rem) auto 0;display:grid;grid-template-columns:minmax(230px,.75fr) 1.2fr;gap:1.5rem 4rem;align-items:start; }
+  .da-routes h2{margin:.5rem 0;font:650 clamp(2rem,4vw,3.5rem)/1 var(--font-display);max-width:12ch;color:var(--ink)}
+  .da-routes ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--line-strong)}.da-routes li{border-bottom:1px solid var(--line)}.da-routes li a{display:grid;grid-template-columns:2rem 1fr auto;gap:1rem;padding:.85rem .2rem;color:var(--ink-dim)}.da-routes li a:hover{color:var(--accent)}.da-routes li span,.da-routes li em{font:600 .72rem var(--font-display);font-style:normal;color:var(--ink-faint)}.da-routes li strong{font:600 1rem var(--font-display)}
+  .da-all{grid-column:2;color:var(--accent);font:700 .78rem var(--font-display);text-transform:uppercase;letter-spacing:.08em}
+  @media(max-width:760px){.da-horizon{min-height:680px}.da-routes{grid-template-columns:1fr}.da-all{grid-column:1}.da-lead{margin-left:0}.da-sun{right:-10%}}
+</style>

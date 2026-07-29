@@ -9,18 +9,18 @@ export interface SiteConfig {
   /** Site-wide blog theme id — one of the entries in src/data/themes.json, applied as
    *  data-blog-theme on <html>. Unknown/absent falls back to the base 'observatory' look. */
   defaultTheme:
-    | 'observatory' | 'ledger' | 'air' | 'graphite'
-    | 'broadsheet' | 'journal' | 'kiosk' | 'gazette'
-    | 'neon' | 'zine' | 'scrapbook' | 'arcade'
+    | 'observatory' | 'ledger' | 'air' | 'blueprint-workshop'
+    | 'broadsheet' | 'journal' | 'kiosk' | 'desert-archive'
+    | 'neon' | 'zine' | 'scrapbook' | 'woodland-chronicle'
     | 'doodle' | 'rocket' | 'pixel' | 'comic'
-    | 'gallery' | 'darkroom' | 'contact-sheet' | 'polaroid'
+    | 'field-atlas' | 'darkroom' | 'contact-sheet' | 'polaroid'
     | (string & {});
   socials: { linkedin?: string; instagram?: string; github?: string };
   newsletter: { endpoint: string };
   contact: { endpoint: string };
   /** Header/footer nav. Optional: when absent, Base.astro falls back to its built-in nav.
-   *  `primary` items show in the mobile quick-access row; `themeLabel` items get renamed
-   *  per active site theme (e.g. Observatory → The Deep) by applyThemeTerms(). */
+   *  `primary` items show in the mobile quick-access row; `themeLabel` items are renamed
+   *  from the active full-theme vocabulary. */
   nav?: Array<{ href: string; label: string; primary?: boolean; themeLabel?: boolean }>;
 }
 

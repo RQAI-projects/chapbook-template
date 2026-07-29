@@ -1,0 +1,46 @@
+/* THEME · Woodland Chronicle — layered, organic and story-led. */
+html[data-blog-theme="woodland-chronicle"] {
+  color-scheme:light;
+  --bg-0:#d9ddc5; --bg-1:#eef0df; --bg-2:#f7f4e7; --bg-3:#b7c09a;
+  --ink:#202719; --ink-dim:#46513a; --ink-faint:#6c765c;
+  --teal:#436b4e; --cyan:#567c53; --violet:#71644a; --pink:#995b54; --amber:#a6803e;
+  --accent:#3f7048; --accent-ink:#f7f4e7;
+  --grad:linear-gradient(100deg,#9b874a,#3f7048 55%,#6f8e54);
+  --line:rgba(54,73,43,.15); --line-strong:rgba(54,73,43,.3);
+  --glow-teal:0 14px 34px rgba(37,57,28,.13); --glow-cyan:0 14px 34px rgba(37,57,28,.13); --glow-violet:0 14px 34px rgba(37,57,28,.1);
+  --radius:18px; --header-bg:rgba(238,240,223,.87); --header-border:var(--line-strong);
+  --selection-bg:rgba(63,112,72,.2); --scrim-text-shadow:none; --masthead-shadow:none;
+  --font-display:'Fraunces',Georgia,serif; --font-body:'Newsreader',Georgia,serif;
+}
+html[data-blog-theme="woodland-chronicle"] body { background:radial-gradient(circle at 15% 0,rgba(115,143,83,.18),transparent 35%),var(--bg-0); }
+html[data-blog-theme="woodland-chronicle"] .site-header { border-radius:0 0 22px 22px; }
+html[data-blog-theme="woodland-chronicle"] .logo { font-family:var(--font-display); font-weight:650; }
+html[data-blog-theme="woodland-chronicle"] .site-nav a { font-family:var(--font-display); color:var(--ink-dim); }
+html[data-blog-theme="woodland-chronicle"] .site-nav a[aria-current="page"]::after { height:5px; border-radius:100% 0 100% 0; background:var(--accent); box-shadow:none; transform:rotate(-8deg); }
+html[data-blog-theme="woodland-chronicle"] .section-title,
+html[data-blog-theme="woodland-chronicle"] .archive-head .display,
+html[data-blog-theme="woodland-chronicle"] .post-title-row h1 { font-family:var(--font-display); font-weight:650; letter-spacing:-.035em; }
+html[data-blog-theme="woodland-chronicle"] .post-card,
+html[data-blog-theme="woodland-chronicle"] .card,
+html[data-blog-theme="woodland-chronicle"] .const-card,
+html[data-blog-theme="woodland-chronicle"] .subscribe-card,
+html[data-blog-theme="woodland-chronicle"] .stat-card,
+html[data-blog-theme="woodland-chronicle"] .cv-item { background:var(--bg-2); border:1px solid var(--line); border-radius:22px 5px 22px 5px; box-shadow:0 12px 30px rgba(37,57,28,.08); }
+html[data-blog-theme="woodland-chronicle"] .post-card:hover,
+html[data-blog-theme="woodland-chronicle"] .const-card:hover { border-color:var(--accent); box-shadow:0 18px 40px rgba(37,57,28,.13); }
+html[data-blog-theme="woodland-chronicle"] .post-card::before { width:12px; height:18px; top:12px; left:12px; border-radius:100% 0 100% 0; transform:rotate(-35deg); box-shadow:none; }
+html[data-blog-theme="woodland-chronicle"] .tag-chip { border-radius:100% 0 100% 0; padding-inline:.85rem; background:rgba(63,112,72,.06); color:var(--accent); border-color:rgba(63,112,72,.28); }
+html[data-blog-theme="woodland-chronicle"] .post-hero { background:radial-gradient(circle at 80% 10%,rgba(63,112,72,.2),transparent 32%),var(--bg-1); border-radius:0 0 44px 44px; }
+html[data-blog-theme="woodland-chronicle"] .post-hero .orbs { opacity:.18; filter:hue-rotate(55deg); }
+html[data-blog-theme="woodland-chronicle"] .post-hero .grid-lines { display:none; }
+html[data-blog-theme="woodland-chronicle"] .article-body { color:var(--ink); font-family:var(--font-body); font-size:1.16rem; line-height:1.86; }
+html[data-blog-theme="woodland-chronicle"] .article-body h2,
+html[data-blog-theme="woodland-chronicle"] .article-body h3 { font-family:var(--font-display); color:var(--ink); }
+html[data-blog-theme="woodland-chronicle"] .article-body h2 { border-top:0; padding-left:1.2rem; position:relative; }
+html[data-blog-theme="woodland-chronicle"] .article-body h2::before { content:""; position:absolute; left:0; top:.3em; width:10px; height:16px; border-radius:100% 0 100% 0; background:var(--accent); transform:rotate(-35deg); }
+html[data-blog-theme="woodland-chronicle"] .article-body blockquote { border-left:0; border-radius:22px 4px 22px 4px; background:rgba(63,112,72,.08); color:var(--ink-dim); box-shadow:none; }
+html[data-blog-theme="woodland-chronicle"] .article-body a { color:var(--accent); border-bottom-color:rgba(63,112,72,.35); }
+html[data-blog-theme="woodland-chronicle"] .article-body a:hover { text-shadow:none; border-bottom-color:var(--accent); }
+html[data-blog-theme="woodland-chronicle"] .btn-primary { background:var(--accent); color:var(--accent-ink); border-radius:999px; box-shadow:none; }
+html[data-blog-theme="woodland-chronicle"] .btn-ghost { border:1px solid var(--accent); color:var(--accent); border-radius:999px; }
+html[data-blog-theme="woodland-chronicle"] .site-footer { border-top:1px solid var(--line-strong); background:rgba(238,240,223,.45); }

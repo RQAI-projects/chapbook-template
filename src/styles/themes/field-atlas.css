@@ -1,0 +1,49 @@
+/* THEME · Field Atlas — cartographic, indexed and expedition-led. */
+html[data-blog-theme="field-atlas"] {
+  color-scheme:light;
+  --bg-0:#d9d4bd; --bg-1:#eee9d6; --bg-2:#f8f3e3; --bg-3:#c9c1a4;
+  --ink:#20251f; --ink-dim:#465046; --ink-faint:#6d7468;
+  --teal:#356a66; --cyan:#3f7772; --violet:#5f6576; --pink:#a45148; --amber:#b78135;
+  --accent:#2f6f67; --accent-ink:#f8f3e3;
+  --grad:linear-gradient(100deg,#b78135,#2f6f67 55%,#5f6576);
+  --line:rgba(47,68,60,.15); --line-strong:rgba(47,68,60,.32);
+  --glow-teal:0 12px 34px rgba(33,55,46,.12); --glow-cyan:0 12px 34px rgba(33,55,46,.12); --glow-violet:0 12px 34px rgba(33,55,46,.1);
+  --radius:4px; --header-bg:rgba(238,233,214,.9); --header-border:var(--line-strong);
+  --selection-bg:rgba(47,111,103,.2); --scrim-text-shadow:none; --masthead-shadow:none;
+  --font-display:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  --font-body:'Newsreader',Georgia,serif;
+}
+html[data-blog-theme="field-atlas"] body { background-color:var(--bg-0); background-image:linear-gradient(rgba(47,68,60,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(47,68,60,.045) 1px,transparent 1px); background-size:54px 54px; }
+html[data-blog-theme="field-atlas"] .site-header { border-bottom:2px solid var(--line-strong); }
+html[data-blog-theme="field-atlas"] .logo { font-family:var(--font-display); text-transform:uppercase; letter-spacing:.08em; }
+html[data-blog-theme="field-atlas"] .site-nav a { font-family:var(--font-display); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-dim); }
+html[data-blog-theme="field-atlas"] .site-nav a[aria-current="page"]::after { background:var(--accent); box-shadow:none; }
+html[data-blog-theme="field-atlas"] .section-title,
+html[data-blog-theme="field-atlas"] .archive-head .display,
+html[data-blog-theme="field-atlas"] .post-title-row h1 { font-family:var(--font-display); letter-spacing:-.045em; }
+html[data-blog-theme="field-atlas"] .post-card,
+html[data-blog-theme="field-atlas"] .card,
+html[data-blog-theme="field-atlas"] .const-card,
+html[data-blog-theme="field-atlas"] .subscribe-card,
+html[data-blog-theme="field-atlas"] .stat-card,
+html[data-blog-theme="field-atlas"] .cv-item { background:var(--bg-2); border:1px solid var(--line-strong); border-radius:2px; box-shadow:6px 7px 0 rgba(47,68,60,.08); }
+html[data-blog-theme="field-atlas"] .post-card:hover { transform:translate(-2px,-2px); box-shadow:9px 10px 0 rgba(47,111,103,.13); border-color:var(--accent); }
+html[data-blog-theme="field-atlas"] .post-card h3 { font-family:var(--font-display); }
+html[data-blog-theme="field-atlas"] .post-meta,
+html[data-blog-theme="field-atlas"] .tag-chip { font-family:var(--font-display); }
+html[data-blog-theme="field-atlas"] .tag-chip { border-radius:2px; background:rgba(47,111,103,.07); color:var(--accent); border-color:rgba(47,111,103,.3); }
+html[data-blog-theme="field-atlas"] .post-hero { background:var(--bg-1); border:1px solid var(--line-strong); margin-top:1rem; box-shadow:8px 9px 0 rgba(47,68,60,.08); }
+html[data-blog-theme="field-atlas"] .post-hero .orbs { opacity:.14; filter:hue-rotate(35deg); }
+html[data-blog-theme="field-atlas"] .post-hero .grid-lines { opacity:.35; }
+html[data-blog-theme="field-atlas"] .article-body { color:var(--ink); font-family:var(--font-body); font-size:1.15rem; line-height:1.82; }
+html[data-blog-theme="field-atlas"] .article-body h2,
+html[data-blog-theme="field-atlas"] .article-body h3 { font-family:var(--font-display); color:var(--ink); }
+html[data-blog-theme="field-atlas"] .article-body h2 { border-top:2px solid var(--line-strong); }
+html[data-blog-theme="field-atlas"] .article-body h2::before { content:"⌖ "; color:var(--accent); }
+html[data-blog-theme="field-atlas"] .article-body blockquote { border:1px solid var(--line-strong); border-left:5px solid var(--accent); background:rgba(248,243,227,.65); color:var(--ink-dim); box-shadow:none; }
+html[data-blog-theme="field-atlas"] .article-body a { color:var(--accent); border-bottom-color:rgba(47,111,103,.35); }
+html[data-blog-theme="field-atlas"] .article-body a:hover { text-shadow:none; border-bottom-color:var(--accent); }
+html[data-blog-theme="field-atlas"] .article-body figure { background:var(--bg-2); padding:.65rem; border:1px solid var(--line); box-shadow:5px 6px 0 rgba(47,68,60,.07); }
+html[data-blog-theme="field-atlas"] .btn-primary { background:var(--accent); color:var(--accent-ink); border-radius:2px; box-shadow:4px 4px 0 rgba(47,68,60,.16); }
+html[data-blog-theme="field-atlas"] .btn-ghost { border:1px solid var(--accent); color:var(--accent); border-radius:2px; }
+html[data-blog-theme="field-atlas"] .site-footer { border-top:2px solid var(--line-strong); font-family:var(--font-display); }

@@ -1,0 +1,140 @@
+---
+// ARCHETYPE · blueprint-board — Blueprint Workshop.
+// A drafting table rather than a conventional blog feed: the latest post is the
+// active plan, topics form a numbered specification rail, and the archive becomes
+// a set of clipped project sheets. The component is structural; the theme CSS
+// supplies the blueprint palette across the rest of the site.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate, pad2 } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle, topicsLabel } =
+  Astro.props as HomeProps;
+const lead = posts[0];
+const sheets = posts.slice(1);
+const liveTopics = topics.filter((t) => t.count > 0);
+---
+<section class="bp">
+  <div class="bp-board">
+    <header class="bp-head">
+      <div>
+        <p class="bp-overline">Drawing set · {pad2(posts.length)} sheets</p>
+        <h1>{masthead}</h1>
+        <p class="bp-tagline">{tagline}</p>
+      </div>
+      <div class="bp-stamp" aria-hidden="true">
+        <span>ISSUED</span>
+        <strong>{new Date().getFullYear()}</strong>
+      </div>
+    </header>
+
+    <div class="bp-layout">
+      {lead && (
+        <article class="bp-plan">
+          <div class="bp-plan-code">A-{pad2(1)} · CURRENT PLAN</div>
+          <div class="bp-plan-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <p class="bp-topic">{lead.topic?.name || postsTitle}</p>
+          <h2><a href={lead.href}>{lead.title}</a></h2>
+          <p class="bp-desc">{lead.description}</p>
+          <div class="bp-plan-foot">
+            <time datetime={lead.date.toISOString()}>{fmtDate(lead.date)}</time>
+            <span>{lead.readMins} min read</span>
+            <a href={lead.href}>Open drawing →</a>
+          </div>
+        </article>
+      )}
+
+      <aside class="bp-spec">
+        <p class="bp-spec-title">{topicsLabel} / specification</p>
+        <ol>
+          {liveTopics.map((t, i) => (
+            <li>
+              <a href={t.href}>
+                <span>{pad2(i + 1)}</span>
+                <strong>{t.name}</strong>
+                <em>{pad2(t.count)}</em>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </aside>
+    </div>
+
+    <div class="bp-sheets">
+      {sheets.map((p, i) => (
+        <article class="bp-sheet">
+          <div class="bp-sheet-code">A-{pad2(i + 2)}</div>
+          <h2><a href={p.href}>{p.title}</a></h2>
+          <p>{p.description}</p>
+          <footer>
+            <span>{p.topic?.name || 'General'}</span>
+            <time datetime={p.date.toISOString()}>{fmtDate(p.date)}</time>
+          </footer>
+        </article>
+      ))}
+    </div>
+
+    <a class="bp-all" href={postsHref}>Open complete {postsTitle.toLowerCase()} register →</a>
+  </div>
+</section>
+
+<style>
+  .bp { padding: clamp(1rem, 3vw, 2.2rem) 0 4rem; }
+  .bp-board {
+    width: min(1240px, calc(100% - 2rem)); margin-inline: auto;
+    padding: clamp(1.2rem, 3vw, 2.2rem);
+    border: 1px solid var(--line-strong); border-radius: 4px;
+    background-color: var(--bg-1);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px),
+      linear-gradient(color-mix(in srgb, var(--cyan) 10%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--cyan) 10%, transparent) 1px, transparent 1px);
+    background-size: 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+    box-shadow: 0 28px 80px rgba(0,0,0,.34);
+  }
+  .bp-head {
+    display:flex; justify-content:space-between; align-items:flex-start; gap:2rem;
+    border-bottom:3px double var(--line-strong); padding-bottom:1.2rem; margin-bottom:1.4rem;
+  }
+  .bp-overline,.bp-plan-code,.bp-sheet-code,.bp-spec-title {
+    font:700 .68rem/1 var(--font-display); letter-spacing:.16em; text-transform:uppercase; color:var(--cyan);
+  }
+  .bp-head h1 { margin:.35rem 0 0; font:700 clamp(2.2rem,7vw,5.7rem)/.9 var(--font-display); letter-spacing:-.06em; color:var(--ink); }
+  .bp-tagline { max-width:58ch; margin:.8rem 0 0; color:var(--ink-dim); }
+  .bp-stamp { min-width:92px; padding:.65rem; border:2px solid var(--cyan); color:var(--cyan); text-align:center; transform:rotate(2deg); }
+  .bp-stamp span,.bp-stamp strong { display:block; font-family:var(--font-display); }
+  .bp-stamp span { font-size:.62rem; letter-spacing:.2em; } .bp-stamp strong{font-size:1.25rem;}
+  .bp-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(230px,28%); gap:1.2rem; }
+  .bp-plan,.bp-spec,.bp-sheet { background:color-mix(in srgb,var(--bg-2) 90%,transparent); border:1px solid var(--line-strong); }
+  .bp-plan { position:relative; min-height:360px; padding:clamp(1.4rem,4vw,3rem); overflow:hidden; }
+  .bp-plan-mark { position:absolute; right:-4rem; top:50%; width:280px; aspect-ratio:1; transform:translateY(-50%) rotate(24deg); opacity:.16; }
+  .bp-plan-mark span { position:absolute; inset:0; border:2px solid var(--cyan); border-radius:50%; }
+  .bp-plan-mark span:nth-child(2){inset:20%;}.bp-plan-mark span:nth-child(3){inset:40%;}
+  .bp-topic { margin:clamp(3rem,8vw,6.5rem) 0 .4rem; color:var(--cyan); font:600 .78rem var(--font-display); text-transform:uppercase; letter-spacing:.14em; }
+  .bp-plan h2 { max-width:18ch; margin:0; position:relative; }
+  .bp-plan h2 a { font:650 clamp(1.9rem,4.5vw,3.8rem)/1.02 var(--font-display); color:var(--ink); letter-spacing:-.04em; }
+  .bp-plan h2 a:hover { color:var(--cyan); }
+  .bp-desc { max-width:58ch; color:var(--ink-dim); margin:1rem 0 2rem; position:relative; }
+  .bp-plan-foot { display:flex; flex-wrap:wrap; gap:.65rem 1.2rem; padding-top:.85rem; border-top:1px solid var(--line); font:600 .72rem var(--font-display); color:var(--ink-faint); position:relative; }
+  .bp-plan-foot a { margin-left:auto; color:var(--cyan); }
+  .bp-spec { padding:1.1rem; align-self:stretch; }
+  .bp-spec ol { list-style:none; margin:1rem 0 0; padding:0; }
+  .bp-spec li { border-top:1px solid var(--line); }
+  .bp-spec a { display:grid; grid-template-columns:2rem 1fr auto; gap:.7rem; align-items:center; padding:.8rem .2rem; color:var(--ink-dim); }
+  .bp-spec a:hover { color:var(--cyan); background:color-mix(in srgb,var(--cyan) 6%,transparent); }
+  .bp-spec span,.bp-spec em { font:600 .7rem var(--font-display); color:var(--ink-faint); font-style:normal; }
+  .bp-spec strong { font:600 .9rem var(--font-display); }
+  .bp-sheets { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin-top:1rem; }
+  .bp-sheet { padding:1.1rem; min-height:190px; display:flex; flex-direction:column; transition:transform .18s ease,border-color .18s ease; }
+  .bp-sheet:hover { transform:translateY(-3px); border-color:var(--cyan); }
+  .bp-sheet h2 { margin:1.6rem 0 .55rem; }
+  .bp-sheet h2 a { color:var(--ink); font:650 1.15rem/1.2 var(--font-display); }
+  .bp-sheet p { color:var(--ink-dim); font-size:.92rem; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .bp-sheet footer { margin-top:auto; padding-top:.75rem; border-top:1px solid var(--line); display:flex; justify-content:space-between; gap:.5rem; color:var(--ink-faint); font:600 .66rem var(--font-display); text-transform:uppercase; }
+  .bp-all { display:inline-block; margin-top:1.4rem; color:var(--cyan); font:700 .78rem var(--font-display); letter-spacing:.08em; text-transform:uppercase; }
+  @media(max-width:850px){.bp-layout{grid-template-columns:1fr}.bp-sheets{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:560px){.bp-head{display:block}.bp-stamp{margin-top:1rem}.bp-sheets{grid-template-columns:1fr}.bp-plan-foot a{margin-left:0;width:100%}}
+  @media(prefers-reduced-motion:reduce){.bp-sheet{transition:none}.bp-sheet:hover{transform:none}}
+</style>

@@ -16,10 +16,6 @@ import { vocabFor } from '../lib/vocab';
 // (QA note: Astro static mode strips URL search params — even in dev — so per-theme
 // screenshots work by mutating site.json defaultTheme; see .qa/qa-run.mjs.)
 const blogTheme = site.defaultTheme || 'observatory';
-// The legacy 7-palette reader switcher (data-site-theme) only makes sense for the
-// base look, so it ships ONLY with the observatory theme. Every other blog theme is
-// a single, committed identity — no competing recolour on top.
-const paletteEnabled = blogTheme === 'observatory';
 
 // Kids themes ship two extras (see src/styles/themes/_kids-extras.css): a floating
 // dyslexia-friendly reading toggle and a one-time starburst on the newest post card.
@@ -104,12 +100,6 @@ const isCurrent = (href: string) => {
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#04060c" />
-    {/* Legacy palette switcher (observatory only) — apply the saved choice before paint (no flash) */}
-    {paletteEnabled && (
-      <script is:inline define:vars={{ defaultTheme: site.defaultTheme }}>
-        (function(){ try { var t = localStorage.getItem('site-theme') || defaultTheme; if (t && t !== 'observatory') document.documentElement.dataset.siteTheme = t; } catch (e) {} })();
-      </script>
-    )}
     {/* Kids dyslexia mode — apply the saved choice before paint (no flash) */}
     {isKidsTheme && (
       <script is:inline>
@@ -162,29 +152,6 @@ const isCurrent = (href: string) => {
             <a href={withBase(n.href)} aria-current={isCurrent(n.href) ? 'page' : undefined} data-fixed-label={n.themeLabel ? undefined : ''}>{navLabel(n)}</a>
           ))}
         </nav>
-        {paletteEnabled && (
-        <div class="theme-menu" id="theme-menu">
-          <button class="theme-menu-btn" id="theme-menu-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="theme-menu-panel">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <circle cx="8.4" cy="9.4" r="1.15" fill="currentColor" stroke="none" />
-              <circle cx="15.6" cy="9.4" r="1.15" fill="currentColor" stroke="none" />
-              <circle cx="9.2" cy="15.2" r="1.15" fill="currentColor" stroke="none" />
-            </svg>
-            <span class="theme-menu-label">Choose theme</span>
-            <svg class="theme-menu-caret" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
-          </button>
-          <div class="theme-menu-panel" id="theme-menu-panel" role="menu" hidden>
-            <button role="menuitem" type="button" data-theme="observatory">Observatory</button>
-            <button role="menuitem" type="button" data-theme="vista">Vista</button>
-            <button role="menuitem" type="button" data-theme="blueprint">Blueprint</button>
-            <button role="menuitem" type="button" data-theme="atlas">Atlas</button>
-            <button role="menuitem" type="button" data-theme="daybreak">Daybreak</button>
-            <button role="menuitem" type="button" data-theme="dune">Dune</button>
-            <button role="menuitem" type="button" data-theme="rivendell">Rivendell</button>
-          </div>
-        </div>
-        )}
       </div>
     </header>
 
@@ -195,18 +162,6 @@ const isCurrent = (href: string) => {
     <footer class="site-footer">
       <div class="container">
         <span>© {new Date().getFullYear()} {site.name}</span>
-        {paletteEnabled && (
-        <div class="theme-chooser" role="group" aria-label="Site theme">
-          <span class="tc-label">Theme</span>
-          <button type="button" data-theme="observatory" aria-pressed="true">Observatory</button>
-          <button type="button" data-theme="vista" aria-pressed="false">Vista</button>
-          <button type="button" data-theme="blueprint" aria-pressed="false">Blueprint</button>
-          <button type="button" data-theme="atlas" aria-pressed="false">Atlas</button>
-          <button type="button" data-theme="daybreak" aria-pressed="false">Daybreak</button>
-          <button type="button" data-theme="dune" aria-pressed="false">Dune</button>
-          <button type="button" data-theme="rivendell" aria-pressed="false">Rivendell</button>
-        </div>
-        )}
         <nav aria-label="Footer">
           <a href={withBase('/')}>Home</a>
           <a href={withBase('/posts/')}>{postsNavLabel}</a>
@@ -482,76 +437,6 @@ const isCurrent = (href: string) => {
         });
       }
 
-      // Switchable site theme: reflect the saved choice, wire the footer chooser + header dropdown.
-      // Only active for the observatory blog theme (the only one that ships the palette UI); on
-      // every other blog theme the chooser markup is absent, so bail without touching data-site-theme.
-      function initThemeChooser() {
-        if (!document.querySelector('.theme-chooser, .theme-menu')) return;
-        const defaultTheme = document.body.dataset.defaultTheme || 'observatory';
-        let saved = defaultTheme;
-        try { saved = localStorage.getItem('site-theme') || defaultTheme; } catch (e) {}
-        document.documentElement.dataset.siteTheme = saved === 'observatory' ? '' : saved;
-        // theme buttons live in BOTH the footer chooser and the header "Choose theme" dropdown
-        document.querySelectorAll<HTMLButtonElement>('.theme-chooser [data-theme], .theme-menu [data-theme]').forEach((b) => {
-          b.setAttribute('aria-pressed', String(b.dataset.theme === saved));
-          if (b.dataset.bound) return;
-          b.dataset.bound = '1';
-          b.addEventListener('click', () => {
-            const t = b.dataset.theme || 'observatory';
-            try { localStorage.setItem('site-theme', t); } catch (e) {}
-            document.documentElement.dataset.siteTheme = t === 'observatory' ? '' : t;
-            // CSS tokens swap live, but the 3D scenes read their palette once at init — reload so
-            // they reskin to the chosen theme consistently.
-            location.reload();
-          });
-        });
-        // header "Choose theme" dropdown open/close
-        const menuBtn = document.getElementById('theme-menu-btn');
-        const panel = document.getElementById('theme-menu-panel');
-        if (menuBtn && panel && !menuBtn.dataset.bound) {
-          menuBtn.dataset.bound = '1';
-          const close = () => { panel.hidden = true; menuBtn.setAttribute('aria-expanded', 'false'); };
-          menuBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const willOpen = panel.hidden;
-            panel.hidden = !willOpen;
-            menuBtn.setAttribute('aria-expanded', String(willOpen));
-          });
-          document.addEventListener('click', (e) => { if (!(e.target as HTMLElement).closest('.theme-menu')) close(); });
-          document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-        }
-      }
-
-      // Per-theme vocabulary for the explore page + its topic-groups. The page is built
-      // (SSR) with the Observatory wording; this swaps it client-side to match the active
-      // theme. Plain text nodes only — safe to set textContent.
-      const THEME_TERMS: Record<string, { page: string; nav: string; groups: string; section: string }> = {
-        observatory: { page: 'The Observatory', nav: 'Observatory',   groups: 'Constellations', section: 'Every constellation' },
-        vista:       { page: 'The Deep',        nav: 'The Deep',      groups: 'Currents',       section: 'Every current' },
-        blueprint:   { page: 'The Schematic',   nav: 'The Schematic', groups: 'Layers',         section: 'Every layer' },
-        atlas:       { page: 'The Atlas',       nav: 'The Atlas',     groups: 'Regions',        section: 'Every region' },
-        daybreak:    { page: 'The Sky',         nav: 'The Sky',       groups: 'Skies',          section: 'Every sky' },
-        dune:        { page: 'The Dunes',       nav: 'The Dunes',     groups: 'Expanses',       section: 'Every expanse' },
-        rivendell:   { page: 'The Map',         nav: 'The Map',       groups: 'Realms',         section: 'Every realm' },
-      };
-      function applyThemeTerms() {
-        // Only the observatory theme ships the palette switcher (and its vocabulary is
-        // renamed client-side per palette). Every other blog theme sets its nav/labels at
-        // build time from src/data/themes.json vocabulary — bail so we don't overwrite them.
-        if ((document.documentElement.dataset.blogTheme || 'observatory') !== 'observatory') return;
-        const id = document.documentElement.dataset.siteTheme || 'observatory';
-        const t = THEME_TERMS[id] || THEME_TERMS.observatory;
-        // Only rename nav links that opted in (themeLabel → no data-fixed-label). The footer
-        // Observatory link has no data-fixed-label, so it is renamed too, as before.
-        // Base-aware: at a Pages sub-path the href is '/<base>/observatory/' (Vite inlines BASE_URL).
-        const obsHref = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/observatory/';
-        document.querySelectorAll<HTMLAnchorElement>(`a[href="${obsHref}"]:not([data-fixed-label])`).forEach((a) => { a.textContent = t.nav; });
-        const eyebrow = document.querySelector('.obs-title-eyebrow'); if (eyebrow) eyebrow.textContent = t.page;
-        const legendTitle = document.querySelector('.legend-title'); if (legendTitle) legendTitle.textContent = t.groups;
-        const accSpan = document.querySelector('.obs-acc-toggle span:not(.obs-acc-caret)'); if (accSpan) accSpan.textContent = t.groups;
-        const sectionTitle = document.querySelector('#constellations .section-title'); if (sectionTitle) sectionTitle.textContent = t.section;
-      }
-
       // Kids: dyslexia-friendly reading toggle (Atkinson Hyperlegible + open spacing).
       // Toggles data-dyslexia on <html>; persisted in localStorage. Button is only
       // rendered on kids themes.
@@ -590,8 +475,6 @@ const isCurrent = (href: string) => {
       }
 
       function initAll() {
-        initThemeChooser();
-        applyThemeTerms();
         initKidsAa();
         initCelebrate();
         initNav();

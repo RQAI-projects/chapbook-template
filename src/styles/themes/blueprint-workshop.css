@@ -1,0 +1,50 @@
+/* THEME · Blueprint Workshop — technical, gridded and diagram-led. */
+html[data-blog-theme="blueprint-workshop"] {
+  color-scheme: dark;
+  --bg-0:#06172c; --bg-1:#0a2240; --bg-2:#0d2b50; --bg-3:#123761;
+  --ink:#eef7ff; --ink-dim:#bed5e8; --ink-faint:#7fa4c3;
+  --teal:#74e7ff; --cyan:#9bdcff; --violet:#c0d8ff; --pink:#ff9f9f; --amber:#ffd06b;
+  --accent:#9bdcff; --accent-ink:#06172c;
+  --grad:linear-gradient(100deg,#74e7ff,#9bdcff 55%,#c0d8ff);
+  --line:rgba(155,220,255,.13); --line-strong:rgba(155,220,255,.31);
+  --glow-teal:0 0 24px rgba(116,231,255,.22); --glow-cyan:0 0 26px rgba(155,220,255,.22); --glow-violet:0 0 24px rgba(192,216,255,.18);
+  --radius:3px; --header-bg:rgba(6,23,44,.9); --header-border:var(--line-strong);
+  --selection-bg:rgba(155,220,255,.25); --font-display:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  --font-body:'Inter Variable','Inter',system-ui,sans-serif;
+}
+html[data-blog-theme="blueprint-workshop"] body {
+  background-color:var(--bg-0);
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+html[data-blog-theme="blueprint-workshop"] .site-header { border-bottom:1px solid var(--cyan); }
+html[data-blog-theme="blueprint-workshop"] .logo::before { content:"B-01 / "; color:var(--cyan); }
+html[data-blog-theme="blueprint-workshop"] .site-nav a { font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; }
+html[data-blog-theme="blueprint-workshop"] .site-nav a[aria-current="page"]::after { height:1px; background:var(--cyan); box-shadow:none; }
+html[data-blog-theme="blueprint-workshop"] .section-title,
+html[data-blog-theme="blueprint-workshop"] .archive-head .display,
+html[data-blog-theme="blueprint-workshop"] .post-title-row h1 { font-family:var(--font-display); letter-spacing:-.04em; }
+html[data-blog-theme="blueprint-workshop"] .post-card,
+html[data-blog-theme="blueprint-workshop"] .card,
+html[data-blog-theme="blueprint-workshop"] .const-card,
+html[data-blog-theme="blueprint-workshop"] .subscribe-card,
+html[data-blog-theme="blueprint-workshop"] .stat-card,
+html[data-blog-theme="blueprint-workshop"] .cv-item { background:color-mix(in srgb,var(--bg-1) 93%,transparent); border:1px solid var(--line-strong); border-radius:2px; box-shadow:none; }
+html[data-blog-theme="blueprint-workshop"] .post-card:hover,
+html[data-blog-theme="blueprint-workshop"] .card:hover { border-color:var(--cyan); box-shadow:8px 8px 0 rgba(155,220,255,.09); }
+html[data-blog-theme="blueprint-workshop"] .tag-chip { border-radius:2px; font-family:var(--font-display); text-transform:uppercase; letter-spacing:.08em; }
+html[data-blog-theme="blueprint-workshop"] .post-hero { border:1px solid var(--line-strong); margin-top:1.2rem; background:color-mix(in srgb,var(--bg-1) 94%,transparent); }
+html[data-blog-theme="blueprint-workshop"] .post-hero .orbs { display:none; }
+html[data-blog-theme="blueprint-workshop"] .post-hero .grid-lines { opacity:.7; }
+html[data-blog-theme="blueprint-workshop"] .article-body { color:var(--ink-dim); }
+html[data-blog-theme="blueprint-workshop"] .article-body h2 { border-top:1px solid var(--cyan); font-family:var(--font-display); }
+html[data-blog-theme="blueprint-workshop"] .article-body h2::before { content:"SECTION / "; color:var(--cyan); font-size:.55em; letter-spacing:.1em; }
+html[data-blog-theme="blueprint-workshop"] .article-body h3,
+html[data-blog-theme="blueprint-workshop"] .article-body code,
+html[data-blog-theme="blueprint-workshop"] .article-body pre { font-family:var(--font-display); }
+html[data-blog-theme="blueprint-workshop"] .article-body blockquote { border-left:2px solid var(--cyan); background:rgba(155,220,255,.05); box-shadow:none; }
+html[data-blog-theme="blueprint-workshop"] .article-body table { font-family:var(--font-display); font-size:.9rem; }
+html[data-blog-theme="blueprint-workshop"] .article-body th { background:rgba(155,220,255,.1); color:var(--cyan); }
+html[data-blog-theme="blueprint-workshop"] .btn-primary { background:var(--cyan); color:var(--accent-ink); border-radius:2px; box-shadow:5px 5px 0 rgba(155,220,255,.16); }
+html[data-blog-theme="blueprint-workshop"] .btn-ghost { border-radius:2px; border-color:var(--cyan); color:var(--cyan); }
+html[data-blog-theme="blueprint-workshop"] .site-footer { border-top:1px solid var(--cyan); font-family:var(--font-display); }

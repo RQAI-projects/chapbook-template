@@ -4,7 +4,7 @@
    The house style, formalised. Observatory IS the base look
    defined by global.css :root, so this file intentionally adds
    NO token overrides — that keeps the legacy 7-palette reader
-   switcher (data-site-theme) working on top, exactly as today.
+   house styling while other full themes replace the entire site treatment.
 
    Canonical token contract (defined in global.css :root):
      surfaces  --bg-0 #04060c  --bg-1 #080c16  --bg-2 #0d1322  --bg-3 #131b2f

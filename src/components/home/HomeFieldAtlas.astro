@@ -1,0 +1,85 @@
+---
+// ARCHETYPE · field-atlas — Field Atlas.
+// A cartographer's table: one featured expedition overlays a topographic map,
+// stories become numbered coordinates, and topics form a colour-keyed legend.
+import type { HomeProps } from '../../lib/home';
+import { fmtDate, pad2 } from '../../lib/home';
+
+const { posts, topics, masthead, tagline, postsHref, postsTitle, topicsLabel } =
+  Astro.props as HomeProps;
+const lead = posts[0];
+const entries = posts.slice(1);
+const legend = topics.filter((t) => t.count > 0);
+const coord = (i: number) => `${String(51 + (i * 7) % 38).padStart(2,'0')}°${String(12 + (i * 11) % 47).padStart(2,'0')}′`;
+---
+<section class="fa">
+  <header class="fa-map">
+    <svg class="fa-contours" viewBox="0 0 1200 620" preserveAspectRatio="none" aria-hidden="true">
+      <g fill="none" stroke="currentColor">
+        <path d="M-40 170C110 45 230 290 410 135S730 40 880 165s270 20 390-80"/>
+        <path d="M-20 230C150 95 270 345 440 190s325-70 475 60 260 5 340-115"/>
+        <path d="M30 305c145-105 280 110 455-28s290-65 425 55 230 15 320-90"/>
+        <path d="M-20 440c190-120 315 90 500-20s330-45 470 68 245 8 340-90"/>
+        <path d="M120 560c130-90 275 48 410-38s280-25 410 58"/>
+      </g>
+    </svg>
+    <div class="fa-title">
+      <p>FIELD ATLAS · EDITION {new Date().getFullYear()}</p>
+      <h1>{masthead}</h1>
+      <p>{tagline}</p>
+    </div>
+    {lead && (
+      <article class="fa-expedition">
+        <div class="fa-pin" aria-hidden="true"><span></span></div>
+        <p>EXPEDITION 01 · {coord(0)}</p>
+        <h2><a href={lead.href}>{lead.title}</a></h2>
+        <p>{lead.description}</p>
+        <footer><time datetime={lead.date.toISOString()}>{fmtDate(lead.date)}</time><a href={lead.href}>Open field record →</a></footer>
+      </article>
+    )}
+  </header>
+
+  <div class="fa-body">
+    <aside class="fa-legend">
+      <p>{topicsLabel} / map legend</p>
+      <ul>
+        {legend.map((t) => <li><a href={t.href} style={`--key:${t.color}`}><span></span><strong>{t.name}</strong><em>{t.count}</em></a></li>)}
+      </ul>
+    </aside>
+
+    <ol class="fa-records">
+      {entries.map((p, i) => (
+        <li>
+          <a href={p.href}>
+            <span class="fa-index">{pad2(i + 2)}</span>
+            <span class="fa-record">
+              <span class="fa-coord">{coord(i + 1)} · {p.topic?.name || postsTitle}</span>
+              <strong>{p.title}</strong>
+              <span>{p.description}</span>
+            </span>
+            <span class="fa-date"><time datetime={p.date.toISOString()}>{fmtDate(p.date)}</time><em>{p.readMins} min</em></span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </div>
+  <a class="fa-all" href={postsHref}>Open complete {postsTitle.toLowerCase()} index →</a>
+</section>
+
+<style>
+  .fa { width:min(1240px,calc(100% - 2rem));margin-inline:auto;padding:clamp(1.2rem,4vw,2.6rem) 0 4rem; }
+  .fa-map { position:relative;min-height:610px;display:grid;grid-template-columns:1fr minmax(300px,.65fr);align-items:end;gap:2rem;padding:clamp(1.4rem,4vw,3rem);background:var(--bg-1);border:1px solid var(--line-strong);overflow:hidden;isolation:isolate; }
+  .fa-map::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:54px 54px;z-index:-3}
+  .fa-contours{position:absolute;inset:0;width:100%;height:100%;color:var(--accent);opacity:.2;z-index:-2}.fa-contours path{stroke-width:2}
+  .fa-title{align-self:start}.fa-title>p:first-child,.fa-expedition>p:first-of-type,.fa-legend>p,.fa-coord{font:700 .67rem var(--font-display);letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+  .fa-title h1{margin:.45rem 0;max-width:10ch;font:650 clamp(3.2rem,9vw,7rem)/.86 var(--font-display);letter-spacing:-.06em;color:var(--ink)}.fa-title>p:last-child{max-width:48ch;color:var(--ink-dim);font-size:1.08rem}
+  .fa-expedition{position:relative;padding:1.4rem;background:color-mix(in srgb,var(--bg-2) 92%,transparent);border:1px solid var(--line-strong);box-shadow:12px 14px 0 color-mix(in srgb,var(--accent) 14%,transparent)}
+  .fa-pin{position:absolute;right:1rem;top:-1.5rem;width:2.2rem;height:2.8rem;border-radius:50% 50% 50% 0;background:var(--accent);transform:rotate(-45deg);box-shadow:0 6px 20px color-mix(in srgb,var(--accent) 30%,transparent)}.fa-pin span{position:absolute;inset:8px;border-radius:50%;background:var(--bg-1)}
+  .fa-expedition h2{margin:.6rem 0}.fa-expedition h2 a{font:650 clamp(1.7rem,3.5vw,2.7rem)/1.04 var(--font-display);color:var(--ink);letter-spacing:-.035em}.fa-expedition h2 a:hover{color:var(--accent)}.fa-expedition>p:nth-of-type(2){color:var(--ink-dim)}.fa-expedition footer{display:flex;justify-content:space-between;gap:1rem;margin-top:1rem;padding-top:.7rem;border-top:1px solid var(--line);font:600 .7rem var(--font-display);color:var(--ink-faint)}.fa-expedition footer a{color:var(--accent)}
+  .fa-body{display:grid;grid-template-columns:minmax(220px,27%) 1fr;gap:clamp(1.4rem,4vw,3.5rem);margin-top:clamp(1.8rem,5vw,3.6rem)}
+  .fa-legend{align-self:start;position:sticky;top:calc(var(--header-h) + 1.4rem);padding:1rem;border:1px solid var(--line);background:var(--bg-1)}.fa-legend ul{list-style:none;margin:1rem 0 0;padding:0}.fa-legend li{border-top:1px solid var(--line)}.fa-legend a{display:grid;grid-template-columns:12px 1fr auto;align-items:center;gap:.7rem;padding:.75rem .1rem;color:var(--ink-dim)}.fa-legend a>span{width:10px;height:10px;border-radius:50%;background:var(--key,var(--accent))}.fa-legend strong{font:600 .86rem var(--font-display)}.fa-legend em{font:600 .7rem var(--font-display);font-style:normal;color:var(--ink-faint)}.fa-legend a:hover{color:var(--accent)}
+  .fa-records{list-style:none;margin:0;padding:0;border-top:1px solid var(--line-strong)}.fa-records li{border-bottom:1px solid var(--line)}.fa-records a{display:grid;grid-template-columns:3rem 1fr auto;gap:1rem;align-items:start;padding:1.15rem .4rem;color:var(--ink-dim);transition:background .18s ease,padding-left .18s ease}.fa-records a:hover{background:color-mix(in srgb,var(--accent) 6%,transparent);padding-left:.8rem}.fa-index{font:700 1.4rem var(--font-display);color:var(--accent)}.fa-record{min-width:0}.fa-record strong{display:block;margin:.25rem 0;font:650 1.18rem/1.16 var(--font-display);color:var(--ink)}.fa-record>span:last-child{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.9rem}.fa-date{text-align:right;font:600 .68rem var(--font-display);color:var(--ink-faint)}.fa-date time,.fa-date em{display:block}.fa-date em{font-style:normal;margin-top:.35rem}
+  .fa-all{display:inline-block;margin:1.4rem 0 0 calc(27% + 3.5rem);color:var(--accent);font:700 .76rem var(--font-display);letter-spacing:.08em;text-transform:uppercase}
+  @media(max-width:800px){.fa-map{grid-template-columns:1fr;min-height:680px}.fa-body{grid-template-columns:1fr}.fa-legend{position:static}.fa-all{margin-left:0}}
+  @media(max-width:560px){.fa-records a{grid-template-columns:2.2rem 1fr}.fa-date{grid-column:2;text-align:left;display:flex;gap:.7rem}.fa-expedition footer{display:block}.fa-expedition footer a{display:block;margin-top:.5rem}}
+</style>

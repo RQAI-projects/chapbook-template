@@ -60,7 +60,7 @@ Open **Site settings** (nav → Site). Set:
 - **Tagline** — a short strapline.
 - **Description** — one sentence for SEO and social cards.
 - **Site URL** — `https://your-domain.com` (or your GitHub Pages URL; see step 6).
-- **Default theme** — one of: `observatory`, `vista`, `blueprint`, `atlas`, `daybreak`, `dune`, `rivendell`.
+- **Default theme** — choose any full site design listed in [`src/data/themes.json`](src/data/themes.json), including `blueprint-workshop`, `desert-archive`, `woodland-chronicle`, and `field-atlas`.
 - **Socials** — LinkedIn, Instagram, GitHub URLs (leave blank to hide).
 - **Contact / Newsletter endpoints** — Formspree form action URLs (free tier available at [formspree.io](https://formspree.io)).
 

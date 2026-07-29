@@ -7,7 +7,7 @@ const CFG = 'src/data/site.json';
 const BAK = 'src/data/site.json.bak';
 const SENT = {
   name: 'ZZNAME', masthead: 'ZZMAST', tagline: 'ZZTAG',
-  description: 'ZZDESC', url: 'https://example.test', defaultTheme: 'rivendell',
+  description: 'ZZDESC', url: 'https://example.test', defaultTheme: 'observatory',
   socials: { linkedin: 'https://zz.test/li', instagram: '', github: '' },
   newsletter: { endpoint: 'https://formspree.io/f/ZZNEWS' },
   contact: { endpoint: 'https://formspree.io/f/ZZCONTACT' },
@@ -33,7 +33,8 @@ try {
 const checks = [
   [home.includes('ZZMAST'), 'home masthead = site.masthead'],
   [home.includes('ZZTAG'), 'home tagline = site.tagline'],
-  [home.includes('rivendell'), 'home no-flash script uses site.defaultTheme'],
+  [home.includes('data-blog-theme="observatory"'), 'home uses site.defaultTheme'],
+  [!home.includes('data-site-theme='), 'retired palette layer is absent'],
   [home.includes('ZZNEWS'), 'newsletter endpoint = site.newsletter'],
   [writing.includes('— ZZNAME'), 'page title suffix = site.name'],
   [rss.includes('ZZMAST') || rss.includes('ZZNAME'), 'rss title from site'],
