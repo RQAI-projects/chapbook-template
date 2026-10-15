@@ -22,6 +22,7 @@
 // hand-added original.
 
 import { resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import exifr from 'exifr';
 import { getImage } from 'astro:assets';
 import { getCollection } from 'astro:content';
@@ -112,7 +113,8 @@ function sourcePath(key) {
 async function readExif(path) {
   try {
     const absPath = sourcePath(path);
-    const exif = await exifr.parse(absPath, {
+    // Own the file read: exifr's path reader can leave FileHandles to GC on Node 26.
+    const exif = await exifr.parse(await readFile(absPath), {
       pick: ['DateTimeOriginal', 'Make', 'Model'],
     });
     if (!exif) return {};

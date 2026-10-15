@@ -2,8 +2,9 @@ name: Publish scheduled posts
 
 # Runs in GitHub — your laptop does NOT need to be on. It scans the blog for posts
 # that were committed as `draft: true` + `publishAt: <date>` and, once that date is
-# due, flips them to `draft: false` (and removes publishAt) and pushes to main, which
-# triggers the existing Build & Deploy workflow. A run with nothing due is a no-op.
+# due, flips them to `draft: false` (and removes publishAt), pushes to main, then
+# explicitly dispatches the Pages build. GITHUB_TOKEN pushes cannot trigger push workflows.
+# A run with nothing due is a no-op.
 on:
   schedule:
     # Hourly, on the hour (UTC). A post goes live within the hour after its publishAt.
@@ -14,6 +15,7 @@ on:
 # no secrets). contents:write is the minimum needed to push the flip commit.
 permissions:
   contents: write
+  actions: write
 
 # Never run two flips at once (e.g. cron + a manual dispatch overlapping).
 concurrency:
@@ -39,6 +41,7 @@ jobs:
       # empty commit, no push. Uses the workflow's GITHUB_TOKEN (set up by checkout); no
       # force-push, no secret echoed.
       - name: Commit and push if anything went live
+        id: publish
         run: |
           if git diff --quiet -- src/content/blog; then
             echo "No scheduled posts were due. Nothing to commit."
@@ -49,3 +52,10 @@ jobs:
           git add src/content/blog
           git commit -m "chore(blog): publish scheduled post(s) [skip-schedule]"
           git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy the newly published posts
+        if: steps.publish.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME"
