@@ -18,5 +18,6 @@ const variant=variants[theme]||'classic';
     <nav class="site-nav" id="site-nav" aria-label="Main">
       {nav.map((n,i)=><a href={withBase(n.href)} aria-current={isCurrent(n.href)?'page':undefined} data-fixed-label={n.themeLabel?undefined:''} data-booking={n.href==='/appointments/'?'true':undefined}><span class="nav-index" aria-hidden="true">{String(i+1).padStart(2,'0')}</span>{navLabel(n)}</a>)}
     </nav>
+    <slot />
   </div>
 </header>
