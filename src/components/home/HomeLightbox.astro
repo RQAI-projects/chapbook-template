@@ -10,8 +10,10 @@ import { fmtDate } from '../../lib/home';
 const { posts, topics, masthead, tagline, postsHref, postsTitle } =
   Astro.props as HomeProps;
 
-const lead = posts[0];
-const rest = posts.slice(1);
+const prints=posts.filter(p=>p.image);
+const lead = prints[0];
+const rest = prints.slice(1);
+const notes = posts.filter(p=>!p.image);
 const liveTopics = topics.filter((t) => t.count > 0);
 ---
 <section class="lb">
@@ -25,7 +27,7 @@ const liveTopics = topics.filter((t) => t.count > 0);
 
   {lead && (
     <a class="lb-hero" href={lead.href} style={`--pa:${lead.accent}`}>
-      <span class="lb-hero-photo" aria-hidden="true"></span>
+      <img class="lb-hero-photo" src={lead.image!.src} alt={lead.image!.alt} fetchpriority="high" decoding="async" />
       <span class="lb-hero-meta">
         {lead.topic && <span class="lb-kicker">{lead.topic.name}</span>}
         <span class="lb-hero-title">{lead.title}</span>
@@ -45,7 +47,7 @@ const liveTopics = topics.filter((t) => t.count > 0);
   <div class="lb-grid">
     {rest.map((p) => (
       <a class="lb-frame" href={p.href} style={`--pa:${p.accent}`}>
-        <span class="lb-photo" aria-hidden="true"></span>
+        <img class="lb-photo" src={p.image!.src} alt={p.image!.alt} loading="lazy" decoding="async" />
         <span class="lb-meta">
           {p.topic && <span class="lb-kicker">{p.topic.name}</span>}
           <span class="lb-title">{p.title}</span>
@@ -59,6 +61,8 @@ const liveTopics = topics.filter((t) => t.count > 0);
     ))}
   </div>
 
+  {notes.length>0&&<section class="lb-notes"><h2>From the notebook</h2>{notes.map(p=><a href={p.href}><time>{fmtDate(p.date)}</time><span>{p.title}</span><span aria-hidden="true">↗</span></a>)}</section>}
+  {!posts.length&&<p class="lb-empty">New photographs and writing will appear here.</p>}
   <footer class="lb-foot">
     <ul class="lb-topics">
       {liveTopics.map((t) => (
@@ -70,6 +74,10 @@ const liveTopics = topics.filter((t) => t.count > 0);
 </section>
 
 <style>
+  .lb-hero-photo,.lb-photo{width:100%;object-fit:cover}.lb-hero-photo{max-height:70vh;object-fit:contain;background:#111!important}
+  .lb-notes{width:min(1180px,100% - 3rem);margin:3rem auto}.lb-notes h2{font-size:1.1rem;color:#ededf0;margin-bottom:1rem}.lb-notes a{display:grid;grid-template-columns:8rem 1fr 1rem;gap:1rem;padding:1rem 0;border-top:1px solid #333;color:#ededf0}.lb-notes time{font-size:.8rem;color:#aaa}.lb-empty{max-width:40rem;margin:3rem auto;text-align:center}
+  @media(max-width:600px){.lb-notes a{grid-template-columns:1fr 1rem}.lb-notes time{grid-column:1/-1}}
+
   .lb {
     position: relative;
     width: 100%;

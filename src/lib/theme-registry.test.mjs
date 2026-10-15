@@ -16,8 +16,8 @@ const replacements = [
   ['field-atlas', 'field-atlas'],
 ];
 
-test('the catalogue contains 20 unique, structurally distinct full themes', () => {
-  assert.equal(ids.length, 20);
+test('the catalogue contains 28 unique, structurally distinct full themes', () => {
+  assert.equal(ids.length, 28);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(new Set(heroes).size, heroes.length);
 });

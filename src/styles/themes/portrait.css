@@ -1,0 +1,10 @@
+html[data-blog-theme="portrait"]{color-scheme:light;--bg-0:#f9f5ed;--bg-1:#f9f5ed;--bg-2:#f9f5ed;--bg-3:#e9e6dc;--ink:#342c29;--ink-dim:#342c29;--ink-faint:#342c29;--accent:#775747;--teal:#775747;--cyan:#775747;--violet:#775747;--line:rgba(35,45,40,.14);--line-strong:rgba(35,45,40,.28);--header-bg:#f9f5ed;--header-blur:none;--header-border:var(--line);--selection-bg:#d7dec7;--scrim-text-shadow:none;--masthead-ink:#342c29;--masthead-shadow:none;--radius:2px;--font-display:'Inter Variable',sans-serif;--font-body:'Inter Variable',sans-serif}
+html[data-blog-theme="portrait"] .site-header{box-shadow:none}
+html[data-blog-theme="portrait"] .logo{font-size:1rem;letter-spacing:-.02em;color:var(--ink)}
+html[data-blog-theme="portrait"] .site-nav a{color:var(--ink-dim)}
+html[data-blog-theme="portrait"] .site-nav a[aria-current="page"]::after{background:var(--accent);box-shadow:none}
+html[data-blog-theme="portrait"] .card,html[data-blog-theme="portrait"] .post-card{background:transparent;border:1px solid var(--line);box-shadow:none}
+html[data-blog-theme="portrait"] .btn-primary{background:var(--accent);color:#fff;box-shadow:none}
+html[data-blog-theme="portrait"] .orbs,html[data-blog-theme="portrait"] .grid-lines{display:none}
+html[data-blog-theme="portrait"] .article-body{color:var(--ink)}
+

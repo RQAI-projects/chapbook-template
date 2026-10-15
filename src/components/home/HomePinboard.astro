@@ -11,7 +11,7 @@ const { posts, topics, masthead, tagline, postsHref, postsTitle, topicsLabel } =
   Astro.props as HomeProps;
 const liveTopics = topics.filter((t) => t.count > 0);
 // marginalia — a person's little hand-notes, cycled per scrap (no emoji)
-const notes = ['read this one!', 'a favourite →', 'come back to this', 'so good', 'keep for later', 'loved this'];
+// Annotations come from the post, never invented endorsements.
 ---
 <section class="pb">
   <header class="pb-head">
@@ -29,9 +29,10 @@ const notes = ['read this one!', 'a favourite →', 'come back to this', 'so goo
         <span class="pb-tape" aria-hidden="true"></span>
         <span class="pb-sticker">{p.readMins} min</span>
         {p.topic && <span class="pb-cat">{p.topic.name}</span>}
+        {p.image&&<img class="pb-image" src={p.image.src} alt={p.image.alt} loading="lazy" decoding="async"/>}
         <h2 class="pb-title">{p.title}</h2>
         <p class="pb-desc">{p.description}</p>
-        <span class="pb-note">{notes[i % notes.length]}</span>
+        <span class="pb-note">{p.topic?.name||'From the notebook'}</span>
         <span class="pb-foot">
           <time class="pb-date" datetime={p.date.toISOString()}>{fmtDate(p.date)}</time>
         </span>
@@ -53,6 +54,8 @@ const notes = ['read this one!', 'a favourite →', 'come back to this', 'so goo
 </section>
 
 <style>
+ .pb-image{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;margin:1rem 0;filter:saturate(.85)}
+
   .pb {
     position: relative;
     background-color: #f3ead8;

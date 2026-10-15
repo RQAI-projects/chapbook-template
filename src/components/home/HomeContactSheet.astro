@@ -14,6 +14,7 @@ const { posts, topics, masthead, tagline, postsHref, postsTitle } =
 const liveTopics = topics.filter((t) => t.count > 0);
 ---
 <section class="cs">
+  <header class="cs-intro"><h1>{masthead}</h1><p>{tagline}</p></header>
   <div class="cs-sheet-wrap">
     <div class="cs-sticker" aria-hidden="true">
       <span class="cs-sticker-name">{masthead}</span>
@@ -24,7 +25,7 @@ const liveTopics = topics.filter((t) => t.count > 0);
       {posts.map((p, i) => (
         <li class={`cs-frame${i === 0 ? ' is-selected' : ''}`} style={`--pa:${p.accent}`}>
           <a href={p.href}>
-            <span class="cs-neg" aria-hidden="true"></span>
+            {p.image?<img class="cs-neg" src={p.image.src} alt={p.image.alt} loading="lazy" decoding="async"/>:<span class="cs-neg cs-text-frame" aria-hidden="true">{pad2(i+1)}</span>}
             <span class="cs-num">{pad2(i + 1)}A</span>
             <span class="cs-cap">{p.title}</span>
             {i === 0 && (
@@ -72,6 +73,10 @@ const liveTopics = topics.filter((t) => t.count > 0);
 </section>
 
 <style>
+ .cs-intro{margin-bottom:2rem}.cs-intro h1{font:500 clamp(2rem,5vw,4rem) ui-monospace,monospace;letter-spacing:-.04em}.cs-intro p{color:#b9b3a9;max-width:40rem}
+
+  .cs-neg{width:100%;object-fit:cover}.cs-text-frame{display:grid!important;place-items:center;font:400 3rem Georgia,serif;color:#aaa;background:#232220!important}
+
   .cs {
     --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
     width: min(1240px, 100% - 2.4rem);

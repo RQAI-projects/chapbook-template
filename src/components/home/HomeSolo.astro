@@ -6,6 +6,7 @@
 // italic standfirst, a slim date · min meta line and a "Read" link. Everything else hides
 // behind one barely-there "All {postsTitle} →" link and a faint single line of topic names.
 // Muted near-white, soft-blue accent used sparingly. Reads as "one quiet feature, nothing more".
+import {withBase} from '../../lib/withBase';
 import type { HomeProps } from '../../lib/home';
 import { fmtDateLong } from '../../lib/home';
 
@@ -16,7 +17,7 @@ const strand = topics.filter((t) => t.count > 0);
 <section class="solo">
   <div class="solo-inner">
     <header class="solo-brand">
-      <a class="solo-mark" href="/">{masthead}</a>
+      <a class="solo-mark" href={withBase('/')}>{masthead}</a>
       <p class="solo-tag">{tagline}</p>
     </header>
 

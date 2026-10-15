@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import topics from '../data/topics.json';
 import themesRegistry from '../data/themes.json';
 import profile from '../data/profile.json';
+import {postCover} from '../lib/post-cover.mjs';
 import { site } from '../lib/site';
 import { withBase } from '../lib/withBase';
 import { getCollection } from 'astro:content';
@@ -34,8 +35,24 @@ import HomeFieldAtlas from '../components/home/HomeFieldAtlas.astro';
 import HomeLightbox from '../components/home/HomeLightbox.astro';
 import HomeContactSheet from '../components/home/HomeContactSheet.astro';
 import HomePhotoPile from '../components/home/HomePhotoPile.astro';
+import HomeFolio from '../components/home/HomeFolio.astro';
+import HomePractice from '../components/home/HomePractice.astro';
+import HomePetal from '../components/home/HomePetal.astro';
+import HomeContour from '../components/home/HomeContour.astro';
+import HomeCut from '../components/home/HomeCut.astro';
+import HomeStill from '../components/home/HomeStill.astro';
+import HomeOffice from '../components/home/HomeOffice.astro';
+import HomePortrait from '../components/home/HomePortrait.astro';
 
 const HOMES: Record<string, any> = {
+  folio: HomeFolio,
+  practice: HomePractice,
+  petal: HomePetal,
+  contour: HomeContour,
+  cut: HomeCut,
+  still: HomeStill,
+  office: HomeOffice,
+  portrait: HomePortrait,
   rings: HomeRings,
   index: HomeIndex,
   solo: HomeSolo,
@@ -70,11 +87,14 @@ const rawPosts = (await getCollection('blog', ({ data }) => !data.draft))
 
 const vocab = vocabFor(blogTheme);
 const broad = new Map(topics.map((t) => [t.tag, t]));
+const coverModules = import.meta.glob('../content/blog/_images/**/*.{jpg,jpeg,png,webp,avif,gif,svg}', {eager:true,query:'?url',import:'default'});
+const coverAssets = Object.fromEntries(Object.entries(coverModules).map(([path,url])=>[path.replace('../content/blog/',''),url]));
 const posts: HomePost[] = rawPosts.map((p) => {
   const topicTag = p.data.tags.find((t) => broad.has(t));
   const bt = topicTag ? broad.get(topicTag)! : null;
   return {
     slug: p.slug,
+    image: postCover(p.data,p.body,coverAssets,import.meta.env.BASE_URL),
     href: withBase(`/blog/${p.slug}/`),
     title: p.data.title,
     description: p.data.description,

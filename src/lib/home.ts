@@ -14,6 +14,7 @@ export interface HomeTopicRef {
 }
 
 export interface HomePost {
+  image?: {src:string;alt:string}|null;
   slug: string;
   /** base-aware href to the post. */
   href: string;

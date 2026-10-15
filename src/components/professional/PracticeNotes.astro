@@ -1,0 +1,5 @@
+---
+import {fmtDate} from '../../lib/home';
+const {posts=[],postsHref}=Astro.props;
+---
+{posts.length>0&&<section class="practice-notes"><div class="pro-section-head"><h2>Notes & journal</h2><a href={postsHref}>All writing ↗</a></div>{posts.slice(0,3).map(post=><a class="pro-post-row" href={post.href}><time>{fmtDate(post.date)}</time><h3>{post.title}</h3><span aria-hidden="true">↗</span></a>)}</section>}

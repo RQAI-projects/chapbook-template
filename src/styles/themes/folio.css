@@ -1,0 +1,10 @@
+html[data-blog-theme="folio"]{color-scheme:light;--bg-0:#f8f6f0;--bg-1:#f8f6f0;--bg-2:#f8f6f0;--bg-3:#e9e6dc;--ink:#202a30;--ink-dim:#4c5357;--ink-faint:#4c5357;--accent:#315b71;--teal:#315b71;--cyan:#315b71;--violet:#315b71;--line:rgba(35,45,40,.14);--line-strong:rgba(35,45,40,.28);--header-bg:#f8f6f0;--header-blur:none;--header-border:var(--line);--selection-bg:#d7dec7;--scrim-text-shadow:none;--masthead-ink:#202a30;--masthead-shadow:none;--radius:2px;--font-display:'Inter Variable',sans-serif;--font-body:'Inter Variable',sans-serif}
+html[data-blog-theme="folio"] .site-header{box-shadow:none}
+html[data-blog-theme="folio"] .logo{font-size:1rem;letter-spacing:-.02em;color:var(--ink)}
+html[data-blog-theme="folio"] .site-nav a{color:var(--ink-dim)}
+html[data-blog-theme="folio"] .site-nav a[aria-current="page"]::after{background:var(--accent);box-shadow:none}
+html[data-blog-theme="folio"] .card,html[data-blog-theme="folio"] .post-card{background:transparent;border:1px solid var(--line);box-shadow:none}
+html[data-blog-theme="folio"] .btn-primary{background:var(--accent);color:#fff;box-shadow:none}
+html[data-blog-theme="folio"] .orbs,html[data-blog-theme="folio"] .grid-lines{display:none}
+html[data-blog-theme="folio"] .article-body{color:var(--ink)}
+

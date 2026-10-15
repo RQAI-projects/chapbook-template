@@ -1,0 +1,53 @@
+---
+import Base from '../layouts/Base.astro';
+import {site} from '../lib/site';
+import {professionalDetails,contactHref,calBookingLink} from '../lib/professional.mjs';
+import ServiceMenu from '../components/professional/ServiceMenu.astro';
+const p=professionalDetails((site as any).professional);
+const href=contactHref(p),calLink=calBookingLink(p.bookingUrl);
+---
+<Base title="Appointments" description={`Appointments and contact details for ${site.name}.`}>
+<div class="pro-site appointment-page">
+ <p class="pro-kicker">{site.name}</p><h1>Find a time<br/>that works for you.</h1>
+ <div class="appointment-layout"><section><h2>{p.bookingUrl?'Choose an appointment':'Arrange an appointment'}</h2>
+ <p>{calLink?'Open the calendar below to see available times and book.':p.bookingUrl?'View available times and complete your booking with our booking service.':'Get in touch to ask about availability.'}</p>
+ {calLink&&<><button class="pro-button booking-load" type="button" data-booking-link={calLink} aria-controls="booking-calendar">Open booking calendar</button><p class="appointment-note">Opening the calendar connects to Cal.com. Your booking details go directly to the booking service.</p></>}
+ {href?<p><a class={calLink?'pro-link':'pro-button'} href={href}>{calLink?'Open booking in a separate page':p.bookingUrl?p.bookingLabel:'Contact us'} ↗</a></p>:<p class="pro-empty">Online booking is not available yet.</p>}
+ {p.bookingUrl&&<p class="appointment-note">Availability, confirmation and any payment are managed by the booking service.</p>}
+ </section><aside>{p.location&&<><h2>Where</h2><p>{p.location}</p></>}{p.hours&&<><h2>When</h2><p class="pro-hours">{p.hours}</p></>}{p.email&&<p><a href={'mailto:'+encodeURIComponent(p.email)}>{p.email}</a></p>}{p.phone&&<p><a href={'tel:'+p.phone.replace(/[^+\d]/g,'')}>{p.phone}</a></p>}</aside></div>
+ {calLink&&<><p class="booking-status" role="status" aria-live="polite"></p><div id="booking-calendar" class="booking-embed" hidden></div></>}
+ {p.services.length>0&&<section class="appointment-services"><h2>Services & appointments</h2><ServiceMenu services={p.services}/></section>}
+</div>
+</Base>
+<script>
+ let loading: Promise<void>|undefined;
+ function loadCal(){
+  if(loading)return loading;
+  loading=new Promise<void>((resolve,reject)=>{
+   if((window as any).Cal?.instance){resolve();return;}
+   const cal:any=(...args:any[])=>cal.q.push(args);cal.q=[];cal.ns={};(window as any).Cal=cal;
+   const script=document.createElement('script');script.src='https://app.cal.com/embed/embed.js';script.async=true;
+   const timer=setTimeout(()=>{script.remove();loading=undefined;reject(new Error('timeout'));},15000);
+   script.onload=()=>{clearTimeout(timer);if((window as any).Cal?.instance)resolve();else{loading=undefined;reject(new Error('initialise'));}};script.onerror=()=>{clearTimeout(timer);script.remove();loading=undefined;reject(new Error('load'));};document.head.append(script);
+  });return loading;
+ }
+ function setup(){
+  const button=document.querySelector<HTMLButtonElement>('.booking-load');
+  const target=document.querySelector<HTMLElement>('#booking-calendar');
+  const status=document.querySelector<HTMLElement>('.booking-status');
+  if(!button||!target||!status||button.dataset.ready)return;
+  button.dataset.ready='true';
+  button.addEventListener('click',async()=>{
+   button.disabled=true;status.textContent='Loading the booking calendar…';
+   try{
+    await loadCal();if(!target.isConnected)return;
+    const cal=(window as any).Cal;if(typeof cal!=='function')throw new Error('unavailable');
+    target.hidden=false;
+    cal('init',{origin:'https://cal.com'});
+    cal('inline',{elementOrSelector:target,calLink:button.dataset.bookingLink,config:{layout:'month_view'}});
+    status.textContent='Choose a time in the calendar. If it does not load, use the booking link above.';button.hidden=true;
+   }catch{status.textContent='The calendar could not load. Please use the booking link above.';button.disabled=false;}
+  });
+ }
+ setup();document.addEventListener('astro:page-load',setup);
+</script>

@@ -9,6 +9,7 @@ import Icon from '../components/Icon.astro';
 import { site, pageTitle } from '../lib/site';
 import { withBase } from '../lib/withBase';
 import { vocabFor } from '../lib/vocab';
+import { professionalDetails } from '../lib/professional.mjs';
 
 // Site-wide BLOG THEME (data-blog-theme on <html>). Chosen once at blog creation
 // via site.defaultTheme; the composer writes one of the ids in src/data/themes.json.
@@ -67,7 +68,9 @@ const NAV_FALLBACK = [
   { href: '/about/', label: 'About' },
   { href: '/contact/', label: 'Contact' },
 ];
-const nav = (site.nav && site.nav.length ? site.nav : NAV_FALLBACK);
+const nav = [...(site.nav && site.nav.length ? site.nav : NAV_FALLBACK)];
+const professional = professionalDetails(site.professional);
+if (professional.bookingUrl && !nav.some(n => n.href === '/appointments/')) nav.push({href:'/appointments/',label:'Appointments',primary:true});
 
 // Per-theme chrome vocabulary. On the observatory theme the nav keeps its house labels
 // (and the palette switcher's client renamer handles "Observatory"); every other theme
@@ -163,13 +166,7 @@ const isCurrent = (href: string) => {
       <div class="container">
         <span>© {new Date().getFullYear()} {site.name}</span>
         <nav aria-label="Footer">
-          <a href={withBase('/')}>Home</a>
-          <a href={withBase('/posts/')}>{postsNavLabel}</a>
-          <a href={withBase('/observatory/')}>{featureNavLabel}</a>
-          <a href={withBase('/apps/')}>Apps</a>
-          <a href={withBase('/about/')}>{aboutNavLabel}</a>
-          <a href={withBase('/darkroom/')}>Darkroom</a>
-          <a href={withBase('/contact/')}>Contact</a>
+          {nav.map((item) => <a href={withBase(item.href)}>{navLabel(item)}</a>)}
           <a href={withBase('/rss.xml')}>RSS</a>
         </nav>
         {socialLinks.length > 0 && (

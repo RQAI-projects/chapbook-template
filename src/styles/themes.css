@@ -9,6 +9,10 @@
    ============================================================ */
 
 /* Clean & Simple */
+@import './themes/folio.css';
+@import './themes/practice.css';
+
+@import './professional.css';
 @import './themes/observatory.css';
 @import './themes/ledger.css';
 @import './themes/air.css';
@@ -40,3 +44,10 @@
 
 /* Kids extras: dyslexia-friendly toggle + newest-post starburst */
 @import './themes/_kids-extras.css';
+
+@import "./themes/petal.css";
+@import "./themes/contour.css";
+@import "./themes/cut.css";
+@import "./themes/still.css";
+@import "./themes/office.css";
+@import "./themes/portrait.css";

@@ -1,0 +1,10 @@
+html[data-blog-theme="petal"]{color-scheme:light;--bg-0:#f8eeea;--bg-1:#f8eeea;--bg-2:#f8eeea;--bg-3:#e9e6dc;--ink:#412c35;--ink-dim:#412c35;--ink-faint:#412c35;--accent:#86475f;--teal:#86475f;--cyan:#86475f;--violet:#86475f;--line:rgba(35,45,40,.14);--line-strong:rgba(35,45,40,.28);--header-bg:#f8eeea;--header-blur:none;--header-border:var(--line);--selection-bg:#d7dec7;--scrim-text-shadow:none;--masthead-ink:#412c35;--masthead-shadow:none;--radius:2px;--font-display:'Inter Variable',sans-serif;--font-body:'Inter Variable',sans-serif}
+html[data-blog-theme="petal"] .site-header{box-shadow:none}
+html[data-blog-theme="petal"] .logo{font-size:1rem;letter-spacing:-.02em;color:var(--ink)}
+html[data-blog-theme="petal"] .site-nav a{color:var(--ink-dim)}
+html[data-blog-theme="petal"] .site-nav a[aria-current="page"]::after{background:var(--accent);box-shadow:none}
+html[data-blog-theme="petal"] .card,html[data-blog-theme="petal"] .post-card{background:transparent;border:1px solid var(--line);box-shadow:none}
+html[data-blog-theme="petal"] .btn-primary{background:var(--accent);color:#fff;box-shadow:none}
+html[data-blog-theme="petal"] .orbs,html[data-blog-theme="petal"] .grid-lines{display:none}
+html[data-blog-theme="petal"] .article-body{color:var(--ink)}
+

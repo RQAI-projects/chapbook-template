@@ -4,6 +4,7 @@
 // section title + centred search field; then a uniform wall of paper-white cards, each
 // with a SHORT THICK ACCENT TICK at its top edge (per-topic colour), a condensed-caps
 // headline sitting in generous whitespace, and a tiny muted tag line at the bottom.
+import {withBase} from '../../lib/withBase';
 import type { HomeProps } from '../../lib/home';
 import { fmtDate } from '../../lib/home';
 
@@ -12,7 +13,7 @@ const { posts, masthead, postsHref, aboutHref, observatoryHref, postsTitle, topi
 ---
 <div class="nw">
   <aside class="nw-rail">
-    <a class="nw-rail-brand" href="/">{masthead}</a>
+    <a class="nw-rail-brand" href={withBase('/')}>{masthead}</a>
     <nav class="nw-rail-nav" aria-label="Sections">
       <a href={postsHref}>{postsTitle}</a>
       <a href={observatoryHref}>{topicsLabel}</a>
@@ -30,12 +31,15 @@ const { posts, masthead, postsHref, aboutHref, observatoryHref, postsTitle, topi
       </div>
     </header>
 
+    <p class="nw-results" role="status" aria-live="polite"></p>
     <div class="nw-wall">
-      {posts.map((p) => (
-        <a class="nw-card" href={p.href} style={`--tick:${p.topic?.color || p.accent}`}>
+      {posts.map((p,i) => (
+        <a class={`nw-card${i===0?' nw-lead':''}`} data-search={`${p.title} ${p.description} ${p.topic?.name||''}`.toLocaleLowerCase()} href={p.href} style={`--tick:${p.topic?.color || p.accent}`}>
           <span class="nw-tick" aria-hidden="true"></span>
           {p.topic && <span class="nw-cat">{p.topic.name}</span>}
+          {p.image&&<img class="nw-image" src={p.image.src} alt={p.image.alt} loading={i===0?'eager':'lazy'} decoding="async"/>}
           <h2 class="nw-headline">{p.title}</h2>
+          <p class="nw-description">{p.description}</p>
           <span class="nw-foot">
             <time datetime={p.date.toISOString()}>{fmtDate(p.date)}</time>
             <span class="nw-dot" aria-hidden="true">•</span>
@@ -48,6 +52,9 @@ const { posts, masthead, postsHref, aboutHref, observatoryHref, postsTitle, topi
 </div>
 
 <style>
+ .nw-image{width:100%;aspect-ratio:16/9;object-fit:cover;margin-bottom:1rem}.nw-description{font-size:.95rem;line-height:1.6;color:#56534c;margin:1rem 0}.nw-card.nw-lead{grid-column:span 2;background:#fffdf6;border-top:4px solid #1d1d1b;min-height:20rem}.nw-lead .nw-headline{font-size:clamp(1.8rem,3.3vw,3rem)}.nw-lead .nw-image{max-height:240px}.nw-results{max-width:1180px;margin:0 auto 1rem;font-size:.85rem;color:#56534c}.nw-card[hidden]{display:none!important}.nw-search input{min-width:0}.nw-card{border-radius:0!important;box-shadow:none!important}
+ @media(max-width:700px){.nw-card.nw-lead{grid-column:auto;min-height:0}}
+
   .nw { display: grid; grid-template-columns: 3.5rem 1fr; background: #e9e8e4; min-height: calc(100vh - var(--header-h)); }
 
   /* slim brand-colour side rail */
@@ -130,3 +137,14 @@ const { posts, masthead, postsHref, aboutHref, observatoryHref, postsTitle, topi
     .nw-title { font-size: clamp(2.2rem, 12vw, 3rem); }
   }
 </style>
+
+<script>
+function setupStand(){
+ const input=document.querySelector<HTMLInputElement>('.nw-search input');
+ const status=document.querySelector<HTMLElement>('.nw-results');
+ const cards=[...document.querySelectorAll<HTMLElement>('.nw-card')];
+ if(!input||!status||input.dataset.ready)return;input.dataset.ready='true';
+ input.addEventListener('input',()=>{const query=input.value.trim().toLocaleLowerCase();let count=0;for(const card of cards){card.hidden=!!query&&!card.dataset.search?.includes(query);if(!card.hidden)count++;}status.textContent=query?(count?`${count} ${count===1?'article':'articles'} found`:'No articles found. Try another search.'):' ';});
+}
+setupStand();document.addEventListener('astro:page-load',setupStand);
+</script>

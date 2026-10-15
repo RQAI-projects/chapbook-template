@@ -3,6 +3,7 @@
 // A newspaper FRONT PAGE: a towering Fraunces nameplate over a dateline double-rule; a
 // lead story set across two ruled columns (run-in heads, drop cap); and an "In this
 // edition" sidebar of secondary heads. Swiss-modern 12-col discipline, hairline rules.
+import {withBase} from '../../lib/withBase';
 import type { HomeProps } from '../../lib/home';
 import { fmtDate, fmtDateLong, pad2 } from '../../lib/home';
 
@@ -16,7 +17,7 @@ const editionDate = lead ? fmtDateLong(lead.date) : '';
   <div class="container">
     <header class="fp-nameplate">
       <div class="fp-side">Vol. MMXXVI · No. {pad2(posts.length)}</div>
-      <a class="fp-masthead" href="/">{masthead}</a>
+      <a class="fp-masthead" href={withBase('/')}>{masthead}</a>
       <div class="fp-side fp-side-r">{editionDate}</div>
     </header>
     <div class="fp-strap"><span>{tagline}</span></div>

@@ -1,0 +1,4 @@
+---
+const {services=[]}=Astro.props;
+---
+{services.length>0&&<div class="service-menu">{services.map((s,i)=><article><span class="pro-number">{String(i+1).padStart(2,'0')}</span><div><h3>{s.name}</h3>{s.description&&<p>{s.description}</p>}{s.duration&&<small>{s.duration}</small>}{s.bookingUrl&&<p><a class="pro-link" href={s.bookingUrl}>Book {s.name} ↗</a></p>}</div>{s.price&&<span class="pro-price">{s.price}</span>}</article>)}</div>}

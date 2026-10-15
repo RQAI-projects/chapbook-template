@@ -18,6 +18,7 @@ export interface SiteConfig {
   socials: { linkedin?: string; instagram?: string; github?: string };
   newsletter: { endpoint: string };
   contact: { endpoint: string };
+  professional?: { eyebrow?: string; heading?: string; intro?: string; location?: string; hours?: string; email?: string; phone?: string; bookingUrl?: string; bookingLabel?: string; services?: Array<{name:string;description?:string;price?:string;duration?:string;bookingUrl?:string}>; credentials?: string[] };
   /** Header/footer nav. Optional: when absent, Base.astro falls back to its built-in nav.
    *  `primary` items show in the mobile quick-access row; `themeLabel` items are renamed
    *  from the active full-theme vocabulary. */
