@@ -4,6 +4,8 @@ import '@fontsource-variable/inter';
 import '../styles/fonts.css';
 import '../styles/global.css';
 import '../styles/themes.css';
+import '../styles/headers.css';
+import SiteHeader from '../components/SiteHeader.astro';
 import { ViewTransitions } from 'astro:transitions';
 import Icon from '../components/Icon.astro';
 import { site, pageTitle } from '../lib/site';
@@ -87,7 +89,8 @@ const navLabel = (n: { href: string; label: string; themeLabel?: boolean }): str
 const featureNavLabel = blogTheme === 'observatory' ? 'Observatory' : vocab.topicsLabel;
 const postsNavLabel = blogTheme === 'observatory' ? 'Posts' : vocab.postsTitle;
 const aboutNavLabel = blogTheme === 'observatory' ? 'About' : vocab.aboutLabel;
-const path = Astro.url.pathname;
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+const path = Astro.url.pathname.slice(basePath.length) || '/';
 const isCurrent = (href: string) => {
   if (href === '/') return path === '/';
   // "Posts" owns the archive, individual posts and constellation pages.
@@ -136,27 +139,7 @@ const isCurrent = (href: string) => {
   <body data-default-theme={site.defaultTheme}>
     {progress && <div class="progress-bar" id="progress-bar"></div>}
 
-    <header class="site-header">
-      <div class="container">
-        <a class="logo" href={withBase('/')}>{site.name}</a>
-        <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="site-nav">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
-            <path d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
-        </button>
-        {/* Mobile-only single quick-access row (primary items). Desktop hides it; the full nav is inline. */}
-        <nav class="nav-primary" aria-label="Primary">
-          {nav.filter((n) => n.primary).map((n) => (
-            <a href={withBase(n.href)} aria-current={isCurrent(n.href) ? 'page' : undefined} data-fixed-label={n.themeLabel ? undefined : ''}>{navLabel(n)}</a>
-          ))}
-        </nav>
-        <nav class="site-nav" id="site-nav" aria-label="Main">
-          {nav.map((n) => (
-            <a href={withBase(n.href)} aria-current={isCurrent(n.href) ? 'page' : undefined} data-fixed-label={n.themeLabel ? undefined : ''}>{navLabel(n)}</a>
-          ))}
-        </nav>
-      </div>
-    </header>
+    <SiteHeader theme={blogTheme} name={site.name} context={professional.eyebrow} nav={nav} navLabel={navLabel} isCurrent={isCurrent} />
 
     <main>
       <slot />
@@ -201,12 +184,11 @@ const isCurrent = (href: string) => {
         const navEl = document.getElementById('site-nav');
         if (!toggle || !navEl || toggle.dataset.bound) return;
         toggle.dataset.bound = '1';
-        toggle.addEventListener('click', () => {
-          const open = navEl.classList.toggle('open');
-          toggle.setAttribute('aria-expanded', String(open));
-        });
-        navEl.addEventListener('click', (e) => {
-          if ((e.target as HTMLElement).tagName === 'A') navEl.classList.remove('open');
+        const setOpen = (open: boolean) => { navEl.classList.toggle('open', open); toggle.setAttribute('aria-expanded', String(open)); };
+        toggle.addEventListener('click', () => setOpen(!navEl.classList.contains('open')));
+        navEl.addEventListener('click', (e) => { if ((e.target as HTMLElement).closest('a')) setOpen(false); });
+        toggle.closest('header')?.addEventListener('keydown', (e) => {
+          if ((e as KeyboardEvent).key === 'Escape') { setOpen(false); toggle.focus(); }
         });
       }
 

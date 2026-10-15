@@ -6,7 +6,7 @@ const p=professionalDetails((site as any).professional);
 const {masthead,tagline,posts,postsHref,aboutHref}=Astro.props;
 const cta=p.bookingUrl?withBase('/appointments/'):contactHref(p);
 ---
-<main class="pro-site practice">
+<section class="pro-site practice">
   <section class="practice-opening">
     <div class="practice-title"><p class="pro-kicker">{p.eyebrow||'Practice & perspective'}</p><h1>{p.heading||masthead}</h1><p class="pro-intro">{p.intro||tagline}</p><a class="pro-link" href={aboutHref}>Background & qualifications ↗</a></div>
     <aside class="practice-contact"><div class="practice-mark" aria-hidden="true">+</div><h2>A place to begin.</h2>{p.location&&<p>{p.location}</p>}{p.hours&&<p class="pro-hours">{p.hours}</p>}{cta?<a class="pro-button" href={cta}>{p.bookingUrl?p.bookingLabel:'Make an enquiry'} ↗</a>:<a class="pro-button" href={withBase('/contact/')}>Contact details ↗</a>}{p.bookingUrl&&<small>Choose a time on the booking service.</small>}</aside>
@@ -14,5 +14,5 @@ const cta=p.bookingUrl?withBase('/appointments/'):contactHref(p);
   {p.credentials.length>0&&<ul class="practice-credentials">{p.credentials.map(c=><li>{c}</li>)}</ul>}
   {p.services.length>0&&<section class="practice-services"><p class="pro-kicker">Areas of practice</p><div>{p.services.map(s=><article><h2>{s.name}</h2>{s.description&&<p>{s.description}</p>}{s.duration&&<p class="pro-price">{s.duration}</p>}{s.bookingUrl&&<p><a class="pro-link" href={s.bookingUrl}>Book {s.name} ↗</a></p>}{s.price&&<p class="pro-price">{s.price}</p>}</article>)}</div></section>}
   <section class="practice-reading"><div><p class="pro-kicker">A closer look</p><h2>Notes from practice.</h2><a class="pro-link" href={postsHref}>Read all articles ↗</a></div><div>{posts.length?posts.slice(0,3).map(post=><a class="practice-post" href={post.href}><h3>{post.title}</h3><p>{post.description}</p><span>Read article ↗</span></a>):<p class="pro-empty">Articles and practical information will appear here.</p>}</div></section>
-</main>
+</section>
 

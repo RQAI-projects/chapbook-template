@@ -1,0 +1,22 @@
+---
+import { withBase } from '../lib/withBase';
+interface Props { theme: string; name: string; context?: string; nav: {href:string;label:string;primary?:boolean;themeLabel?:boolean}[]; navLabel: (n:any)=>string; isCurrent:(href:string)=>boolean; }
+const {theme,name,context,nav,navLabel,isCurrent}=Astro.props;
+const variants:Record<string,string>={ledger:'register',air:'quiet',broadsheet:'press',journal:'spine',kiosk:'ticker',neon:'signal',zine:'cutout',scrapbook:'label',doodle:'tabs',rocket:'console',pixel:'cartridge',comic:'panel','field-atlas':'register',darkroom:'exhibit','contact-sheet':'proof',polaroid:'letter',folio:'portfolio',practice:'practice',petal:'salon',contour:'gallery',cut:'studio',still:'quiet',office:'directory',portrait:'signature'};
+const variant=variants[theme]||'classic';
+---
+<header class="site-header" data-header={variant}>
+  <div class="container">
+    <div class="header-identity">
+      <a class="logo" href={withBase('/')}>{name}</a>
+      {context && <span class="header-context">{context}</span>}
+    </div>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="site-nav"><span class="nav-toggle-label">Menu</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <nav class="nav-primary" aria-label="Primary">
+      {nav.filter(n=>n.primary).map(n=><a href={withBase(n.href)} aria-current={isCurrent(n.href)?'page':undefined} data-fixed-label={n.themeLabel?undefined:''}>{navLabel(n)}</a>)}
+    </nav>
+    <nav class="site-nav" id="site-nav" aria-label="Main">
+      {nav.map((n,i)=><a href={withBase(n.href)} aria-current={isCurrent(n.href)?'page':undefined} data-fixed-label={n.themeLabel?undefined:''} data-booking={n.href==='/appointments/'?'true':undefined}><span class="nav-index" aria-hidden="true">{String(i+1).padStart(2,'0')}</span>{navLabel(n)}</a>)}
+    </nav>
+  </div>
+</header>

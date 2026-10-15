@@ -7,7 +7,7 @@ const p=professionalDetails((site as any).professional);
 const {name,masthead,tagline,posts,postsHref,aboutHref}=Astro.props;
 const cta=p.bookingUrl?withBase('/appointments/'):contactHref(p);
 ---
-<main class="pro-site folio">
+<section class="pro-site folio">
   <section class="folio-opening">
     <aside class="folio-margin"><span class="pro-kicker">{p.eyebrow||'Independent practice'}</span><p>{name}</p>{p.location&&<span>{p.location}</span>}<a href={aboutHref}>About & background ↗</a></aside>
     <div class="folio-intro"><h1>{p.heading||masthead}</h1><p class="pro-intro">{p.intro||tagline}</p>{cta&&<a class="pro-link" href={cta}>{p.bookingUrl?p.bookingLabel:'Get in touch'} ↗</a>}</div>
@@ -15,5 +15,5 @@ const cta=p.bookingUrl?withBase('/appointments/'):contactHref(p);
   {p.credentials.length>0&&<ul class="folio-credentials">{p.credentials.map(c=><li>{c}</li>)}</ul>}
   {p.services.length>0&&<section class="folio-work"><h2>How I can help</h2><div>{p.services.map((s,i)=><article><span class="pro-number">{String(i+1).padStart(2,'0')}</span><div><h3>{s.name}</h3>{s.description&&<p>{s.description}</p>}{s.duration&&<p class="pro-price">{s.duration}</p>}{s.bookingUrl&&<p><a class="pro-link" href={s.bookingUrl}>Book {s.name} ↗</a></p>}</div>{s.price&&<span class="pro-price">{s.price}</span>}</article>)}</div></section>}
   <section class="folio-notes"><div class="pro-section-head"><h2>From the notebook</h2><a href={postsHref}>All writing ↗</a></div>{posts.length?posts.slice(0,4).map(post=><a class="pro-post-row" href={post.href}><time>{fmtDate(post.date)}</time><h3>{post.title}</h3><span aria-hidden="true">↗</span></a>):<p class="pro-empty">New writing will appear here.</p>}</section>
-</main>
+</section>
 
