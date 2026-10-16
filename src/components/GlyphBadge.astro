@@ -6,7 +6,7 @@
 
 import { resolveGlyph, TOPIC_DEFAULTS } from '../lib/glyphs/index.js';
 import { iconInner } from '../lib/icons.js';
-import { FLAT_GLYPHS, iconPaths } from '../lib/glyphs/presentation.js';
+import { flatGlyphForTopic, iconPaths } from '../lib/glyphs/presentation.js';
 import emojiGlyphs from '../data/emoji-glyphs.json';
 
 interface Props {
@@ -22,7 +22,7 @@ const isDefault = !glyph;
 const isEmoji = typeof glyph === 'string' && glyph.startsWith('emoji:');
 const emojiName = isEmoji ? glyph.slice(6) : '';
 const emojiSvg = /^[a-z0-9_-]+$/i.test(emojiName) ? (emojiGlyphs as Record<string,string>)[emojiName] : null;
-const flatSvg = iconInner(FLAT_GLYPHS[TOPIC_DEFAULTS[topic]] || '');
+const flatSvg = iconInner(flatGlyphForTopic(TOPIC_DEFAULTS, topic));
 const isIcon    = typeof glyph === 'string' && glyph.startsWith('icon:');
 const isIcon3d  = typeof glyph === 'string' && glyph.startsWith('icon3d:');
 const isImage   = typeof glyph === 'string' && glyph.startsWith('image:');

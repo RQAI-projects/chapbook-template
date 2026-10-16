@@ -2,7 +2,17 @@
 export const FLAT_GLYPHS = {
   bone: 'bone', circuit: 'cpu', scroll: 'script', 'open-book': 'book-2',
   'film-reel': 'movie', 'music-note': 'music', globe: 'world',
+  'torus-knot': 'infinity', glenohumeral: 'bone', reticle: 'target',
+  'taj-mahal': 'building-pavilion', 'opera-house': 'building-monument',
+  'edinburgh-castle': 'building-castle',
 };
+
+// Personal sites can provide a family of defaults; the badge uses its first
+// member, matching resolveGlyph, while the background can vary the family.
+export function flatGlyphForTopic(defaults, topic) {
+  const value = defaults[topic];
+  return FLAT_GLYPHS[Array.isArray(value) ? value[0] : value] || '';
+}
 
 // Tabler symbols include primitives as well as paths. Include both in 3D mode,
 // otherwise circles, outlines and stems disappear when an icon is extruded.
