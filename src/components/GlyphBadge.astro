@@ -4,8 +4,10 @@
 // Lazy three.js init, pauses off-screen, static frame under reduced-motion,
 // disposes on page swap. Mirrors GalaxyHero.astro patterns exactly.
 
-import { resolveGlyph } from '../lib/glyphs/index.js';
+import { resolveGlyph, TOPIC_DEFAULTS } from '../lib/glyphs/index.js';
 import { iconInner } from '../lib/icons.js';
+import { FLAT_GLYPHS, iconPaths } from '../lib/glyphs/presentation.js';
+import emojiGlyphs from '../data/emoji-glyphs.json';
 
 interface Props {
   glyph?: string;
@@ -16,10 +18,15 @@ const { glyph, topic } = Astro.props;
 
 // Guard: no canvas if glyph is explicitly suppressed or not a 3D model.
 const isNone    = glyph === 'none';
+const isDefault = !glyph;
+const isEmoji = typeof glyph === 'string' && glyph.startsWith('emoji:');
+const emojiName = isEmoji ? glyph.slice(6) : '';
+const emojiSvg = /^[a-z0-9_-]+$/i.test(emojiName) ? (emojiGlyphs as Record<string,string>)[emojiName] : null;
+const flatSvg = iconInner(FLAT_GLYPHS[TOPIC_DEFAULTS[topic]] || '');
 const isIcon    = typeof glyph === 'string' && glyph.startsWith('icon:');
 const isIcon3d  = typeof glyph === 'string' && glyph.startsWith('icon3d:');
 const isImage   = typeof glyph === 'string' && glyph.startsWith('image:');
-const hasModel  = !isNone && !isIcon && !isIcon3d && !isImage && resolveGlyph(glyph ?? null, topic) !== null;
+const hasModel  = !isNone && !isEmoji && !isIcon && !isIcon3d && !isImage && resolveGlyph(glyph ?? null, topic) !== null;
 
 // 2D Tabler-icon glyph (icon:<name>) — themeable line badge, no WebGL.
 const iconName  = isIcon ? glyph.slice(5) : null;
@@ -29,13 +36,11 @@ const iconSvg   = iconName ? iconInner(iconName) : null;
 // wireframe. Pass the raw path `d` strings to the client to sample at runtime.
 const icon3dName  = isIcon3d ? glyph.slice(7) : null;
 const icon3dInner = icon3dName ? iconInner(icon3dName) : null;
-const icon3dPaths = icon3dInner
-  ? [...icon3dInner.matchAll(/<path[^>]*\sd="([^"]+)"/g)].map((m) => m[1]).filter((d) => !/^M0 0h24v24H0z$/.test(d.trim()))
-  : [];
+const icon3dPaths = iconPaths(icon3dInner || '');
 ---
 
 {hasModel && (
-  <div class="glyph-badge" aria-hidden="true">
+  <div class:list={["glyph-badge", { "glyph-default": isDefault && flatSvg }]} aria-hidden="true">
     <canvas
       class="glyph-badge-canvas"
       width="120"
@@ -43,6 +48,7 @@ const icon3dPaths = icon3dInner
       data-glyph={glyph || ''}
       data-topic={topic}
     ></canvas>
+    {isDefault && flatSvg && <span class="glyph-fallback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={flatSvg} /></span>}
   </div>
 )}
 
@@ -66,35 +72,30 @@ const icon3dPaths = icon3dInner
   </div>
 )}
 
+{emojiSvg && <figure class="glyph-badge glyph-emoji">
+  <span aria-hidden="true" set:html={emojiSvg} />
+  <figcaption><a href="https://twemoji.twitter.com/" title="Twemoji graphics, CC BY 4.0">Twemoji</a></figcaption>
+</figure>}
+
 <style>
-  .glyph-badge {
-    /* Float right on desktop, centred above title at mobile — see [slug].astro wrapper */
-    width: 120px;
-    height: 120px;
-    flex-shrink: 0;
+  .glyph-badge{width:var(--glyph-size,72px);height:var(--glyph-size,72px);flex-shrink:0;color:var(--ink);margin:0}
+  .glyph-badge-canvas{width:100%;height:100%;display:block;color:inherit}
+  .glyph-icon{display:grid;place-items:center}
+  .glyph-fallback{display:grid;place-items:center;width:100%;height:100%}
+  .glyph-icon svg,.glyph-fallback svg{width:70%;height:70%;filter:none;animation:none}
+  .glyph-default canvas{display:var(--glyph-default-canvas,none)}
+  .glyph-default .glyph-fallback{display:var(--glyph-default-flat,grid)}
+  .glyph-emoji{display:grid;place-items:center;gap:3px;height:auto}
+  .glyph-emoji span{display:block;width:48px;height:48px}
+  .glyph-emoji span :global(svg){width:100%;height:100%}
+  .glyph-emoji figcaption{font:9px/1.2 system-ui;opacity:.7}
+  .glyph-emoji a{color:inherit;text-decoration:none}
+  /* Expressive worlds keep their default 3D badges. Paper, professional and
+     other restrained layouts use a small, static mark in their own ink colour. */
+  :global(html:is([data-blog-theme="observatory"],[data-blog-theme="atlas"],[data-blog-theme="vista"],[data-blog-theme="blueprint"],[data-blog-theme="daybreak"],[data-blog-theme="dune"],[data-blog-theme="rivendell"]) article[data-template="observatory"]){
+    --glyph-default-canvas:block;--glyph-default-flat:none;--glyph-size:104px;
   }
-  .glyph-badge-canvas {
-    width: 120px;
-    height: 120px;
-    display: block;
-  }
-  /* 2D icon glyph — themed line + glow, gentle sway */
-  .glyph-icon {
-    display: grid; place-items: center;
-    color: var(--post-accent, #22d3ee);
-  }
-  .glyph-icon svg {
-    width: 88px; height: 88px;
-    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--post-accent, #22d3ee) 55%, transparent));
-    animation: glyph-sway 7s ease-in-out infinite;
-  }
-  @keyframes glyph-sway {
-    0%, 100% { transform: rotate(-5deg) translateY(0); }
-    50%      { transform: rotate(5deg) translateY(-4px); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .glyph-icon svg { animation: none; }
-  }
+  @media(max-width:640px){.glyph-badge{width:56px;height:56px}.glyph-emoji{height:auto}}
 </style>
 
 <script>
@@ -104,6 +105,7 @@ const icon3dPaths = icon3dInner
     observer: IntersectionObserver | null;
     renderer: import('three').WebGLRenderer | null;
     paused: boolean;
+    recolour: () => void;
   }
   const stateMap = new WeakMap<HTMLCanvasElement, BadgeState>();
 
@@ -145,7 +147,7 @@ const icon3dPaths = icon3dInner
   }
 
   async function initBadge(canvas: HTMLCanvasElement) {
-    if (canvas.dataset.init) return;
+    if (canvas.dataset.init || getComputedStyle(canvas).display === 'none') return;
     canvas.dataset.init = '1';
 
     const glyphAttr = canvas.dataset.glyph || '';
@@ -156,20 +158,15 @@ const icon3dPaths = icon3dInner
 
     let THREE: typeof import('three');
     let resolveGlyph: (name: string | null, topic: string) => ((THREE: typeof import('three'), c1: number, c2: number) => import('three').Group) | null;
-    let PALETTE: Record<string, number>;
-    let ACCENTS: Record<string, number>;
 
     try {
       // three has no default export — bind the whole module namespace
-      const [threeMod, glyphsMod, paletteMod] = await Promise.all([
+      const [threeMod, glyphsMod] = await Promise.all([
         import('three'),
         import('../lib/glyphs/index.js'),
-        import('../lib/galaxy/palette.js'),
       ]);
       THREE = threeMod;
       resolveGlyph = glyphsMod.resolveGlyph;
-      PALETTE = paletteMod.PALETTE;
-      ACCENTS = paletteMod.ACCENTS;
     } catch (err) {
       console.warn('[glyph-badge] module import failed', err);
       const badge = canvas.closest('.glyph-badge') as HTMLElement | null;
@@ -186,8 +183,9 @@ const icon3dPaths = icon3dInner
       return;
     }
 
-    const color1 = PALETTE[topicAttr] ?? PALETTE['marrow'];
-    const color2 = ACCENTS[topicAttr] ?? ACCENTS['marrow'];
+    const colour = () => new THREE.Color(getComputedStyle(canvas).color).getHex();
+    const color1 = colour();
+    const color2 = color1;
 
     // Scene setup.
     const scene    = new THREE.Scene();
@@ -225,7 +223,14 @@ const icon3dPaths = icon3dInner
 
     scene.add(obj);
 
-    const state: BadgeState = { raf: null, observer: null, renderer, paused: false };
+    const recolour = () => {
+      const next = colour();
+      obj.traverse((node: any) => {
+        for (const material of (Array.isArray(node.material) ? node.material : [node.material])) material?.color?.setHex(next);
+      });
+      renderer.render(scene, camera);
+    };
+    const state: BadgeState = { raf: null, observer: null, renderer, paused: false, recolour };
     stateMap.set(canvas, state);
 
     function render() {
@@ -258,16 +263,27 @@ const icon3dPaths = icon3dInner
     state.observer.observe(canvas);
   }
 
+  let themeObserver: MutationObserver | null = null;
   async function initAll() {
     const canvases = document.querySelectorAll<HTMLCanvasElement>(
       '.glyph-badge canvas:not([data-init])'
     );
-    for (const canvas of canvases) {
-      initBadge(canvas);
+    for (const canvas of canvases) initBadge(canvas);
+    if (!themeObserver) {
+      themeObserver = new MutationObserver(() => {
+        for (const canvas of document.querySelectorAll<HTMLCanvasElement>('.glyph-badge canvas')) {
+          const state = stateMap.get(canvas);
+          if (state) state.recolour(); else initBadge(canvas);
+        }
+      });
+      themeObserver.observe(document.documentElement, { attributes:true, attributeFilter:['data-blog-theme','data-site-theme','data-theme'] });
+      const article = document.querySelector('article[data-template]');
+      if (article) themeObserver.observe(article, { attributes:true, attributeFilter:['data-template'] });
     }
   }
 
   function teardownAll() {
+    themeObserver?.disconnect(); themeObserver = null;
     const canvases = document.querySelectorAll<HTMLCanvasElement>(
       '.glyph-badge canvas[data-init]'
     );
