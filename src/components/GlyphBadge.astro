@@ -237,11 +237,10 @@ const icon3dPaths = iconPaths(icon3dInner || '');
       renderer.render(scene, camera);
     }
 
-    if (prefersReducedMotion) {
-      // Single static frame — glyph visible but not animated.
-      render();
-      return;
-    }
+    // Paint a first frame even when the browser throttles animation in a
+    // background tab. Reduced-motion users keep this static frame.
+    render();
+    if (prefersReducedMotion) return;
 
     // Rotation loop.
     let lastTime = 0;

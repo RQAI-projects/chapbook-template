@@ -1116,7 +1116,7 @@ article[data-template="newsprint"] .topic-rail { border-right-color: var(--line)
 
 /* =========================== PARCHMENT ===========================
    Warm off-white sheet, dark ink, serif body, generous measure + leading. */
-article[data-template="parchment"] {
+article[data-template="parchment"] .article-col {
   --bg-0: #f3ead6;
   --bg-1: #f7efdc;
   --bg-2: #efe3c8;
@@ -1180,7 +1180,7 @@ article[data-template="parchment"] .back-link { color: var(--ink-dim); }
    DARK WARM sepia/ink surface, gold/amber accent, LARGE serif headings +
    body, NARROW measure, drop-cap + a subtle rule on the opening paragraph.
    A bound book by candlelight — must NOT read like observatory. */
-article[data-template="manuscript"] {
+article[data-template="manuscript"] .article-col {
   --bg-0: #130d07;
   --bg-1: #1a120a;
   --bg-2: #211710;
@@ -1245,7 +1245,7 @@ article[data-template="manuscript"] .post-hero .orb-b { background: radial-gradi
 
 /* =========================== NEWSPRINT ===========================
    Light grey, dark text, tight serif, editorial density. */
-article[data-template="newsprint"] {
+article[data-template="newsprint"] .article-col {
   --bg-0: #e8e7e3;
   --bg-1: #ecebe7;
   --bg-2: #e0dfda;
@@ -1301,7 +1301,7 @@ article[data-template="newsprint"] .back-link { color: var(--ink-dim); }
 /* =========================== SLATE ===========================
    MEDIUM blue-grey surface (distinctly LIGHTER/greyer than near-black),
    clean sans, cool slate-blue accent, minimal ornament. */
-article[data-template="slate"] {
+article[data-template="slate"] .article-col {
   --bg-0: #1b2430;
   --bg-1: #1f2937;
   --bg-2: #27323f;
