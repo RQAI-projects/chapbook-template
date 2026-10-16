@@ -421,26 +421,8 @@ main { padding-top: var(--header-h); }
 .topic-sub { list-style: none; margin: 0.1rem 0 0.35rem 1rem; display: grid; gap: 0.1rem; }
 .topic-sub .topic-btn { font-size: 0.86rem; padding: 0.38em 0.8em; }
 
-/* Reading templates restyle ONLY the reading surface. The Topics rail lives
-   inside <article data-template>, so a template's colour-var overrides would
-   otherwise cascade into the rail and make it illegible on its dark backing
-   (e.g. Parchment's warm ink on the dark rail). Re-assert the normal dark
-   palette on the rail under the recolouring templates so it stays readable.
-   EXCLUDES the default 'observatory' template: under it the rail should inherit
-   the active BLOG THEME's palette (so a light blog theme gets a legible light
-   rail, not this hardcoded dark ink). */
-article[data-template]:not([data-template="observatory"]) .topic-rail {
-  --ink: #f4f7fd;
-  --ink-dim: #c0c9da;
-  --ink-faint: #9aa7c4;
-  --teal: #2dd4bf;
-  --cyan: #22d3ee;
-  --violet: #818cf8;
-  --line: rgba(140, 160, 200, 0.12);
-  --line-strong: rgba(140, 160, 200, 0.22);
-  --bg-3: #131b2f;
-  color: var(--ink-dim);
-}
+/* Reading palettes are scoped to .article-col below. The Topics rail
+   always inherits the active site theme, including light themes. */
 
 /* ---------- chips: shared topic chip (archive filter row + constellation sub-row) ---------- */
 .chip {
