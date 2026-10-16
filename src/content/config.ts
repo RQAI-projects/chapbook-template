@@ -35,6 +35,8 @@ const blog = defineCollection({
     // source of truth for the editor; the markdown body carries the GFM footnote
     // markers ([^id]) and definitions that actually render. Optional.
     citations: z.array(z.object({ id: z.string(), text: z.string() })).optional(),
+    aiDisclosure: z.string().max(500).optional(),
+    aiProvenance: z.array(z.object({ kind: z.enum(['generated', 'assisted']), tool: z.string(), action: z.string() })).optional(),
     // Series grouping. `series` is the series NAME (membership is by exact name);
     // `seriesPart` is an optional explicit ordinal — posts in a series order by
     // seriesPart (when present) then date. Both optional; absent = standalone post.

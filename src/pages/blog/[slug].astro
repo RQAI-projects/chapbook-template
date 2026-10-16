@@ -105,6 +105,7 @@ const jsonLd = {
     data-post-theme={post.data.theme}
     data-template={initialTemplate}
     data-template-locked={lockedTemplate ? '' : undefined}
+    data-ai-origin={post.data.aiProvenance?.length ? (post.data.aiProvenance.some(p => p.kind === 'generated') ? 'generated' : 'assisted') : undefined}
   >
     {/* No-flash: apply the saved global template BEFORE paint, unless this post
         locks one. As the first child it runs synchronously the moment <article>
