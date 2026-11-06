@@ -1,0 +1,11 @@
+---
+// All business themes render through one engine, shared with Chapbook's live preview.
+import {site} from '../../lib/site';
+import {withBase} from '../../lib/withBase';
+import {renderBusinessHome} from '../../lib/business/render.mjs';
+import {fmtDate} from '../../lib/home';
+const {posts=[],postsHref,aboutHref}=Astro.props;
+const theme=(site as any).defaultTheme;
+const html=renderBusinessHome({theme,site,posts:posts.map((p:any)=>({...p,dateLabel:fmtDate(p.date)})),aboutHref,postsHref,contactPage:withBase('/contact/'),appointmentsHref:withBase('/appointments/'),resolveImage:(src:string)=>src.startsWith('/')?withBase(src):src});
+---
+<Fragment set:html={html}/>

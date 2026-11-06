@@ -45,7 +45,7 @@ if (import.meta.env.PROD) return Astro.redirect(withBase('/'), 302);
       padding: 0.9rem 0.4rem 0.6rem; border: 1px solid var(--line); border-radius: 12px;
       background: var(--bg-1); color: var(--ink-dim); cursor: pointer;
       transition: color .2s, border-color .2s, background .2s, transform .2s; }
-    .ico-tile:hover { color: var(--cyan); border-color: rgba(34,211,238,.4);
+    .ico-tile:hover { color: var(--accent-text, var(--cyan)); border-color: rgba(34,211,238,.4);
       background: var(--bg-2); transform: translateY(-2px);
       box-shadow: 0 8px 26px rgba(0,0,0,.4), 0 0 18px rgba(34,211,238,.12); }
     .ico-tile svg { width: 30px; height: 30px; }

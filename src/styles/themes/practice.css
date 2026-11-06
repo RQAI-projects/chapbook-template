@@ -7,4 +7,4 @@ html[data-blog-theme="practice"] .card,html[data-blog-theme="practice"] .post-ca
 html[data-blog-theme="practice"] .btn-primary{background:var(--accent);color:#fff;box-shadow:none}
 html[data-blog-theme="practice"] .orbs,html[data-blog-theme="practice"] .grid-lines{display:none}
 html[data-blog-theme="practice"] .article-body{color:var(--ink)}
-
+html[data-blog-theme="practice"]{--badge-ink:var(--ink)}

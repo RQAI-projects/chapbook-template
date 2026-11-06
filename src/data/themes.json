@@ -1,9 +1,13 @@
 {
-  "$schema-note": "Blog theme registry. `id` matches src/styles/themes/<id>.css and the data-blog-theme value on <html>. `hero` names the homepage ARCHETYPE \u2014 index.astro renders src/components/home/Home<Archetype>.astro so every theme has a STRUCTURALLY distinct first screen (a front page, a start screen, a pinboard\u2026), not just a recolour. The rings/torus WebGL hero (archetype `rings`) is reserved for `observatory`. `vocabulary` gives each theme its own words: postsTitle (the writing archive's name), topicsLabel (the noun for the topic set, replacing 'constellations'), aboutLabel, an optional demo tagline, and topicNames \u2014 a DISPLAY-NAME override map over the seed topic SLUGS in src/data/topics.json (slugs/URLs never change; unknown/user topics pass through). Chrome labels fall back to observatory's defaults when a key is absent. The Chapbook composer reads this list for its theme picker; preview{bg,ink,accent} are swatches only.",
+  "$schema-note": "Blog theme registry. `id` matches src/styles/themes/<id>.css and the data-blog-theme value on <html>. `hero` names the homepage ARCHETYPE — index.astro renders src/components/home/Home<Archetype>.astro so every theme has a STRUCTURALLY distinct first screen (a front page, a start screen, a pinboard…), not just a recolour. The rings/torus WebGL hero (archetype `rings`) is reserved for `observatory`. `vocabulary` gives each theme its own words: postsTitle (the writing archive's name), topicsLabel (the noun for the topic set, replacing 'constellations'), aboutLabel, an optional demo tagline, and topicNames — a DISPLAY-NAME override map over the seed topic SLUGS in src/data/topics.json (slugs/URLs never change; unknown/user topics pass through). Chrome labels fall back to observatory's defaults when a key is absent. The Chapbook composer reads this list for its theme picker; preview{bg,ink,accent} are swatches only.",
   "categories": [
     {
-      "id": "professional",
-      "name": "Personal & business"
+      "id": "business",
+      "name": "Business"
+    },
+    {
+      "id": "personal",
+      "name": "Personal sites"
     },
     {
       "id": "clean",
@@ -28,47 +32,131 @@
   ],
   "themes": [
     {
-      "id": "folio",
-      "name": "Folio",
-      "category": "professional",
-      "hero": "folio",
-      "description": "A personal practice with an editorial introduction, a compact background column, services and a writing index.",
+      "id": "table",
+      "name": "Table",
+      "category": "business",
+      "hero": "table",
+      "description": "For restaurants and cafés: your name up front, opening hours at a glance and a menu with prices.",
       "preview": {
-        "bg": "#f8f6f0",
-        "ink": "#202a30",
-        "accent": "#315b71"
+        "bg": "#f7f0e3",
+        "ink": "#2b1a12",
+        "accent": "#a33b1e"
       },
       "vocabulary": {
-        "postsTitle": "Writing",
+        "postsTitle": "News",
         "topicsLabel": "Topics",
         "aboutLabel": "About",
-        "topicNames": {}
+        "topicNames": {},
+        "bookingNav": "Book a table",
+        "bookingTitle": "Book a table."
       }
     },
     {
-      "id": "practice",
-      "name": "Practice",
-      "category": "professional",
-      "hero": "practice",
-      "description": "A calm consulting-room layout with areas of practice, clear credentials, contact details and an optional appointment link.",
+      "id": "trade",
+      "name": "Trade",
+      "category": "business",
+      "hero": "trade",
+      "description": "For plumbers, electricians and builders: a phone number people can tap, the work you do and your accreditations.",
       "preview": {
-        "bg": "#f3f4ec",
-        "ink": "#203b35",
-        "accent": "#315b47"
+        "bg": "#ffffff",
+        "ink": "#16202b",
+        "accent": "#f2b705"
       },
       "vocabulary": {
-        "postsTitle": "Writing",
+        "postsTitle": "News",
+        "topicsLabel": "Topics",
+        "aboutLabel": "About us",
+        "topicNames": {},
+        "bookingNav": "Get a quote",
+        "bookingTitle": "Tell us about the job."
+      }
+    },
+    {
+      "id": "clinic",
+      "name": "Clinic",
+      "category": "business",
+      "hero": "clinic",
+      "description": "For dentists, physios and health clinics: an appointment panel, a clear list of treatments and fees, and your registrations.",
+      "preview": {
+        "bg": "#f6fafb",
+        "ink": "#12303a",
+        "accent": "#0f6e84"
+      },
+      "vocabulary": {
+        "postsTitle": "News",
+        "topicsLabel": "Topics",
+        "aboutLabel": "Our team",
+        "topicNames": {},
+        "bookingNav": "Appointments",
+        "bookingTitle": "Book an appointment."
+      }
+    },
+    {
+      "id": "pulse",
+      "name": "Pulse",
+      "category": "business",
+      "hero": "pulse",
+      "description": "For gyms, yoga and dance studios: a bold opening, a class list with durations and prices, and a quick way to book.",
+      "preview": {
+        "bg": "#14161b",
+        "ink": "#f6f2ea",
+        "accent": "#ff6a3d"
+      },
+      "vocabulary": {
+        "postsTitle": "News",
         "topicsLabel": "Topics",
         "aboutLabel": "About",
-        "topicNames": {}
+        "topicNames": {},
+        "bookingNav": "Book a class",
+        "bookingTitle": "Book your place."
+      }
+    },
+    {
+      "id": "counsel",
+      "name": "Counsel",
+      "category": "business",
+      "hero": "counsel",
+      "description": "For solicitors, accountants and advisers: a formal opening, your areas of expertise and professional memberships.",
+      "preview": {
+        "bg": "#fbfaf7",
+        "ink": "#15202e",
+        "accent": "#1d3a5f"
+      },
+      "vocabulary": {
+        "postsTitle": "Insights",
+        "topicsLabel": "Topics",
+        "aboutLabel": "About",
+        "topicNames": {},
+        "bookingNav": "Consultations",
+        "bookingTitle": "Arrange a consultation."
+      }
+    },
+    {
+      "id": "shopfront",
+      "name": "Shopfront",
+      "category": "business",
+      "hero": "shopfront",
+      "description": "For bakers, florists and independent shops: a sign above the door, when you are open, where to find you and what you sell.",
+      "preview": {
+        "bg": "#fdf6ec",
+        "ink": "#2c2a25",
+        "accent": "#b0432a"
+      },
+      "vocabulary": {
+        "postsTitle": "News",
+        "topicsLabel": "Topics",
+        "aboutLabel": "About",
+        "topicNames": {},
+        "bookingNav": "Order",
+        "bookingTitle": "Place an order."
       }
     },
     {
       "id": "petal",
       "name": "Petal",
-      "category": "professional",
+      "category": "business",
       "hero": "petal",
-      "description": "An intimate beauty studio: a framed introduction, a treatment menu and a quiet appointment invitation.",
+      "description": "For beauty rooms and skin studios: a framed introduction, a treatment menu and a quiet appointment invitation.",
       "preview": {
         "bg": "#f8eeea",
         "ink": "#412c35",
@@ -84,9 +172,9 @@
     {
       "id": "contour",
       "name": "Contour",
-      "category": "professional",
+      "category": "business",
       "hero": "contour",
-      "description": "A precise aesthetics practice with a consultation panel, numbered treatments and clear practitioner information.",
+      "description": "For aesthetics practices: a consultation panel, numbered treatments and clear practitioner information.",
       "preview": {
         "bg": "#f4f3f0",
         "ink": "#222c32",
@@ -102,9 +190,9 @@
     {
       "id": "cut",
       "name": "Cut",
-      "category": "professional",
+      "category": "business",
       "hero": "cut",
-      "description": "A bold salon front page with a typographic masthead, compact price list and an appointment rail.",
+      "description": "For hair salons and barbers: a bold typographic masthead, a compact price list and an appointment rail.",
       "preview": {
         "bg": "#f5f1e7",
         "ink": "#251f20",
@@ -120,9 +208,9 @@
     {
       "id": "still",
       "name": "Still",
-      "category": "professional",
+      "category": "business",
       "hero": "still",
-      "description": "A spacious wellness practice with a centred opening, session cards and a quiet reading list.",
+      "description": "For wellness and movement practices: a centred opening, session cards and a quiet reading list.",
       "preview": {
         "bg": "#eeefe7",
         "ink": "#303d32",
@@ -136,11 +224,29 @@
       }
     },
     {
+      "id": "practice",
+      "name": "Practice",
+      "category": "business",
+      "hero": "practice",
+      "description": "For private doctors and therapists: a calm consulting-room layout with areas of practice, credentials and contact details.",
+      "preview": {
+        "bg": "#f3f4ec",
+        "ink": "#203b35",
+        "accent": "#315b47"
+      },
+      "vocabulary": {
+        "postsTitle": "Writing",
+        "topicsLabel": "Topics",
+        "aboutLabel": "About",
+        "topicNames": {}
+      }
+    },
+    {
       "id": "office",
       "name": "Office",
-      "category": "professional",
+      "category": "business",
       "hero": "office",
-      "description": "A consulting desk with a two-column introduction, structured service index and recent writing.",
+      "description": "For consultants and freelancers: a two-column introduction, a structured service index and recent writing.",
       "preview": {
         "bg": "#eef2f5",
         "ink": "#202d40",
@@ -154,9 +260,27 @@
       }
     },
     {
+      "id": "folio",
+      "name": "Folio",
+      "category": "personal",
+      "hero": "folio",
+      "description": "A personal practice with an editorial introduction, a compact background column, services and a writing index.",
+      "preview": {
+        "bg": "#f8f6f0",
+        "ink": "#202a30",
+        "accent": "#315b71"
+      },
+      "vocabulary": {
+        "postsTitle": "Writing",
+        "topicsLabel": "Topics",
+        "aboutLabel": "About",
+        "topicNames": {}
+      }
+    },
+    {
       "id": "portrait",
       "name": "Portrait",
-      "category": "professional",
+      "category": "personal",
       "hero": "portrait",
       "description": "A personal calling card with a large nameplate, short biography, selected work and a compact journal.",
       "preview": {
@@ -286,7 +410,7 @@
         "postsTitle": "Front Page",
         "topicsLabel": "The Desks",
         "aboutLabel": "The Masthead",
-        "tagline": "All the news that fits \u2014 and some that doesn't.",
+        "tagline": "All the news that fits — and some that doesn't.",
         "topicNames": {
           "marrow": "Living",
           "forge": "Technology",
@@ -384,7 +508,7 @@
       "name": "Neon",
       "category": "creative",
       "hero": "marquee",
-      "description": "After-dark and electric \u2014 inky violet-black, glowing cyan and magenta, and type that hums.",
+      "description": "After-dark and electric — inky violet-black, glowing cyan and magenta, and type that hums.",
       "preview": {
         "bg": "#0a0812",
         "ink": "#f3ecff",

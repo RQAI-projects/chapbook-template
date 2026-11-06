@@ -1,0 +1,10 @@
+html[data-blog-theme="counsel"]{color-scheme:light;--bg-0:#fbfaf7;--bg-1:#fbfaf7;--bg-2:#fbfaf7;--bg-3:#eeece6;--ink:#15202e;--ink-dim:#47525f;--ink-faint:#47525f;--accent:#1d3a5f;--teal:#1d3a5f;--cyan:#1d3a5f;--violet:#1d3a5f;--line:rgba(21,32,46,.13);--line-strong:rgba(21,32,46,.3);--header-bg:#fbfaf7;--header-blur:none;--header-border:var(--line);--selection-bg:#cfd9e6;--scrim-text-shadow:none;--masthead-ink:#15202e;--masthead-shadow:none;--radius:0;--pro-button-ink:#fff;--font-display:'Newsreader',Georgia,serif;--font-body:'Inter Variable',sans-serif}
+html[data-blog-theme="counsel"] .site-header{box-shadow:none}
+html[data-blog-theme="counsel"] .logo{font-size:1.05rem;letter-spacing:-.02em;color:var(--ink)}
+html[data-blog-theme="counsel"] .site-nav a{color:var(--ink-dim)}
+html[data-blog-theme="counsel"] .site-nav a[aria-current="page"]::after{background:var(--accent);box-shadow:none}
+html[data-blog-theme="counsel"] .card,html[data-blog-theme="counsel"] .post-card{background:transparent;border:1px solid var(--line);box-shadow:none}
+html[data-blog-theme="counsel"] .btn-primary{background:var(--accent);color:var(--pro-button-ink);box-shadow:none}
+html[data-blog-theme="counsel"] .orbs,html[data-blog-theme="counsel"] .grid-lines{display:none}
+html[data-blog-theme="counsel"] .article-body{color:var(--ink)}
+html[data-blog-theme="counsel"]{--badge-ink:var(--ink)}

@@ -1,0 +1,10 @@
+html[data-blog-theme="clinic"]{color-scheme:light;--bg-0:#f6fafb;--bg-1:#f6fafb;--bg-2:#f6fafb;--bg-3:#e6f1f3;--ink:#12303a;--ink-dim:#3f5a64;--ink-faint:#3f5a64;--accent:#0f6e84;--teal:#0f6e84;--cyan:#0f6e84;--violet:#0f6e84;--line:rgba(18,48,58,.13);--line-strong:rgba(18,48,58,.28);--header-bg:#f6fafb;--header-blur:none;--header-border:var(--line);--selection-bg:#c6e6ec;--scrim-text-shadow:none;--masthead-ink:#12303a;--masthead-shadow:none;--radius:12px;--pro-card:#fff;--pro-button-ink:#fff;--font-display:'Inter Variable',sans-serif;--font-body:'Inter Variable',sans-serif}
+html[data-blog-theme="clinic"] .site-header{box-shadow:none}
+html[data-blog-theme="clinic"] .logo{font-size:1.05rem;letter-spacing:-.02em;color:var(--ink)}
+html[data-blog-theme="clinic"] .site-nav a{color:var(--ink-dim)}
+html[data-blog-theme="clinic"] .site-nav a[aria-current="page"]::after{background:var(--accent);box-shadow:none}
+html[data-blog-theme="clinic"] .card,html[data-blog-theme="clinic"] .post-card{background:transparent;border:1px solid var(--line);box-shadow:none}
+html[data-blog-theme="clinic"] .btn-primary{background:var(--accent);color:var(--pro-button-ink);box-shadow:none}
+html[data-blog-theme="clinic"] .orbs,html[data-blog-theme="clinic"] .grid-lines{display:none}
+html[data-blog-theme="clinic"] .article-body{color:var(--ink)}
+html[data-blog-theme="clinic"]{--badge-ink:var(--ink)}

@@ -34,8 +34,8 @@ const icons: Record<string, string> = {
         {email && <a class="contact-email" data-reveal data-delay="0.2" href={`mailto:${email}`}>{email}</a>}
         {professional.bookingUrl && <p><a class="pro-link" href={withBase('/appointments/')}>{professional.bookingLabel} ↗</a></p>}
         <div class="socials" data-reveal data-delay="0.26" style="margin-top:2rem">
-          {site.socials.linkedin && <a href={site.socials.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener" set:html={icons['linkedin']} />}
-          {site.socials.instagram && <a href={site.socials.instagram} aria-label="Instagram" target="_blank" rel="noopener" set:html={icons['instagram']} />}
+          {safeBookingUrl(site.socials.linkedin) && <a href={safeBookingUrl(site.socials.linkedin)} aria-label="LinkedIn" target="_blank" rel="noopener" set:html={icons['linkedin']} />}
+          {safeBookingUrl(site.socials.instagram) && <a href={safeBookingUrl(site.socials.instagram)} aria-label="Instagram" target="_blank" rel="noopener" set:html={icons['instagram']} />}
         </div>
       </div>
 
@@ -71,7 +71,7 @@ const icons: Record<string, string> = {
   }
   .contact-email {
     display: inline-block; margin-top: 1.6rem;
-    font-family: var(--font-display); font-size: 1.1rem; color: var(--cyan);
+    font-family: var(--font-display); font-size: 1.1rem; color: var(--accent-text, var(--cyan));
     border-bottom: 1px solid rgba(34, 211, 238, 0.4);
     transition: text-shadow 0.25s;
   }

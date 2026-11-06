@@ -7,4 +7,4 @@ html[data-blog-theme="office"] .card,html[data-blog-theme="office"] .post-card{b
 html[data-blog-theme="office"] .btn-primary{background:var(--accent);color:#fff;box-shadow:none}
 html[data-blog-theme="office"] .orbs,html[data-blog-theme="office"] .grid-lines{display:none}
 html[data-blog-theme="office"] .article-body{color:var(--ink)}
-
+html[data-blog-theme="office"]{--badge-ink:var(--ink)}

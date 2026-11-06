@@ -1,7 +1,5 @@
 ---
 import Base from '../layouts/Base.astro';
-import GlenoidArt from '../components/GlenoidArt.astro';
-import Marquee from '../components/Marquee.astro';
 import profile from '../data/profile.json';
 import experience from '../data/experience.json';
 import qualifications from '../data/qualifications.json';
@@ -11,8 +9,11 @@ import awards from '../data/awards.json';
 import audits from '../data/audits.json';
 import teaching from '../data/teaching.json';
 import { site } from '../lib/site';
+import { aboutDetails } from '../lib/about.mjs';
+import { professionalDetails } from '../lib/professional.mjs';
+const about = aboutDetails(profile, site, professionalDetails((site as any).professional));
 ---
-<Base title="About" description={`${site.name} — ${profile.tagline}`}>
+<Base title="About" description={about.tagline ? `${site.name} — ${about.tagline}` : `About ${site.name}`}>
 
   <!-- ========== header ========== -->
   <section class="section about-hero">
@@ -24,25 +25,19 @@ import { site } from '../lib/site';
     <div class="container about-hero-grid">
       <div style="position:relative; z-index:1">
         <p class="eyebrow" data-reveal>About</p>
-        <h1 class="display scrim-text" data-reveal data-delay="0.07" style="font-size:clamp(1.8rem,5vw,2.8rem); margin-top:0.4rem">{profile.name}</h1>
-        <p class="creds" data-reveal data-delay="0.12">{profile.credentials}</p>
-        <p class="lead" data-reveal data-delay="0.18" style="margin-top:1.1rem">
-          {profile.role} · {profile.trust}
-        </p>
-      </div>
-      <div class="about-art" data-reveal="right" data-delay="0.15" aria-hidden="true">
-        <GlenoidArt />
+        <h1 class="display scrim-text" data-reveal data-delay="0.07" style="font-size:clamp(1.8rem,5vw,2.8rem); margin-top:0.4rem">{about.name}</h1>
+        {about.credentials && <p class="creds" data-reveal data-delay="0.12">{about.credentials}</p>}
+        {about.role && <p class="lead" data-reveal data-delay="0.18" style="margin-top:1.1rem">{about.role}</p>}
+        {about.tagline && <p class="lead" data-reveal data-delay="0.2" style="margin-top:.5rem">{about.tagline}</p>}
       </div>
     </div>
   </section>
 
-  <Marquee />
-
-  <!-- ========== stats ========== -->
+  {about.stats.length > 0 && (
   <section class="section" style="padding-block:3.5rem 3.5rem">
     <div class="container">
       <div class="stats-row">
-        {profile.stats.map((s, i) => (
+        {about.stats.map((s, i) => (
           <div class="stat-card" data-reveal data-delay={String(i * 0.07)}>
             <div class="stat-value" data-count={String(s.value)} data-suffix={s.suffix}>0</div>
             <div class="stat-label">{s.label}</div>
@@ -51,26 +46,30 @@ import { site } from '../lib/site';
       </div>
     </div>
   </section>
+  )}
 
-  <!-- ========== bio ========== -->
+  {(about.bio.length > 0 || about.highlights.length > 0) && (
   <section class="section" style="padding-top:0">
     <div class="container">
       <div class="section-head" data-reveal>
         <h2 class="section-title">Background</h2><span class="rule"></span>
       </div>
       <div class="bio-grid">
-        {profile.bio.slice(0, 1).map((para, i) => (
+        {about.bio.map((para, i) => (
           <p data-reveal data-delay={String(Math.min(i * 0.06, 0.25))}>{para}</p>
         ))}
       </div>
+      {about.highlights.length > 0 && <ul class="about-highlights" data-reveal>{about.highlights.map(h => <li>{h}</li>)}</ul>}
     </div>
   </section>
+  )}
 
-  <!-- ========== clinical experience ========== -->
+  <!-- ========== experience ========== -->
+  {experience.length > 0 && (
   <section class="section" style="padding-top:0">
     <div class="container">
       <div class="section-head" data-reveal>
-        <h2 class="section-title">Clinical experience</h2><span class="rule"></span>
+        <h2 class="section-title">Experience</h2><span class="rule"></span>
       </div>
       <div class="timeline">
         {experience.map((e) => (
@@ -83,8 +82,10 @@ import { site } from '../lib/site';
       </div>
     </div>
   </section>
+  )}
 
   <!-- ========== qualifications ========== -->
+  {qualifications.length > 0 && (
   <section class="section" style="padding-top:0">
     <div class="container">
       <div class="section-head" data-reveal>
@@ -101,8 +102,10 @@ import { site } from '../lib/site';
       </div>
     </div>
   </section>
+  )}
 
   <!-- ========== publications ========== -->
+  {publications.length > 0 && (
   <section class="section" style="padding-top:0">
     <div class="container">
       <div class="section-head" data-reveal>
@@ -127,8 +130,10 @@ import { site } from '../lib/site';
       </ol>
     </div>
   </section>
+  )}
 
   <!-- ========== presentations ========== -->
+  {conferences.length > 0 && (
   <section class="section" style="padding-top:0">
     <div class="container">
       <div class="section-head" data-reveal>
@@ -147,8 +152,10 @@ import { site } from '../lib/site';
       </ul>
     </div>
   </section>
+  )}
 
   <!-- ========== awards ========== -->
+  {awards.length > 0 && (
   <section class="section" style="padding-top:0">
     <div class="container">
       <div class="section-head" data-reveal>
@@ -167,8 +174,10 @@ import { site } from '../lib/site';
       </ul>
     </div>
   </section>
+  )}
 
   <!-- ========== audits + teaching (two-column) ========== -->
+  {(audits.length > 0 || teaching.length > 0) && (
   <section class="section" style="padding-top:0">
     <div class="container two-col">
       <div>
@@ -205,8 +214,10 @@ import { site } from '../lib/site';
       </div>
     </div>
   </section>
+  )}
 
   <!-- ========== memberships ========== -->
+  {(profile.memberships || []).length > 0 && (
   <section class="section" style="padding-top:0">
     <div class="container">
       <div class="section-head" data-reveal>
@@ -219,22 +230,17 @@ import { site } from '../lib/site';
       </ul>
     </div>
   </section>
+  )}
 </Base>
 
 <style>
   .about-hero { overflow: hidden; padding-bottom: 3rem; }
-  .about-hero-grid {
-    position: relative; z-index: 1;
-    display: grid; grid-template-columns: 1.2fr 1fr; gap: 2.5rem; align-items: center;
-  }
-  @media (max-width: 880px) {
-    .about-hero-grid { grid-template-columns: 1fr; }
-    .about-art { max-width: 420px; margin-inline: auto; }
-  }
+  .about-hero-grid { display: block; }
+  .about-highlights { margin: 1.4rem 0 0; padding-left: 1.1rem; display: grid; gap: .35rem; }
   .creds {
     margin-top: 0.9rem;
     font-family: var(--font-display); font-size: 0.92rem; letter-spacing: 0.06em;
-    color: var(--cyan);
+    color: var(--accent-text, var(--cyan));
   }
 
   .bio-grid { display: grid; gap: 1.1rem; max-width: 76ch; color: var(--ink-dim); font-size: 1.03rem; }
@@ -244,7 +250,7 @@ import { site } from '../lib/site';
   .qual-card p { color: var(--ink-dim); font-size: 0.86rem; margin-top: 0.3rem; }
   .qual-year {
     font-family: var(--font-display); font-size: 0.78rem; letter-spacing: 0.14em;
-    color: var(--cyan);
+    color: var(--accent-text, var(--cyan));
   }
 
   .head-count { font-family: var(--font-display); font-size: 0.85rem; color: var(--ink-faint); }

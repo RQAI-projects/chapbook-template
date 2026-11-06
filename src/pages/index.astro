@@ -5,6 +5,7 @@ import themesRegistry from '../data/themes.json';
 import profile from '../data/profile.json';
 import {postCover} from '../lib/post-cover.mjs';
 import { site } from '../lib/site';
+import { safeBookingUrl } from '../lib/professional.mjs';
 import { withBase } from '../lib/withBase';
 import { getCollection } from 'astro:content';
 import type { HomeProps, HomePost, HomeConstellation } from '../lib/home';
@@ -36,23 +37,24 @@ import HomeLightbox from '../components/home/HomeLightbox.astro';
 import HomeContactSheet from '../components/home/HomeContactSheet.astro';
 import HomePhotoPile from '../components/home/HomePhotoPile.astro';
 import HomeFolio from '../components/home/HomeFolio.astro';
-import HomePractice from '../components/home/HomePractice.astro';
-import HomePetal from '../components/home/HomePetal.astro';
-import HomeContour from '../components/home/HomeContour.astro';
-import HomeCut from '../components/home/HomeCut.astro';
-import HomeStill from '../components/home/HomeStill.astro';
-import HomeOffice from '../components/home/HomeOffice.astro';
 import HomePortrait from '../components/home/HomePortrait.astro';
+import HomeBusiness from '../components/home/HomeBusiness.astro';
 
 const HOMES: Record<string, any> = {
   folio: HomeFolio,
-  practice: HomePractice,
-  petal: HomePetal,
-  contour: HomeContour,
-  cut: HomeCut,
-  still: HomeStill,
-  office: HomeOffice,
+  practice: HomeBusiness,
+  petal: HomeBusiness,
+  contour: HomeBusiness,
+  cut: HomeBusiness,
+  still: HomeBusiness,
+  office: HomeBusiness,
   portrait: HomePortrait,
+  table: HomeBusiness,
+  trade: HomeBusiness,
+  clinic: HomeBusiness,
+  pulse: HomeBusiness,
+  counsel: HomeBusiness,
+  shopfront: HomeBusiness,
   rings: HomeRings,
   index: HomeIndex,
   solo: HomeSolo,
@@ -132,14 +134,14 @@ const homeProps: HomeProps = {
   postsHref: withBase('/posts/'),
   aboutHref: withBase('/about/'),
   observatoryHref: withBase('/observatory/'),
-  newsletterEndpoint: site.newsletter.endpoint,
+  newsletterEndpoint: safeBookingUrl(site.newsletter.endpoint),
   postsTitle: vocab.postsTitle,
   topicsLabel: vocab.topicsLabel,
   aboutLabel: vocab.aboutLabel,
 };
 
 // --- SEO/AEO: WebSite + Person JSON-LD for the home page ---
-const cleanSocials = Object.values(site.socials).filter((u) => u && !u.startsWith('#'));
+const cleanSocials = Object.values(site.socials).filter((u) => typeof u === 'string' && /^https:\/\//.test(u));
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -156,9 +158,9 @@ const jsonLd = {
       '@type': 'Person',
       '@id': `${site.url}/#person`,
       name: site.name,
-      jobTitle: profile.role,
+      jobTitle: profile.role === 'What you do' ? undefined : (profile.role || undefined),
       url: `${site.url}/`,
-      description: profile.tagline,
+      description: profile.tagline === 'A short line about you and this blog.' ? site.description : profile.tagline,
       worksFor: { '@type': 'Organisation', name: profile.trust },
       ...(cleanSocials.length ? { sameAs: cleanSocials } : {}),
     },
@@ -166,6 +168,6 @@ const jsonLd = {
 };
 ---
 <Base title={site.masthead} progress>
-  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g,'\\u003c')} />
   <Home {...homeProps} />
 </Base>

@@ -124,7 +124,7 @@ const visibleTopics = topics
             {posts.map((p, i) => (
               <PostCard post={p} readMins={readMins(p)} newest={i === 0} />
             ))}
-            <p class="no-posts" id="no-posts" hidden>Nothing here yet — pick another topic.</p>
+            <p class="no-posts" id="no-posts" hidden={posts.length > 0}>{posts.length ? 'Nothing here yet — pick another topic.' : 'No posts yet. New writing will appear here.'}</p>
           </div>
           <!-- mobile-only topic bar (bottom) -->
           <nav class="wt-bar wt-bar-bottom" aria-label="Browse by topic">
@@ -173,7 +173,7 @@ const visibleTopics = topics
     .wt-car { font-size: 0.7em; opacity: 0.7; }
     .wt-subs { display: none; }
     .wt-subs:not([hidden]) { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.55rem 0 0.2rem; padding-left: 0.15rem; }
-    .wt-bar .wt-sub { font-size: 0.78rem; background: rgba(34, 211, 238, 0.07); border-color: rgba(34, 211, 238, 0.28); color: var(--cyan); }
+    .wt-bar .wt-sub { font-size: 0.78rem; background: rgba(34, 211, 238, 0.07); border-color: rgba(34, 211, 238, 0.28); color: var(--accent-text, var(--cyan)); }
     .wt-bar .wt-sub .count { font-size: 0.72em; opacity: 0.75; border-color: rgba(34,211,238,0.3); }
   }
 
@@ -217,13 +217,14 @@ const visibleTopics = topics
   }
   .filter-banner b { color: var(--ink); }
   .fb-clear {
-    margin-left: auto; font-size: 0.8rem; color: var(--cyan);
+    margin-left: auto; font-size: 0.8rem; color: var(--accent-text, var(--cyan));
     background: transparent; border: 1px solid rgba(34, 211, 238, 0.4);
     border-radius: 99px; padding: 0.25em 0.85em; cursor: pointer;
   }
   .fb-clear:hover { background: rgba(34, 211, 238, 0.12); }
   .no-posts { color: var(--ink-faint); padding: 2rem 0; }
-  .topic-subtitle { color: var(--muted, #5b6b80); font-size: .78em; margin-left: .45em; letter-spacing: .04em; }
+  .filter-banner:empty { display: none; }
+  .topic-subtitle { color: var(--ink-dim, #5b6b80); font-size: .78em; margin-left: .45em; letter-spacing: .04em; }
 
   /* ============================================================
      Layout switcher — 8 pure-CSS treatments over the same PostCard

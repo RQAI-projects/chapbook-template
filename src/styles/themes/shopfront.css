@@ -1,0 +1,10 @@
+html[data-blog-theme="shopfront"]{color-scheme:light;--bg-0:#fdf6ec;--bg-1:#fdf6ec;--bg-2:#fdf6ec;--bg-3:#f4e8d6;--ink:#2c2a25;--ink-dim:#57524a;--ink-faint:#57524a;--accent:#b0432a;--teal:#b0432a;--cyan:#b0432a;--violet:#b0432a;--line:rgba(44,42,37,.14);--line-strong:rgba(44,42,37,.3);--header-bg:#fdf6ec;--header-blur:none;--header-border:var(--line);--selection-bg:#f2d3b8;--scrim-text-shadow:none;--masthead-ink:#2c2a25;--masthead-shadow:none;--radius:8px;--pro-card:#fff;--pro-button-ink:#fff;--font-display:'Fraunces',Georgia,serif;--font-body:'Inter Variable',sans-serif}
+html[data-blog-theme="shopfront"] .site-header{box-shadow:none}
+html[data-blog-theme="shopfront"] .logo{font-size:1.05rem;letter-spacing:-.02em;color:var(--ink)}
+html[data-blog-theme="shopfront"] .site-nav a{color:var(--ink-dim)}
+html[data-blog-theme="shopfront"] .site-nav a[aria-current="page"]::after{background:var(--accent);box-shadow:none}
+html[data-blog-theme="shopfront"] .card,html[data-blog-theme="shopfront"] .post-card{background:transparent;border:1px solid var(--line);box-shadow:none}
+html[data-blog-theme="shopfront"] .btn-primary{background:var(--accent);color:var(--pro-button-ink);box-shadow:none}
+html[data-blog-theme="shopfront"] .orbs,html[data-blog-theme="shopfront"] .grid-lines{display:none}
+html[data-blog-theme="shopfront"] .article-body{color:var(--ink)}
+html[data-blog-theme="shopfront"]{--badge-ink:var(--ink)}

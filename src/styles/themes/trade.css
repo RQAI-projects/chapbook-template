@@ -1,0 +1,10 @@
+html[data-blog-theme="trade"]{color-scheme:light;--bg-0:#ffffff;--bg-1:#ffffff;--bg-2:#ffffff;--bg-3:#f1f3f5;--ink:#16202b;--ink-dim:#46525f;--ink-faint:#46525f;--accent:#f2b705;--teal:#f2b705;--cyan:#f2b705;--violet:#f2b705;--line:rgba(22,32,43,.13);--line-strong:rgba(22,32,43,.32);--header-bg:#ffffff;--header-blur:none;--header-border:var(--line);--selection-bg:#ffe68a;--scrim-text-shadow:none;--masthead-ink:#16202b;--masthead-shadow:none;--radius:6px;--accent-text:#16202b;--pro-button-ink:#16202b;--font-display:'Inter Variable',sans-serif;--font-body:'Inter Variable',sans-serif}
+html[data-blog-theme="trade"] .site-header{box-shadow:none}
+html[data-blog-theme="trade"] .logo{font-size:1.05rem;letter-spacing:-.02em;color:var(--ink)}
+html[data-blog-theme="trade"] .site-nav a{color:var(--ink-dim)}
+html[data-blog-theme="trade"] .site-nav a[aria-current="page"]::after{background:var(--accent);box-shadow:none}
+html[data-blog-theme="trade"] .card,html[data-blog-theme="trade"] .post-card{background:transparent;border:1px solid var(--line);box-shadow:none}
+html[data-blog-theme="trade"] .btn-primary{background:var(--accent);color:var(--pro-button-ink);box-shadow:none}
+html[data-blog-theme="trade"] .orbs,html[data-blog-theme="trade"] .grid-lines{display:none}
+html[data-blog-theme="trade"] .article-body{color:var(--ink)}
+html[data-blog-theme="trade"]{--badge-ink:var(--ink)}

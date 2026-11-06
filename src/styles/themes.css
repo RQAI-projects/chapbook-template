@@ -48,6 +48,12 @@
 @import "./themes/petal.css";
 @import "./themes/contour.css";
 @import "./themes/cut.css";
+@import "./themes/table.css";
+@import "./themes/trade.css";
+@import "./themes/clinic.css";
+@import "./themes/pulse.css";
+@import "./themes/counsel.css";
+@import "./themes/shopfront.css";
 @import "./themes/still.css";
 @import "./themes/office.css";
 @import "./themes/portrait.css";

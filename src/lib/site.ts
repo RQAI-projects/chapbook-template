@@ -22,10 +22,27 @@ export interface SiteConfig {
   /** Header/footer nav. Optional: when absent, Base.astro falls back to its built-in nav.
    *  `primary` items show in the mobile quick-access row; `themeLabel` items are renamed
    *  from the active full-theme vocabulary. */
+  /** Colours, heading font, corners and home page sections, set in Chapbook. */
+  design?: Record<string, unknown>;
   nav?: Array<{ href: string; label: string; primary?: boolean; themeLabel?: boolean }>;
 }
 
-export const site = siteData as SiteConfig;
+// site.json can be edited by hand, so wrong shapes are repaired here rather than breaking the build.
+const raw = (siteData && typeof siteData === 'object' ? siteData : {}) as any;
+const textOf = (v: unknown, fallback = '') => (typeof v === 'string' ? v : v == null ? fallback : String(v));
+const objectOf = (v: unknown) => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, any>) : {});
+export const site = {
+  ...raw,
+  name: textOf(raw.name),
+  masthead: textOf(raw.masthead, textOf(raw.name)),
+  tagline: textOf(raw.tagline),
+  description: textOf(raw.description),
+  url: textOf(raw.url),
+  socials: objectOf(raw.socials),
+  newsletter: { endpoint: textOf(objectOf(raw.newsletter).endpoint) },
+  contact: { endpoint: textOf(objectOf(raw.contact).endpoint) },
+  nav: Array.isArray(raw.nav) ? raw.nav.filter((n: any) => n && typeof n === 'object') : undefined,
+} as SiteConfig;
 
 /** Page <title>: "<title> — <name>" for sub-pages; pass no argument to use the masthead
  *  as the title segment ("<masthead> — <name>"). */

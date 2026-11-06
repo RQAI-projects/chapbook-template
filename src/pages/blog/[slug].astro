@@ -76,7 +76,7 @@ const jsonLd = {
   author: {
     '@type': 'Person',
     name: site.name,
-    jobTitle: profile.role,
+    jobTitle: profile.role === 'What you do' ? undefined : (profile.role || undefined),
     url: `${site.url}/about/`,
   },
   publisher: {
@@ -98,7 +98,7 @@ const jsonLd = {
   ogType="article"
   progress
 >
-  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g,'\\u003c')} />
 
   <article
     style={`--post-accent:${post.data.accent}`}
@@ -351,7 +351,7 @@ const jsonLd = {
     font-family: var(--font-display); font-size: 0.9rem; color: var(--ink-dim);
     transition: color 0.2s;
   }
-  .back-link:hover { color: var(--cyan); }
+  .back-link:hover { color: var(--accent-text, var(--cyan)); }
   .post-hero-meta {
     display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.85rem;
     margin-top: 0.85rem;
@@ -368,7 +368,7 @@ const jsonLd = {
     transition: border-color 0.25s, box-shadow 0.25s, color 0.2s;
   }
   .series-flag:hover { border-color: rgba(34, 211, 238, 0.55); box-shadow: var(--glow-cyan); color: var(--ink); }
-  .sf-part { color: var(--cyan); font-weight: 700; letter-spacing: 0.02em; }
+  .sf-part { color: var(--accent-text, var(--cyan)); font-weight: 700; letter-spacing: 0.02em; }
   .sf-dot { color: var(--ink-faint); }
   .sf-name { color: var(--ink); }
 
@@ -404,7 +404,7 @@ const jsonLd = {
   }
   .post-nav-link:hover { border-color: rgba(34, 211, 238, 0.4); box-shadow: var(--glow-cyan); }
   .pn-next { text-align: right; }
-  .pn-label { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); }
+  .pn-label { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-text, var(--cyan)); }
   .pn-title { font-family: var(--font-display); font-size: 0.95rem; color: var(--ink); }
   @media (max-width: 560px) { .post-nav { grid-template-columns: 1fr; } .pn-next { text-align: left; } }
 
@@ -417,10 +417,10 @@ const jsonLd = {
   .sc-head { display: flex; align-items: baseline; gap: 0.6em; flex-wrap: wrap; margin-bottom: 0.7rem; }
   .sc-eyebrow {
     font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--cyan); font-weight: 700;
+    text-transform: uppercase; color: var(--accent-text, var(--cyan)); font-weight: 700;
   }
   .sc-title { font-family: var(--font-display); font-size: 1.02rem; color: var(--ink); }
-  .sc-title:hover { color: var(--cyan); }
+  .sc-title:hover { color: var(--accent-text, var(--cyan)); }
   .sc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; counter-reset: none; }
   .sc-list li { display: flex; align-items: baseline; gap: 0.7em; font-size: 0.95rem; }
   .sc-n {
@@ -431,7 +431,7 @@ const jsonLd = {
   }
   .sc-list li.sc-current .sc-n { background: var(--cyan); border-color: var(--cyan); color: var(--bg-0); font-weight: 700; }
   .sc-list a { color: var(--ink-dim); transition: color 0.2s; }
-  .sc-list a:hover { color: var(--cyan); }
+  .sc-list a:hover { color: var(--accent-text, var(--cyan)); }
   .sc-this { color: var(--ink); font-weight: 600; }
   .sc-here { color: var(--ink-faint); font-weight: 400; font-style: italic; }
 
@@ -448,7 +448,7 @@ const jsonLd = {
   }
   .series-nav-link:hover { border-color: rgba(34, 211, 238, 0.55); box-shadow: var(--glow-cyan); }
   .sn-next { text-align: right; }
-  .sn-label { font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); }
+  .sn-label { font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-text, var(--cyan)); }
   .sn-title { font-family: var(--font-display); font-size: 0.92rem; color: var(--ink); }
   @media (max-width: 560px) { .series-nav { grid-template-columns: 1fr; } .sn-next { text-align: left; } }
 

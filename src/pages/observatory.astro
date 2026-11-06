@@ -392,7 +392,7 @@ const topicsWithPosts = topics.filter((t) => itemsByTopic[t.tag]?.length);
       background: rgba(4, 6, 12, 0.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--line-strong); border-radius: 99px; padding: 0.75rem 1.2rem;
     }
-    .obs-acc-caret { color: var(--cyan); transition: transform 0.25s; }
+    .obs-acc-caret { color: var(--accent-text, var(--cyan)); transition: transform 0.25s; }
     .obs-acc-toggle[aria-expanded="true"] .obs-acc-caret { transform: rotate(180deg); }
     .obs-acc-panel {
       display: flex; flex-direction: column; gap: 0.15rem;
@@ -529,7 +529,7 @@ const topicsWithPosts = topics.filter((t) => itemsByTopic[t.tag]?.length);
   }
 
   .const-post-link:hover {
-    color: var(--cyan);
+    color: var(--accent-text, var(--cyan));
     text-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
   }
 </style>

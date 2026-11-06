@@ -2,7 +2,7 @@
 import { withBase } from '../lib/withBase';
 interface Props { theme: string; name: string; context?: string; nav: {href:string;label:string;primary?:boolean;themeLabel?:boolean}[]; navLabel: (n:any)=>string; isCurrent:(href:string)=>boolean; }
 const {theme,name,context,nav,navLabel,isCurrent}=Astro.props;
-const variants:Record<string,string>={ledger:'register',air:'quiet',broadsheet:'press',journal:'spine',kiosk:'ticker',neon:'signal',zine:'cutout',scrapbook:'label',doodle:'tabs',rocket:'console',pixel:'cartridge',comic:'panel','field-atlas':'register',darkroom:'exhibit','contact-sheet':'proof',polaroid:'letter',folio:'portfolio',practice:'practice',petal:'salon',contour:'gallery',cut:'studio',still:'quiet',office:'directory',portrait:'signature'};
+const variants:Record<string,string>={ledger:'register',air:'quiet',broadsheet:'press',journal:'spine',kiosk:'ticker',neon:'signal',zine:'cutout',scrapbook:'label',doodle:'tabs',rocket:'console',pixel:'cartridge',comic:'panel','field-atlas':'register',darkroom:'exhibit','contact-sheet':'proof',polaroid:'letter',folio:'portfolio',practice:'practice',petal:'salon',contour:'gallery',cut:'studio',still:'quiet',office:'directory',portrait:'signature',table:'salon',trade:'directory',clinic:'practice',pulse:'studio',counsel:'portfolio',shopfront:'salon'};
 const variant=variants[theme]||'classic';
 ---
 <header class="site-header" data-header={variant}>

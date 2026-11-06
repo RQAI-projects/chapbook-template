@@ -11,7 +11,9 @@ import Icon from '../components/Icon.astro';
 import { site, pageTitle } from '../lib/site';
 import { withBase } from '../lib/withBase';
 import { vocabFor } from '../lib/vocab';
-import { professionalDetails } from '../lib/professional.mjs';
+import { designCss } from '../lib/business/render.mjs';
+import {professionalDetails, safeNavHref, safeBookingUrl} from '../lib/professional.mjs';
+import themesRegistry from '../data/themes.json';
 
 // Site-wide BLOG THEME (data-blog-theme on <html>). Chosen once at blog creation
 // via site.defaultTheme; the composer writes one of the ids in src/data/themes.json.
@@ -27,9 +29,9 @@ const isKidsTheme = KIDS_THEMES.includes(blogTheme);
 
 // Build footer socials from site.json (non-empty values only)
 const socialLinks = [
-  site.socials.linkedin && { name: 'LinkedIn', url: site.socials.linkedin, icon: 'brand-linkedin' },
-  site.socials.instagram && { name: 'Instagram', url: site.socials.instagram, icon: 'brand-instagram' },
-  site.socials.github && { name: 'GitHub', url: site.socials.github, icon: 'brand-github' },
+  safeBookingUrl(site.socials.linkedin) && { name: 'LinkedIn', url: safeBookingUrl(site.socials.linkedin), icon: 'brand-linkedin' },
+  safeBookingUrl(site.socials.instagram) && { name: 'Instagram', url: safeBookingUrl(site.socials.instagram), icon: 'brand-instagram' },
+  safeBookingUrl(site.socials.github) && { name: 'GitHub', url: safeBookingUrl(site.socials.github), icon: 'brand-github' },
 ].filter(Boolean) as { name: string; url: string; icon: string }[];
 
 interface Props {
@@ -70,9 +72,10 @@ const NAV_FALLBACK = [
   { href: '/about/', label: 'About' },
   { href: '/contact/', label: 'Contact' },
 ];
-const nav = [...(site.nav && site.nav.length ? site.nav : NAV_FALLBACK)];
+const nav = [...(site.nav && site.nav.length ? site.nav : NAV_FALLBACK)].map((n: any) => ({ ...n, href: safeNavHref(n?.href) })).filter((n: any) => n.href);
+const siteDesignCss = designCss((site as any).design, (themesRegistry.themes as any[]).find((t) => t.id === site.defaultTheme)?.preview || {});
 const professional = professionalDetails(site.professional);
-if (professional.bookingUrl && !nav.some(n => n.href === '/appointments/')) nav.push({href:'/appointments/',label:'Appointments',primary:true});
+if (professional.bookingUrl && !nav.some(n => n.href === '/appointments/')) nav.push({href:'/appointments/',label:vocabFor(site.defaultTheme).bookingNav,primary:true});
 
 // Per-theme chrome vocabulary. On the observatory theme the nav keeps its house labels
 // (and the palette switcher's client renamer handles "Observatory"); every other theme
@@ -135,6 +138,7 @@ const isCurrent = (href: string) => {
     <meta name="twitter:image" content={ogImageUrl} />
 
     <ViewTransitions />
+    {siteDesignCss && <style is:inline set:html={siteDesignCss}></style>}
   </head>
   <body data-default-theme={site.defaultTheme}>
     {progress && <div class="progress-bar" id="progress-bar"></div>}

@@ -14,6 +14,9 @@ export interface Vocab {
   /** optional themed demo tagline (used only when the site tagline is the seed default). */
   tagline?: string;
   topicNames: Record<string, string>;
+  /** menu label and page heading for the booking page, in the theme's trade wording. */
+  bookingNav: string;
+  bookingTitle: string;
 }
 
 const DEFAULT_VOCAB: Vocab = {
@@ -21,6 +24,8 @@ const DEFAULT_VOCAB: Vocab = {
   topicsLabel: 'Topics',
   aboutLabel: 'About',
   topicNames: {},
+  bookingNav: 'Appointments',
+  bookingTitle: 'Find a time that works for you.',
 };
 
 /** Merged vocabulary for a theme id (theme's block over the house defaults). */
@@ -32,6 +37,8 @@ export function vocabFor(themeId: string | undefined | null): Vocab {
     aboutLabel: v.aboutLabel ?? DEFAULT_VOCAB.aboutLabel,
     tagline: v.tagline,
     topicNames: { ...(v.topicNames || {}) },
+    bookingNav: v.bookingNav ?? DEFAULT_VOCAB.bookingNav,
+    bookingTitle: v.bookingTitle ?? DEFAULT_VOCAB.bookingTitle,
   };
 }
 

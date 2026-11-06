@@ -59,12 +59,12 @@ const desc = `A ${count}-part series — ${series.name}.`;
     font-family: var(--font-display); font-size: 0.88rem; color: var(--ink-faint);
     transition: color 0.2s;
   }
-  .back-link:hover { color: var(--cyan); }
+  .back-link:hover { color: var(--accent-text, var(--cyan)); }
 
   .series-head { margin: 1.6rem 0 2.4rem; max-width: 60ch; }
   .series-eyebrow {
     font-family: var(--font-display); font-size: 0.74rem; letter-spacing: 0.16em;
-    text-transform: uppercase; color: var(--cyan); font-weight: 700;
+    text-transform: uppercase; color: var(--accent-text, var(--cyan)); font-weight: 700;
   }
   .series-title { font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.05; margin-top: 0.6rem; }
   .series-count {
@@ -79,7 +79,7 @@ const desc = `A ${count}-part series — ${series.name}.`;
     display: inline-flex; align-items: center; justify-content: center;
     border-radius: 50%; border: 1px solid rgba(34, 211, 238, 0.4);
     background: rgba(34, 211, 238, 0.06);
-    font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--cyan);
+    font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--accent-text, var(--cyan));
   }
   /* PostCard is a child component (own scope) → :global to let it fill the cell */
   .series-item :global(.post-card) { margin: 0; }

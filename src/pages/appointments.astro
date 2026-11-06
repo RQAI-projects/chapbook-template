@@ -3,12 +3,14 @@ import Base from '../layouts/Base.astro';
 import {site} from '../lib/site';
 import {professionalDetails,contactHref,calBookingLink} from '../lib/professional.mjs';
 import ServiceMenu from '../components/professional/ServiceMenu.astro';
+import {vocabFor} from '../lib/vocab';
 const p=professionalDetails((site as any).professional);
 const href=contactHref(p),calLink=calBookingLink(p.bookingUrl);
+const vocab=vocabFor(site.defaultTheme);
 ---
-<Base title="Appointments" description={`Appointments and contact details for ${site.name}.`}>
+<Base title={vocab.bookingNav} description={`Appointments and contact details for ${site.name}.`}>
 <div class="pro-site appointment-page">
- <p class="pro-kicker">{site.name}</p><h1>Find a time<br/>that works for you.</h1>
+ <p class="pro-kicker">{site.name}</p><h1>{vocab.bookingTitle}</h1>
  <div class="appointment-layout"><section><h2>{p.bookingUrl?'Choose an appointment':'Arrange an appointment'}</h2>
  <p>{calLink?'Open the calendar below to see available times and book.':p.bookingUrl?'View available times and complete your booking with our booking service.':'Get in touch to ask about availability.'}</p>
  {calLink&&<><button class="pro-button booking-load" type="button" data-booking-link={calLink} aria-controls="booking-calendar">Open booking calendar</button><p class="appointment-note">Opening the calendar connects to Cal.com. Your booking details go directly to the booking service.</p></>}

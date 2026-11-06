@@ -7,4 +7,4 @@ html[data-blog-theme="still"] .card,html[data-blog-theme="still"] .post-card{bac
 html[data-blog-theme="still"] .btn-primary{background:var(--accent);color:#fff;box-shadow:none}
 html[data-blog-theme="still"] .orbs,html[data-blog-theme="still"] .grid-lines{display:none}
 html[data-blog-theme="still"] .article-body{color:var(--ink)}
-
+html[data-blog-theme="still"]{--badge-ink:var(--ink)}

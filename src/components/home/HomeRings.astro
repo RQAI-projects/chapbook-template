@@ -104,11 +104,11 @@ const asCard = (p: (typeof posts)[number]) => ({
         <h2 class="subscribe-title">New explainers, occasionally — by email</h2>
         <p class="subscribe-sub">No schedule, no noise. A note when something new goes up. Unsubscribe whenever.</p>
       </div>
-      <form class="subscribe-form" method="POST" action={newsletterEndpoint}>
+      {newsletterEndpoint && <form class="subscribe-form" method="POST" action={newsletterEndpoint}>
         <label class="visually-hidden" for="sub-email">Email address</label>
         <input id="sub-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com" />
         <button class="btn btn-primary" type="submit">Subscribe</button>
-      </form>
+      </form>}
     </div>
   </div>
 </section>
