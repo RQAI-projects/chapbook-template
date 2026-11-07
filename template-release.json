@@ -1,7 +1,7 @@
 {
  "kind": "chapbook-template-release",
- "release": 1,
- "version": "2026.11.07",
+ "release": 2,
+ "version": "2026.11.07.2",
  "managed": [
   "astro.config.mjs",
   "package.json",
@@ -58,7 +58,7 @@
   "scripts/check-site-config.mjs": "2cb8ca9e2e4c68915f08ec1cfdc7ba4b163d7aa6",
   "scripts/flip-scheduled.mjs": "e0d6d8b239d47dc9782c0643ec640b3e26d48ff3",
   "scripts/make-og-default.mjs": "d8602e05c295a5918f80ea2a8eae318c1e87f1b4",
-  "scripts/make-template-release.mjs": "d701cf0abb517f4be962f2b214cd1be0270d8823",
+  "scripts/make-template-release.mjs": "08e919a5f3995b73fe2522d9c0314250723096d2",
   "src/components/GalaxyHero.astro": "c4e918ee189f441636b42bb863d9a0b7f5e274ce",
   "src/components/GlenoidArt.astro": "009da8fa28c278e08e92ec4b25aa54a57d27058a",
   "src/components/GlyphBadge.astro": "464419f16bd1906fe2dfb666562fd165d8c76632",
@@ -156,7 +156,7 @@
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
   "src/styles/global.css": "a0084ef66dcacc4c0a6b925dfd33f5732a834b82",
   "src/styles/headers.css": "21b32156987272656a04f9666590625fe00bae12",
-  "src/styles/professional.css": "fbfebb1714b13979b9bee09df5c7a195f801353b",
+  "src/styles/professional.css": "b44e17c6093f9f22f8a4f923601f7bca02ce8222",
   "src/styles/themes.css": "0b9635ecfaecc749f2e07b5b042b5d2011e527e9",
   "src/styles/themes/_kids-extras.css": "8f3b65c0a42edc8ab6d687fefb433d2b2e24b3f8",
   "src/styles/themes/air.css": "26d337b7b7bc3790c40f6d808f30d2e58a0a1bc4",
@@ -195,6 +195,13 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "scripts/make-template-release.mjs": [
+   "d701cf0abb517f4be962f2b214cd1be0270d8823"
+  ],
+  "src/styles/professional.css": [
+   "fbfebb1714b13979b9bee09df5c7a195f801353b",
+   "52f9c6043b07cd7c95ab012214bd68d384240e15"
+  ],
   "src/components/SiteHeader.astro": [
    "d20f46c90859552dd741ae0330b2e9207875092e",
    "b713e4119273821c1ee53df7626e35a7a10fca79"
@@ -287,9 +294,6 @@
    "a1bfcda733d71485f8379830864288841198cd19",
    "eb71a83eba629a9a807092626c9ff795198d88f3",
    "d19c56154788d78dfad0a455dad3b24407677b98"
-  ],
-  "src/styles/professional.css": [
-   "52f9c6043b07cd7c95ab012214bd68d384240e15"
   ],
   "src/styles/themes.css": [
    "32c40c1dfd0e4257713fd687889b7fab6aba4d67",
