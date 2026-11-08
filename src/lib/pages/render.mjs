@@ -27,6 +27,15 @@ export const PAGE_FONTS = {
   mono: { label: 'Typewriter', css: "ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace" },
 };
 
+// Typefaces for running text: all easy to read at length, all already loaded by every site.
+export const PAGE_BODY_FONTS = {
+  clean: { label: 'Clean sans', css: "'Inter Variable','Inter',system-ui,sans-serif" },
+  reading: { label: 'Reading serif', css: "'Newsreader',Georgia,serif" },
+  easy: { label: 'Extra clear', css: "'Atkinson Hyperlegible',system-ui,sans-serif" },
+  classic: { label: 'Classic serif', css: "Georgia,'Times New Roman',serif" },
+  grotesk: { label: 'Geometric sans', css: "'Space Grotesk Variable','Space Grotesk',system-ui,sans-serif" },
+};
+
 // The page's colours. `base` is what the site already uses (theme colours with the writer's
 // site-wide choices applied); a page palette, when chosen, replaces them on this page only.
 // Text colours are worked out here so every combination stays readable.
@@ -60,6 +69,7 @@ export function pageCss(page, base = {}) {
       `color-scheme:${k.dark ? 'dark' : 'light'}`);
   }
   if (look.font && PAGE_FONTS[look.font]) v.push(`--cb-heading-font:${PAGE_FONTS[look.font].css}`);
+  if (look.bodyFont && PAGE_BODY_FONTS[look.bodyFont]) v.push(`--cb-body-font:${PAGE_BODY_FONTS[look.bodyFont].css}`);
   let css = `html[data-blog-theme][data-blog-theme][data-blog-theme]{${v.join(';')}}`;
   if (look.colours) css += `html[data-blog-theme][data-blog-theme][data-blog-theme] body{background:${k.bg};color:${k.ink}}`;
   return css;
@@ -122,7 +132,7 @@ export function renderPage(rawPage, ctx = {}) {
   const flat = page.blocks.flatMap((b) => (b.type === 'columns' ? b.data.children || [] : [b]));
   C.h1Id = (flat.find((b) => b.type === 'hero' && shows(b)) || flat.find(shows))?.id;
   const blocks = page.blocks.map((b) => renderBlock(b, C)).join('');
-  return `<style>${pageCss(page, ctx.base)}</style><div class="cbp${page.look.font ? ' cbp-font' : ''}" data-page="${esc(page.slug)}">${blocks}</div>`;
+  return `<style>${pageCss(page, ctx.base)}</style><div class="cbp${page.look.font ? ' cbp-font' : ''}${page.look.bodyFont ? ' cbp-bodyfont' : ''}" data-page="${esc(page.slug)}">${blocks}</div>`;
 }
 
 const ED = (C, attr, key) => (C.editable ? ` ${attr}="${esc(key)}"` : '');

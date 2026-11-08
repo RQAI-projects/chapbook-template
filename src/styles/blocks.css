@@ -373,6 +373,7 @@
 
 /* A page palette may choose its own heading typeface. */
 .cbp-font .cb-h,.cbp-font .cb h3,.cbp-font .cb-num,.cbp-font .cb-fact-value{font-family:var(--cb-heading-font)}
+.cbp-bodyfont,.cbp-bodyfont .cb-btn,.cbp-bodyfont .cb-form input,.cbp-bodyfont .cb-form textarea{font-family:var(--cb-body-font)}
 
 /* ---- Phones --------------------------------------------------------------------------- */
 @media (max-width:760px){

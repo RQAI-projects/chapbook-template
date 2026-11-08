@@ -221,3 +221,9 @@ test('italic works inside a word', () => {
   assert.equal(inline('un*believ*able'), 'un<em>believ</em>able');
   assert.equal(inline('**bold** and *it*'), '<strong>bold</strong> and <em>it</em>');
 });
+
+test('a page can choose its body typeface too', () => {
+  const html = renderPage(page([{ type: 'text', data: { body: 'x' } }], { look: { font: 'modern', bodyFont: 'reading' } }), {});
+  assert.ok(html.includes("--cb-body-font:'Newsreader'") && html.includes('cbp-bodyfont'));
+  assert.ok(!renderPage(page([{ type: 'text', data: { body: 'x' } }], { look: { bodyFont: 'comic-sans' } }), {}).includes('cbp-bodyfont'));
+});

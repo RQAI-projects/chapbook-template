@@ -341,6 +341,7 @@ function settleIds(blocks, seen) {
   }
 }
 const FONT_KEYS = ['classic', 'modern', 'editorial', 'clean', 'friendly', 'grotesk', 'mono'];
+const BODY_FONT_KEYS = ['clean', 'reading', 'easy', 'classic', 'grotesk'];
 export const LOOK_COLOURS = ['bg', 'surface', 'ink', 'accent', 'deep'];
 export function cleanLook(v) {
   const d = isObj(v) ? v : {};
@@ -351,6 +352,7 @@ export function cleanLook(v) {
   // A palette needs at least a background, text and accent colour to be used.
   if (colours.bg && colours.ink && colours.accent) out.colours = colours;
   if (FONT_KEYS.includes(d.font)) out.font = d.font;
+  if (BODY_FONT_KEYS.includes(d.bodyFont)) out.bodyFont = d.bodyFont;
   return out;
 }
 export function normalisePage(raw, opts = {}) {
