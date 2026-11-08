@@ -40,17 +40,18 @@ export function pageColours(look = {}, base = {}) {
   const surface = c.surface || mix(bg, accent, dark ? 0.12 : 0.07);
   const deep = c.deep || (dark ? mix(bg, '#000000', 0.45) : mix(ink, accent, 0.18));
   const dim = contrast(mix(ink, bg, 0.22), bg) >= 4.5 ? mix(ink, bg, 0.22) : ink;
+  const surfaceInk = contrast(ink, surface) >= 4.5 ? ink : readableOn(surface);
   return {
     bg, ink, accent, surface, deep, dim, dark,
     accentText: contrast(accent, bg) >= 4.5 ? accent : (contrast(accent, surface) >= 4.5 ? accent : ink),
-    onAccent: readableOn(accent), onDeep: readableOn(deep), surfaceInk: contrast(ink, surface) >= 4.5 ? ink : readableOn(surface),
+    onAccent: readableOn(accent), onDeep: readableOn(deep), surfaceInk, surfaceDim: [0.3, 0.2, 0.1].map((t) => mix(surfaceInk, surface, t)).find((c) => contrast(c, surface) >= 4.6) || surfaceInk,
   };
 }
 // CSS for one page: block colours always; site colours too when the page has its own palette.
 // The tripled attribute outranks the theme and the site's own colour choices.
 export function pageCss(page, base = {}) {
   const look = page.look || {}, k = pageColours(look, base);
-  const v = [`--cb-surface:${k.surface}`, `--cb-surface-ink:${k.surfaceInk}`, `--cb-deep:${k.deep}`, `--cb-on-deep:${k.onDeep}`, `--cb-on-accent:${k.onAccent}`, `--cb-accent-text:${k.accentText}`];
+  const v = [`--cb-surface:${k.surface}`, `--cb-surface-ink:${k.surfaceInk}`, `--cb-surface-dim:${k.surfaceDim}`, `--cb-deep:${k.deep}`, `--cb-on-deep:${k.onDeep}`, `--cb-on-accent:${k.onAccent}`, `--cb-accent-text:${k.accentText}`];
   if (look.colours) {
     v.push(`--bg-0:${k.bg}`, `--bg-1:${k.bg}`, `--bg-2:${k.bg}`, `--bg-3:${mix(k.bg, k.dark ? '#ffffff' : '#000000', 0.06)}`, `--header-bg:${k.bg}`, `--pro-card:${k.bg}`,
       `--ink:${k.ink}`, `--masthead-ink:${k.ink}`, `--ink-dim:${k.dim}`, `--ink-faint:${k.dim}`, `--line:color-mix(in srgb,${k.ink} 14%,transparent)`, `--line-strong:color-mix(in srgb,${k.ink} 30%,transparent)`,

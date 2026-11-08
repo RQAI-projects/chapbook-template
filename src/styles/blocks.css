@@ -19,6 +19,8 @@
 
 /* Backgrounds. Text colours are worked out by the renderer (--cb-on-accent…), so they stay readable. */
 .cb-bg-tint{background:var(--cb-surface);color:var(--cb-surface-ink);--ink:var(--cb-surface-ink)}
+/* Soft panels: secondary text uses a grey worked out for the panel colour, so it stays readable. */
+.cb-bg-tint,.cb-contact-card,.cb-reviews-wall .cb-review,.cb-image--framed .cb-figure,.cb-text--boxed>.cb-in{--ink-dim:var(--cb-surface-dim)}
 .cb-bg-accent{background:var(--accent);color:var(--cb-on-accent);--ink:var(--cb-on-accent);--ink-dim:color-mix(in srgb,var(--cb-on-accent) 84%,var(--accent));--line:color-mix(in srgb,var(--cb-on-accent) 22%,transparent);--line-strong:color-mix(in srgb,var(--cb-on-accent) 40%,transparent);--cb-accent-text:var(--cb-on-accent)}
 .cb-bg-dark{background:var(--cb-deep);color:var(--cb-on-deep);--ink:var(--cb-on-deep);--ink-dim:color-mix(in srgb,var(--cb-on-deep) 80%,var(--cb-deep));--line:color-mix(in srgb,var(--cb-on-deep) 18%,transparent);--line-strong:color-mix(in srgb,var(--cb-on-deep) 34%,transparent);--cb-accent-text:var(--cb-on-deep);--cb-surface:color-mix(in srgb,var(--cb-on-deep) 8%,var(--cb-deep));--cb-surface-ink:var(--cb-on-deep)}
 .cb-bg-picture{color:#fff;--ink:#fff;--ink-dim:rgba(255,255,255,.86);--line:rgba(255,255,255,.25);--line-strong:rgba(255,255,255,.45);--cb-accent-text:#fff;--cb-surface:rgba(0,0,0,.35);--cb-surface-ink:#fff}
