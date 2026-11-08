@@ -151,6 +151,7 @@ test('page palettes stay readable whatever colours are chosen', () => {
     assert.ok(contrast(k.onDeep, k.deep) >= 4.5, `text on deep ${JSON.stringify(c)}`);
     assert.ok(contrast(k.accentText, k.bg) >= 4.5, `accent text ${JSON.stringify(c)}`);
     assert.ok(contrast(k.surfaceInk, k.surface) >= 4.5, `surface ${JSON.stringify(c)}`);
+    assert.ok(contrast(k.surfaceAccent, k.surface) >= 4.5 && contrast(k.surfaceDim, k.surface) >= 4.5, `surface accent ${JSON.stringify(c)}`);
   }
   const css = pageCss(normalisePage({ look: { palette: 'x', colours: { bg: '#ffffff', ink: '#111111', accent: '#6f1d2b' }, font: 'modern' } }));
   assert.ok(css.includes('--accent:#6f1d2b') && css.includes("--cb-heading-font:'Fraunces'"));
