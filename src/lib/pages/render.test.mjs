@@ -227,3 +227,21 @@ test('a page can choose its body typeface too', () => {
   assert.ok(html.includes("--cb-body-font:'Newsreader'") && html.includes('cbp-bodyfont'));
   assert.ok(!renderPage(page([{ type: 'text', data: { body: 'x' } }], { look: { bodyFont: 'comic-sans' } }), {}).includes('cbp-bodyfont'));
 });
+
+test('booking: Cal.com and Google show a calendar on request, other booking pages a button', () => {
+  const r = (url, extra = {}, ctx = {}) => renderPage(page([{ type: 'booking', variant: 'calendar', data: { heading: 'Book', url, ...extra } }]), { site, ...ctx });
+  const cal = r('https://cal.com/harbour/assessment');
+  assert.ok(cal.includes('data-booking-kind="cal"') && cal.includes('data-booking-src="harbour/assessment"'));
+  assert.ok(!cal.includes('<iframe') && !cal.includes('<script'), 'nothing loads until the visitor asks');
+  const g = r('https://calendar.google.com/calendar/appointments/schedules/AcZssZ1abcdefghijk');
+  assert.ok(g.includes('data-booking-kind="google"') && g.includes('?gv=true'));
+  const other = r('https://calendly.com/x/30min');
+  assert.ok(other.includes('href="https://calendly.com/x/30min"') && !other.includes('data-booking-kind'));
+  assert.ok(!r('javascript:alert(1)', { useSite: false }, { site: { professional: {} } }).includes('javascript'));
+  const fromSite = renderPage(page([{ type: 'booking', data: { useSite: true } }]), { site });
+  assert.ok(fromSite.includes('data-booking-src="harbour/assessment"'), 'uses the Site settings booking link');
+  const none = renderPage(page([{ type: 'booking', data: { heading: 'Book', useSite: true } }]), { site: { professional: { phone: '01202 111222' } } });
+  assert.ok(none.includes('href="tel:01202111222"'), 'no booking page: offer the phone');
+  const ed = renderPage(page([{ type: 'booking', data: { url: 'https://cal.com/a/b' } }]), { site, editable: true });
+  assert.ok(!ed.includes('data-booking-kind') && ed.includes('data-cb-hint'), 'the editor never loads the booking service');
+});

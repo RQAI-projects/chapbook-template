@@ -364,6 +364,18 @@
 .cb-h+.cb-video,.cb-h+.cb-interactive{margin-top:1.4rem}
 .cb-interactive iframe{display:block;width:100%;border:1px solid var(--line);border-radius:var(--cb-r-img);background:#fff}
 
+/* ---- Online booking ------------------------------------------------------------------ */
+.cb-booking-card,.cb-booking-cal,.cb-booking-hold{padding:clamp(1.2rem,3vw,2rem);border:1px solid var(--line-strong);border-radius:var(--cb-r);background:color-mix(in srgb,var(--bg-0) 70%,transparent)}
+.cb-bg-tint .cb-booking-cal,.cb-bg-tint .cb-booking-card{background:var(--bg-0)}
+.cb-booking-card .cb-actions{margin-top:0}
+.cb-booking-hold{display:grid;place-items:center;min-height:12rem;text-align:center;border-style:dashed;color:var(--ink-dim)}
+.cb-booking-hold p{max-width:34rem;margin:0}
+.cb-booking-cal .cb-small{margin:.8rem 0 0}.cb-booking-cal .cb-small a{color:inherit}
+.cb-booking-frame{margin-top:1rem;min-height:640px;background:#fff;border-radius:min(var(--cb-r),12px);overflow:hidden}
+.cb-booking-frame iframe{display:block;width:100%;min-height:700px;border:0}
+.cb-al-centre .cb-booking-cal,.cb-al-centre .cb-booking-card{margin-inline:auto;max-width:48rem}
+.cb-al-centre .cb-booking-card .cb-actions{justify-content:center}
+
 /* ---- Space ---------------------------------------------------------------------------- */
 .cb-t-spacer{--cb-pad:0}
 .cb-t-spacer.cb-size-s{padding-block:1rem}.cb-t-spacer.cb-size-m{padding-block:2.5rem}.cb-t-spacer.cb-size-l{padding-block:5rem}

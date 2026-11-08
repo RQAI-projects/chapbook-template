@@ -3,7 +3,7 @@
 // Everything a writer types is escaped. Rich text allows only paragraphs, **bold**, *italic*,
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
-import { normalisePage, BLOCK_TYPES, cleanHref, cleanHex, videoEmbed, INTERACTIVE_SRC } from './schema.mjs';
+import { normalisePage, BLOCK_TYPES, cleanHref, cleanHex, videoEmbed, INTERACTIVE_SRC, bookingTarget } from './schema.mjs';
 import { professionalDetails, telHref } from '../professional.mjs';
 
 export * from './schema.mjs';
@@ -420,6 +420,30 @@ R_.interactive = (C, b) => {
   if (!d.src || !INTERACTIVE_SRC.test(d.src)) return C.editable ? `${H(C, b, d)}<div class="cb-video-hold" data-cb-interactive="${esc(b.id)}"><span>Choose an interactive</span></div>` : '';
   const h = d.height || 520;
   return `${H(C, b, d)}<div class="cb-interactive"><iframe src="${esc(imgSrc(C, d.src))}" title="${esc(d.title || d.heading || 'Interactive')}" loading="lazy" sandbox="allow-scripts allow-forms" style="height:${h}px"></iframe></div>`;
+};
+
+// Booking: the calendar loads only when a visitor asks for it, so nobody's browser contacts the
+// booking service just by opening the page. The website's script (BlockPage) does the loading.
+R_.booking = (C, b) => {
+  const d = b.data;
+  const raw = d.useSite !== false && !d.url ? C.biz.bookingUrl : d.url;
+  const t = raw ? bookingTarget(raw) : null;
+  const head = `${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
+  const label = d.button || 'Book online';
+  const note = T(C, b, 'note', d.note, 'p', 'cb-small');
+  if (!t) {
+    if (C.editable) return `${head}<div class="cb-booking-hold" data-cb-hint><p>Add your booking link in Site settings, or paste one in this block’s settings. Cal.com is free and links to Gmail, Outlook or Apple calendars.</p></div>`;
+    // No booking page yet: offer the phone or email instead, if there is one.
+    const alt = C.biz.phone ? `<a class="cb-btn" href="${esc(telHref(C.biz))}">Call ${esc(C.biz.phone)}</a>` : C.biz.email ? `<a class="cb-btn" href="mailto:${esc(C.biz.email)}">Email to book</a>` : '';
+    return alt ? `${head}<div class="cb-actions">${alt}</div>` : '';
+  }
+  const button = C.editable ? T(C, b, 'button', label, 'span', 'cb-btn') : `<a class="cb-btn" href="${esc(t.href)}" rel="noopener">${esc(label)}</a>`;
+  if (b.variant === 'button' || t.kind === 'link') return `${head}<div class="cb-booking-card"><div class="cb-actions">${button}</div>${note}</div>`;
+  const where = t.provider;
+  const panel = C.editable
+    ? `<div class="cb-booking-hold" data-cb-hint><p>Your ${esc(where)} calendar appears here on your website when a visitor taps “Show available times”.</p></div>`
+    : `<div class="cb-booking-cal" data-booking-kind="${esc(t.kind)}" data-booking-src="${esc(t.kind === 'cal' ? t.calLink : t.frame)}"><button type="button" class="cb-btn cb-booking-load">Show available times</button><p class="cb-small">This loads ${esc(where)}, which handles your booking. <a href="${esc(t.href)}" rel="noopener">Open it in a new page instead</a>.</p><p class="cb-booking-status" role="status" aria-live="polite"></p><div class="cb-booking-frame" hidden></div></div>`;
+  return `${head}${panel}${note}`;
 };
 
 R_.spacer = (C, b) => (b.variant === 'ornament' ? '<p class="cb-ornament" aria-hidden="true"><span></span><span></span><span></span></p>' : b.variant === 'line' ? '<hr>' : '');

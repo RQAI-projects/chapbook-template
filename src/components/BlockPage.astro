@@ -66,4 +66,50 @@ const html = renderPage({ ...page, blocks }, {
   }
   bindBlockForms();
   document.addEventListener('astro:page-load', bindBlockForms);
+
+  // Booking calendars load only when a visitor asks for them.
+  let calLoading: Promise<void> | undefined;
+  function loadCal() {
+    if (calLoading) return calLoading;
+    calLoading = new Promise<void>((resolve, reject) => {
+      if ((window as any).Cal?.instance) { resolve(); return; }
+      const cal: any = (...args: any[]) => cal.q.push(args); cal.q = []; cal.ns = {}; (window as any).Cal = cal;
+      const script = document.createElement('script'); script.src = 'https://app.cal.com/embed/embed.js'; script.async = true;
+      const timer = setTimeout(() => { script.remove(); calLoading = undefined; reject(new Error('timeout')); }, 15000);
+      script.onload = () => { clearTimeout(timer); if ((window as any).Cal?.instance) resolve(); else { calLoading = undefined; reject(new Error('initialise')); } };
+      script.onerror = () => { clearTimeout(timer); script.remove(); calLoading = undefined; reject(new Error('load')); };
+      document.head.append(script);
+    });
+    return calLoading;
+  }
+  function bindBooking() {
+    for (const box of document.querySelectorAll<HTMLElement>('.cbp .cb-booking-cal')) {
+      const button = box.querySelector<HTMLButtonElement>('.cb-booking-load'), frame = box.querySelector<HTMLElement>('.cb-booking-frame'), status = box.querySelector<HTMLElement>('.cb-booking-status');
+      if (!button || !frame || !status || box.dataset.bound) continue;
+      box.dataset.bound = '1';
+      button.addEventListener('click', async () => {
+        const kind = box.dataset.bookingKind, src = box.dataset.bookingSrc || '';
+        button.disabled = true; status.textContent = 'Loading the booking calendar…';
+        try {
+          if (kind === 'google' && /^https:\/\/calendar\.google\.com\/calendar\/appointments\/schedules\//.test(src)) {
+            const f = document.createElement('iframe'); f.src = src; f.title = 'Booking calendar'; f.loading = 'lazy';
+            frame.replaceChildren(f);
+          } else if (kind === 'cal') {
+            await loadCal();
+            const cal = (window as any).Cal; if (typeof cal !== 'function') throw new Error('unavailable');
+            frame.id ||= `booking-${Math.random().toString(36).slice(2, 8)}`;
+            cal('init', { origin: 'https://cal.com' });
+            cal('inline', { elementOrSelector: `#${frame.id}`, calLink: src, config: { layout: 'month_view' } });
+          } else throw new Error('unknown');
+          frame.hidden = false; button.hidden = true;
+          status.textContent = 'Choose a time in the calendar. If it does not appear, use the link above.';
+        } catch {
+          button.disabled = false;
+          status.textContent = 'The booking calendar could not load. Use the link above to book on its own page.';
+        }
+      });
+    }
+  }
+  bindBooking();
+  document.addEventListener('astro:page-load', bindBooking);
 </script>

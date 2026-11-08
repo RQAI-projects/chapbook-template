@@ -59,7 +59,7 @@
   "scripts/flip-scheduled.mjs": "e0d6d8b239d47dc9782c0643ec640b3e26d48ff3",
   "scripts/make-og-default.mjs": "d8602e05c295a5918f80ea2a8eae318c1e87f1b4",
   "scripts/make-template-release.mjs": "402d0b115b4d2b9016116127526738cbab345ff3",
-  "src/components/BlockPage.astro": "a703234e7934d2ebc903b123b21a3da3db828c88",
+  "src/components/BlockPage.astro": "4aeb6b0630190e92df0fff8ff3919bb35fb914dc",
   "src/components/GalaxyHero.astro": "c4e918ee189f441636b42bb863d9a0b7f5e274ce",
   "src/components/GlenoidArt.astro": "009da8fa28c278e08e92ec4b25aa54a57d27058a",
   "src/components/GlyphBadge.astro": "249f4877bb539b51a779d774050006ecad06c80d",
@@ -127,8 +127,8 @@
   "src/lib/icons.js": "f5ea35a4a406e7d6892b1087ed35b133c568ec18",
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
   "src/lib/pages/migrate.mjs": "9f5fe20140be5b8460a8ce0e28f619fa96a996ab",
-  "src/lib/pages/render.mjs": "1dbaa1c73ffd5cf2b2ea0b1e152e3064b6a65d09",
-  "src/lib/pages/schema.mjs": "df17499ea907e57d793de67a17eb8a8078f753b0",
+  "src/lib/pages/render.mjs": "e9457fe29130da278763d41668578941a1894592",
+  "src/lib/pages/schema.mjs": "55b1df5a9a94d15062751a68e366b2059f1bf75a",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
   "src/lib/professional.mjs": "f6228b9a5ceb15847a1e8599b87784b1af38f61c",
@@ -159,7 +159,7 @@
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
-  "src/styles/blocks.css": "ff187c59345dd59f41167ab3a69c44b6fe7ee54e",
+  "src/styles/blocks.css": "9d5b426ecd5a077cc33a564a1b1f5f5a261d6c0b",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
   "src/styles/global.css": "cfa4731cb5064fed7c6a09ac13b2dc697d828360",
   "src/styles/headers.css": "806c15e7948c6786dafeb2f11a1cd6d3c4b8ef62",
@@ -202,7 +202,12 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "src/components/BlockPage.astro": [
+   "a703234e7934d2ebc903b123b21a3da3db828c88",
+   "23df6ebe76d35fe35c1d901c7239db4b9cf47875"
+  ],
   "src/lib/pages/render.mjs": [
+   "1dbaa1c73ffd5cf2b2ea0b1e152e3064b6a65d09",
    "d64ed1e939908ed31044aac2b2518a2c249173df",
    "df3c0ce5432af9b1bf7178a7a974d815ee9f4ce4",
    "364e3e88c2c8a5e0d1efb9b0060b445f44fbb6de",
@@ -210,18 +215,17 @@
    "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
   ],
   "src/lib/pages/schema.mjs": [
+   "df17499ea907e57d793de67a17eb8a8078f753b0",
    "cf81fb63c6424ce2bedf5f8563fcc91fbbd782ca",
    "09baab156a3a0a6a1e577eed8db8115618800402"
   ],
   "src/styles/blocks.css": [
+   "ff187c59345dd59f41167ab3a69c44b6fe7ee54e",
    "e6e3545ade228836264fbb7a8d728d4c56af6d33",
    "b925c4fe266a1b1500e87725082eec65c780aa43",
    "7e8e31068b327653f58d71e88f2f3098597ec9ff",
    "708fe7c01bba959fb46cdc695a801c6b9da0918f",
    "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
-  ],
-  "src/components/BlockPage.astro": [
-   "23df6ebe76d35fe35c1d901c7239db4b9cf47875"
   ],
   "src/lib/pages/migrate.mjs": [
    "c729d7bf2cb2d216e9b036db420683a9faf93969"

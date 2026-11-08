@@ -109,6 +109,18 @@ export function videoEmbed(src) {
   if (m) return { kind: 'frame', src: `https://player.vimeo.com/video/${m[1]}?dnt=1`, host: 'Vimeo' };
   return null;
 }
+// Online booking. Cal.com (open source, free for one person; links to Google, Outlook or Apple
+// calendars) and Google Calendar booking pages can show their calendar on the page. Any other https
+// booking page gets a button.
+export function bookingTarget(v) {
+  const s = cleanHref(v);
+  if (!/^https:/.test(s)) return null;
+  const u = new URL(s);
+  const path = u.pathname.replace(/^\/+|\/+$/g, '');
+  if (['cal.com', 'www.cal.com', 'app.cal.com'].includes(u.hostname) && /^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+){0,3}$/.test(path)) return { kind: 'cal', href: `https://cal.com/${path}`, calLink: path, provider: 'Cal.com' };
+  if (u.hostname === 'calendar.google.com' && /^calendar\/appointments\/schedules\/[A-Za-z0-9_-]{10,200}$/.test(path)) return { kind: 'google', href: `https://calendar.google.com/${path}`, frame: `https://calendar.google.com/${path}?gv=true`, provider: 'Google Calendar' };
+  return { kind: 'link', href: u.href, provider: '' };
+}
 export const INTERACTIVE_SRC = /^\/interactives\/[a-z0-9][a-z0-9-]{0,79}\.html$/;
 
 // ---- block types ---------------------------------------------------------------------------
@@ -132,7 +144,7 @@ export const STYLE_LABELS = {
   align: { left: 'Left', centre: 'Centred' },
 };
 // Types that can sit inside a columns block.
-export const COLUMN_TYPES = ['text', 'image', 'cta', 'contact', 'credentials', 'facts', 'reviews', 'form'];
+export const COLUMN_TYPES = ['text', 'image', 'cta', 'contact', 'credentials', 'facts', 'reviews', 'form', 'booking'];
 
 export const BLOCK_TYPES = {
   hero: {
@@ -250,6 +262,15 @@ export const BLOCK_TYPES = {
     variants: { normal: 'In the column', wide: 'Wide' },
     fields: { heading: HEAD, src: { kind: 'src', label: 'Interactive' }, title: L(120, 'Title'), height: { kind: 'number', min: 240, max: 1400, label: 'Height' } },
   },
+  booking: {
+    label: 'Online booking', hint: 'Your booking calendar on the page, from Cal.com or Google Calendar, or a button to your booking page.',
+    variants: { calendar: 'Calendar on the page', button: 'Button only' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      useSite: { kind: 'bool', label: 'Use the booking link from Site settings' },
+      url: { kind: 'booking', label: 'Booking page address' }, button: L(40, 'Button text', 'Book online'), note: L(240, 'Small print'),
+    },
+  },
   spacer: {
     label: 'Space', hint: 'Extra space, with or without a line.',
     variants: { space: 'Space', line: 'Line', ornament: 'Ornament' },
@@ -273,6 +294,7 @@ function cleanField(f, v, opts) {
     case 'choice': return f.options.includes(v) ? v : null;
     case 'video': return cleanVideo(v);
     case 'src': return typeof v === 'string' && INTERACTIVE_SRC.test(v) ? v : '';
+    case 'booking': return bookingTarget(v)?.href || '';
     default: return null;
   }
 }
@@ -399,6 +421,7 @@ export function newBlock(type, variant, taken = new Set()) {
   if (type === 'contact') data.business = true;
   if (type === 'spacer') data.size = 'm';
   if (type === 'interactive') data.height = 520;
+  if (type === 'booking') data.useSite = true;
   if (type === 'columns') data.children = [newBlock('text', 'plain', taken), newBlock('image', 'normal', taken)];
   const b = { id, type, role: type, variant: variantsOf(type).includes(variant) ? variant : variantsOf(type)[0], style: cleanStyle({}), data };
   return b;
