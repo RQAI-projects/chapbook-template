@@ -154,8 +154,8 @@
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
-  "src/styles/global.css": "22f067efcbea5ba35a71327bfca6f9be401b5848",
-  "src/styles/headers.css": "5e75fd27066c06ee6dd302f7234bf60f84135b06",
+  "src/styles/global.css": "cfa4731cb5064fed7c6a09ac13b2dc697d828360",
+  "src/styles/headers.css": "806c15e7948c6786dafeb2f11a1cd6d3c4b8ef62",
   "src/styles/professional.css": "b44e17c6093f9f22f8a4f923601f7bca02ce8222",
   "src/styles/themes.css": "0b9635ecfaecc749f2e07b5b042b5d2011e527e9",
   "src/styles/themes/_kids-extras.css": "8f3b65c0a42edc8ab6d687fefb433d2b2e24b3f8",
@@ -195,6 +195,22 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "src/styles/global.css": [
+   "22f067efcbea5ba35a71327bfca6f9be401b5848",
+   "a0084ef66dcacc4c0a6b925dfd33f5732a834b82",
+   "90c6c03f51a274e084184c424d48593e72e3b1f4",
+   "0388b88309f829b98bdd1a900f8f45d51f03c905",
+   "3475a03f41fda2faac995a7cbe29850d7906165a",
+   "71ca54222eebe09d1ce1442805beebbe3bd76989",
+   "19303775e9e561c0df2616f74f44d42a373898ee",
+   "a1bfcda733d71485f8379830864288841198cd19",
+   "eb71a83eba629a9a807092626c9ff795198d88f3",
+   "d19c56154788d78dfad0a455dad3b24407677b98"
+  ],
+  "src/styles/headers.css": [
+   "5e75fd27066c06ee6dd302f7234bf60f84135b06",
+   "21b32156987272656a04f9666590625fe00bae12"
+  ],
   "scripts/make-template-release.mjs": [
    "08e919a5f3995b73fe2522d9c0314250723096d2",
    "d701cf0abb517f4be962f2b214cd1be0270d8823"
@@ -231,20 +247,6 @@
    "16e8168793aed22b6d4cd931981891cc7575ab24",
    "c559a0ebae1d8d57a2748943214b59fbb2424217",
    "32b20e2252b8b789a126560e578649d67c65c21e"
-  ],
-  "src/styles/global.css": [
-   "a0084ef66dcacc4c0a6b925dfd33f5732a834b82",
-   "90c6c03f51a274e084184c424d48593e72e3b1f4",
-   "0388b88309f829b98bdd1a900f8f45d51f03c905",
-   "3475a03f41fda2faac995a7cbe29850d7906165a",
-   "71ca54222eebe09d1ce1442805beebbe3bd76989",
-   "19303775e9e561c0df2616f74f44d42a373898ee",
-   "a1bfcda733d71485f8379830864288841198cd19",
-   "eb71a83eba629a9a807092626c9ff795198d88f3",
-   "d19c56154788d78dfad0a455dad3b24407677b98"
-  ],
-  "src/styles/headers.css": [
-   "21b32156987272656a04f9666590625fe00bae12"
   ],
   "src/styles/professional.css": [
    "fbfebb1714b13979b9bee09df5c7a195f801353b",

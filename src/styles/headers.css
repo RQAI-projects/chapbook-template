@@ -114,3 +114,11 @@ html[data-blog-theme="air"] .solo-brand{padding-block:1rem}.solo-brand .solo-mar
 }
 /* Hidden menus must be absent from keyboard navigation, including classic headers. */
 @media(max-width:640px){.site-nav:not(.open){visibility:hidden}.site-nav.open{visibility:visible}}
+/* Phones: logo + name together never reach the Menu button (about 6.5rem kept clear). Placed last
+   and more specific so every header style's phone rules (e.g. max-width:none above) give way. */
+@media (max-width:480px){
+.site-header .header-identity:has(.logo.has-logo){min-width:0;flex:1 1 auto;max-width:calc(100vw - 6.5rem)}
+.site-header .header-identity .logo.has-logo{max-width:calc(100vw - 6.5rem);min-width:0}
+.site-header .header-identity .site-logo{max-width:38vw;height:32px}
+.site-header .header-identity .logo.has-logo .logo-name{flex:1 1 auto;min-width:0;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
