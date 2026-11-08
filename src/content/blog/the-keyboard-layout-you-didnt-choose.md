@@ -4,7 +4,7 @@ description: "QWERTY was arranged in the 1870s around a machine's problem, not y
 date: 2026-05-20
 tags: ["forge", "interactive"]
 accent: "#22d3ee"
-glyph: "circuit"
+glyph: "icon:tools"
 ---
 
 You never chose QWERTY. It was chosen for you in the 1870s, by a printer from Milwaukee named Christopher Latham Sholes, who had a mechanical problem you have never once had: his typebars kept jamming. The keys that struck the page sat on little levers, and when two neighbours fired in quick succession they tangled. So Sholes shuffled the letters to pull common pairs apart and keep the levers out of each other's way.

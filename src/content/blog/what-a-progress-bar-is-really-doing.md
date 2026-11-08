@@ -4,7 +4,7 @@ description: "Most progress bars aren't measuring your progress. They're animati
 date: 2026-06-12
 tags: ["forge", "interactive"]
 accent: "#22d3ee"
-glyph: "circuit"
+glyph: "icon:tools"
 ---
 
 A progress bar makes a promise: this much done, that much left. It is, more often than you'd like to know, lying. A great many bars aren't wired to anything real — they fill on a timer, or crawl to 90% and wait, or animate a smooth march that has no idea how the actual work is going. What you're usually watching isn't progress. It's a *guess, animated*.

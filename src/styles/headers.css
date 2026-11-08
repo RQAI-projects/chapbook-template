@@ -5,6 +5,9 @@ html:has(.site-header:not([data-header="classic"])) {--header-h:0px}
 .site-header:not([data-header="classic"]){position:relative;inset:auto;height:auto;min-height:0;background:var(--bg-0);backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
 .site-header:not([data-header="classic"]) .container{padding-block:1.25rem;gap:1.5rem;min-height:80px}
 .site-header:not([data-header="classic"]) .logo{display:block;max-width:100%;overflow-wrap:anywhere;color:var(--ink)}
+.site-header .logo.has-logo{display:inline-flex;align-items:center;flex-direction:row}
+.site-header[data-header="spine"] .logo.has-logo{max-width:none}.site-header[data-header="spine"] .logo.has-logo .logo-name{max-width:11ch}
+.site-header[data-header="portfolio"] .logo.has-logo{max-width:none}.site-header[data-header="portfolio"] .logo.has-logo .logo-name{max-width:12ch}
 .site-header:not([data-header="classic"]) .site-nav{flex-wrap:wrap;justify-content:flex-end;gap:.1rem .4rem}
 .site-header:not([data-header="classic"]) .site-nav a{font-size:.78rem;border-radius:0;padding:.65em .5em;color:var(--ink-dim)}
 .site-header:not([data-header="classic"]) .site-nav a[aria-current]::after{background:var(--ink);box-shadow:none;height:1px;left:.5em;right:.5em}

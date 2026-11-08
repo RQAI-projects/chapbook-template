@@ -4,7 +4,7 @@ description: "Why a dry, hot pan browns food and a crowded one just steams it â€
 date: 2026-06-05
 tags: ["old-bones", "interactive"]
 accent: "#fbbf24"
-glyph: "scroll"
+glyph: "icon:chef-hat"
 ---
 
 Two pans, same steak, same hob. One comes out grey and weeping; the other has a deep brown crust and smells like a restaurant. The difference isn't the meat or the money â€” it's a piece of chemistry named after a French doctor, and once you can see it happening you cook differently.

@@ -7,8 +7,8 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const RELEASE = 2;
-export const VERSION = '2026.11.07.2';
+export const RELEASE = 3;
+export const VERSION = '2026.11.08.3';
 // Code that belongs to the template. A writer's posts, pictures and settings are never listed.
 export const MANAGED = ['astro.config.mjs', 'package.json', 'package-lock.json', 'public/fonts/', 'public/icons-manifest.json', 'public/icons-sprite.svg', 'scripts/', 'src/components/', 'src/content/config.ts', 'src/data/emoji-glyphs.json', 'src/data/themes.json', 'src/env.d.ts', 'src/layouts/', 'src/lib/', 'src/pages/', 'src/plugins/', 'src/scripts/', 'src/styles/'];
 const SKIP = /\.test\.mjs$/;

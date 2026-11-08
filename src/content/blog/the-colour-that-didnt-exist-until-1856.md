@@ -4,7 +4,7 @@ description: "A failed malaria cure, an eighteen-year-old, and the accidental pu
 date: 2026-05-12
 tags: ["after-hours"]
 accent: "#9b72cf"
-glyph: "music-note"
+glyph: "icon:music"
 ---
 
 For almost all of human history, purple was the colour of the obscenely rich. The good stuff — Tyrian purple — was wrung from a Mediterranean sea snail, and it took something like ten thousand of them to dye a single gram of cloth. It cost more than gold. Roman emperors hoarded it; to be *born to the purple* was not a metaphor but a wardrobe. For three thousand years, if you saw that colour, you were looking at money.

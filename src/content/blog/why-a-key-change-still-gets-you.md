@@ -4,7 +4,7 @@ description: "The 'truck driver's gear change' — that lurch upward in a final 
 date: 2026-05-30
 tags: ["after-hours", "interactive"]
 accent: "#f472b6"
-glyph: "music-note"
+glyph: "icon:music"
 ---
 
 There's a move in pop music so reliable it has a faintly insulting nickname: the *truck driver's gear change*. Near the end of the song, with nothing new left to say, everything simply shifts up a tone — same melody, same chords, just hauled bodily into a higher key — and something in your chest lifts with it. It is the cheapest trick in the book, and it works on almost everyone, almost every time.

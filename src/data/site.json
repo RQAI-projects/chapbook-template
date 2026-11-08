@@ -5,6 +5,7 @@
   "description": "A sentence describing your blog — used for SEO and social cards.",
   "url": "https://your-domain.com",
   "defaultTheme": "observatory",
+  "postBadges": "icon",
   "core": "tori",
   "nav": [
     { "href": "/",             "label": "Home",        "primary": true },

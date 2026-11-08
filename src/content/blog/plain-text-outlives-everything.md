@@ -4,7 +4,7 @@ description: "The fancy formats die — WordStar, WordPerfect, Lotus 1-2-3, Flas
 date: 2026-04-28
 tags: ["forge"]
 accent: "#22d3ee"
-glyph: "circuit"
+glyph: "icon:tools"
 ---
 
 Somewhere on an old hard drive you have a file you can no longer open. Not because the disk is dead — the disk is fine — but because the program that wrote it has been dead for twenty years, and it took the only key to its own door with it. Maybe it was a WordPerfect document, all reveal-codes and blue screen. Maybe a Lotus 1-2-3 spreadsheet, the software that once *was* the IBM PC the way water is the sea. The bytes are still sitting there, patient and intact. They are simply illegible, because they were written in a private language spoken by exactly one application, and that application is gone.

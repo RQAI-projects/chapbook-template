@@ -4,7 +4,7 @@ description: "The to-do list is infinite and quietly punishing. A done list — 
 date: 2026-06-02
 tags: ["marrow"]
 accent: "#2dd4bf"
-glyph: "bone"
+glyph: "icon:target-arrow"
 ---
 
 The to-do list is the only document you keep that is designed never to be finished. You add three things, you cross off one, and somewhere in the same afternoon two more arrive to take its place. It is less a plan than a tide. Whatever you do, the level stays roughly the same, and you go to bed each night staring at a list that is still, stubbornly, full.

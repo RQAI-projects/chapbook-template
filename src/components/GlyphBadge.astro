@@ -8,6 +8,8 @@ import { resolveGlyph, TOPIC_DEFAULTS } from '../lib/glyphs/index.js';
 import { iconInner } from '../lib/icons.js';
 import { flatGlyphForTopic, iconPaths } from '../lib/glyphs/presentation.js';
 import emojiGlyphs from '../data/emoji-glyphs.json';
+import { site } from '../lib/site';
+import { TOPIC_ICONS } from '../lib/glyphs/presentation.js';
 
 interface Props {
   glyph?: string;
@@ -19,6 +21,11 @@ const { glyph, topic } = Astro.props;
 // Guard: no canvas if glyph is explicitly suppressed or not a 3D model.
 const isNone    = glyph === 'none';
 const isDefault = !glyph;
+// No badge chosen: the site's setting decides (see site.ts postBadges). 'icon' = a flat
+// modern icon that suits the topic; 'none' = nothing; '3d' = the original spinning glyph.
+const badgeStyle = site.postBadges;
+const defaultIcon = isDefault && badgeStyle === 'icon' ? iconInner(TOPIC_ICONS[topic] || 'notebook') : null;
+const defaultOff = isDefault && badgeStyle !== '3d';
 const isEmoji = typeof glyph === 'string' && glyph.startsWith('emoji:');
 const emojiName = isEmoji ? glyph.slice(6) : '';
 const emojiSvg = /^[a-z0-9_-]+$/i.test(emojiName) ? (emojiGlyphs as Record<string,string>)[emojiName] : null;
@@ -26,11 +33,11 @@ const flatSvg = iconInner(flatGlyphForTopic(TOPIC_DEFAULTS, topic));
 const isIcon    = typeof glyph === 'string' && glyph.startsWith('icon:');
 const isIcon3d  = typeof glyph === 'string' && glyph.startsWith('icon3d:');
 const isImage   = typeof glyph === 'string' && glyph.startsWith('image:');
-const hasModel  = !isNone && !isEmoji && !isIcon && !isIcon3d && !isImage && resolveGlyph(glyph ?? null, topic) !== null;
+const hasModel  = !isNone && !defaultOff && !isEmoji && !isIcon && !isIcon3d && !isImage && resolveGlyph(glyph ?? null, topic) !== null;
 
 // 2D Tabler-icon glyph (icon:<name>) — themeable line badge, no WebGL.
 const iconName  = isIcon ? glyph.slice(5) : null;
-const iconSvg   = iconName ? iconInner(iconName) : null;
+const iconSvg   = iconName ? iconInner(iconName) : defaultIcon;
 
 // Auto-3D glyph (icon3d:<name>) — extrude the icon's stroke paths into a spinning
 // wireframe. Pass the raw path `d` strings to the client to sample at runtime.

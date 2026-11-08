@@ -25,12 +25,26 @@ export interface SiteConfig {
   /** Colours, heading font, corners and home page sections, set in Chapbook. */
   design?: Record<string, unknown>;
   nav?: Array<{ href: string; label: string; primary?: boolean; themeLabel?: boolean }>;
+  /** Logo set in Chapbook (Site settings → Logo). Pictures live in /site-images/. */
+  logo?: { src: string; showName: boolean; favicon: string } | null;
+  /** Badge beside a post title when the writer hasn't picked one: a flat modern icon,
+   *  the spinning 3D glyph, or nothing. Absent = '3d' so older sites look as they did. */
+  postBadges: 'icon' | '3d' | 'none';
 }
 
 // site.json can be edited by hand, so wrong shapes are repaired here rather than breaking the build.
 const raw = (siteData && typeof siteData === 'object' ? siteData : {}) as any;
 const textOf = (v: unknown, fallback = '') => (typeof v === 'string' ? v : v == null ? fallback : String(v));
 const objectOf = (v: unknown) => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, any>) : {});
+// Only the site's own pictures: a root-relative path under /site-images/ with an image type.
+export function safeSiteImage(v: unknown): string {
+  const src = textOf(v).trim();
+  return /^\/site-images\/[\w./-]+\.(svg|png|jpe?g|webp)$/i.test(src) && !src.includes('..') ? src : '';
+}
+function logoOf(v: unknown) {
+  const o = objectOf(v), src = safeSiteImage(o.src);
+  return src ? { src, showName: o.showName !== false, favicon: safeSiteImage(o.favicon) } : null;
+}
 export const site = {
   ...raw,
   name: textOf(raw.name),
@@ -42,6 +56,8 @@ export const site = {
   newsletter: { endpoint: textOf(objectOf(raw.newsletter).endpoint) },
   contact: { endpoint: textOf(objectOf(raw.contact).endpoint) },
   nav: Array.isArray(raw.nav) ? raw.nav.filter((n: any) => n && typeof n === 'object') : undefined,
+  logo: logoOf(raw.logo),
+  postBadges: ['icon', '3d', 'none'].includes(raw.postBadges) ? raw.postBadges : '3d',
 } as SiteConfig;
 
 /** Page <title>: "<title> — <name>" for sub-pages; pass no argument to use the masthead

@@ -7,6 +7,13 @@ export const FLAT_GLYPHS = {
   'edinburgh-castle': 'building-castle',
 };
 
+// Flat modern icon per starter topic, used when a site's post badges are set to 'icon' and
+// the writer hasn't chosen one. Unknown topics fall back to a notebook.
+export const TOPIC_ICONS = {
+  marrow: 'target-arrow', forge: 'tools', 'old-bones': 'chef-hat', marginalia: 'books',
+  'after-hours': 'music', atlas: 'map-2', nebula: 'sparkles',
+};
+
 // Personal sites can provide a family of defaults; the badge uses its first
 // member, matching resolveGlyph, while the background can vary the family.
 export function flatGlyphForTopic(defaults, topic) {

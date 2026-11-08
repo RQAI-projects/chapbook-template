@@ -153,6 +153,13 @@ h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; letter-spa
   transition: opacity 0.2s;
 }
 .logo:hover { opacity: 0.85; }
+/* A logo set in Chapbook: the picture, with the name beside it unless the writer hid it.
+   Themes' decorative text before/after the name is dropped so it doesn't crowd the picture. */
+.logo.has-logo { display: inline-flex; align-items: center; gap: 0.6rem; min-width: 0; }
+.logo.has-logo::before, .logo.has-logo::after { content: none !important; display: none !important; }
+.site-logo { display: block; height: clamp(30px, 4.2vw, 42px); width: auto; max-width: min(200px, 46vw); object-fit: contain; }
+.logo.has-logo .logo-name { min-width: 0; }
+@media (max-width: 480px) { .logo.has-logo .logo-name { max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
 
 .site-nav { display: flex; align-items: center; gap: 0.4rem; margin-left: auto; }
 

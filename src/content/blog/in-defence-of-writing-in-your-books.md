@@ -4,7 +4,7 @@ description: "Annotating your books in pencil isn't vandalism — it's the oldes
 date: 2026-04-22
 tags: ["marginalia"]
 accent: "#a78bfa"
-glyph: "open-book"
+glyph: "icon:books"
 citations:
   - id: fermat
     text: "Fermat wrote in the margin of his copy of Arithmetica, around 1637, that he had a marvellous proof which the margin was too narrow to contain. He never wrote it down anywhere else. The claim went unproven for 358 years, until Andrew Wiles published a proof in 1995 running to well over a hundred pages — far more than any margin could hold."

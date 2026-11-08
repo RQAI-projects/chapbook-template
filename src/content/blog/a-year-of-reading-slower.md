@@ -4,7 +4,7 @@ description: "Reading is the only hobby we keep score in, and the scoreboard qui
 date: 2026-05-02
 tags: ["marginalia"]
 accent: "#a78bfa"
-glyph: "open-book"
+glyph: "icon:books"
 ---
 
 At some point, reading quietly turned into a sport. Every January, several million people open an app, type a number into a box, and pledge to read that many books before December. The app keeps score. It draws a little progress bar. It tells you, helpfully, that you are "4 books behind schedule," as though a novel were a train you have managed to miss.

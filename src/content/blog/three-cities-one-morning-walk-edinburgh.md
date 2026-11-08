@@ -4,7 +4,7 @@ description: "The last early walk. Edinburgh does mornings in grey and means it 
 date: 2026-06-16
 tags: ["atlas"]
 accent: "#fb923c"
-glyph: "globe"
+glyph: "icon:map-2"
 series: "Three cities, one morning walk"
 seriesPart: 3
 ---

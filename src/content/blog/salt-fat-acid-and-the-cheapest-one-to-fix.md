@@ -4,7 +4,7 @@ description: "When home cooking tastes flat, the highest-leverage fix is almost 
 date: 2026-05-06
 tags: ["old-bones"]
 accent: "#fbbf24"
-glyph: "scroll"
+glyph: "icon:chef-hat"
 ---
 
 Something is wrong with the soup. You've followed the recipe, you've used decent ingredients, you've simmered it for the requisite hour, and it tastes like a photograph of soup. Flat. Polite. Missing something. So you do what most of us do at this point, which is rummage. A spoon of pesto. A glug of cream. A heroic grating of parmesan over a thing that did not ask for parmesan. You are throwing money at a problem that costs almost nothing to fix, and you are throwing it in the wrong direction.

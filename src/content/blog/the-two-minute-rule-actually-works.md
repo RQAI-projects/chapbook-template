@@ -4,7 +4,7 @@ description: "There are two famous two-minute rules — one for clearing tasks, 
 date: 2026-05-26
 tags: ["marrow"]
 accent: "#2dd4bf"
-glyph: "bone"
+glyph: "icon:target-arrow"
 ---
 
 There are two pieces of life advice that go by the name "the two-minute rule", and people muddle them constantly. This is forgivable, because they sound identical and were coined by different men for opposite purposes. One is about getting rid of small tasks. The other is about starting large ones. The accident is that both are good, and both work for the same underlying reason — which makes the confusion almost a feature.

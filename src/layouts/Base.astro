@@ -115,7 +115,9 @@ const isCurrent = (href: string) => {
         (function(){ try { if (localStorage.getItem('kids-dyslexia') === '1') document.documentElement.dataset.dyslexia = '1'; } catch (e) {} })();
       </script>
     )}
-    <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
+    {site.logo?.favicon
+      ? <link rel="icon" type={site.logo.favicon.endsWith('.svg') ? 'image/svg+xml' : site.logo.favicon.endsWith('.png') ? 'image/png' : undefined} href={withBase(site.logo.favicon)} />
+      : <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />}
     <title>{pageTitle(title)}</title>
 
     {/* Canonical + feed */}
@@ -143,7 +145,7 @@ const isCurrent = (href: string) => {
   <body data-default-theme={site.defaultTheme}>
     {progress && <div class="progress-bar" id="progress-bar"></div>}
 
-    <SiteHeader theme={blogTheme} name={site.name} context={professional.eyebrow} nav={nav} navLabel={navLabel} isCurrent={isCurrent} />
+    <SiteHeader theme={blogTheme} name={site.name} logo={site.logo} context={professional.eyebrow} nav={nav} navLabel={navLabel} isCurrent={isCurrent} />
 
     <main>
       <slot />
