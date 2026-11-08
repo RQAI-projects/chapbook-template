@@ -273,10 +273,13 @@ R_.services = (C, b) => {
 
 R_.team = (C, b) => {
   const d = b.data, v = b.variant, items = d.items || [];
-  const one = (p, i, w) => w(`<figure class="cb-portrait">${P(C, b, `items.${i}.picture`, p.picture)}</figure><div class="cb-person">${T(C, b, `items.${i}.name`, p.name, 'h3', 'cb-person-name')}${T(C, b, `items.${i}.role`, p.role, 'p', 'cb-person-role')}${RT(C, b, `items.${i}.bio`, p.bio, 'cb-rich cb-bio')}${p.link ? BTN(C, b, `items.${i}.link`, p.link, 'cb-link') : ''}</div>`);
+  // No photo yet: a tile with the person's initials, so the team still looks finished.
+  const face = (p, i) => (p.picture ? P(C, b, `items.${i}.picture`, p.picture) : `<span class="cb-initials"${ED(C, 'data-cb-img', `${b.id}:items.${i}.picture`)} aria-hidden="true">${esc(initials(p.name))}</span>`);
+  const one = (p, i, w) => w(`<figure class="cb-portrait">${face(p, i)}</figure><div class="cb-person">${T(C, b, `items.${i}.name`, p.name, 'h3', 'cb-person-name')}${T(C, b, `items.${i}.role`, p.role, 'p', 'cb-person-role')}${RT(C, b, `items.${i}.bio`, p.bio, 'cb-rich cb-bio')}${p.link ? BTN(C, b, `items.${i}.link`, p.link, 'cb-link') : ''}</div>`);
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${LIST(C, b, 'items', items, one, 'div', `cb-team cb-team-${v}`)}`;
 };
 
+const initials = (name) => String(name || '').replace(/^(dr|mr|mrs|ms|miss|prof)\.?\s+/i, '').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => [...w][0] || '').join('').toUpperCase() || '+';
 const stars = (n) => (n ? `<p class="cb-stars" role="img" aria-label="${n} out of 5 stars">${'★'.repeat(n)}${'☆'.repeat(5 - n)}</p>` : '');
 R_.reviews = (C, b) => {
   const d = b.data, items = d.items || [];
@@ -364,7 +367,7 @@ R_.notice = (C, b) => {
 };
 
 R_.columns = (C, b) => {
-  const kids = (b.data.children || []).map((k) => `<div class="cb-col cb-${k.type} cb-${k.type}--${k.variant}${k.style.bg !== 'none' && k.style.bg !== 'picture' ? ` cb-bg-${k.style.bg}` : ''}"${ED(C, 'data-cb-block', k.id)}${C.editable ? ` data-cb-parent="${esc(b.id)}"` : ''}>${R_[k.type](C, k)}</div>`).join('');
+  const kids = (b.data.children || []).map((k) => `<div class="cb-col cb-t-${k.type} cb-${k.type}--${k.variant}${k.style.bg !== 'none' && k.style.bg !== 'picture' ? ` cb-bg-${k.style.bg}` : ''}"${ED(C, 'data-cb-block', k.id)}${C.editable ? ` data-cb-parent="${esc(b.id)}"` : ''}>${R_[k.type](C, k)}</div>`).join('');
   return `<div class="cb-cols">${kids}</div>`;
 };
 
@@ -391,7 +394,7 @@ function renderBlock(b, C) {
   const inner = R_[b.type](C, b);
   if (!inner && !C.editable) return '';
   const s = b.style;
-  const cls = `cb cb-${b.type} cb-${b.type}--${b.variant} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${b.data.size || 'm'}` : ''}`;
+  const cls = `cb cb-t-${b.type} cb-${b.type}--${b.variant} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${b.data.size || 'm'}` : ''}`;
   const backdrop = s.bg === 'picture' && b.data.backdrop ? `<img class="cb-backdrop" src="${esc(imgSrc(C, b.data.backdrop.src))}" alt="" loading="lazy"${ED(C, 'data-cb-img', `${b.id}:backdrop`)}>` : '';
   return `<section class="${cls}"${ED(C, 'data-cb-block', b.id)}>${backdrop}<div class="cb-in">${inner}</div></section>`;
 }

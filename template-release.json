@@ -127,7 +127,7 @@
   "src/lib/icons.js": "f5ea35a4a406e7d6892b1087ed35b133c568ec18",
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
   "src/lib/pages/migrate.mjs": "c729d7bf2cb2d216e9b036db420683a9faf93969",
-  "src/lib/pages/render.mjs": "282310dd71e696d7ea398138d08cae4e6ffdf3c0",
+  "src/lib/pages/render.mjs": "c7226998668f0fbee76774c9de823a6b4e21fcfe",
   "src/lib/pages/schema.mjs": "09baab156a3a0a6a1e577eed8db8115618800402",
   "src/lib/pages/site-pages.ts": "52ca86a38a1dda27ade3583bcac3e3d8fa248c86",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
@@ -159,7 +159,7 @@
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
-  "src/styles/blocks.css": "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952",
+  "src/styles/blocks.css": "708fe7c01bba959fb46cdc695a801c6b9da0918f",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
   "src/styles/global.css": "cfa4731cb5064fed7c6a09ac13b2dc697d828360",
   "src/styles/headers.css": "806c15e7948c6786dafeb2f11a1cd6d3c4b8ef62",
@@ -202,6 +202,12 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "src/lib/pages/render.mjs": [
+   "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
+  ],
+  "src/styles/blocks.css": [
+   "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
+  ],
   "scripts/make-template-release.mjs": [
    "22b69f9371e72fa6764363579725e6391354855e",
    "08e919a5f3995b73fe2522d9c0314250723096d2",
