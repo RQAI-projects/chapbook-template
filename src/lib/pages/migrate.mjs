@@ -13,7 +13,7 @@ const GALLERY = { table: 'masonry', shopfront: 'mosaic', petal: 'masonry', cut: 
 const CONTACT = { table: 'inline', shopfront: 'inline', pulse: 'band', cut: 'card' };
 const BUTTON = { table: 'Book a table', trade: 'Get a quote', clinic: 'Book an appointment', pulse: 'Book a class', counsel: 'Arrange a consultation', shopfront: 'Place an order', practice: 'Book a session', petal: 'Find an appointment', contour: 'Book a consultation', cut: 'Book a chair', still: 'Book a session', office: 'Book a call' };
 
-const pic = (i) => (i && /^\/site-images\//.test(i.src) ? { src: i.src, alt: i.alt || '' } : null);
+const pic = (i) => (i && (/^\/site-images\//.test(i.src) || /^https:\/\//.test(i.src)) ? { src: i.src, alt: i.alt || '' } : null);
 const strip = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== '' && v !== null && v !== undefined && !(Array.isArray(v) && !v.length)));
 
 export function pageFromHome(site = {}, theme = site.defaultTheme) {
@@ -61,7 +61,7 @@ const entryLine = (e) => (typeof e === 'string' ? e : e && typeof e === 'object'
 export function pageFromAbout(profile = {}, site = {}, lists = {}) {
   const a = aboutDetails(profile, site, professionalDetails(site.professional || {}));
   const blocks = [];
-  blocks.push({ type: 'hero', role: 'hero', variant: 'minimal', data: strip({ kicker: a.role, heading: a.name || 'About', intro: a.tagline }) });
+  blocks.push({ type: 'hero', role: 'hero', variant: 'minimal', data: strip({ kicker: a.role, heading: a.name || 'About', intro: [a.credentials, a.tagline].filter(Boolean).join('\n\n') }) });
   if (a.bio.length) blocks.push({ type: 'text', role: 'story', variant: 'lede', data: { body: a.bio.join('\n\n') } });
   if (a.stats.length) blocks.push({ type: 'facts', role: 'facts', variant: 'row', data: { items: a.stats.slice(0, 6).map((s) => ({ value: `${s.value}${s.suffix || ''}`, label: s.label })) } });
   if (a.highlights.length) blocks.push({ type: 'credentials', role: 'credentials', variant: 'list', data: { heading: 'Highlights', items: a.highlights.map((text) => ({ text })) } });
@@ -69,7 +69,12 @@ export function pageFromAbout(profile = {}, site = {}, lists = {}) {
   if (memberships.length) blocks.push({ type: 'credentials', role: 'memberships', variant: 'badges', data: { heading: 'Memberships', items: memberships.slice(0, 16).map((text) => ({ text })) } });
   for (const [key, heading] of LISTS) {
     const lines = (Array.isArray(lists[key]) ? lists[key] : []).map(entryLine).filter(Boolean);
-    if (lines.length) blocks.push({ type: 'text', role: key, variant: 'sidehead', data: { heading, body: cleanText(lines.map((l) => `- ${l.replace(/\n+/g, ' ')}`).join('\n'), 6000) } });
+    // Long lists are split over several blocks rather than cut short.
+    const chunks = [];
+    for (const l of lines.map((x) => `- ${x.replace(/\s*\n+\s*/g, ' ').slice(0, 2000)}`)) {
+      if (!chunks.length || chunks[chunks.length - 1].length + l.length + 1 > 19000) chunks.push(l); else chunks[chunks.length - 1] += `\n${l}`;
+    }
+    chunks.forEach((body, i) => blocks.push({ type: 'text', role: i ? `${key}-${i + 1}` : key, variant: 'sidehead', data: { heading: i ? `${heading} (continued)` : heading, body } }));
   }
   return normalisePage({ v: 1, title: 'About', slug: 'about', menu: { show: true, label: 'About' }, blocks });
 }

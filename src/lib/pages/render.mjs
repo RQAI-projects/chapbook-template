@@ -77,7 +77,7 @@ export function inline(text, ctx = {}) {
   });
   s = esc(s)
     .replace(/\*\*(?=\S)([^*\n]*?\S)\*\*/g, '<strong>$1</strong>')
-    .replace(/(^|[^*\w])\*(?=\S)([^*\n]*?\S)\*(?!\w)/g, '$1<em>$2</em>');
+    .replace(/(^|[^*])\*(?=[^\s*])([^*\n]*?[^\s*])\*(?!\*)/g, '$1<em>$2</em>');
   return s.replace(/\u0000(\d+)\u0000/g, (_, i) => links[Number(i)] || '');
 }
 export function richText(text, ctx = {}) {
@@ -109,9 +109,18 @@ export function renderPage(rawPage, ctx = {}) {
   const site = ctx.site || {};
   const biz = professionalDetails(site.professional || {}, { allowDataImages: !!ctx.allowDataImages });
   // Every page gets one h1: the first opening's heading, or else the first heading on the page.
-  const h1 = page.blocks.find((b) => b.type === 'hero') || page.blocks.find((b) => b.data.heading || (b.type === 'columns' && b.data.children?.some((k) => k.data.heading)));
-  const h1Id = h1?.type === 'columns' ? h1.data.children.find((k) => k.data.heading).id : h1?.id;
-  const C = { ...ctx, page, biz, editable: !!ctx.editable, h1Id, h1Done: false };
+  // The writer's own email on their profile stands in when Site settings has none.
+  if (!biz.email && typeof ctx.fallbackEmail === 'string' && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(ctx.fallbackEmail)) biz.email = ctx.fallbackEmail.slice(0, 254);
+  const C = { ...ctx, page, biz, editable: !!ctx.editable, h1Done: false };
+  // Every page gets one h1: the first heading that will really appear (an opening first).
+  const shows = (b) => {
+    if (!b.data.heading) return false;
+    if (b.type === 'posts') return C.editable || (C.posts || []).length > 0;
+    if (b.type === 'form') return C.editable || !!formEndpointOf(C) || !!biz.email;
+    return true;
+  };
+  const flat = page.blocks.flatMap((b) => (b.type === 'columns' ? b.data.children || [] : [b]));
+  C.h1Id = (flat.find((b) => b.type === 'hero' && shows(b)) || flat.find(shows))?.id;
   const blocks = page.blocks.map((b) => renderBlock(b, C)).join('');
   return `<style>${pageCss(page, ctx.base)}</style><div class="cbp${page.look.font ? ' cbp-font' : ''}" data-page="${esc(page.slug)}">${blocks}</div>`;
 }
@@ -142,13 +151,14 @@ function PL(C, b, path, value, cls = '') {
   return `<p class="${cls}"${ED(C, 'data-cb', `${b.id}:${path}`)}${C.editable ? ' data-cb-plain' : ''}>${plain(value)}</p>`;
 }
 const imgSrc = (C, src) => (C.resolveImage ? C.resolveImage(src) : (C.href && src.startsWith('/') ? C.href(src) : src));
-function credit(p) {
+function credit(p, cls = 'cb-credit') {
   const cr = p?.credit;
   if (!cr || !['by', 'by-sa'].includes(cr.license)) return '';
   const who = cr.creator ? esc(cr.creator) : 'Photo';
-  const lic = cr.license === 'by' ? 'CC BY' : 'CC BY-SA';
+  const lic = `${cr.license === 'by' ? 'CC BY' : 'CC BY-SA'}${cr.version ? ` ${esc(cr.version)}` : ''}`;
   const what = cr.page ? `<a href="${esc(cr.page)}" rel="noopener">${who}</a>` : who;
-  return `<small class="cb-credit">Photo: ${what}, ${lic}</small>`;
+  const licence = cr.licenceUrl ? `<a href="${esc(cr.licenceUrl)}" rel="noopener license">${lic}</a>` : lic;
+  return `<small class="${cls}">Photo: ${what}, ${licence}</small>`;
 }
 // A picture. `eager` for the first screen; `cls` on the <img>.
 function P(C, b, path, p, cls = '', { eager = false, credits = true } = {}) {
@@ -306,12 +316,23 @@ R_.contact = (C, b) => {
   const facts = factsList(C, b, d, { own });
   const map = d.map ? BTN(C, b, 'map', d.map, 'cb-link') : '';
   const head = `${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
-  const acts = `${BTNS(C, b, d.buttons)}${map ? `<p class="cb-map">${map}</p>` : ''}`;
+  const acts = `${d.business ? socials(C) : ''}${BTNS(C, b, d.buttons)}${map ? `<p class="cb-map">${map}</p>` : ''}`;
   if (!facts && !d.heading && !d.intro && !(d.buttons || []).length && !C.editable) return '';
   if (b.variant === 'split') return `<div class="cb-side"><div class="cb-side-head">${head}${acts}</div>${facts}</div>`;
   if (b.variant === 'card') return `<div class="cb-contact-card">${head}${facts}${acts}</div>`;
   return `${head}${facts}${acts}`;
 };
+
+// The site's social profiles (Site settings), as plain links. https only.
+const SOCIAL_NAMES = { linkedin: 'LinkedIn', instagram: 'Instagram', facebook: 'Facebook', x: 'X', twitter: 'X', tiktok: 'TikTok', youtube: 'YouTube', github: 'GitHub', mastodon: 'Mastodon', bluesky: 'Bluesky' };
+function socials(C) {
+  const s = C.site?.socials && typeof C.site.socials === 'object' ? C.site.socials : {};
+  const links = Object.entries(SOCIAL_NAMES).map(([k, label]) => {
+    const h = typeof s[k] === 'string' ? cleanHref(s[k]) : '';
+    return /^https:/.test(h) ? `<a href="${esc(h)}" rel="me noopener">${label}</a>` : '';
+  }).filter(Boolean);
+  return links.length ? `<p class="cb-socials">${[...new Set(links)].join('')}</p>` : '';
+}
 
 R_.cta = (C, b) => {
   const d = b.data;
@@ -321,9 +342,10 @@ R_.cta = (C, b) => {
   return `${words}${BTNS(C, b, d.buttons)}`;
 };
 
+const formEndpointOf = (C) => (typeof C.formEndpoint === 'string' && /^https:\/\//.test(C.formEndpoint) && !C.formEndpoint.includes('/your-id') ? C.formEndpoint : '');
 R_.form = (C, b) => {
   const d = b.data;
-  const ep = typeof C.formEndpoint === 'string' && /^https:\/\//.test(C.formEndpoint) && !C.formEndpoint.includes('/your-id') ? C.formEndpoint : '';
+  const ep = formEndpointOf(C);
   const words = `${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
   if (!ep && !C.editable) {
     // No form service yet: offer the email address instead, if there is one.
@@ -397,7 +419,7 @@ function renderBlock(b, C) {
   if (!inner && !C.editable) return '';
   const s = b.style;
   const cls = `cb cb-t-${b.type} cb-${b.type}--${b.variant} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${b.data.size || 'm'}` : ''}`;
-  const backdrop = s.bg === 'picture' && b.data.backdrop ? `<img class="cb-backdrop" src="${esc(imgSrc(C, b.data.backdrop.src))}" alt="" loading="lazy"${ED(C, 'data-cb-img', `${b.id}:backdrop`)}>` : '';
+  const backdrop = s.bg === 'picture' && b.data.backdrop ? `<img class="cb-backdrop" src="${esc(imgSrc(C, b.data.backdrop.src))}" alt="" loading="lazy"${ED(C, 'data-cb-img', `${b.id}:backdrop`)}>${credit(b.data.backdrop, 'cb-credit cb-backdrop-credit')}` : '';
   return `<section class="${cls}"${ED(C, 'data-cb-block', b.id)}>${backdrop}<div class="cb-in">${inner}</div></section>`;
 }
 export { renderBlock as _renderBlock };

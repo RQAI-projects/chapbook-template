@@ -4,8 +4,12 @@ import { effectiveColours } from '../business/render.mjs';
 import themesRegistry from '../../data/themes.json';
 import { site } from '../site';
 
-const files = import.meta.glob('../../data/pages/*.json', { eager: true, import: 'default' }) as Record<string, unknown>;
-export const blockPages = Object.entries(files).map(([path, raw]) => {
+// Read as text so one damaged file (a hand edit, a merge conflict) skips that page instead of
+// failing the whole website build.
+const files = import.meta.glob('../../data/pages/*.json', { eager: true, query: '?raw', import: 'default' }) as Record<string, string>;
+export const blockPages = Object.entries(files).map(([path, text]) => {
+  let raw: unknown;
+  try { raw = JSON.parse(text); } catch { console.warn(`[pages] ${path} is not valid JSON, so that page was skipped.`); return null; }
   const page = normalisePage(raw);
   // The file name is the page's address; a page that says otherwise is ignored.
   const name = path.split('/').pop()!.replace(/\.json$/, '');

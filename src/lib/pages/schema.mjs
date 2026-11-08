@@ -25,7 +25,7 @@ export const SLUG = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
 const TEMPLATE_ID = /^[a-z0-9-]{1,60}$/;
 
 // Slugs a page can never take: the site's own sections and files.
-export const RESERVED_SLUGS = ['posts', 'blog', 'writing', 'series', 'c', 'og', 'observatory', 'darkroom', 'apps', 'appointments', 'rss.xml', 'icons', 'glyph-preview', 'site-images', 'guides', 'interactives', 'fonts', 'licences', 'licenses', 'images', 'assets', '_astro', 'favicon.svg', 'robots.txt', 'sitemap.xml', '404', 'index', 'page', 'tag', 'tags', 'search', 'feed', 'admin', 'api'];
+export const RESERVED_SLUGS = ['demos', 'posts', 'blog', 'writing', 'series', 'c', 'og', 'observatory', 'darkroom', 'apps', 'appointments', 'rss.xml', 'icons', 'glyph-preview', 'site-images', 'guides', 'interactives', 'fonts', 'licences', 'licenses', 'images', 'assets', '_astro', 'favicon.svg', 'robots.txt', 'sitemap.xml', '404', 'index', 'page', 'tag', 'tags', 'search', 'feed', 'admin', 'api'];
 // home, about and contact are pages too, but they render at /, /about/ and /contact/.
 export const SPECIAL_SLUGS = ['home', 'about', 'contact'];
 export function slugProblem(slug, taken = []) {
@@ -71,12 +71,20 @@ function cleanCredit(v) {
   const licence = String(v.license || v.licence || '').toLowerCase();
   if (!CREDIT_LICENCES.includes(licence)) return null;
   const page = cleanHref(v.page || v.url);
-  return { creator: cleanLine(v.creator, 120), title: cleanLine(v.title, 160), license: licence, page: /^https:/.test(page) ? page : '' };
+  const out = { creator: cleanLine(v.creator, 120), title: cleanLine(v.title, 160), license: licence, page: /^https:/.test(page) ? page : '' };
+  // CC BY asks for the licence version and a link to the licence itself.
+  if (/^\d\.\d$/.test(String(v.version || ''))) out.version = String(v.version);
+  const deed = cleanHref(v.licenceUrl || v.licenseUrl);
+  if (/^https:\/\/creativecommons\.org\//.test(deed)) out.licenceUrl = deed;
+  return out;
 }
 export function cleanPicture(v, { allowData = false } = {}) {
   if (!isObj(v)) return null;
   const src = typeof v.src === 'string' ? v.src.trim() : '';
-  const ok = (SITE_IMAGE.test(src) && !src.includes('..')) || (allowData && src.length < 12e6 && DATA_IMAGE.test(src));
+  // Older sites may also use pictures at a full https address, as their Home page always could.
+  let https = false;
+  if (/^https:\/\//i.test(src) && src.length <= 2048) { try { const u = new URL(src); https = u.protocol === 'https:' && !u.username && !u.password; } catch {} }
+  const ok = (SITE_IMAGE.test(src) && !src.includes('..')) || https || (allowData && src.length < 12e6 && DATA_IMAGE.test(src));
   if (!ok) return null;
   const out = { src, alt: cleanLine(v.alt, 240) };
   const credit = cleanCredit(v.credit);
@@ -135,7 +143,7 @@ export const BLOCK_TYPES = {
   text: {
     label: 'Text', hint: 'A heading and paragraphs. Can sit beside a picture.',
     variants: { plain: 'Plain', sidehead: 'Heading on the side', lede: 'Large opening words', boxed: 'Highlighted box', 'picture-left': 'Picture on the left', 'picture-right': 'Picture on the right' },
-    fields: { kicker: L(100, 'Short label'), heading: HEAD, body: R(6000, 'Text', 'Add your words'), picture: PIC(), buttons: BTNS(2) },
+    fields: { kicker: L(100, 'Short label'), heading: HEAD, body: R(20000, 'Text', 'Add your words'), picture: PIC(), buttons: BTNS(2) },
   },
   image: {
     label: 'Picture', hint: 'One photo with a caption.',
@@ -319,6 +327,8 @@ export function normaliseBlock(b, opts = {}, depth = 0, allowed = TYPE_IDS) {
   };
   if (out.style.bg === 'picture' && !out.data.backdrop) out.style.bg = 'dark';
   if (b.sample === true) out.sample = true;
+  // Which template slot a sample block came from ("template-id/role"), so an untouched one can be recognised.
+  if (out.sample && typeof b.origin === 'string' && /^[a-z0-9-]{1,60}\/[a-z0-9-]{1,30}$/.test(b.origin)) out.origin = b.origin;
   return out;
 }
 // Ids must be unique across the whole page (columns included); blanks and repeats get new ones.

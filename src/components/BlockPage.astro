@@ -10,11 +10,13 @@ import { safeBookingUrl } from '../lib/professional.mjs';
 import { fmtDate } from '../lib/home';
 import { postCover } from '../lib/post-cover.mjs';
 import '../styles/blocks.css';
+import profile from '../data/profile.json';
 const { page, title, description } = Astro.props;
 const endpoint = safeBookingUrl((site as any).contact?.endpoint);
 let blocks = page.blocks;
 // A block Contact page always keeps a way to send a message.
-if (page.slug === 'contact' && endpoint && !endpoint.includes('/your-id') && !blocks.some((b: any) => b.type === 'form')) {
+const hasForm = blocks.some((b: any) => b.type === 'form' || (b.type === 'columns' && (b.data?.children || []).some((k: any) => k.type === 'form')));
+if (page.slug === 'contact' && endpoint && !endpoint.includes('/your-id') && !hasForm) {
   blocks = [...blocks, { id: 'contactform', type: 'form', variant: 'normal', style: {}, data: { heading: 'Send a message', button: 'Send message' } }];
 }
 let posts: any[] = [];
@@ -27,6 +29,7 @@ if (blocks.some((b: any) => b.type === 'posts')) {
 }
 const html = renderPage({ ...page, blocks }, {
   site, posts, base: baseColours(), formEndpoint: endpoint,
+  fallbackEmail: (profile as any).email && (profile as any).email !== 'you@example.com' ? (profile as any).email : '',
   href: (p: string) => withBase(p), postsHref: withBase('/posts/'),
 });
 ---

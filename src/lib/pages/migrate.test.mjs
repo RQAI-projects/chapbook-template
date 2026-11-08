@@ -55,3 +55,16 @@ test('About keeps the profile and any lists', () => {
   const empty = pageFromAbout({ name: 'Your Name', bio: ['A short paragraph about who you are and what this blog is for.'] }, { name: 'Crumb' });
   assert.ok(!JSON.stringify(empty).includes('A short paragraph'), 'starter placeholders are not carried over');
 });
+
+test('About keeps the credentials line and long lists in full', () => {
+  const pubs = Array.from({ length: 300 }, (_, i) => ({ title: `A long publication title number ${i} about shoulders and elbows`, journal: 'Journal of Long Titles', year: '2020' }));
+  const page = pageFromAbout({ name: 'Dr A', credentials: 'MBBS FRCS', bio: ['x'] }, {}, { publications: pubs });
+  const all = JSON.stringify(page);
+  assert.ok(all.includes('MBBS FRCS'));
+  for (const i of [0, 150, 299]) assert.ok(all.includes(`number ${i} about`), `publication ${i}`);
+});
+
+test('Home keeps pictures at an https address', () => {
+  const page = pageFromHome({ defaultTheme: 'clinic', professional: { heading: 'x', heroImage: { src: 'https://cdn.example.com/h.jpg', alt: 'Hero' } } }, 'clinic');
+  assert.equal(page.blocks.find((b) => b.type === 'hero').data.picture.src, 'https://cdn.example.com/h.jpg');
+});

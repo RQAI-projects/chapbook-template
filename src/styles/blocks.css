@@ -51,6 +51,9 @@
 .cb-credit{display:block;font-size:.72rem;color:var(--ink-dim);margin-top:.4rem}
 .cb-credit a{color:inherit;text-decoration:underline}
 .cb-hours{white-space:pre-line}
+.cb-backdrop-credit{position:absolute;right:var(--cb-gutter);bottom:.5rem;margin:0;color:rgba(255,255,255,.82)}
+.cb-socials{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;margin:1.2rem 0 0}
+.cb-socials a{color:inherit;text-decoration:underline;text-decoration-color:var(--cb-accent-text,var(--accent));text-underline-offset:.22em}
 
 /* Buttons */
 .cb-actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.8rem;align-items:center}

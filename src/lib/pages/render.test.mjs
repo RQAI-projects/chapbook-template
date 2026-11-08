@@ -66,7 +66,8 @@ test('business-detail buttons follow Site settings', () => {
 
 test('pictures: only the site\'s own pictures, data: only in the editor', () => {
   assert.ok(cleanPicture({ src: '/site-images/cafe-1.webp', alt: 'Window seat' }));
-  for (const bad of ['https://x.com/a.jpg', '/site-images/../x', 'javascript:x', '/other/a.jpg', 'data:image/svg+xml;base64,AAAA']) assert.equal(cleanPicture({ src: bad }), null, bad);
+  for (const bad of ['http://x.com/a.jpg', 'https://u:p@x.com/a.jpg', '/site-images/../x', 'javascript:x', '/other/a.jpg', 'data:image/svg+xml;base64,AAAA', '//x.com/a.jpg']) assert.equal(cleanPicture({ src: bad }), null, bad);
+  assert.ok(cleanPicture({ src: 'https://cdn.example.com/a.jpg' }), 'older sites may use pictures at an https address');
   const data = 'data:image/png;base64,iVBORw0KGgo=';
   assert.equal(cleanPicture({ src: data }), null);
   assert.ok(cleanPicture({ src: data }, { allowData: true }));
@@ -194,4 +195,29 @@ test('a page without an opening still gets exactly one h1', () => {
   assert.equal((html.match(/<h1/g) || []).length, 1);
   assert.ok(html.includes('<h1 class="cb-h">Fees</h1>'));
   for (const v of variantsOf('hero')) assert.equal((renderPage(page([{ type: 'hero', variant: v, data: { heading: 'Hi', details: true } }]), { site }).match(/<h1/g) || []).length, 1, v);
+});
+
+test('CC BY credits carry the licence version and link, including on background pictures', () => {
+  const pic = { src: '/site-images/a.jpg', alt: '', credit: { creator: 'Ann Lee', license: 'by', version: '4.0', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/', page: 'https://openverse.org/x' } };
+  const html = renderPage(page([{ type: 'cta', style: { bg: 'picture' }, data: { heading: 'Hi', backdrop: pic } }]), {});
+  assert.ok(html.includes('CC BY 4.0') && html.includes('href="https://creativecommons.org/licenses/by/4.0/"'));
+  assert.equal(cleanPicture({ src: '/site-images/a.jpg', credit: { license: 'by', licenceUrl: 'https://evil.example/x' } }).credit.licenceUrl, undefined);
+});
+
+test('the h1 goes to a heading that really appears', () => {
+  const count = (blocks, ctx = {}) => (renderPage(page(blocks), ctx).match(/<h1/g) || []).length;
+  assert.equal(count([{ type: 'hero', data: { intro: 'No heading' } }, { type: 'text', data: { heading: 'Real heading' } }]), 1);
+  assert.equal(count([{ type: 'posts', data: { heading: 'News' } }, { type: 'text', data: { heading: 'About' } }]), 1, 'no posts yet');
+  assert.equal(count([{ type: 'form', data: { heading: 'Write to us' } }, { type: 'faq', data: { heading: 'Questions' } }]), 1, 'form not connected');
+});
+
+test('contact details show social links and the profile email when Site settings has none', () => {
+  const html = renderPage(page([{ type: 'contact', data: { business: true } }]), { site: { socials: { linkedin: 'https://linkedin.com/in/x', instagram: 'javascript:alert(1)' }, professional: {} }, fallbackEmail: 'me@example.com' });
+  assert.ok(html.includes('href="https://linkedin.com/in/x"') && !html.includes('javascript:'));
+  assert.ok(html.includes('mailto:me@example.com'));
+});
+
+test('italic works inside a word', () => {
+  assert.equal(inline('un*believ*able'), 'un<em>believ</em>able');
+  assert.equal(inline('**bold** and *it*'), '<strong>bold</strong> and <em>it</em>');
 });
