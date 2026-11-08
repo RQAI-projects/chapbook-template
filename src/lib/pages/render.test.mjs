@@ -245,3 +245,18 @@ test('booking: Cal.com and Google show a calendar on request, other booking page
   const ed = renderPage(page([{ type: 'booking', data: { url: 'https://cal.com/a/b' } }]), { site, editable: true });
   assert.ok(!ed.includes('data-booking-kind') && ed.includes('data-cb-hint'), 'the editor never loads the booking service');
 });
+
+test('videos: behind the opening words, in the opening, in galleries and in columns', () => {
+  const bg = renderPage(page([{ type: 'hero', variant: 'photo-behind', data: { heading: 'Hi', video: '/site-images/clinic.mp4', picture: { src: '/site-images/p.jpg', alt: '' } } }]), {});
+  assert.ok(bg.includes('autoplay') && bg.includes('muted') && bg.includes('poster="/site-images/p.jpg"') && bg.includes('cb-video-toggle'));
+  const split = renderPage(page([{ type: 'hero', variant: 'split', data: { heading: 'Hi', video: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' } }]), {});
+  assert.ok(split.includes('youtube-nocookie.com/embed/dQw4w9WgXcQ'));
+  const r2 = renderPage(page([{ type: 'gallery', data: { pictures: [{ src: '/site-images/a.jpg', alt: 'Tour', video: 'https://media.example.com/tour.mp4' }] } }]), {});
+  assert.ok(r2.includes('<video src="https://media.example.com/tour.mp4"') && r2.includes('preload="none"'));
+  assert.equal(normalisePage(page([{ type: 'hero', data: { video: 'javascript:alert(1)' } }])).blocks[0].data.video, undefined);
+  assert.equal(normalisePage(page([{ type: 'hero', data: { video: 'https://evil.example/x.exe' } }])).blocks[0].data.video, undefined);
+  const cols = normalisePage(page([{ type: 'columns', data: { children: [{ type: 'video', data: { src: '/site-images/a.mp4' } }, { type: 'text', data: { body: 'x' } }] } }]));
+  assert.equal(cols.blocks[0].data.children[0].type, 'video');
+  const ed = renderPage(page([{ type: 'hero', variant: 'photo-behind', data: { video: '/site-images/a.mp4' } }]), { editable: true });
+  assert.ok(ed.includes('data-cb-video') && !ed.includes('autoplay'), 'the editor shows the video still');
+});

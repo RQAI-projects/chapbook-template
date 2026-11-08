@@ -231,6 +231,22 @@ function factsList(C, b, d, { own = false, cls = 'cb-facts' } = {}) {
 // ---- blocks --------------------------------------------------------------------------------
 const R_ = {};
 
+// A video in the opening. Behind the words it plays silently on a loop (with a pause button, and
+// paused for people who ask for less motion); elsewhere it has the usual controls. The picture is
+// its poster. YouTube and Vimeo can't sit behind words, so they show as a player instead.
+function heroVideo(C, b, d, behind) {
+  const e = videoEmbed(d.video);
+  const mark = ED(C, 'data-cb-video', `${b.id}:video`);
+  const poster = d.picture ? ` poster="${esc(imgSrc(C, d.picture.src))}"` : '';
+  if (!e) return '';
+  if (e.kind === 'file') {
+    if (behind) return `<video class="cb-hero-video" src="${esc(imgSrc(C, e.src))}"${poster} muted loop playsinline${C.editable ? '' : ' autoplay'} preload="metadata" aria-hidden="true"${mark}></video>${C.editable ? '' : '<button type="button" class="cb-video-toggle" aria-label="Pause the video">Pause</button>'}`;
+    return `<video class="cb-hero-video" src="${esc(imgSrc(C, e.src))}"${poster} controls playsinline preload="metadata"${mark}></video>`;
+  }
+  if (C.editable) return `<div class="cb-video-hold"${mark}><span>${esc(e.host)} video</span></div>`;
+  return `<iframe class="cb-hero-video" src="${esc(e.src)}" title="${esc(d.heading || `${e.host} video`)}" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+}
+
 R_.hero = (C, b) => {
   const d = b.data, v = b.variant;
   const head = `${K(C, b, d)}${H(C, b, d, 'h2', 'cb-h cb-hero-h')}`;
@@ -238,7 +254,7 @@ R_.hero = (C, b) => {
   const btns = BTNS(C, b, d.buttons);
   const words = `${head}${intro}${btns}`;
   const details = d.details ? factsList(C, b, d, { cls: 'cb-facts cb-hero-facts' }) : '';
-  const pic = (cls = 'cb-hero-pic') => (v === 'minimal' ? '' : `<figure class="${cls}">${P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`);
+  const pic = (cls = 'cb-hero-pic') => (v === 'minimal' ? '' : `<figure class="${cls}">${d.video ? heroVideo(C, b, d, cls.includes('cb-hero-bg')) : P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`);
   const band = d.picture || C.editable ? pic('cb-hero-pic cb-hero-band') : '';
   if (v === 'split') return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div>${pic()}</div>`;
   if (v === 'centred') return `<div class="cb-hero-words">${words}${details}</div>${d.picture || C.editable ? pic() : ''}`;
@@ -266,7 +282,10 @@ R_.image = (C, b) => {
 
 R_.gallery = (C, b) => {
   const d = b.data, pics = d.pictures || [];
-  const list = LIST(C, b, 'pictures', pics, (p, i, wrap) => wrap(`${P(C, b, `pictures.${i}`, p, '', { credits: false })}${p.alt || credit(p) ? `<figcaption>${credit(p)}</figcaption>` : ''}`, 'figure'), 'div', 'cb-gallery');
+  const tile = (p, i) => (p.video
+    ? `<video src="${esc(imgSrc(C, p.video))}" poster="${esc(imgSrc(C, p.src))}" controls playsinline preload="none" aria-label="${esc(p.alt || 'Video')}"${ED(C, 'data-cb-video', `${b.id}:pictures.${i}.video`)}></video>`
+    : P(C, b, `pictures.${i}`, p, '', { credits: false }));
+  const list = LIST(C, b, 'pictures', pics, (p, i, wrap) => wrap(`${tile(p, i)}${p.alt || credit(p) ? `<figcaption>${credit(p)}</figcaption>` : ''}`, 'figure'), 'div', 'cb-gallery');
   return `<div class="cb-head">${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${list}`;
 };
 

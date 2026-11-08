@@ -112,4 +112,20 @@ const html = renderPage({ ...page, blocks }, {
   }
   bindBooking();
   document.addEventListener('astro:page-load', bindBooking);
+
+  // Videos behind the opening words: a pause button, and no movement for people who ask for less.
+  function bindHeroVideos() {
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    for (const v of document.querySelectorAll<HTMLVideoElement>('.cbp .cb-hero-bg video')) {
+      const btn = v.parentElement?.querySelector<HTMLButtonElement>('.cb-video-toggle');
+      if (still) { v.pause(); v.removeAttribute('autoplay'); }
+      if (!btn || btn.dataset.bound) continue;
+      btn.dataset.bound = '1';
+      const show = () => { btn.textContent = v.paused ? 'Play' : 'Pause'; btn.setAttribute('aria-label', v.paused ? 'Play the video' : 'Pause the video'); };
+      btn.addEventListener('click', () => { if (v.paused) v.play().catch(() => {}); else v.pause(); show(); });
+      v.addEventListener('play', show); v.addEventListener('pause', show); show();
+    }
+  }
+  bindHeroVideos();
+  document.addEventListener('astro:page-load', bindHeroVideos);
 </script>

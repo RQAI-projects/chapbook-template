@@ -91,18 +91,28 @@ export function cleanPicture(v, { allowData = false } = {}) {
   if (credit) out.credit = credit;
   // Where the picture's centre of interest is, so crops keep faces in frame.
   if (['top', 'bottom', 'left', 'right'].includes(v.focus)) out.focus = v.focus;
+  // A gallery tile may play a short clip; the picture is its poster.
+  const clip = videoFile(v.video);
+  if (clip) out.video = clip;
   return out;
 }
 const VIDEO_HOSTS = /^https:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/|(?:player\.)?vimeo\.com\/(?:video\/)?)/;
+// A video file in the site (/site-images/…) or at an https address (such as the writer's own
+// Cloudflare R2 storage), or a YouTube or Vimeo page.
+export const VIDEO_FILE = /^\/site-images\/[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(?:mp4|webm)$/;
+export function videoFile(v) {
+  const s = cleanLine(v, 2048);
+  if (VIDEO_FILE.test(s)) return s;
+  try { const u = new URL(s); return u.protocol === 'https:' && !u.username && !u.password && /\.(?:mp4|webm)$/i.test(u.pathname) ? u.href : ''; } catch { return ''; }
+}
 export function cleanVideo(v) {
-  const s = cleanLine(v, 400);
-  if (/^\/site-images\/[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(?:mp4|webm)$/.test(s)) return s;
-  return VIDEO_HOSTS.test(s) ? s : '';
+  const s = cleanLine(v, 2048);
+  return videoFile(s) || (VIDEO_HOSTS.test(s) ? s : '');
 }
 export function videoEmbed(src) {
   const s = cleanVideo(src);
   if (!s) return null;
-  if (s.startsWith('/')) return { kind: 'file', src: s };
+  if (videoFile(s)) return { kind: 'file', src: s };
   let m = s.match(/(?:v=|embed\/|shorts\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
   if (m) return { kind: 'frame', src: `https://www.youtube-nocookie.com/embed/${m[1]}`, host: 'YouTube' };
   m = s.match(/vimeo\.com\/(?:video\/)?(\d{4,12})/);
@@ -144,13 +154,13 @@ export const STYLE_LABELS = {
   align: { left: 'Left', centre: 'Centred' },
 };
 // Types that can sit inside a columns block.
-export const COLUMN_TYPES = ['text', 'image', 'cta', 'contact', 'credentials', 'facts', 'reviews', 'form', 'booking'];
+export const COLUMN_TYPES = ['text', 'image', 'cta', 'contact', 'credentials', 'facts', 'reviews', 'form', 'booking', 'video'];
 
 export const BLOCK_TYPES = {
   hero: {
     label: 'Opening', hint: 'The first thing people see: a heading, a line or two, buttons and a picture.',
     variants: { split: 'Words beside a photo', centred: 'Centred', 'photo-behind': 'Words over a photo', panel: 'With a details panel', poster: 'Big type', stacked: 'Photo on top', minimal: 'Words only' },
-    fields: { kicker: L(100, 'Short label'), heading: HEAD, intro: R(1200, 'Introduction'), picture: PIC(), buttons: BTNS(2), details: { kind: 'bool', label: 'Show opening hours, address and phone' } },
+    fields: { kicker: L(100, 'Short label'), heading: HEAD, intro: R(1200, 'Introduction'), picture: PIC(), video: { kind: 'video', label: 'Video' }, buttons: BTNS(2), details: { kind: 'bool', label: 'Show opening hours, address and phone' } },
   },
   text: {
     label: 'Text', hint: 'A heading and paragraphs. Can sit beside a picture.',
