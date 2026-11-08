@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { renderPage, normalisePage, richText, inline, BLOCK_TYPES, TYPE_IDS, variantsOf, newBlock, cloneBlock, findBlock, fieldAt, cleanHref, cleanPicture, slugProblem, slugFrom, pageColours, contrast, pageCss, RESERVED_SLUGS } from './render.mjs';
+import { bookingTarget, renderPage, normalisePage, richText, inline, BLOCK_TYPES, TYPE_IDS, variantsOf, newBlock, cloneBlock, findBlock, fieldAt, cleanHref, cleanPicture, slugProblem, slugFrom, pageColours, contrast, pageCss, RESERVED_SLUGS } from './render.mjs';
 
 const site = { name: 'Harbour Physio', professional: { phone: '01202 555 123', email: 'hello@harbour.example', location: '4 Quay Street\nPoole', hours: 'Mon–Fri 8–6', bookingUrl: 'https://cal.com/harbour/assessment' } };
 const page = (blocks, extra = {}) => ({ v: 1, title: 'Test', slug: 'test', blocks, ...extra });
@@ -217,9 +217,29 @@ test('contact details show social links and the profile email when Site settings
   assert.ok(html.includes('mailto:me@example.com'));
 });
 
-test('italic works inside a word', () => {
-  assert.equal(inline('un*believ*able'), 'un<em>believ</em>able');
+test('italic only on word boundaries, so sums and code stay as typed', () => {
+  assert.equal(inline('2*3*4'), '2*3*4');
+  assert.equal(inline('snake*case*'), 'snake*case*');
   assert.equal(inline('**bold** and *it*'), '<strong>bold</strong> and <em>it</em>');
+  assert.equal(inline('(*aside*)'), '(<em>aside</em>)');
+});
+
+test('opening videos: shown without a poster, credits kept, YouTube under the words, a pause button that can be clicked', () => {
+  for (const v of ['centred', 'panel', 'poster', 'split', 'stacked']) assert.ok(renderPage(page([{ type: 'hero', variant: v, data: { heading: 'Hi', video: '/site-images/a.mp4' } }]), {}).includes('<video'), v);
+  const pic = { src: '/site-images/p.jpg', alt: '', credit: { creator: 'Ann', license: 'by' } };
+  assert.ok(renderPage(page([{ type: 'hero', variant: 'split', data: { heading: 'Hi', video: '/site-images/a.mp4', picture: pic } }]), {}).includes('Ann'));
+  const yt = renderPage(page([{ type: 'hero', variant: 'photo-behind', data: { heading: 'Hi', video: 'https://youtu.be/dQw4w9WgXcQ', picture: pic } }]), {});
+  assert.ok(yt.includes('cb-hero-player') && yt.includes('<img') && !/cb-hero-bg[^>]*>\s*<iframe/.test(yt));
+  const bg = renderPage(page([{ type: 'hero', variant: 'photo-behind', data: { heading: 'Hi', video: '/site-images/a.mp4' } }]), {});
+  assert.ok(/<\/div><button type="button" class="cb-video-toggle"/.test(bg), 'the pause button sits above the shading, outside the background');
+});
+
+test('booking links: dashboard addresses and Google account paths', () => {
+  assert.equal(bookingTarget('https://app.cal.com/event-types/12').kind, 'link');
+  assert.equal(bookingTarget('https://cal.com/event-types/12').kind, 'link');
+  assert.equal(bookingTarget('https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0abcDEF123456789').kind, 'google');
+  const html = renderPage(page([{ type: 'booking', data: { heading: 'Book', useSite: false } }, { type: 'text', data: { heading: 'Real' } }]), { site: { professional: {} } });
+  assert.equal((html.match(/<h1/g) || []).length, 1);
 });
 
 test('a page can choose its body typeface too', () => {

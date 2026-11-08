@@ -87,7 +87,7 @@ export function inline(text, ctx = {}) {
   });
   s = esc(s)
     .replace(/\*\*(?=\S)([^*\n]*?\S)\*\*/g, '<strong>$1</strong>')
-    .replace(/(^|[^*])\*(?=[^\s*])([^*\n]*?[^\s*])\*(?!\*)/g, '$1<em>$2</em>');
+    .replace(/(^|[^*\w])\*(?=[^\s*])([^*\n]*?[^\s*])\*(?![\w*])/g, '$1<em>$2</em>');
   return s.replace(/\u0000(\d+)\u0000/g, (_, i) => links[Number(i)] || '');
 }
 export function richText(text, ctx = {}) {
@@ -127,6 +127,7 @@ export function renderPage(rawPage, ctx = {}) {
     if (!b.data.heading) return false;
     if (b.type === 'posts') return C.editable || (C.posts || []).length > 0;
     if (b.type === 'form') return C.editable || !!formEndpointOf(C) || !!biz.email;
+    if (b.type === 'booking') return C.editable || !!bookingTarget(b.data.useSite !== false && !b.data.url ? biz.bookingUrl : b.data.url) || !!biz.phone || !!biz.email;
     return true;
   };
   const flat = page.blocks.flatMap((b) => (b.type === 'columns' ? b.data.children || [] : [b]));
@@ -240,8 +241,9 @@ function heroVideo(C, b, d, behind) {
   const poster = d.picture ? ` poster="${esc(imgSrc(C, d.picture.src))}"` : '';
   if (!e) return '';
   if (e.kind === 'file') {
-    if (behind) return `<video class="cb-hero-video" src="${esc(imgSrc(C, e.src))}"${poster} muted loop playsinline${C.editable ? '' : ' autoplay'} preload="metadata" aria-hidden="true"${mark}></video>${C.editable ? '' : '<button type="button" class="cb-video-toggle" aria-label="Pause the video">Pause</button>'}`;
-    return `<video class="cb-hero-video" src="${esc(imgSrc(C, e.src))}"${poster} controls playsinline preload="metadata"${mark}></video>`;
+    // The poster may be a free photo whose licence needs a credit.
+    if (behind) return `<video class="cb-hero-video" src="${esc(imgSrc(C, e.src))}"${poster} muted loop playsinline${C.editable ? '' : ' autoplay'} preload="metadata" aria-hidden="true"${mark}></video>${credit(d.picture)}`;
+    return `<video class="cb-hero-video" src="${esc(imgSrc(C, e.src))}"${poster} controls playsinline preload="metadata"${mark}></video>${credit(d.picture)}`;
   }
   if (C.editable) return `<div class="cb-video-hold"${mark}><span>${esc(e.host)} video</span></div>`;
   return `<iframe class="cb-hero-video" src="${esc(e.src)}" title="${esc(d.heading || `${e.host} video`)}" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
@@ -255,10 +257,18 @@ R_.hero = (C, b) => {
   const words = `${head}${intro}${btns}`;
   const details = d.details ? factsList(C, b, d, { cls: 'cb-facts cb-hero-facts' }) : '';
   const pic = (cls = 'cb-hero-pic') => (v === 'minimal' ? '' : `<figure class="${cls}">${d.video ? heroVideo(C, b, d, cls.includes('cb-hero-bg')) : P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`);
-  const band = d.picture || C.editable ? pic('cb-hero-pic cb-hero-band') : '';
+  const media = d.picture || d.video || C.editable;
+  const band = media ? pic('cb-hero-pic cb-hero-band') : '';
+  // A video file can fill the background; a YouTube or Vimeo video plays under the words instead.
+  const fileBehind = d.video && videoEmbed(d.video)?.kind === 'file';
+  const player = d.video && !fileBehind && v === 'photo-behind' ? `<div class="cb-hero-player">${heroVideo(C, b, d, false)}</div>` : '';
+  const toggle = fileBehind && v === 'photo-behind' && !C.editable ? '<button type="button" class="cb-video-toggle" aria-label="Pause the video">Pause</button>' : '';
   if (v === 'split') return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div>${pic()}</div>`;
-  if (v === 'centred') return `<div class="cb-hero-words">${words}${details}</div>${d.picture || C.editable ? pic() : ''}`;
-  if (v === 'photo-behind') return `${pic('cb-hero-bg')}<div class="cb-hero-words">${words}${details}</div>`;
+  if (v === 'centred') return `<div class="cb-hero-words">${words}${details}</div>${media ? pic() : ''}`;
+  if (v === 'photo-behind') {
+    const bg = fileBehind || !d.video ? pic('cb-hero-bg') : `<figure class="cb-hero-bg">${P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`;
+    return `${bg}<div class="cb-hero-words">${words}${details}${player}</div>${toggle}`;
+  }
   if (v === 'panel') return `<div class="cb-hero-grid"><div class="cb-hero-words">${head}${intro}</div><aside class="cb-hero-panel">${factsList(C, b, d, { cls: 'cb-facts' })}${btns}</aside></div>${band}`;
   if (v === 'poster') return `${head}<div class="cb-poster-foot">${intro}<div>${btns}${details}</div></div>${band}`;
   if (v === 'stacked') return `${pic('cb-hero-pic cb-hero-top')}<div class="cb-hero-card">${words}${details}</div>`;

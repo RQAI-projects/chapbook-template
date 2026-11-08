@@ -127,8 +127,12 @@ export function bookingTarget(v) {
   if (!/^https:/.test(s)) return null;
   const u = new URL(s);
   const path = u.pathname.replace(/^\/+|\/+$/g, '');
-  if (['cal.com', 'www.cal.com', 'app.cal.com'].includes(u.hostname) && /^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+){0,3}$/.test(path)) return { kind: 'cal', href: `https://cal.com/${path}`, calLink: path, provider: 'Cal.com' };
-  if (u.hostname === 'calendar.google.com' && /^calendar\/appointments\/schedules\/[A-Za-z0-9_-]{10,200}$/.test(path)) return { kind: 'google', href: `https://calendar.google.com/${path}`, frame: `https://calendar.google.com/${path}?gv=true`, provider: 'Google Calendar' };
+  // Public booking links look like cal.com/<name>/<event>. The dashboard (app.cal.com, settings,
+  // event types…) can't be shown to visitors, so those only get a button.
+  const CAL_APP = /^(?:event-types|bookings|settings|availability|apps|workflows|insights|auth|signup|login|pricing|blog|help|teams|routing-forms|upcoming|apps)(?:\/|$)/;
+  if (['cal.com', 'www.cal.com'].includes(u.hostname) && /^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+){0,3}$/.test(path) && !CAL_APP.test(path)) return { kind: 'cal', href: `https://cal.com/${path}`, calLink: path, provider: 'Cal.com' };
+  const g = u.hostname === 'calendar.google.com' && path.replace(/^calendar\/u\/\d+\//, 'calendar/');
+  if (g && /^calendar\/appointments\/schedules\/[A-Za-z0-9_-]{10,200}$/.test(g)) return { kind: 'google', href: `https://calendar.google.com/${g}`, frame: `https://calendar.google.com/${g}?gv=true`, provider: 'Google Calendar' };
   return { kind: 'link', href: u.href, provider: '' };
 }
 export const INTERACTIVE_SRC = /^\/interactives\/[a-z0-9][a-z0-9-]{0,79}\.html$/;

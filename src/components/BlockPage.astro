@@ -117,7 +117,7 @@ const html = renderPage({ ...page, blocks }, {
   function bindHeroVideos() {
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     for (const v of document.querySelectorAll<HTMLVideoElement>('.cbp .cb-hero-bg video')) {
-      const btn = v.parentElement?.querySelector<HTMLButtonElement>('.cb-video-toggle');
+      const btn = v.closest('.cb')?.querySelector<HTMLButtonElement>('.cb-video-toggle');
       if (still) { v.pause(); v.removeAttribute('autoplay'); }
       if (!btn || btn.dataset.bound) continue;
       btn.dataset.bound = '1';
