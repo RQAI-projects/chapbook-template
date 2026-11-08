@@ -10,6 +10,10 @@ import { withBase } from '../lib/withBase';
 import { getCollection } from 'astro:content';
 import type { HomeProps, HomePost, HomeConstellation } from '../lib/home';
 import { vocabFor, topicName, SEED_TAGLINE } from '../lib/vocab';
+import BlockPage from '../components/BlockPage.astro';
+import { blockPage } from '../lib/pages/site-pages';
+// A Home page built in Chapbook's page editor replaces the theme's own home page.
+const homeBlocks = blockPage('home');
 
 // --- per-archetype homepages ---------------------------------------------
 // Every theme's `hero` archetype (src/data/themes.json) selects a STRUCTURALLY
@@ -167,7 +171,13 @@ const jsonLd = {
   ],
 };
 ---
+{homeBlocks ? (
+  <BlockPage page={homeBlocks} title={site.masthead} description={homeBlocks.description || undefined}>
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g,'\\u003c')} />
+  </BlockPage>
+) : (
 <Base title={site.masthead} progress>
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g,'\\u003c')} />
   <Home {...homeProps} />
 </Base>
+)}

@@ -1,0 +1,66 @@
+---
+// A page built in Chapbook's page editor. The same renderer runs in the editor's preview.
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { renderPage } from '../lib/pages/render.mjs';
+import { baseColours } from '../lib/pages/site-pages';
+import { site } from '../lib/site';
+import { withBase } from '../lib/withBase';
+import { safeBookingUrl } from '../lib/professional.mjs';
+import { fmtDate } from '../lib/home';
+import { postCover } from '../lib/post-cover.mjs';
+import '../styles/blocks.css';
+const { page, title, description } = Astro.props;
+const endpoint = safeBookingUrl((site as any).contact?.endpoint);
+let blocks = page.blocks;
+// A block Contact page always keeps a way to send a message.
+if (page.slug === 'contact' && endpoint && !endpoint.includes('/your-id') && !blocks.some((b: any) => b.type === 'form')) {
+  blocks = [...blocks, { id: 'contactform', type: 'form', variant: 'normal', style: {}, data: { heading: 'Send a message', button: 'Send message' } }];
+}
+let posts: any[] = [];
+if (blocks.some((b: any) => b.type === 'posts')) {
+  const coverModules = import.meta.glob('../content/blog/_images/**/*.{jpg,jpeg,png,webp,avif,gif,svg}', { eager: true, query: '?url', import: 'default' });
+  const coverAssets = Object.fromEntries(Object.entries(coverModules).map(([path, url]) => [path.replace('../content/blog/', ''), url]));
+  posts = (await getCollection('blog', ({ data }: any) => !data.draft))
+    .sort((a: any, b: any) => b.data.date.valueOf() - a.data.date.valueOf()).slice(0, 6)
+    .map((p: any) => ({ href: withBase(`/blog/${p.slug}/`), title: p.data.title, description: p.data.description, dateLabel: fmtDate(p.data.date), image: postCover(p.data, p.body, coverAssets, import.meta.env.BASE_URL) }));
+}
+const html = renderPage({ ...page, blocks }, {
+  site, posts, base: baseColours(), formEndpoint: endpoint,
+  href: (p: string) => withBase(p), postsHref: withBase('/posts/'),
+});
+---
+<Base title={title ?? page.title} description={description ?? (page.description || undefined)}>
+  <slot />
+  <Fragment set:html={html} />
+</Base>
+
+<script>
+  // Block contact forms send without leaving the site and show the result in place.
+  function bindBlockForms() {
+    for (const form of document.querySelectorAll<HTMLFormElement>('.cbp .cb-form')) {
+      const status = form.nextElementSibling as HTMLElement | null;
+      if (form.dataset.bound || !status?.classList.contains('cb-form-status')) continue;
+      form.dataset.bound = '1';
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+        const label = btn?.textContent || 'Send message';
+        if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+        status.hidden = true;
+        try {
+          const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+          if (!res.ok) throw new Error('send');
+          form.hidden = true;
+          status.textContent = 'Thank you. Your message has been sent.';
+        } catch {
+          status.textContent = 'Your message could not be sent. Please try again, or use the email address on this page.';
+          if (btn) { btn.disabled = false; btn.textContent = label; }
+        }
+        status.hidden = false;
+      });
+    }
+  }
+  bindBlockForms();
+  document.addEventListener('astro:page-load', bindBlockForms);
+</script>

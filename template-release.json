@@ -1,7 +1,7 @@
 {
  "kind": "chapbook-template-release",
- "release": 3,
- "version": "2026.11.08.3",
+ "release": 4,
+ "version": "2026.11.08.4",
  "managed": [
   "astro.config.mjs",
   "package.json",
@@ -58,7 +58,8 @@
   "scripts/check-site-config.mjs": "2cb8ca9e2e4c68915f08ec1cfdc7ba4b163d7aa6",
   "scripts/flip-scheduled.mjs": "e0d6d8b239d47dc9782c0643ec640b3e26d48ff3",
   "scripts/make-og-default.mjs": "d8602e05c295a5918f80ea2a8eae318c1e87f1b4",
-  "scripts/make-template-release.mjs": "22b69f9371e72fa6764363579725e6391354855e",
+  "scripts/make-template-release.mjs": "402d0b115b4d2b9016116127526738cbab345ff3",
+  "src/components/BlockPage.astro": "23df6ebe76d35fe35c1d901c7239db4b9cf47875",
   "src/components/GalaxyHero.astro": "c4e918ee189f441636b42bb863d9a0b7f5e274ce",
   "src/components/GlenoidArt.astro": "009da8fa28c278e08e92ec4b25aa54a57d27058a",
   "src/components/GlyphBadge.astro": "249f4877bb539b51a779d774050006ecad06c80d",
@@ -125,6 +126,10 @@
   "src/lib/home.ts": "d38b76ecd1802d54d3c02618a96d8ca9eb1d9689",
   "src/lib/icons.js": "f5ea35a4a406e7d6892b1087ed35b133c568ec18",
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
+  "src/lib/pages/migrate.mjs": "c729d7bf2cb2d216e9b036db420683a9faf93969",
+  "src/lib/pages/render.mjs": "282310dd71e696d7ea398138d08cae4e6ffdf3c0",
+  "src/lib/pages/schema.mjs": "09baab156a3a0a6a1e577eed8db8115618800402",
+  "src/lib/pages/site-pages.ts": "52ca86a38a1dda27ade3583bcac3e3d8fa248c86",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
   "src/lib/professional.mjs": "f6228b9a5ceb15847a1e8599b87784b1af38f61c",
   "src/lib/rehype-gallery.mjs": "bb610588d2865746a8911ff0d714fdaa4ee34d8b",
@@ -132,17 +137,18 @@
   "src/lib/site.ts": "5236a3190b9bb581c7dff63a662468892cdd51cd",
   "src/lib/vocab.ts": "cc470586cbe72f4bcc79f8bf87a77dcc3324290d",
   "src/lib/withBase.ts": "5da4a7af1d196465f3b7194baedf162bf7aa0a2c",
-  "src/pages/about.astro": "98832107d09f6ddee836e5fbdb189a3335585097",
+  "src/pages/[slug].astro": "7e4cd3a68bbb60f98ab7e2ebe18a289be84a1578",
+  "src/pages/about.astro": "0d77c4bc602b14ec642a03960405b0b10a83a73d",
   "src/pages/appointments.astro": "b2ac55fe8ffe23a6d89d01a496b46564c3f2bd44",
   "src/pages/apps.astro": "33ec997033e78e054a72c21b5efbb9914f7b9852",
   "src/pages/blog/[slug].astro": "5600a2f96a9aaec7867fcb51bb554bf4d5ce0013",
   "src/pages/blog/index.astro": "10f13a550ccedc8c9f87a0f34dae995a984d3fce",
   "src/pages/c/[topic].astro": "9487acc8c384f0cae5b4f7bc565d9ed49dbb0da6",
-  "src/pages/contact.astro": "225fe16df4b9485737ec226432bfa867510c515b",
+  "src/pages/contact.astro": "251ef496cb504d404aa82037416aa6c96ba8fa7e",
   "src/pages/darkroom.astro": "8569834bc618e09f3d5e76b1266230c40d16e8ac",
   "src/pages/glyph-preview.astro": "f2071ecee5be32769501e99ec9e0f5a4227116a6",
   "src/pages/icons.astro": "de2c14964f6c511c10c11c7c49388fcdd9900f9d",
-  "src/pages/index.astro": "f46417a2f4f5b80c50a7dd681771f8279edb258a",
+  "src/pages/index.astro": "5643fa5502a9a592af147664a0bdf119a7da9c6a",
   "src/pages/observatory.astro": "07091bc4017d0f82c8ff5af5c7659cf5909e3fe0",
   "src/pages/og/[slug].png.ts": "379b0960c60044bdcd9b5864e81f429e6d87bded",
   "src/pages/posts/index.astro": "f5607fda208849a5e044de745e8b0062957a5eea",
@@ -153,6 +159,7 @@
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
+  "src/styles/blocks.css": "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
   "src/styles/global.css": "cfa4731cb5064fed7c6a09ac13b2dc697d828360",
   "src/styles/headers.css": "806c15e7948c6786dafeb2f11a1cd6d3c4b8ef62",
@@ -195,6 +202,28 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "scripts/make-template-release.mjs": [
+   "22b69f9371e72fa6764363579725e6391354855e",
+   "08e919a5f3995b73fe2522d9c0314250723096d2",
+   "d701cf0abb517f4be962f2b214cd1be0270d8823"
+  ],
+  "src/pages/about.astro": [
+   "98832107d09f6ddee836e5fbdb189a3335585097",
+   "f4397df9a2a9baf274713eb5c4aad21f8d9548b6"
+  ],
+  "src/pages/contact.astro": [
+   "225fe16df4b9485737ec226432bfa867510c515b",
+   "47fb24e1fb23b5b52f4c153a6173059b01061406",
+   "59ee3d0f95418c09f6a3983643690c7fd0a9a2da"
+  ],
+  "src/pages/index.astro": [
+   "f46417a2f4f5b80c50a7dd681771f8279edb258a",
+   "9fc550578f67a5e9914c287814941b39f12a4f08",
+   "c6b7e383843fdfb0fbc623406f9dd7dcabf6cd01",
+   "e1b565756dde71acc84587f5520abff9d607430b",
+   "d6c0d92933cfba538ebefc9c871f8f22d579369f",
+   "6268445d58c08849754dbb4ad724d967d504cd75"
+  ],
   "src/styles/global.css": [
    "22f067efcbea5ba35a71327bfca6f9be401b5848",
    "a0084ef66dcacc4c0a6b925dfd33f5732a834b82",
@@ -210,10 +239,6 @@
   "src/styles/headers.css": [
    "5e75fd27066c06ee6dd302f7234bf60f84135b06",
    "21b32156987272656a04f9666590625fe00bae12"
-  ],
-  "scripts/make-template-release.mjs": [
-   "08e919a5f3995b73fe2522d9c0314250723096d2",
-   "d701cf0abb517f4be962f2b214cd1be0270d8823"
   ],
   "src/components/GlyphBadge.astro": [
    "464419f16bd1906fe2dfb666562fd165d8c76632",
@@ -276,9 +301,6 @@
   "src/lib/vocab.ts": [
    "28ca7c2fc48a949638e6876b7d5cf6185335bec1"
   ],
-  "src/pages/about.astro": [
-   "f4397df9a2a9baf274713eb5c4aad21f8d9548b6"
-  ],
   "src/pages/appointments.astro": [
    "013d789f180b6f0491bd60d97b182f54244457df"
   ],
@@ -289,19 +311,8 @@
   "src/pages/c/[topic].astro": [
    "260413cd358cb2ee58bc13e9bfd96cb5b829c00e"
   ],
-  "src/pages/contact.astro": [
-   "47fb24e1fb23b5b52f4c153a6173059b01061406",
-   "59ee3d0f95418c09f6a3983643690c7fd0a9a2da"
-  ],
   "src/pages/icons.astro": [
    "b6eb8bc4201cca4307516bcefabd97b578cc8a7e"
-  ],
-  "src/pages/index.astro": [
-   "9fc550578f67a5e9914c287814941b39f12a4f08",
-   "c6b7e383843fdfb0fbc623406f9dd7dcabf6cd01",
-   "e1b565756dde71acc84587f5520abff9d607430b",
-   "d6c0d92933cfba538ebefc9c871f8f22d579369f",
-   "6268445d58c08849754dbb4ad724d967d504cd75"
   ],
   "src/pages/observatory.astro": [
    "2af0851a8d106e224026ce3fc90cf23880c49caa"

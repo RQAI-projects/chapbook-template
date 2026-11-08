@@ -1,0 +1,10 @@
+---
+// Pages made in Chapbook's page editor, at /<slug>/. Home, About and Contact have their own routes.
+import BlockPage from '../components/BlockPage.astro';
+import { customPages } from '../lib/pages/site-pages';
+export function getStaticPaths() {
+  return customPages.map((page) => ({ params: { slug: page.slug }, props: { page } }));
+}
+const { page } = Astro.props;
+---
+<BlockPage page={page} />

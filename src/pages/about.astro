@@ -12,7 +12,12 @@ import { site } from '../lib/site';
 import { aboutDetails } from '../lib/about.mjs';
 import { professionalDetails } from '../lib/professional.mjs';
 const about = aboutDetails(profile, site, professionalDetails((site as any).professional));
+import BlockPage from '../components/BlockPage.astro';
+import { blockPage } from '../lib/pages/site-pages';
+// An About page built in Chapbook's page editor replaces this one.
+const built = blockPage('about');
 ---
+{built ? <BlockPage page={built} title="About" /> : (
 <Base title="About" description={about.tagline ? `${site.name} — ${about.tagline}` : `About ${site.name}`}>
 
   <!-- ========== header ========== -->
@@ -232,6 +237,7 @@ const about = aboutDetails(profile, site, professionalDetails((site as any).prof
   </section>
   )}
 </Base>
+)}
 
 <style>
   .about-hero { overflow: hidden; padding-bottom: 3rem; }
