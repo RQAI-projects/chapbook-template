@@ -165,16 +165,19 @@ export function motionAttrs(m) {
 }
 // Moving shapes behind a block. Pure decoration: empty elements that the stylesheet arranges and
 // animates in the page's own colours, hidden from screen readers.
-const BACKDROP_PARTS = { aurora: 4, bubbles: 12, blobs: 3, waves: 3, orbits: 4, grid: 2, dots: 2, rays: 2, shapes: 12, lines: 9, ripples: 5, petals: 14, stars: 6, spotlight: 2, wash: 1, grain: 1 };
+const BACKDROP_PARTS = { globe: 0, ring: 0, terrain: 0, aurora: 4, bubbles: 12, blobs: 3, waves: 3, orbits: 4, grid: 2, dots: 2, rays: 2, shapes: 12, lines: 9, ripples: 5, petals: 14, stars: 6, spotlight: 2, wash: 1, grain: 1 };
 export function backdropHtml(kind, cls = '') {
   if (!Object.hasOwn(BACKDROP_PARTS, kind)) return '';
-  return `<div class="cbm-bd cbm-bd-${kind}${cls}" aria-hidden="true">${kind === 'stars' ? '<canvas></canvas>' : ''}${'<i></i>'.repeat(BACKDROP_PARTS[kind])}</div>`;
+  return `<div class="cbm-bd cbm-bd-${kind}${cls}" aria-hidden="true">${['stars', 'globe', 'ring', 'terrain'].includes(kind) ? '<canvas></canvas>' : ''}${'<i></i>'.repeat(BACKDROP_PARTS[kind])}</div>`;
 }
 // Styles for showing a page perfectly still (thumbnails, previews, a "movement off" view):
 // nothing animates, and the backdrops that only make sense moving are left out, as they are for
 // visitors who ask for less motion. A rolling headline is shown whole, on as many lines as it needs.
 export const STILL_CSS = '*,*::before,*::after{animation:none!important;transition:none!important}.cbm-bd-bubbles,.cbm-bd-petals,.cbm-bd-lines,.cbm-bd-ripples,.cbm-bd-stars canvas{display:none!important}.cb-mq-hero{width:auto;margin-left:0}.cb-mq-hero .cb-mq-track{width:auto;flex-wrap:wrap}.cb-mq-hero [aria-hidden=true]{display:none}.cbp .cb-mq-hero .cb-hero-h{display:block;flex:0 1 auto;min-width:0;white-space:normal;font-size:clamp(2.8rem,9vw,8rem)}.cb-mq-hero .cb-hero-h::after{display:none}';
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+// A steady stand-in for chance: the same piece always flies the same way, so the editor and the
+// website draw the same page. Returns a number from -1 to 1.
+const scatter = (i, salt = 1) => { const x = Math.sin((i + 1) * 12.9898 * salt + salt * 78.233) * 43758.5453; return (x - Math.floor(x)) * 2 - 1; };
 // A picture's address inside a style attribute: url('…') with the characters that could end it encoded.
 const cssUrl = (src) => `url('${String(src).replace(/[\\'"()\s<>]/g, (c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)}')`;
 
@@ -376,6 +379,47 @@ R_.hero = (C, b) => {
     }
     return `<div class="cb-open">${bg}${heading}<div class="cb-open-foot">${K(C, b, d)}${intro}${btns}${details}</div>${toggle}</div>`;
   }
+  if (v === 'carousel') {
+    // Photos stand in a ring that turns. Fewer than three would not make a ring, so they are
+    // shown as the plain photo band instead.
+    const all = [d.picture, ...shownMore(b, d)].filter(Boolean);
+    let ring;
+    if (C.editable) ring = `<div class="cb-car cb-car-still"><figure>${P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${morePics(C, b, d, 'cb-car-more')}</div>`;
+    else if (all.length < 3) ring = band;
+    else ring = `<div class="cb-car" style="--n:${all.length}"><div class="cb-car-ring">${all.map((p, i) => `<figure style="--i:${i}"><img src="${esc(imgSrc(C, p.src))}" alt="${esc(p.alt)}" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async"></figure>`).join('')}</div></div>`;
+    return `<div class="cb-hero-words">${words}${details}</div>${ring}${all.length < 3 && !C.editable ? '' : creditsOf(all)}`;
+  }
+  if (v === 'depth') {
+    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-depth"><span class="cb-depth-glow"></span><figure class="cb-depth-main">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${morePics(C, b, d, 'cb-depth-more')}</div></div>${creditsOf([d.picture, ...shownMore(b, d)])}`;
+  }
+  if (v === 'shatter') {
+    // The photo is also laid out as a grid of tiles, each showing its own part of it. The page's
+    // script flies them apart as the opening scrolls away; without it the photo is simply whole.
+    let photo = band;
+    if (d.picture && !d.video && !C.editable) {
+      const cols = 6, rows = 4, tiles = [];
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const i = r * cols + c;
+        tiles.push(`<i style="--c:${c};--r:${r};--dx:${Math.round((c - (cols - 1) / 2) * 90 + scatter(i, 2) * 60)}px;--dy:${Math.round((r - (rows - 1) / 2) * 110 + scatter(i, 3) * 70 - 40)}px;--dz:${Math.round(scatter(i, 5) * 260)}px;--rx:${Math.round(scatter(i, 7) * 80)}deg;--ry:${Math.round(scatter(i, 11) * 80)}deg"></i>`);
+      }
+      photo = `<figure class="cb-hero-pic cb-hero-band cb-shatter" data-scroll="exit" style="--cb-pic:${esc(cssUrl(imgSrc(C, d.picture.src)))}">${P(C, b, 'picture', d.picture, '', { eager: true })}<span class="cb-tiles" aria-hidden="true">${tiles.join('')}</span></figure>`;
+    }
+    return `${head}<div class="cb-poster-foot">${intro}<div>${btns}${details}</div></div>${photo}`;
+  }
+  if (v === 'backword') {
+    // One short word drawn as wide as the page, with the photo (or a film) floating in front of
+    // it among a few loose shapes. The shapes are decoration only, so the editor leaves them out.
+    const word = T(C, b, 'word', d.word, 'p', 'cb-bw-word', ` style="--len:${Math.max(4, Array.from(d.word || '').length)}"`);
+    const bits = C.editable ? '' : `<span class="cb-bw-bits" aria-hidden="true">${Array.from({ length: 7 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</span>`;
+    return `${word}<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-bw-wrap"><div class="cb-bw"><span class="cb-bw-disc"></span>${pic('cb-hero-pic cb-bw-pic')}${bits}</div></div></div>`;
+  }
+  if (v === 'lens') {
+    // A round window on the photo. A magnifying glass glides over it, then follows the pointer.
+    // A film plays in the window instead, without the glass.
+    const still = d.picture && !d.video;
+    const glass = still && !C.editable ? '<span class="cb-lens-glass" aria-hidden="true"><i></i></span>' : '';
+    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-lens"${still ? ` style="--cb-pic:${esc(cssUrl(imgSrc(C, d.picture.src)))}"` : ''}><span class="cb-lens-ring" aria-hidden="true"></span>${pic('cb-hero-pic cb-lens-pic')}${glass}</div></div>`;
+  }
   if (v === 'blob') {
     const dot = more.length || C.editable ? morePics(C, b, d, 'cb-blob-more', 'cb-blob-dot') : '';
     return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-blob"><span class="cb-blob-ring"></span>${pic('cb-hero-pic cb-blob-pic')}${dot}</div></div>${creditsOf(shownMore(b, d))}`;
@@ -464,6 +508,13 @@ R_.gallery = (C, b) => {
     return `${head}<div class="cb-mq cb-mq-pics" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${pics.length * 6}s"><div class="cb-mq-track">${track}</div></div>${creditsOf(pics)}`;
   }
   const list = LIST(C, b, 'pictures', pics, (p, i, wrap) => wrap(`${tile(p, i)}${p.alt || credit(p) ? `<figcaption>${credit(p)}</figcaption>` : ''}`, 'figure'), 'div', 'cb-gallery');
+  // Photos that start scattered and fly together into the grid as the block scrolls into view.
+  // Each photo's starting place is fixed by its position in the list.
+  if (b.variant === 'gather' && !C.editable) {
+    let i = -1;
+    const flown = list.replace(/<figure>/g, () => { i++; return `<figure style="--dx:${Math.round(scatter(i, 2) * 46)}vw;--dy:${Math.round(scatter(i, 3) * 60)}vh;--dz:${Math.round(scatter(i, 5) * 500)}px;--rz:${Math.round(scatter(i, 7) * 50)}deg">`; });
+    return `${head}${flown.replace('<div class="cb-gallery"', '<div class="cb-gallery" data-scroll="enter"')}`;
+  }
   return `${head}${list}`;
 };
 
@@ -486,6 +537,12 @@ R_.services = (C, b) => {
   else if (v === 'numbered') list = LIST(C, b, 'items', items, (s, i, w) => w(`<span class="cb-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div>${name(s, i)}${desc(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}</div><p class="cb-meta">${price(s, i)}${time(s, i)}</p>`), 'ol', 'cb-svc cb-svc-numbered');
   else if (v === 'table') list = LIST(C, b, 'items', items, (s, i, w) => w(`<div>${name(s, i)}${desc(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}</div>${time(s, i)}${price(s, i)}`, 'div'), 'div', 'cb-svc cb-svc-table');
   else if (v === 'rows') list = LIST(C, b, 'items', items, (s, i, w) => focusable(C, s.picture, w(`<span class="cb-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div class="cb-row-main">${name(s, i)}${desc(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}</div><p class="cb-meta">${time(s, i)}${price(s, i)}</p>${pic(s, i, 'cb-row-pic')}`)), 'div', 'cb-svc cb-svc-rows');
+  else if (v === 'flip') list = LIST(C, b, 'items', items, (s, i, w) => {
+    // The front shows the photo, name and price; the back the details. It turns when pointed at
+    // or focused (so a tap or the Tab key turns it too). In the editor both sides lie flat.
+    const card = w(`<div class="cb-flip-in"><div class="cb-flip-front">${pic(s, i)}<div class="cb-card-body">${name(s, i)}<p class="cb-meta">${time(s, i)}${price(s, i)}</p></div></div><div class="cb-flip-back">${desc(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}</div></div>`);
+    return C.editable ? card : card.replace(/^<article/, '<article tabindex="0"');
+  }, 'div', 'cb-svc cb-svc-flip');
   else if (v === 'board') list = LIST(C, b, 'items', items, (s, i, w) => w(`<div class="cb-menu-line">${name(s, i)}<i aria-hidden="true"></i>${price(s, i)}</div>${desc(s, i)}${time(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}`), 'div', 'cb-svc cb-svc-board');
   else list = LIST(C, b, 'items', items, (s, i, w) => w(`<figure class="cb-svc-pic">${P(C, b, `items.${i}.picture`, s.picture)}</figure><div class="cb-feature-body">${name(s, i)}${desc(s, i)}<p class="cb-meta">${time(s, i)}${price(s, i)}</p>${offer(s, i)}${serviceLinks(C, b, i, s)}</div>`), 'div', 'cb-svc cb-svc-feature');
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${list}`;
@@ -684,6 +741,13 @@ R_.showcase = (C, b) => {
   const d = b.data, items = d.items || [];
   const one = (x, i, w) => w(`${x.picture || C.editable ? `<figure class="cb-show-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}<div class="cb-show-body">${T(C, b, `items.${i}.tag`, x.tag, 'p', 'cb-show-tag')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-show-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-show-desc')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}</div>`, 'article', `cb-show-item${i ? '' : ' is-on'}`);
   const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
+  if (b.variant === 'layers') {
+    // A stack of sheets seen from an angle; they come apart as the block scrolls into view, each
+    // beside its own words.
+    const n = Math.max(items.length, 1);
+    const sheets = items.map((x, i) => `<i style="--i:${i};--n:${n}${x.picture ? `;--cb-pic:${esc(cssUrl(imgSrc(C, x.picture.src)))}` : ''}"${x.picture ? ' class="has-pic"' : ''}></i>`).join('');
+    return `${head}<div class="cb-layers"${C.editable ? '' : ' data-scroll="enter"'}><div class="cb-layers-stage" aria-hidden="true"><div class="cb-layers-stack">${sheets}</div></div>${LIST(C, b, 'items', items, one, 'div', 'cb-show cb-show-layers')}</div>`;
+  }
   if (b.variant === 'switch') return `${head}${LIST(C, b, 'items', items, (x, i, w) => focusable(C, x.picture, one(x, i, w)), 'div', 'cb-show cb-show-switch')}`;
   if (b.variant === 'plates') {
     // Round photos in a row. Each has its own colour; the page's script wipes the whole band to

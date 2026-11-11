@@ -610,6 +610,125 @@
 .cb-curtain-pic{margin:0;min-height:20rem;overflow:hidden}
 .cb-curtain-pic img,.cb-curtain-pic video,.cb-curtain-pic .cb-pic-empty,.cb-curtain-pic .cb-video-hold{border-radius:0;aspect-ratio:auto;border:0}
 
+/* ---- Opening: turning carousel of photos (3D) ------------------------------------------- */
+.cb-hero--carousel{text-align:center;overflow:clip}
+.cb-hero--carousel .cb-hero-h,.cb-hero--carousel .cb-lead{margin-inline:auto}
+.cb-hero--carousel .cb-actions,.cbp .cb-hero--carousel .cb-hero-facts{justify-content:center}
+.cb-car{--w:clamp(9.5rem,19vw,15rem);perspective:1200px;height:calc(var(--w) * 1.75);margin-top:clamp(2rem,5vw,3.5rem);display:grid;place-items:center}
+.cb-car-ring{position:relative;width:var(--w);aspect-ratio:3/4;transform-style:preserve-3d;transform:rotateX(-7deg)}
+.cb-car-ring figure{position:absolute;inset:0;margin:0;border-radius:var(--cb-r-img);overflow:hidden;box-shadow:0 20px 40px -20px rgba(0,0,0,.5);backface-visibility:hidden;
+  transform:rotateY(calc(360deg / var(--n) * var(--i))) translateZ(calc(var(--w) / 2 / tan(180deg / var(--n)) + 1.4rem))}
+.cb-car-ring img{width:100%;height:100%;object-fit:cover;border-radius:0}
+/* A ring needs room to turn in; without 3D support, and in the editor, the photos sit in a row. */
+.cb-car-still{height:auto;perspective:none;display:flex;flex-wrap:wrap;justify-content:center;gap:.8rem}
+.cb-car-still figure{flex:0 0 clamp(8rem,18vw,13rem);aspect-ratio:3/4;margin:0;border-radius:var(--cb-r-img);overflow:hidden}
+.cb-car-still img,.cb-car-still .cb-pic-empty{width:100%;height:100%;object-fit:cover;aspect-ratio:auto;border-radius:0}
+.cb-car-more{display:contents}
+
+/* ---- Opening: photos at different depths (3D) ------------------------------------------- */
+.cb-hero--depth .cb-hero-grid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:clamp(2rem,5vw,5rem);align-items:center}
+.cb-depth{position:relative;aspect-ratio:1/1.02;width:min(100%,36rem);margin-inline:auto;perspective:1100px;transform-style:preserve-3d}
+.cb-depth figure{position:absolute;margin:0;border-radius:calc(var(--cb-r-img) + .2rem);overflow:hidden;box-shadow:0 30px 60px -28px rgba(0,0,0,.55);transform:rotateX(var(--rx,4deg)) rotateY(var(--ry,-10deg)) translateZ(var(--z,0px))}
+.cb-depth img,.cb-depth video,.cb-depth .cb-pic-empty,.cb-depth .cb-video-hold{display:block;width:100%;height:100%;min-height:0;object-fit:cover;aspect-ratio:auto;border-radius:0;border:0}
+.cb-depth-main{inset:10% 8% 12% 22%;--z:0px}
+.cb-depth-more{display:contents}
+.cb-depth-more>figure:nth-child(1){left:0;top:2%;width:40%;aspect-ratio:4/5;--z:110px}
+.cb-depth-more>figure:nth-child(2){right:0;bottom:0;width:42%;aspect-ratio:1;--z:170px}
+.cb-depth-more>figure:nth-child(3){left:8%;bottom:4%;width:30%;aspect-ratio:1;--z:-120px}
+.cb-depth-glow{position:absolute;inset:14%;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 45%,transparent),transparent);filter:blur(30px);transform:translateZ(-200px)}
+.cb-depth .pe-add-cell{position:absolute;left:50%;bottom:-3.8rem;transform:translateX(-50%);z-index:5;white-space:nowrap}
+
+/* ---- Opening: photo floating over a giant word (3D) ------------------------------------- */
+.cb-hero--backword{position:relative;overflow:clip}
+.cb-hero--backword>.cb-in{position:static}
+.cb-hero--backword .cb-hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(2rem,5vw,5rem);align-items:center}
+.cbp .cb-bw-word{position:absolute;left:50%;bottom:-.13em;transform:translateX(-50%);z-index:0;margin:0;max-width:none;white-space:nowrap;pointer-events:none;
+  font-family:var(--cb-heading-font,inherit);font-weight:800;line-height:.8;letter-spacing:-.045em;text-transform:uppercase;font-size:min(24rem,calc(150vw / var(--len,6)));color:color-mix(in srgb,currentColor 11%,transparent)}
+[data-m-edit] .cb-bw-word{pointer-events:auto;min-width:4em;min-height:.8em;text-align:center}
+.cb-bw-wrap{perspective:1100px;width:min(100%,30rem);margin-inline:auto}
+.cb-bw{position:relative;aspect-ratio:1/1.08;transform-style:preserve-3d}
+.cb-bw-disc{position:absolute;inset:14% 4% 2%;border-radius:50%;background:color-mix(in srgb,currentColor 12%,transparent);transform:translateZ(-60px)}
+.cbp .cb-bw-pic{position:absolute;inset:3% 21% 5%;margin:0;border-radius:999px!important;overflow:hidden;box-shadow:0 46px 60px -34px rgba(0,0,0,.6);transform:translateZ(50px)}
+.cb-bw-pic img,.cb-bw-pic video,.cb-bw-pic .cb-pic-empty,.cb-bw-pic .cb-video-hold{display:block;width:100%;height:100%;min-height:0;object-fit:cover;aspect-ratio:auto;border-radius:0;border:0}
+.cb-bw-bits{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
+.cb-bw-bits i{position:absolute;aspect-ratio:1;border-radius:50%;background:currentColor;transform:translateZ(var(--z,0px))}
+.cb-bw-bits i:nth-child(1){left:2%;top:10%;width:15%;--z:140px}
+.cb-bw-bits i:nth-child(2){right:0;top:4%;width:22%;--z:-80px;background:var(--accent)}
+.cb-bw-bits i:nth-child(3){left:6%;bottom:5%;width:21%;aspect-ratio:2;border-radius:999px 999px 0 0;--z:180px;background:var(--cb-deep)}
+.cb-bw-bits i:nth-child(4){right:5%;bottom:17%;width:13%;--z:220px;background:color-mix(in srgb,currentColor 60%,transparent)}
+.cb-bw-bits i:nth-child(5){left:25%;top:-3%;width:10%;border-radius:70% 0 70% 0;--z:90px;background:var(--accent)}
+.cb-bw-bits i:nth-child(6){right:19%;bottom:-3%;width:12%;--z:120px;background:none;border:.3rem solid currentColor}
+.cb-bw-bits i:nth-child(7){left:-4%;top:47%;width:8%;border-radius:70% 0 70% 0;--z:40px;background:color-mix(in srgb,currentColor 38%,transparent)}
+/* On a band of the accent colour, accent-coloured pieces would vanish: they take the page's card colour. */
+.cb-bg-accent .cb-bw-bits i:nth-child(2),.cb-bg-accent .cb-bw-bits i:nth-child(5){background:var(--cb-surface)}
+.cb-bg-dark .cb-bw-bits i:nth-child(3){background:var(--accent)}
+
+/* ---- Opening: round window with a magnifying glass --------------------------------------- */
+.cb-hero--lens .cb-hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(2rem,5vw,5rem);align-items:center}
+.cb-lens{--lx:.66;--ly:.38;position:relative;width:min(100%,34rem);aspect-ratio:1;margin-inline:auto;container-type:size}
+.cb-lens-ring{position:absolute;inset:0;border-radius:50%;border:2px dashed color-mix(in srgb,currentColor 30%,transparent)}
+.cbp .cb-lens-pic{position:absolute;inset:6%;margin:0;border-radius:50%!important;overflow:hidden;box-shadow:0 30px 70px -34px rgba(0,0,0,.55)}
+.cb-lens-pic img,.cb-lens-pic video,.cb-lens-pic .cb-pic-empty,.cb-lens-pic .cb-video-hold{display:block;width:100%;height:100%;min-height:0;object-fit:cover;aspect-ratio:auto;border-radius:0;border:0}
+/* The photo under the glass keeps still, or the two copies would drift apart. */
+.cbp .cb-lens-pic :is(img,video){animation:none!important;scale:1!important;transform:none!important}
+/* The glass holds a second, larger copy of the photo, lined up with the first and grown about the
+   glass's own centre. It only shows while the page's script is there to move it. */
+.cb-lens-glass{display:none;position:absolute;width:34cqw;height:34cqw;left:calc(var(--lx) * 100cqw - 17cqw);top:calc(var(--ly) * 100cqw - 17cqw);border-radius:50%;overflow:hidden;border:3px solid #fff;box-shadow:0 18px 40px -14px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.14)}
+.cb-lens-glass i{position:absolute;width:88cqw;height:88cqw;left:calc(23cqw - var(--lx) * 100cqw - 3px);top:calc(23cqw - var(--ly) * 100cqw - 3px);border-radius:50%;background:var(--cb-pic) center/cover;
+  transform-origin:calc(var(--lx) * 100cqw - 6cqw) calc(var(--ly) * 100cqw - 6cqw);transform:scale(1.9)}
+
+/* ---- Opening: photo that breaks into tiles ---------------------------------------------- */
+.cb-shatter{position:relative;overflow:visible!important}
+.cb-tiles{display:none}
+/* The tiles take over from the whole photo only while the page's script is running them. */
+.cb-shatter.is-live>img{visibility:hidden}
+.cb-shatter.is-live .cb-credit{position:absolute;right:.6rem;bottom:.4rem}
+.cb-shatter.is-live .cb-tiles{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(4,1fr);perspective:1400px;transform-style:preserve-3d}
+.cb-tiles i{display:block;background-image:var(--cb-pic);background-size:600% 400%;background-position:calc(var(--c) * 20%) calc(var(--r) * 33.3333%);
+  transform:translate3d(calc(var(--p,0) * var(--dx)),calc(var(--p,0) * var(--dy)),calc(var(--p,0) * var(--dz))) rotateX(calc(var(--p,0) * var(--rx))) rotateY(calc(var(--p,0) * var(--ry)));opacity:calc(1 - var(--p,0) * .85)}
+
+/* ---- Gallery: photos fly together -------------------------------------------------------- */
+.cb-gallery--gather .cb-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,15rem),1fr));gap:clamp(.6rem,1.5vw,1.1rem)}
+.cb-gallery--gather .cb-gallery img{aspect-ratio:1;object-fit:cover}
+.cb-gallery--gather{overflow:clip}
+.cb-gallery--gather .cb-gallery.is-live{perspective:1400px}
+.cb-gallery--gather .cb-gallery.is-live>figure{--q:calc(1 - var(--p,1));transform:translate3d(calc(var(--q) * var(--dx,0px)),calc(var(--q) * var(--dy,0px)),calc(var(--q) * var(--dz,0px))) rotate(calc(var(--q) * var(--rz,0deg)));opacity:calc(.15 + var(--p,1) * .85)}
+
+/* ---- Services: cards that turn over (3D) -------------------------------------------------- */
+.cb-svc-flip{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,15rem),1fr));gap:clamp(1rem,2vw,1.5rem)}
+.cb-svc-flip>article{perspective:1100px;min-height:21rem;border-radius:var(--cb-r);outline-offset:4px}
+.cb-flip-in{position:relative;width:100%;height:100%;min-height:inherit;transform-style:preserve-3d}
+.cb-flip-front,.cb-flip-back{position:absolute;inset:0;display:flex;flex-direction:column;border-radius:var(--cb-r);overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--line-strong)}
+.cb-flip-front{background:var(--bg-0)}
+.cb-flip-front .cb-svc-pic{flex:1;min-height:0}
+.cb-flip-front .cb-svc-pic img{width:100%;height:100%;object-fit:cover}
+.cb-flip-front .cb-meta{margin-top:.4rem}
+.cb-flip-back{transform:rotateY(180deg);justify-content:center;padding:clamp(1.1rem,2.4vw,1.6rem);background:var(--accent);color:var(--cb-on-accent);--ink:var(--cb-on-accent);--ink-dim:var(--cb-on-accent);--cb-accent-text:var(--cb-on-accent);border-color:var(--accent)}
+.cb-flip-back .cb-svc-desc{color:inherit;font-size:1rem;margin:0}
+.cb-flip-back .cb-btn{background:var(--cb-on-accent);color:var(--accent);border-color:var(--cb-on-accent)}
+.cb-flip-back .cb-offer{background:color-mix(in srgb,var(--cb-on-accent) 18%,transparent);color:var(--cb-on-accent)}
+.cb-svc-flip>article:hover .cb-flip-in,.cb-svc-flip>article:focus-within .cb-flip-in,.cb-svc-flip>article:focus .cb-flip-in{transform:rotateY(180deg)}
+/* In the editor both sides lie flat, one above the other, so each can be changed. */
+[data-m-edit] .cb-svc-flip>article{min-height:0}
+[data-m-edit] .cb-flip-in{transform:none!important}
+[data-m-edit] .cb-flip-front,[data-m-edit] .cb-flip-back{position:static;transform:none;backface-visibility:visible}
+[data-m-edit] .cb-flip-back{margin-top:.5rem}
+
+/* ---- Showcase: layers that come apart (3D) ------------------------------------------------ */
+.cb-layers{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(2rem,5vw,5rem);align-items:center}
+.cb-layers-stage{position:sticky;top:calc(var(--header-h,56px) + 2rem);height:clamp(20rem,46vw,32rem);display:grid;place-items:center;perspective:1600px}
+.cb-layers-stack{position:relative;width:min(62%,17rem);aspect-ratio:1;transform-style:preserve-3d;transform:rotateX(58deg) rotateZ(-38deg)}
+.cb-layers-stack i{position:absolute;inset:0;border-radius:1.1rem;background:var(--cb-surface);box-shadow:inset 0 0 0 1.5px var(--line-strong),0 0 0 1px color-mix(in srgb,var(--ink) 8%,transparent);
+  transform:translateZ(calc((var(--i) - (var(--n) - 1) / 2) * (1.1rem + var(--p,1) * 4.4rem)))}
+.cb-layers-stack i.has-pic{background:var(--cb-pic) center/cover}
+.cb-layers-stack i:nth-child(3n+1):not(.has-pic){background:var(--accent)}
+.cb-layers-stack i:nth-child(3n):not(.has-pic){background:var(--cb-deep)}
+.cb-show-layers{gap:0}
+.cb-show-layers .cb-show-item{padding:clamp(1.1rem,2.4vw,1.8rem) 0;border-top:1px solid var(--line-strong)}
+.cb-show-layers .cb-show-item:last-of-type{border-bottom:1px solid var(--line-strong)}
+.cb-show-layers .cb-show-pic{display:none}
+[data-m-edit] .cb-show-layers .cb-show-pic{display:block;max-width:14rem;margin-bottom:.8rem}
+
 /* ---- Text that lights up --------------------------------------------------------------- */
 .cb-text--lit .cb-lit{font-family:var(--cb-head);font-size:clamp(1.5rem,3.5vw,3rem);line-height:1.22;letter-spacing:-.02em;max-width:24em}
 .cb-text--lit .cb-lit p{margin:0 0 .7em}
@@ -773,6 +892,13 @@
   .cb-creds-strip li{padding-inline:.9rem}
   .cb-hero--orbit .cb-hero-grid,.cb-hero--collage .cb-hero-grid,.cb-hero--arch .cb-hero-grid,.cb-hero--blob .cb-hero-grid,.cb-wm-foot,.cb-bento-top,.cb-curtain,.cb-show-stack .cb-show-item{grid-template-columns:minmax(0,1fr)!important}
   .cb-blob{width:min(80%,22rem);margin-top:1rem}
+  .cb-hero--depth .cb-hero-grid,.cb-hero--backword .cb-hero-grid,.cb-hero--lens .cb-hero-grid,.cb-layers{grid-template-columns:minmax(0,1fr)!important}
+  .cb-bw-wrap{width:min(88%,22rem);margin-top:1rem}
+  .cb-lens{width:min(100%,24rem);margin-top:1rem}
+  .cbp .cb-bw-word{bottom:-.1em}
+  .cb-depth{width:min(100%,24rem);margin-top:1rem}
+  .cb-layers-stage{position:static;height:17rem}
+  .cb-car{--w:clamp(7rem,34vw,10rem)}
   .cb-open{--oh:clamp(30rem,84vh,44rem);grid-template-rows:auto minmax(3rem,1fr) auto auto}
   .cbp .cb-open-h{grid-area:1/1/4/-1;font-size:clamp(2.6rem,15cqw,5rem)}
   .cb-open-foot{grid-area:4/1;max-width:none;margin-top:1.2rem}

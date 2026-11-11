@@ -15,7 +15,7 @@ const TARGETS = [
 // Layouts that bring themselves in; the scroll effect leaves them alone.
 const OWN_ENTRANCE = '.cb-bento, .cb-curtain, .cb-open, .cb-hero-bg, .cb-backdrop, .cbm-bd, .cb-mask-thumb, .cb-plates-bg, .cb-plates-wipe';
 const PICTURES = '.cb-pic-frame, .cb-figure, .cb-svc-pic, .cb-portrait, .cb-show-pic, .cb-gallery > figure, .cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-arch-pic):not(.cb-curtain-pic)';
-const KEEPS_MOVING = '.cb-mq:not(.cb-mq-still), .cb-film:not(.cb-film-still), .cbm-bd, .cb-orbit, .cb-collage, .cb-arch-badge, .cb-mask-h, .cb-rot, .cb-blob, .cb-inset-bg, .cb-open-bg, .cb-factlist-circles';
+const KEEPS_MOVING = '.cb-car:not(.cb-car-still), .cb-depth, .cb-bw, .cb-lens, .cbm-bd canvas, .cb-mq:not(.cb-mq-still), .cb-film:not(.cb-film-still), .cbm-bd, .cb-orbit, .cb-collage, .cb-arch-badge, .cb-mask-h, .cb-rot, .cb-blob, .cb-inset-bg, .cb-open-bg, .cb-factlist-circles';
 const PAUSE_KEY = 'cbm-paused';
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -105,7 +105,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   // ---- the opening heading: word by word, letter by letter, typed ---------------------------
   const headingStyle = look('heading');
   let splitHeading = null;
-  if (!reduce && hero && ['words', 'letters', 'typed'].includes(headingStyle)) {
+  if (!reduce && hero && ['words', 'letters', 'typed', 'gather'].includes(headingStyle)) {
     const h = hero.querySelector('.cb-hero-h');
     if (h && !h.closest('.cb-mq') && !h.classList.contains('cb-mask-h') && !h.classList.contains('cb-open-h') && !h.isContentEditable) {
       const original = [...h.childNodes].map((n) => n.cloneNode(true));
@@ -125,7 +125,12 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
             if (/^\s+$/.test(part)) { holder.append(doc.createTextNode(' ')); continue; }
             if (letters) {
               const group = span('cbm-lg');
-              for (const ch of Array.from(part)) { const l = span('cbm-l', ch); l.style.setProperty('--k', String(k++)); group.append(l); }
+              for (const ch of Array.from(part)) {
+                const l = span('cbm-l', ch); l.style.setProperty('--k', String(k++));
+                // Letters that fly together each start somewhere of their own.
+                if (headingStyle === 'gather') { l.style.setProperty('--gx', `${Math.round((Math.random() - 0.5) * 640)}px`); l.style.setProperty('--gy', `${Math.round((Math.random() - 0.5) * 360)}px`); l.style.setProperty('--gr', `${Math.round((Math.random() - 0.5) * 120)}deg`); }
+                group.append(l);
+              }
               holder.append(group);
             } else {
               const w = span('cbm-w'), inner = span('', part);
@@ -206,6 +211,92 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   } else root.classList.add('cbm-ready');
   undo.push(() => root.classList.remove('cbm-ready'));
   if (splitHeading) frame(() => frame(() => splitHeading.classList.add('is-in')));
+
+  // ---- things that fly apart or together as the reader scrolls --------------------------------
+  // Each marked element is given --p, from 0 to 1: how far it has come into view ("enter") or
+  // gone on its way out ("exit"). The stylesheet does the rest. Without this, --p is never set
+  // and everything sits in its finished place.
+  if (!reduce) {
+    const moving = [...root.querySelectorAll('[data-scroll]')];
+    if (moving.length) {
+      for (const el of moving) el.classList.add('is-live');
+      let queued = false;
+      const place = () => {
+        queued = false;
+        const vh = win.innerHeight || html.clientHeight;
+        for (const el of moving) {
+          const r = el.getBoundingClientRect();
+          if (r.bottom < -vh || r.top > vh * 2) continue;
+          const p = el.getAttribute('data-scroll') === 'exit'
+            ? clamp((vh * 0.4 - (r.top + r.height / 2)) / (vh * 0.62), 0, 1)
+            : clamp((vh * 0.95 - r.top) / (vh * 0.6), 0, 1);
+          el.style.setProperty('--p', p.toFixed(3));
+        }
+      };
+      const ask = () => { if (!queued) { queued = true; frame(place); } };
+      on(win, 'scroll', ask, { passive: true }); on(win, 'resize', ask, { passive: true });
+      place();
+      undo.push(() => { for (const el of moving) { el.classList.remove('is-live'); el.style.removeProperty('--p'); } });
+    }
+  }
+
+  // ---- shapes in three dimensions ------------------------------------------------------------
+  // A globe of dots, a ring, a rolling landscape: points in space, turned a little each frame and
+  // drawn smaller and fainter the further away they are. Drawn once and left still for visitors
+  // who ask for less motion.
+  for (const kind of ['globe', 'ring', 'terrain']) for (const bd of root.querySelectorAll(`.cbm-bd-${kind}`)) shape3d(bd, kind);
+  function shape3d(bd, kind) {
+    const canvas = bd.querySelector('canvas'), ctx = canvas?.getContext?.('2d');
+    if (!ctx) return;
+    const style = win.getComputedStyle(bd);
+    const ink = style.getPropertyValue('--bd-ink').trim() || '#888', accent = style.getPropertyValue('--bd-a').trim() || ink;
+    const pts = [];
+    if (kind === 'globe') { const n = 460; for (let i = 0; i < n; i++) { const y = 1 - (i / (n - 1)) * 2, r = Math.sqrt(1 - y * y), a = i * 2.39996; pts.push([Math.cos(a) * r, y, Math.sin(a) * r, i % 9 === 0]); } }
+    else if (kind === 'ring') { for (let u = 0; u < 44; u++) for (let v = 0; v < 12; v++) { const a = (u / 44) * Math.PI * 2, b = (v / 12) * Math.PI * 2, R = 0.72 + 0.27 * Math.cos(b); pts.push([R * Math.cos(a), 0.27 * Math.sin(b), R * Math.sin(a), (u + v) % 7 === 0]); } }
+    else { for (let z = 0; z < 20; z++) for (let x = 0; x < 40; x++) pts.push([(x / 39 - 0.5) * 3.4, 0, z / 19 * 2.4, (x + z) % 11 === 0]); }
+    let w = 0, h = 0, raf = 0, visible = true, t = 0, turn = 0, tilt = 0, last = 0;
+    const size = () => { const r = canvas.getBoundingClientRect(), dpr = Math.min(win.devicePixelRatio || 1, 2); w = r.width; h = r.height; canvas.width = Math.max(1, Math.round(w * dpr)); canvas.height = Math.max(1, Math.round(h * dpr)); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+    const paint = () => {
+      ctx.clearRect(0, 0, w, h);
+      if (kind === 'terrain') {
+        for (const [x, , z, hot] of pts) {
+          const y = Math.sin(x * 2.1 + t * 0.9) * 0.16 + Math.cos(z * 3.2 - t * 0.7) * 0.13 + Math.sin((x + z) * 1.4 + t * 0.5) * 0.08;
+          const depth = 1 / (0.9 + z * 0.85), sx = w / 2 + x * depth * w * 0.36, sy = h * 0.2 + (0.62 - y) * depth * h * 0.95;
+          ctx.globalAlpha = clamp(depth * (hot ? 1 : 0.62), 0, 1); ctx.fillStyle = hot ? accent : ink;
+          ctx.beginPath(); ctx.arc(sx, sy, Math.max(0.6, depth * 2.3), 0, Math.PI * 2); ctx.fill();
+        }
+      } else {
+        const ay = t * 0.28 + turn, ax = (kind === 'ring' ? 1.05 : 0.38) + tilt, cy = Math.cos(ay), sy0 = Math.sin(ay), cx = Math.cos(ax), sx0 = Math.sin(ax), R = Math.min(w, h) * 0.42;
+        for (const [x0, y0, z0, hot] of pts) {
+          const x = x0 * cy + z0 * sy0, z1 = -x0 * sy0 + z0 * cy, y = y0 * cx - z1 * sx0, z = y0 * sx0 + z1 * cx;
+          const depth = 2.4 / (2.4 + z), near = (1 - z) / 2;
+          ctx.globalAlpha = clamp(0.18 + near * (hot ? 0.82 : 0.55), 0, 1); ctx.fillStyle = hot ? accent : ink;
+          ctx.beginPath(); ctx.arc(w / 2 + x * R * depth, h / 2 + y * R * depth, Math.max(0.6, (0.7 + near * 1.6) * (hot ? 1.5 : 1)), 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+    };
+    const draw = (now) => {
+      raf = 0;
+      if (!alive || !visible || doc.hidden || paused()) return;
+      t += Math.min(0.05, (now - (last || now)) / 1000); last = now;
+      paint();
+      raf = clock.requestAnimationFrame(draw);
+    };
+    const wake = () => { last = 0; if (!raf && !reduce) raf = clock.requestAnimationFrame(draw); };
+    size(); paint();
+    if ('ResizeObserver' in win) { const ro = new win.ResizeObserver(() => { size(); paint(); wake(); }); ro.observe(canvas); undo.push(() => ro.disconnect()); }
+    on(win, 'resize', () => { size(); paint(); wake(); }, { passive: true });
+    if ('IntersectionObserver' in win) { const io = new win.IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) wake(); }); io.observe(bd); undo.push(() => io.disconnect()); }
+    if (finePointer && kind !== 'terrain') {
+      on(bd.parentElement, 'pointermove', (e) => { const r = bd.getBoundingClientRect(); turn = ((e.clientX - r.left) / r.width - 0.5) * 1.2; tilt = ((e.clientY - r.top) / r.height - 0.5) * 0.5; });
+      on(bd.parentElement, 'pointerleave', () => { turn = 0; tilt = 0; });
+    }
+    on(doc, 'visibilitychange', wake);
+    wakers.push(wake);
+    wake();
+    undo.push(() => { clock.cancelAnimationFrame(raf); raf = 0; ctx.clearRect(0, 0, w, h); });
+  }
 
   // ---- numbers that count up ----------------------------------------------------------------
   if (!reduce && root.hasAttribute('data-m-count') && 'IntersectionObserver' in win) {
@@ -317,6 +408,29 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
         });
         on(el, 'pointerleave', () => { el.style.removeProperty('--mx'); el.style.removeProperty('--my'); });
       }
+    }
+    // Photos at different depths: the whole scene leans towards the pointer.
+    for (const scene of root.querySelectorAll('.cb-depth, .cb-bw')) {
+      const block = scene.closest('.cb') || scene;
+      on(block, 'pointermove', (e) => {
+        const r = block.getBoundingClientRect();
+        scene.style.setProperty('--sy', `${(((e.clientX - r.left) / r.width - 0.5) * 22).toFixed(1)}deg`);
+        scene.style.setProperty('--sx', `${((0.5 - (e.clientY - r.top) / r.height) * 14).toFixed(1)}deg`);
+        scene.classList.add('is-live');
+      });
+      on(block, 'pointerleave', () => scene.classList.remove('is-live'));
+      undo.push(() => { scene.classList.remove('is-live'); scene.style.removeProperty('--sx'); scene.style.removeProperty('--sy'); });
+    }
+    // Magnifying glass: it goes where the pointer is, and stays where it was left.
+    for (const lens of root.querySelectorAll('.cb-lens')) {
+      if (!lens.querySelector('.cb-lens-glass')) continue;
+      on(lens, 'pointermove', (e) => {
+        const r = lens.getBoundingClientRect();
+        lens.style.setProperty('--lx', clamp((e.clientX - r.left) / r.width, 0.2, 0.8).toFixed(3));
+        lens.style.setProperty('--ly', clamp((e.clientY - r.top) / r.height, 0.2, 0.8).toFixed(3));
+        lens.classList.add('is-live');
+      });
+      undo.push(() => { lens.classList.remove('is-live'); lens.style.removeProperty('--lx'); lens.style.removeProperty('--ly'); });
     }
     // Spotlight: the light goes where the pointer is.
     for (const bd of root.querySelectorAll('.cbm-bd-spotlight')) {

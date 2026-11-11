@@ -41,6 +41,15 @@
 @keyframes cbm-recede{to{transform:scale(.9);opacity:.3}}
 @keyframes cbm-rise-in{from{translate:0 34%;opacity:.15}to{translate:0 0;opacity:1}}
 @keyframes cbm-wipe{to{clip-path:circle(150% at var(--wx,50%) var(--wy,60%))}}
+@property --lx{syntax:'<number>';inherits:true;initial-value:.66}
+@property --ly{syntax:'<number>';inherits:true;initial-value:.38}
+@keyframes cbm-glide{0%,100%{--lx:.66;--ly:.38}25%{--lx:.4;--ly:.62}50%{--lx:.3;--ly:.36}75%{--lx:.6;--ly:.68}}
+@keyframes cbm-bob{from{translate:0 -2.5%}to{translate:0 2.5%}}
+@keyframes cbm-floaty{from{translate:0 -10px;rotate:-8deg}to{translate:0 12px;rotate:10deg}}
+@keyframes cbm-pop{from{scale:0}}
+@keyframes cbm-ring{to{rotate:1turn}}
+@keyframes cbm-car{to{transform:rotateX(-7deg) rotateY(-1turn)}}
+@keyframes cbm-sway{from{transform:rotateY(-7deg) rotateX(3deg)}to{transform:rotateY(7deg) rotateX(-3deg)}}
 @keyframes cbm-sheen{0%,70%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
 
 /* ======================================================================================== */
@@ -113,6 +122,28 @@
     .cb-giant-h{animation:cbm-rise-in linear both;animation-timeline:view();animation-range:entry 0% cover 34%}
   }
 
+  /* Photo over a giant word: the pieces pop in one after another, then everything floats, and the
+     whole scene leans towards the pointer. */
+  .cb-bw-pic{animation:cbm-pop .8s var(--m-ease) .15s backwards,cbm-bob 4.6s ease-in-out infinite alternate}
+  .cb-bw-bits i{animation:cbm-pop .7s var(--m-ease) calc(.35s + var(--i) * 90ms) backwards,cbm-floaty calc(4s + var(--i) * .7s) ease-in-out calc(var(--i) * -.9s) infinite alternate}
+  .cb-bw{transition:transform .3s ease-out}
+  .cb-bw.is-live{transform:rotateY(var(--sy,0deg)) rotateX(var(--sx,0deg))}
+  /* Magnifying glass: it glides over the photo by itself until the pointer takes it. */
+  html.cbm-js .cb-lens-glass{display:block}
+  .cb-lens{animation:cbm-glide 15s ease-in-out infinite}
+  .cb-lens.is-live{animation:none}
+  .cb-lens-ring{animation:cbm-ring 70s linear infinite}
+  /* Turning carousel: the ring of photos turns slowly, and waits while it is pointed at. */
+  .cb-car:not(.cb-car-still) .cb-car-ring{animation:cbm-car 46s linear infinite}
+  .cb-car:hover .cb-car-ring{animation-play-state:paused}
+  /* Photos at different depths: the whole scene sways gently until the pointer takes over. */
+  .cb-depth{animation:cbm-sway 9s ease-in-out infinite alternate}
+  .cb-depth.is-live{animation:none;transform:rotateY(var(--sy,0deg)) rotateX(var(--sx,0deg));transition:transform .3s ease-out}
+  /* Cards that turn over. */
+  .cb-flip-in{transition:transform .7s var(--m-ease)}
+  /* Layers come apart smoothly. */
+  .cb-layers-stack i{transition:transform .2s linear}
+
   /* Rising screen: tipped back, it flattens as it scrolls into view. */
   @supports (animation-timeline:view()){
     .cb-stage-pic{transform-origin:50% 0;animation:cbm-flatten linear both;animation-timeline:view();animation-range:entry 0% cover 42%}
@@ -157,6 +188,15 @@
   .cbp .cb-mq-hero .cb-hero-h{font-size:clamp(2.8rem,9vw,8rem)}
   .cb-t-marquee .cb-mq-item{white-space:normal}
   .cb-show-stack .cb-show-item{position:relative;top:auto}
+  .cb-car{height:auto;perspective:none;display:flex;flex-wrap:wrap;justify-content:center;gap:.8rem}
+  .cb-car-ring{display:contents}
+  .cb-car-ring figure{position:static;transform:none;flex:0 0 clamp(8rem,18vw,13rem);aspect-ratio:3/4}
+}
+/* A browser that cannot work out the ring's size shows the photos in a row too. */
+@supports not (width:calc(1px * tan(45deg))){
+  .cb-car{height:auto;perspective:none;display:flex;flex-wrap:wrap;justify-content:center;gap:.8rem}
+  .cb-car-ring{display:contents}
+  .cb-car-ring figure{position:static;transform:none;flex:0 0 clamp(8rem,18vw,13rem);aspect-ratio:3/4}
 }
 
 /* A page whose script is not running (scripts off, blocked, or failed to start) has no Pause
@@ -170,13 +210,16 @@ html:not(.cbm-js) .cb-mq-hero .cb-hero-h::after{display:none}
 html:not(.cbm-js) .cb-mq-hero .cb-mq-track{justify-content:flex-start}
 html:not(.cbm-js) .cbp .cb-mq-hero .cb-hero-h{font-size:clamp(2.8rem,9vw,8rem)}
 html:not(.cbm-js) .cb-t-marquee .cb-mq-item{white-space:normal}
+html:not(.cbm-js) .cb-car{height:auto;perspective:none;display:flex;flex-wrap:wrap;justify-content:center;gap:.8rem}
+html:not(.cbm-js) .cb-car-ring{display:contents}
+html:not(.cbm-js) .cb-car-ring figure{position:static;transform:none;flex:0 0 clamp(8rem,18vw,13rem);aspect-ratio:3/4}
 html:not(.cbm-js) .cbp *,html:not(.cbm-js) .cbp *::before,html:not(.cbm-js) .cbp *::after{animation:none!important}
-html:not(.cbm-js) :is(.cbm-bd-bubbles,.cbm-bd-petals,.cbm-bd-lines,.cbm-bd-ripples,.cbm-bd-stars canvas){display:none}
+html:not(.cbm-js) :is(.cbm-bd-bubbles,.cbm-bd-petals,.cbm-bd-lines,.cbm-bd-ripples,.cbm-bd canvas){display:none}
 
 /* Paused by the visitor, or standing still in the editor. */
 html.cbm-paused .cbp *,html.cbm-paused .cbp *::before,html.cbm-paused .cbp *::after,
 .cbp[data-m-edit] *,.cbp[data-m-edit] *::before,.cbp[data-m-edit] *::after{animation-play-state:paused!important}
-.cbp[data-m-edit] :is(.cb-open-bg,.cb-open-a,.cb-open-b,.cb-open-foot,.cb-giant-h),.cbp[data-m-edit] .cb-open::before,.cbp[data-m-edit] .cb-curtain-words,.cbp[data-m-edit] .cb-bento-tile,.cbp[data-m-edit] .cb-orbit-core,.cbp[data-m-edit] .cb-arch-pic img,.cbp[data-m-edit] .cb-curtain-pic img,.cbp[data-m-edit] .cb-stage-pic{animation:none!important}
+.cbp[data-m-edit] :is(.cb-depth,.cb-bw-pic,.cb-lens,.cb-lens-ring,.cb-open-bg,.cb-open-a,.cb-open-b,.cb-open-foot,.cb-giant-h),.cbp[data-m-edit] .cb-open::before,.cbp[data-m-edit] .cb-curtain-words,.cbp[data-m-edit] .cb-bento-tile,.cbp[data-m-edit] .cb-orbit-core,.cbp[data-m-edit] .cb-arch-pic img,.cbp[data-m-edit] .cb-curtain-pic img,.cbp[data-m-edit] .cb-stage-pic{animation:none!important}
 
 /* The page's own Pause button (the script adds it when something keeps moving). */
 .cbm-pause{position:fixed;right:.9rem;bottom:.9rem;z-index:70;display:inline-flex;align-items:center;gap:.45rem;min-height:2.4rem;padding:.4rem .85rem;border-radius:999px;border:1px solid color-mix(in srgb,var(--ink,#16181d) 30%,transparent);background:color-mix(in srgb,var(--bg-0,#fff) 88%,transparent);color:var(--ink,#16181d);font:600 .8rem/1 var(--font-body,system-ui);cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:.82}
@@ -255,6 +298,8 @@ html.cbm-paused .cbm-pause::before{width:0;height:0;border-block:.42rem solid tr
   .cbm-lg{display:inline-block;white-space:nowrap}
   .cbm-l{display:inline-block;opacity:0;transform:translateY(.45em) rotate(7deg);transition:opacity calc(var(--m-dur) * .8) var(--m-ease) calc(var(--k,0) * var(--m-step) * .42),transform calc(var(--m-dur) * .8) var(--m-ease) calc(var(--k,0) * var(--m-step) * .42)}
   .is-in .cbm-l{opacity:1;transform:none}
+  .cbm[data-m-heading=gather] .cbm-l{transform:translate(var(--gx,0),var(--gy,0)) rotate(var(--gr,0deg)) scale(1.7);filter:blur(5px);transition:opacity calc(var(--m-dur) * 1.4) var(--m-ease) calc(var(--k,0) * 18ms),transform calc(var(--m-dur) * 1.6) var(--m-ease) calc(var(--k,0) * 18ms),filter calc(var(--m-dur) * 1.4) var(--m-ease) calc(var(--k,0) * 18ms)}
+  .cbm[data-m-heading=gather] .is-in .cbm-l{transform:none;filter:none}
   .cbm[data-m-heading=typed] .cbm-l{transform:none;transition:opacity .01s linear calc(var(--k,0) * 46ms)}
   .cbm-caret{display:inline-block;width:.06em;height:.82em;margin-left:.06em;vertical-align:-.06em;background:var(--cb-accent-text,var(--accent));animation:cbm-caret 1s steps(1) infinite}
   .cbm[data-m-heading=shimmer]>.cb.cb-opening .cb-hero-h:not(.cb-mask-h):not(:has(.cb-rot)){background:linear-gradient(100deg,var(--ink) 0 30%,var(--cb-accent-text,var(--accent)) 45%,var(--ink) 60% 100%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cbm-shimmer 6.5s linear infinite}
@@ -461,6 +506,12 @@ html.cbm-paused .cbm-pause::before{width:0;height:0;border-block:.42rem solid tr
 .cbm-bd-petals>i:nth-child(12){--x:91%;--s:.85rem;--t:14s;--d:-3s}
 .cbm-bd-petals>i:nth-child(13){--x:97%;--t:16s;--d:-11s;--sway:-40px}
 .cbm-bd-petals>i:nth-child(14){--x:47%;--s:.9rem;--t:12s;--d:-7s;--c:var(--bd-c)}
+
+/* Shapes in three dimensions, drawn live by the script in the page's colours: a globe of dots, a
+   ring, a rolling landscape. Nothing shows until it draws (and nothing without the script). */
+.cbm-bd-globe canvas,.cbm-bd-ring canvas{inset:auto;right:max(2%,calc(50% - 40rem));top:50%;width:min(52%,34rem);height:auto;aspect-ratio:1;transform:translateY(-50%)}
+.cbm-bd-terrain canvas{inset:auto 0 0 0;width:100%;height:62%}
+@media (max-width:760px){.cbm-bd-globe canvas,.cbm-bd-ring canvas{right:-22%;top:auto;bottom:-8%;width:86%;transform:none;opacity:.55}}
 
 /* Constellation: the script draws linked points on the canvas; these dots show until it does. */
 @keyframes cbm-twinkle{50%{opacity:.25}}

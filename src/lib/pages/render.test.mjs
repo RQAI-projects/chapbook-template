@@ -459,3 +459,42 @@ test('the movement script never turns text into markup, and the styles hide noth
     assert.ok(ok, `this rule hides something without waiting for the script: ${selector.trim().slice(0, 90)}`);
   }
 });
+
+test('three dimensions and pages that come apart: each has a plain form when nothing can move', () => {
+  const pics = [1, 2, 3, 4].map((n) => ({ src: `/site-images/q${n}.webp`, alt: `Q${n}` }));
+  const ring = renderPage(page([hero('carousel', { pictures: pics })]), { site });
+  assert.match(ring, /<div class="cb-car" style="--n:5"><div class="cb-car-ring"><figure style="--i:0">/);
+  assert.equal(count(ring, 'alt="Q1"'), 1);
+  assert.ok(!renderPage(page([hero('carousel', { pictures: pics.slice(0, 1) })]), { site }).includes('cb-car-ring'), 'two photos do not make a ring: they are shown plainly');
+  assert.ok(renderPage(page([hero('carousel', { pictures: pics })]), { site, editable: true }).includes('cb-car-still'), 'the editor lays the photos in a row');
+  const tiles = renderPage(page([hero('shatter')]), { site });
+  assert.equal(count(tiles, '<i style="--c:'), 24, 'the photo is laid out as 24 tiles');
+  assert.match(tiles, /<figure class="cb-hero-pic cb-hero-band cb-shatter" data-scroll="exit" style="--cb-pic:url\(&#39;\/site-images\/room\.webp&#39;\)"><img /, 'and is still there whole, for when nothing moves');
+  assert.match(tiles, /<span class="cb-tiles" aria-hidden="true">/);
+  assert.ok(!renderPage(page([hero('shatter')]), { site, editable: true }).includes('cb-tiles'), 'the editor shows the whole photo');
+  assert.deepEqual(renderPage(page([hero('shatter')]), { site }), renderPage(page([hero('shatter')]), { site }), 'the tiles fly the same way every time the page is drawn');
+  const together = renderPage(page([{ type: 'gallery', variant: 'gather', data: { pictures: pics } }]), { site });
+  assert.ok(together.includes('<div class="cb-gallery" data-scroll="enter">') && count(together, '--dx:') === 4);
+  assert.ok(!renderPage(page([{ type: 'gallery', variant: 'gather', data: { pictures: pics } }]), { site, editable: true }).includes('data-scroll'));
+  const flip = renderPage(page([{ type: 'services', variant: 'flip', data: { items: [{ name: 'Cut', price: '£24', description: 'With a wash.' }] } }]), { site });
+  assert.match(flip, /<article tabindex="0"><div class="cb-flip-in"><div class="cb-flip-front">/, 'a card can be turned from the keyboard');
+  assert.ok(flip.includes('cb-flip-back') && !renderPage(page([{ type: 'services', variant: 'flip', data: { items: [{ name: 'Cut' }] } }]), { site, editable: true }).includes('tabindex'));
+  const layers = renderPage(page([{ type: 'showcase', variant: 'layers', data: { items: [{ name: 'A' }, { name: 'B', picture: pics[0] }] } }]), { site });
+  assert.match(layers, /<div class="cb-layers" data-scroll="enter"><div class="cb-layers-stage" aria-hidden="true">/);
+  assert.equal(count(layers, '<i style="--i:'), 2);
+  for (const k of ['globe', 'ring', 'terrain']) assert.match(backdropHtml(k), /<canvas><\/canvas>/, `${k} is drawn live`);
+});
+
+test('openings that are alive from the first second: a giant word behind the photo, and a magnifying glass', () => {
+  const word = renderPage(page([hero('backword', { word: 'Roast' })]), { site });
+  assert.match(word, /<p class="cb-bw-word" style="--len:5">Roast<\/p>/, 'the word is real text, sized to its length');
+  assert.equal(count(word, '<i style="--i:'), 7, 'seven loose shapes float round the photo');
+  assert.equal(count(word, '<h1'), 1);
+  const editing = renderPage(page([hero('backword', {})]), { site, editable: true });
+  assert.ok(!editing.includes('cb-bw-bits') && /class="cb-bw-word"[^>]* data-cb="[^"]+:word"/.test(editing), 'in the editor the shapes are left out and the word can be typed');
+  assert.ok(!renderPage(page([hero('backword', {})]), { site }).includes('cb-bw-word'), 'no word, no empty element');
+  const lens = renderPage(page([hero('lens')]), { site });
+  assert.match(lens, /<div class="cb-lens" style="--cb-pic:url\(&#39;\/site-images\/room\.webp&#39;\)">/);
+  assert.match(lens, /<span class="cb-lens-glass" aria-hidden="true"><i><\/i><\/span>/);
+  assert.ok(!renderPage(page([hero('lens')]), { site, editable: true }).includes('cb-lens-glass'), 'the editor shows the plain round photo');
+});

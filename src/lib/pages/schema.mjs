@@ -170,9 +170,13 @@ export const BLOCK_TYPES = {
       // Openings built around movement. Each still reads well with movement turned off.
       marquee: 'Moving headline', wordmark: 'Giant name', open: 'Name opens to a photo', orbit: 'Circling photos', collage: 'Floating photos', mask: 'Photo inside the letters', arch: 'Arch window', blob: 'Colour block, photo in a moving shape',
       inset: 'Framed photo with a glass card', stage: 'Rising screen', filmstrip: 'Rolling photos', bento: 'Tiles', curtain: 'Split screen',
+      // Openings in three dimensions, and one that comes apart as people scroll on.
+      carousel: 'Turning carousel of photos (3D)', depth: 'Photos at different depths (3D)', shatter: 'Photo that breaks into tiles as you scroll',
+      // Openings that are alive from the first second, made for a page drenched in colour.
+      backword: 'Photo floating over a giant word (3D)', lens: 'Round window with a magnifying glass',
     },
     fields: {
-      kicker: L(100, 'Short label'), heading: HEAD, rotate: { ...L(160, 'Changing words', 'e.g. brands, websites, films'), panel: true, hint: 'A few words with commas between them. They take turns at the end of the heading.' }, intro: R(1200, 'Introduction'), picture: PIC(), pictures: { kind: 'pictures', max: 6, label: 'More photos' },
+      kicker: L(100, 'Short label'), heading: HEAD, rotate: { ...L(160, 'Changing words', 'e.g. brands, websites, films'), panel: true, hint: 'A few words with commas between them. They take turns at the end of the heading.' }, word: L(12, 'Big word', 'e.g. Fresh'), intro: R(1200, 'Introduction'), picture: PIC(), pictures: { kind: 'pictures', max: 6, label: 'More photos' },
       video: { kind: 'video', label: 'Video' }, buttons: BTNS(2), details: { kind: 'bool', label: 'Show opening hours, address and phone' },
     },
   },
@@ -188,12 +192,12 @@ export const BLOCK_TYPES = {
   },
   gallery: {
     label: 'Photo gallery', hint: 'Several photos in a grid, a mosaic or a strip.',
-    variants: { grid: 'Grid', masonry: 'Mixed heights', mosaic: 'One large, four small', strip: 'Scrolling strip', reel: 'Rolling reel' },
+    variants: { grid: 'Grid', masonry: 'Mixed heights', mosaic: 'One large, four small', strip: 'Scrolling strip', reel: 'Rolling reel', gather: 'Photos fly together as you scroll' },
     fields: { heading: HEAD, intro: R(600, 'Introduction'), pictures: { kind: 'pictures', max: 24, label: 'Photos' } },
   },
   services: {
     label: 'Services and prices', hint: 'What you offer, with prices, times and booking links.',
-    variants: { menu: 'Menu with dotted lines', cards: 'Cards', numbered: 'Numbered list', table: 'Price table', board: 'Price board', feature: 'Large with photos', rows: 'Big rows, photo on hover' },
+    variants: { menu: 'Menu with dotted lines', cards: 'Cards', numbered: 'Numbered list', table: 'Price table', board: 'Price board', feature: 'Large with photos', rows: 'Big rows, photo on hover', flip: 'Cards that turn over (3D)' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 40, label: 'Services', add: 'Add a service', item: {
@@ -313,7 +317,7 @@ export const BLOCK_TYPES = {
   },
   showcase: {
     label: 'Showcase', hint: 'A few pieces of work or offers, each with a photo, shown one at a time as people scroll.',
-    variants: { stack: 'Stacking cards', slider: 'Slider', switch: 'List that changes the photo', plates: 'Round photos, the colour changes' },
+    variants: { stack: 'Stacking cards', slider: 'Slider', switch: 'List that changes the photo', plates: 'Round photos, the colour changes', layers: 'Layers that come apart as you scroll (3D)' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 8, label: 'Pieces', add: 'Add one', item: {
@@ -328,7 +332,7 @@ export const BLOCK_TYPES = {
   },
 };
 // How many of an opening's "More photos" each layout shows. Layouts not listed show none.
-export const HERO_PHOTO_ROOM = { orbit: 5, collage: 3, filmstrip: 6, bento: 2, blob: 1 };
+export const HERO_PHOTO_ROOM = { orbit: 5, collage: 3, filmstrip: 6, bento: 2, blob: 1, carousel: 6, depth: 3 };
 export const TYPE_IDS = Object.keys(BLOCK_TYPES);
 export const variantsOf = (type) => Object.keys(BLOCK_TYPES[type]?.variants || {});
 
@@ -420,10 +424,10 @@ function settleIds(blocks, seen) {
 // their device for less motion, every word and picture is simply there.
 export const MOTION = {
   scroll: { label: 'As people scroll', options: { none: 'Nothing moves', rise: 'Rise into place', fade: 'Fade in', slide: 'Slide in from the sides', zoom: 'Grow into place', wipe: 'Wipe down', blur: 'Come into focus', tilt: 'Tip up' } },
-  heading: { label: 'Opening heading', options: { none: 'Still', words: 'Word by word', letters: 'Letter by letter', typed: 'Typed out', shimmer: 'Moving colour' } },
+  heading: { label: 'Opening heading', options: { none: 'Still', words: 'Word by word', letters: 'Letter by letter', gather: 'Letters fly together', typed: 'Typed out', shimmer: 'Moving colour' } },
   buttons: { label: 'Buttons', options: { none: 'Plain', lift: 'Lift', fill: 'Colour sweep', arrow: 'Arrow slides along', tile: 'Arrow in a tile', shine: 'Shine', press: 'Press down', glow: 'Glow', magnet: 'Follows the pointer' } },
   pictures: { label: 'Pictures', options: { none: 'Still', drift: 'Drift as you scroll', zoom: 'Slow zoom', tilt: 'Tilt to the pointer', unveil: 'Unveil' } },
-  backdrop: { label: 'Behind the opening', options: { none: 'Nothing', aurora: 'Northern lights', bubbles: 'Bubbles', blobs: 'Soft shapes', waves: 'Waves', orbits: 'Orbits', grid: 'Moving grid', dots: 'Dot field', rays: 'Light rays', shapes: 'Confetti shapes', lines: 'Speed lines', ripples: 'Ripples', petals: 'Falling petals', stars: 'Constellation', spotlight: 'Spotlight', wash: 'Colour wash', grain: 'Film grain' } },
+  backdrop: { label: 'Behind the opening', options: { none: 'Nothing', aurora: 'Northern lights', bubbles: 'Bubbles', blobs: 'Soft shapes', waves: 'Waves', orbits: 'Orbits', grid: 'Moving grid', dots: 'Dot field', rays: 'Light rays', shapes: 'Confetti shapes', lines: 'Speed lines', ripples: 'Ripples', petals: 'Falling petals', stars: 'Constellation', spotlight: 'Spotlight', wash: 'Colour wash', grain: 'Film grain', globe: 'Turning globe (3D)', ring: 'Turning ring (3D)', terrain: 'Rolling landscape (3D)' } },
   opening: { label: 'The opening, as people scroll on', options: { none: 'Scrolls away as usual', cover: 'The page slides over it', recede: 'It sinks back and dims' } },
   pace: { label: 'Pace', options: { calm: 'Calm', steady: 'Steady', lively: 'Lively' } },
 };
