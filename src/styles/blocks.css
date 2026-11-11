@@ -674,8 +674,29 @@
 /* The glass holds a second, larger copy of the photo, lined up with the first and grown about the
    glass's own centre. It only shows while the page's script is there to move it. */
 .cb-lens-glass{display:none;position:absolute;width:34cqw;height:34cqw;left:calc(var(--lx) * 100cqw - 17cqw);top:calc(var(--ly) * 100cqw - 17cqw);border-radius:50%;overflow:hidden;border:3px solid #fff;box-shadow:0 18px 40px -14px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.14)}
-.cb-lens-glass i{position:absolute;width:88cqw;height:88cqw;left:calc(23cqw - var(--lx) * 100cqw - 3px);top:calc(23cqw - var(--ly) * 100cqw - 3px);border-radius:50%;background:var(--cb-pic) center/cover;
+.cb-lens-glass i{position:absolute;width:88cqw;height:88cqw;left:calc(23cqw - var(--lx) * 100cqw - 3px);top:calc(23cqw - var(--ly) * 100cqw - 3px);border-radius:50%;background:var(--cb-pic) var(--cb-pos,50% 50%)/cover no-repeat;
   transform-origin:calc(var(--lx) * 100cqw - 6cqw) calc(var(--ly) * 100cqw - 6cqw);transform:scale(1.9)}
+
+/* A YouTube or Vimeo film keeps its controls, so it sits in a plain frame. */
+.cb-lens-plain{aspect-ratio:auto;container-type:normal}
+.cb-lens-plain .cb-lens-ring{display:none}
+.cbp .cb-lens-plain .cb-lens-pic{position:relative;inset:auto;aspect-ratio:16/10;border-radius:var(--cb-r-img)!important}
+.cb-bw-plain{aspect-ratio:auto}
+.cb-bw-plain .cb-bw-disc{display:none}
+.cbp .cb-bw-plain .cb-bw-pic{position:relative;inset:auto;aspect-ratio:16/10;border-radius:var(--cb-r-img)!important;transform:none;animation:none!important}
+/* A credit inside a round frame would be cut off: it is listed under the opening instead. */
+.cb-lens-pic .cb-credit,.cb-bw-pic .cb-credit{display:none}
+
+/* On paper nothing is mid-flight: the photo is whole, the photos are gathered, both sides of a
+   card are printed, and the layers sit apart. */
+@media print{
+  .cb-shatter.is-live>img{opacity:1!important}
+  .cb-tiles{display:none!important}
+  .cb-gallery--gather .cb-gallery>figure{transform:none!important;opacity:1!important;transition:none!important}
+  .cb-layers-stack i{--p:1}
+  .cb-flip-in{display:block!important;transform:none!important}
+  .cb-flip-front,.cb-flip-back{transform:none!important;backface-visibility:visible!important;-webkit-backface-visibility:visible!important}
+}
 
 /* ---- Opening: photo that breaks into tiles ---------------------------------------------- */
 .cb-shatter{position:relative;overflow:visible!important}
@@ -683,10 +704,13 @@
 .cbp .cb-shatter>img{scale:1!important;animation:none!important;transform:none!important}
 .cb-tiles{display:none}
 /* The tiles take over from the whole photo only while the page's script is running them. */
-.cb-shatter.is-live>img{visibility:hidden}
+.cb-shatter.is-live>img{opacity:0}
 .cb-shatter.is-live .cb-credit{position:absolute;right:.6rem;bottom:.4rem}
 .cb-shatter.is-live .cb-tiles{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(4,1fr);perspective:1400px;transform-style:preserve-3d}
-.cb-tiles i{display:block;background-image:var(--cb-pic);background-size:600% 400%;background-position:calc(var(--c) * 20%) calc(var(--r) * 33.3333%);
+/* Each tile is a window onto a copy of the whole photo, cropped exactly as the photo itself is. */
+.cb-tiles i::before{content:"";position:absolute;width:600%;height:400%;left:calc(var(--c) * -100%);top:calc(var(--r) * -100%);background:var(--cb-pic) var(--cb-pos,50% 50%)/cover no-repeat}
+.cb-tiles i:nth-child(1){border-top-left-radius:var(--cb-r-img)}.cb-tiles i:nth-child(6){border-top-right-radius:var(--cb-r-img)}.cb-tiles i:nth-child(19){border-bottom-left-radius:var(--cb-r-img)}.cb-tiles i:nth-child(24){border-bottom-right-radius:var(--cb-r-img)}
+.cb-tiles i{display:block;position:relative;overflow:hidden;
   transform:translate3d(calc(var(--p,0) * var(--dx)),calc(var(--p,0) * var(--dy)),calc(var(--p,0) * var(--dz))) rotateX(calc(var(--p,0) * var(--rx))) rotateY(calc(var(--p,0) * var(--ry)));opacity:calc(1 - var(--p,0) * .85)}
 
 /* ---- Gallery: photos fly together -------------------------------------------------------- */
@@ -694,15 +718,15 @@
 .cb-gallery--gather .cb-gallery img{aspect-ratio:1;object-fit:cover}
 .cb-gallery--gather{overflow:clip}
 .cb-gallery--gather .cb-gallery.is-live{perspective:1400px}
-.cb-gallery--gather .cb-gallery.is-live>figure{--q:calc(1 - var(--p,1));transform:translate3d(calc(var(--q) * var(--dx,0px)),calc(var(--q) * var(--dy,0px)),calc(var(--q) * var(--dz,0px))) rotate(calc(var(--q) * var(--rz,0deg)));opacity:calc(.15 + var(--p,1) * .85)}
+.cb-gallery--gather .cb-gallery.is-live>figure{--q:calc(1 - var(--p,1));transition:transform .25s linear,opacity .25s linear;transform:translate3d(calc(var(--q) * var(--dx,0px)),calc(var(--q) * var(--dy,0px)),calc(var(--q) * var(--dz,0px))) rotate(calc(var(--q) * var(--rz,0deg)));opacity:calc(.15 + var(--p,1) * .85)}
 
 /* ---- Services: cards that turn over (3D) -------------------------------------------------- */
 .cb-svc-flip{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,15rem),1fr));gap:clamp(1rem,2vw,1.5rem)}
-.cb-svc-flip>article{perspective:1100px;min-height:21rem;border-radius:var(--cb-r);outline-offset:4px}
-.cb-flip-in{position:relative;width:100%;height:100%;min-height:inherit;transform-style:preserve-3d}
-.cb-flip-front,.cb-flip-back{position:absolute;inset:0;display:flex;flex-direction:column;border-radius:var(--cb-r);overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--line-strong)}
+.cb-svc-flip>article{perspective:1100px;border-radius:var(--cb-r);outline-offset:4px}
+.cb-flip-in{display:grid;min-height:21rem;height:100%;transform-style:preserve-3d}
+.cb-flip-front,.cb-flip-back{grid-area:1/1;min-width:0;display:flex;flex-direction:column;border-radius:var(--cb-r);overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--line-strong)}
 .cb-flip-front{background:var(--bg-0)}
-.cb-flip-front .cb-svc-pic{flex:1;min-height:0}
+.cb-flip-front .cb-svc-pic{flex:1 1 9rem;min-height:9rem}
 .cb-flip-front .cb-svc-pic img{width:100%;height:100%;object-fit:cover}
 .cb-flip-front .cb-meta{margin-top:.4rem}
 .cb-flip-back{transform:rotateY(180deg);justify-content:center;padding:clamp(1.1rem,2.4vw,1.6rem);background:var(--accent);color:var(--cb-on-accent);--ink:var(--cb-on-accent);--ink-dim:var(--cb-on-accent);--cb-accent-text:var(--cb-on-accent);border-color:var(--accent)}
@@ -711,17 +735,16 @@
 .cb-flip-back .cb-offer{background:color-mix(in srgb,var(--cb-on-accent) 18%,transparent);color:var(--cb-on-accent)}
 .cb-svc-flip>article:hover .cb-flip-in,.cb-svc-flip>article:focus-within .cb-flip-in,.cb-svc-flip>article:focus .cb-flip-in{transform:rotateY(180deg)}
 /* In the editor both sides lie flat, one above the other, so each can be changed. */
-[data-m-edit] .cb-svc-flip>article{min-height:0}
-[data-m-edit] .cb-flip-in{transform:none!important}
-[data-m-edit] .cb-flip-front,[data-m-edit] .cb-flip-back{position:static;transform:none;backface-visibility:visible}
+[data-m-edit] .cb-flip-in{display:block;min-height:0;transform:none!important}
+[data-m-edit] .cb-flip-front,[data-m-edit] .cb-flip-back{transform:none;backface-visibility:visible;-webkit-backface-visibility:visible}
 [data-m-edit] .cb-flip-back{margin-top:.5rem}
 
 /* ---- Showcase: layers that come apart (3D) ------------------------------------------------ */
 .cb-layers{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(2rem,5vw,5rem);align-items:center}
-.cb-layers-stage{position:sticky;top:calc(var(--header-h,56px) + 2rem);height:clamp(20rem,46vw,32rem);display:grid;place-items:center;perspective:1600px}
+.cb-layers-stage{position:sticky;top:calc(var(--header-h,56px) + 2rem);height:clamp(26rem,46vw,32rem);display:grid;place-items:center;perspective:1600px;pointer-events:none}
 .cb-layers-stack{position:relative;width:min(62%,17rem);aspect-ratio:1;transform-style:preserve-3d;transform:rotateX(58deg) rotateZ(-38deg)}
 .cb-layers-stack i{position:absolute;inset:0;border-radius:1.1rem;background:var(--cb-surface);box-shadow:inset 0 0 0 1.5px var(--line-strong),0 0 0 1px color-mix(in srgb,var(--ink) 8%,transparent);
-  transform:translateZ(calc((var(--i) - (var(--n) - 1) / 2) * (1.1rem + var(--p,1) * 4.4rem)))}
+  transform:translateZ(calc((var(--i) - (var(--n) - 1) / 2) * (.5rem + var(--p,1) * 12rem / var(--n))))}
 .cb-layers-stack i.has-pic{background:var(--cb-pic) center/cover}
 .cb-layers-stack i:nth-child(3n+1):not(.has-pic){background:var(--accent)}
 .cb-layers-stack i:nth-child(3n):not(.has-pic){background:var(--cb-deep)}
@@ -899,7 +922,8 @@
   .cb-lens{width:min(100%,24rem);margin-top:1rem}
   .cbp .cb-bw-word{bottom:-.1em}
   .cb-depth{width:min(100%,24rem);margin-top:1rem}
-  .cb-layers-stage{position:static;height:17rem}
+  .cb-layers-stage{position:static;height:21rem}
+  .cb-layers-stack{width:min(50%,11rem)}
   .cb-car{--w:clamp(7rem,34vw,10rem)}
   .cb-open{--oh:clamp(30rem,84vh,44rem);grid-template-rows:auto minmax(3rem,1fr) auto auto}
   .cbp .cb-open-h{grid-area:1/1/4/-1;font-size:clamp(2.6rem,15cqw,5rem)}

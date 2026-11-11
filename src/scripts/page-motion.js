@@ -14,7 +14,7 @@ const TARGETS = [
 ].join(',');
 // Layouts that bring themselves in; the scroll effect leaves them alone.
 const OWN_ENTRANCE = '.cb-bento, .cb-curtain, .cb-open, .cb-hero-bg, .cb-backdrop, .cbm-bd, .cb-mask-thumb, .cb-plates-bg, .cb-plates-wipe';
-const PICTURES = '.cb-pic-frame, .cb-figure, .cb-svc-pic, .cb-portrait, .cb-show-pic, .cb-gallery > figure, .cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-arch-pic):not(.cb-curtain-pic)';
+const PICTURES = '.cb-pic-frame, .cb-figure, .cb-svc-pic, .cb-portrait, .cb-show-pic, .cb-gallery > figure, .cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-arch-pic):not(.cb-curtain-pic):not(.cb-lens-pic):not(.cb-bw-pic):not(.cb-shatter)';
 const KEEPS_MOVING = '.cb-car:not(.cb-car-still), .cb-depth, .cb-bw, .cb-lens, .cbm-bd canvas, .cb-mq:not(.cb-mq-still), .cb-film:not(.cb-film-still), .cbm-bd, .cb-orbit, .cb-collage, .cb-arch-badge, .cb-mask-h, .cb-rot, .cb-blob, .cb-inset-bg, .cb-open-bg, .cb-factlist-circles';
 const PAUSE_KEY = 'cbm-paused';
 
@@ -163,6 +163,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
       if (scroll) {
         for (const el of block.querySelectorAll(TARGETS)) {
           if (el.closest(OWN_ENTRANCE) || el.parentElement.closest('[data-m]')) continue;
+          // Pieces that fly with the scroll, and photos held in a 3D scene, arrive their own way.
+          if (el.closest('[data-scroll]') || el.matches('.cb-lens-pic, .cb-bw-pic')) continue;
           if (el === splitHeading || el.matches('.pe-add-cell, .pe-add, .cb-add-btn')) continue;
           const pic = isHero && el.matches('.cb-hero-pic, .cb-orbit, .cb-collage, .cb-arch, .cb-stage, .cb-film');
           if (pic && unveil && el.matches(PICTURES)) continue;   // unveiled below instead
@@ -224,17 +226,21 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
       const place = () => {
         queued = false;
         const vh = win.innerHeight || html.clientHeight;
-        for (const el of moving) {
+        const atEnd = (win.scrollY || 0) + vh >= html.scrollHeight - 2;
+        // Measure everything first, then write, so the browser lays the page out once.
+        const next = moving.map((el) => {
           const r = el.getBoundingClientRect();
-          if (r.bottom < -vh || r.top > vh * 2) continue;
-          const p = el.getAttribute('data-scroll') === 'exit'
-            ? clamp((vh * 0.4 - (r.top + r.height / 2)) / (vh * 0.62), 0, 1)
-            : clamp((vh * 0.95 - r.top) / (vh * 0.6), 0, 1);
-          el.style.setProperty('--p', p.toFixed(3));
-        }
+          if (r.bottom < -vh || r.top > vh * 2) return null;
+          if (el.getAttribute('data-scroll') === 'exit') return clamp((vh * 0.4 - (r.top + r.height / 2)) / (vh * 0.62), 0, 1);
+          // Arriving is finished once the piece has come about its own height into view, or the
+          // page has no further to scroll: nothing is left half-way.
+          if (atEnd && r.top < vh) return 1;
+          return clamp((vh * 0.95 - r.top) / Math.min(vh * 0.6, Math.max(r.height * 0.9, 160)), 0, 1);
+        });
+        moving.forEach((el, i) => { if (next[i] != null) el.style.setProperty('--p', next[i].toFixed(3)); });
       };
       const ask = () => { if (!queued) { queued = true; frame(place); } };
-      on(win, 'scroll', ask, { passive: true }); on(win, 'resize', ask, { passive: true });
+      on(win, 'scroll', ask, { passive: true }); on(win, 'resize', ask, { passive: true }); on(win, 'load', ask);
       place();
       undo.push(() => { for (const el of moving) { el.classList.remove('is-live'); el.style.removeProperty('--p'); } });
     }
@@ -388,7 +394,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   // ---- pointer effects (a mouse or trackpad only) -------------------------------------------
   if (!reduce && finePointer) {
     if (look('pictures') === 'tilt') {
-      for (const el of root.querySelectorAll('.cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic), .cb-pic-frame, .cb-svc-cards > article, .cb-reviews-cards .cb-review, .cb-bento-pic, .cb-collage-main')) {
+      for (const el of root.querySelectorAll('.cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-lens-pic):not(.cb-bw-pic):not(.cb-shatter), .cb-pic-frame, .cb-svc-cards > article, .cb-reviews-cards .cb-review, .cb-bento-pic, .cb-collage-main')) {
         el.setAttribute('data-mt', '');
         on(el, 'pointermove', (e) => {
           const r = el.getBoundingClientRect();
@@ -412,11 +418,17 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     // Photos at different depths: the whole scene leans towards the pointer.
     for (const scene of root.querySelectorAll('.cb-depth, .cb-bw')) {
       const block = scene.closest('.cb') || scene;
+      let at = null;
       on(block, 'pointermove', (e) => {
-        const r = block.getBoundingClientRect();
-        scene.style.setProperty('--sy', `${(((e.clientX - r.left) / r.width - 0.5) * 22).toFixed(1)}deg`);
-        scene.style.setProperty('--sx', `${((0.5 - (e.clientY - r.top) / r.height) * 14).toFixed(1)}deg`);
-        scene.classList.add('is-live');
+        const waiting = at; at = [e.clientX, e.clientY];
+        if (waiting) return;                      // one update a frame is plenty
+        frame(() => {
+          const [x, y] = at; at = null;
+          const r = block.getBoundingClientRect();
+          scene.style.setProperty('--sy', `${(((x - r.left) / r.width - 0.5) * 22).toFixed(1)}deg`);
+          scene.style.setProperty('--sx', `${((0.5 - (y - r.top) / r.height) * 14).toFixed(1)}deg`);
+          scene.classList.add('is-live');
+        });
       });
       on(block, 'pointerleave', () => scene.classList.remove('is-live'));
       undo.push(() => { scene.classList.remove('is-live'); scene.style.removeProperty('--sx'); scene.style.removeProperty('--sy'); });
@@ -424,11 +436,17 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     // Magnifying glass: it goes where the pointer is, and stays where it was left.
     for (const lens of root.querySelectorAll('.cb-lens')) {
       if (!lens.querySelector('.cb-lens-glass')) continue;
+      let at = null;
       on(lens, 'pointermove', (e) => {
-        const r = lens.getBoundingClientRect();
-        lens.style.setProperty('--lx', clamp((e.clientX - r.left) / r.width, 0.2, 0.8).toFixed(3));
-        lens.style.setProperty('--ly', clamp((e.clientY - r.top) / r.height, 0.2, 0.8).toFixed(3));
-        lens.classList.add('is-live');
+        const waiting = at; at = [e.clientX, e.clientY];
+        if (waiting) return;
+        frame(() => {
+          const [x, y] = at; at = null;
+          const r = lens.getBoundingClientRect();
+          lens.style.setProperty('--lx', clamp((x - r.left) / r.width, 0.2, 0.8).toFixed(3));
+          lens.style.setProperty('--ly', clamp((y - r.top) / r.height, 0.2, 0.8).toFixed(3));
+          lens.classList.add('is-live');
+        });
       });
       undo.push(() => { lens.classList.remove('is-live'); lens.style.removeProperty('--lx'); lens.style.removeProperty('--ly'); });
     }

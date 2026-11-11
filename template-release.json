@@ -127,7 +127,7 @@
   "src/lib/icons.js": "f5ea35a4a406e7d6892b1087ed35b133c568ec18",
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
   "src/lib/pages/migrate.mjs": "9f5fe20140be5b8460a8ce0e28f619fa96a996ab",
-  "src/lib/pages/render.mjs": "4577ad0b4b22ccf624465560602a61e5a25931f5",
+  "src/lib/pages/render.mjs": "2a206f7e52fa8119239ed085ac19119dc8574532",
   "src/lib/pages/schema.mjs": "ae25db08ed0f618bbacb0f5e06da4ded1b56a177",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
@@ -159,12 +159,12 @@
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
-  "src/scripts/page-motion.js": "bf8152f0b8069ece615c70d3552cb496e97b0df4",
-  "src/styles/blocks.css": "b5684235ef4a8b5ace083d5ac8327bc30c2ce925",
+  "src/scripts/page-motion.js": "4840942f7962b029ec0caf4c7320980f5ab7234b",
+  "src/styles/blocks.css": "2664205a1e9ef12614ee1c3d23926c45a0b518bc",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
   "src/styles/global.css": "cfa4731cb5064fed7c6a09ac13b2dc697d828360",
   "src/styles/headers.css": "806c15e7948c6786dafeb2f11a1cd6d3c4b8ef62",
-  "src/styles/motion.css": "c17df7e914bb0e00b20ccaf0fd1f3c69f6a63deb",
+  "src/styles/motion.css": "822a12d2a7b78638fc9d0ac9d8171c049e036f9d",
   "src/styles/professional.css": "b44e17c6093f9f22f8a4f923601f7bca02ce8222",
   "src/styles/themes.css": "0b9635ecfaecc749f2e07b5b042b5d2011e527e9",
   "src/styles/themes/_kids-extras.css": "8f3b65c0a42edc8ab6d687fefb433d2b2e24b3f8",
@@ -204,7 +204,27 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "src/lib/pages/render.mjs": [
+   "4577ad0b4b22ccf624465560602a61e5a25931f5",
+   "5241015c32487b88c735f86c6b5fcf815deb1854",
+   "1d87933d1d6a069cbce622018f29a64868af5d0b",
+   "72f5cf087667ae7c3bdfd9373a2f84be5c5ea85c",
+   "0fd8ed5220b418acbefd890df24f645e067cb42b",
+   "e9457fe29130da278763d41668578941a1894592",
+   "1dbaa1c73ffd5cf2b2ea0b1e152e3064b6a65d09",
+   "d64ed1e939908ed31044aac2b2518a2c249173df",
+   "df3c0ce5432af9b1bf7178a7a974d815ee9f4ce4",
+   "364e3e88c2c8a5e0d1efb9b0060b445f44fbb6de",
+   "c7226998668f0fbee76774c9de823a6b4e21fcfe",
+   "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
+  ],
+  "src/scripts/page-motion.js": [
+   "bf8152f0b8069ece615c70d3552cb496e97b0df4",
+   "767f7cd65f0a28cd93411313c13ff3d30b1d5fe5",
+   "566e26987acbdb857612c6f4c799d0fc3f68e4e8"
+  ],
   "src/styles/blocks.css": [
+   "b5684235ef4a8b5ace083d5ac8327bc30c2ce925",
    "7fb75b1da8c1a4fa9b3a878f13cd9e23fd60915e",
    "fc3cfff2344375066d775d34c6c348fe0fae711a",
    "330a2f971987799c588773a96f8df7490e0a3c82",
@@ -218,18 +238,10 @@
    "708fe7c01bba959fb46cdc695a801c6b9da0918f",
    "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
   ],
-  "src/lib/pages/render.mjs": [
-   "5241015c32487b88c735f86c6b5fcf815deb1854",
-   "1d87933d1d6a069cbce622018f29a64868af5d0b",
-   "72f5cf087667ae7c3bdfd9373a2f84be5c5ea85c",
-   "0fd8ed5220b418acbefd890df24f645e067cb42b",
-   "e9457fe29130da278763d41668578941a1894592",
-   "1dbaa1c73ffd5cf2b2ea0b1e152e3064b6a65d09",
-   "d64ed1e939908ed31044aac2b2518a2c249173df",
-   "df3c0ce5432af9b1bf7178a7a974d815ee9f4ce4",
-   "364e3e88c2c8a5e0d1efb9b0060b445f44fbb6de",
-   "c7226998668f0fbee76774c9de823a6b4e21fcfe",
-   "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
+  "src/styles/motion.css": [
+   "c17df7e914bb0e00b20ccaf0fd1f3c69f6a63deb",
+   "39694d6ce15fd38cbac605d8bd12957f63384bca",
+   "2265dfb917491836edacb0257c1e384234ea28aa"
   ],
   "src/lib/pages/schema.mjs": [
    "1ad93de5bb569b50f1d6fb23d338ff92cd43033e",
@@ -240,14 +252,6 @@
    "df17499ea907e57d793de67a17eb8a8078f753b0",
    "cf81fb63c6424ce2bedf5f8563fcc91fbbd782ca",
    "09baab156a3a0a6a1e577eed8db8115618800402"
-  ],
-  "src/scripts/page-motion.js": [
-   "767f7cd65f0a28cd93411313c13ff3d30b1d5fe5",
-   "566e26987acbdb857612c6f4c799d0fc3f68e4e8"
-  ],
-  "src/styles/motion.css": [
-   "39694d6ce15fd38cbac605d8bd12957f63384bca",
-   "2265dfb917491836edacb0257c1e384234ea28aa"
   ],
   "src/components/BlockPage.astro": [
    "15eec77c38e2932aba3b9c86a463a23f39bd4491",

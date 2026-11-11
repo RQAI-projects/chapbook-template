@@ -44,9 +44,9 @@
 @property --lx{syntax:'<number>';inherits:true;initial-value:.66}
 @property --ly{syntax:'<number>';inherits:true;initial-value:.38}
 @keyframes cbm-glide{0%,100%{--lx:.66;--ly:.38}25%{--lx:.4;--ly:.62}50%{--lx:.3;--ly:.36}75%{--lx:.6;--ly:.68}}
-@keyframes cbm-bob{from{translate:0 -2.5%}to{translate:0 2.5%}}
+@keyframes cbm-bw-bob{from{translate:0 -2.5%}to{translate:0 2.5%}}
 @keyframes cbm-floaty{from{translate:0 -10px;rotate:-8deg}to{translate:0 12px;rotate:10deg}}
-@keyframes cbm-pop{from{scale:0}}
+@keyframes cbm-bw-pop{from{scale:.5}}
 @keyframes cbm-ring{to{rotate:1turn}}
 @keyframes cbm-car{to{transform:rotateX(-7deg) rotateY(-1turn)}}
 @keyframes cbm-sway{from{transform:rotateY(-7deg) rotateX(3deg)}to{transform:rotateY(7deg) rotateX(-3deg)}}
@@ -124,8 +124,9 @@
 
   /* Photo over a giant word: the pieces pop in one after another, then everything floats, and the
      whole scene leans towards the pointer. */
-  .cb-bw-pic{animation:cbm-pop .8s var(--m-ease) .15s backwards,cbm-bob 4.6s ease-in-out infinite alternate}
-  .cb-bw-bits i{animation:cbm-pop .7s var(--m-ease) calc(.35s + var(--i) * 90ms) backwards,cbm-floaty calc(4s + var(--i) * .7s) ease-in-out calc(var(--i) * -.9s) infinite alternate}
+  /* The photo is content, so it never starts out of sight; only the loose shapes pop in. */
+  .cb-bw-pic{animation:cbm-bw-bob 4.6s ease-in-out infinite alternate}
+  .cb-bw-bits i{animation:cbm-bw-pop .7s var(--m-ease) calc(.35s + var(--i) * 90ms) backwards,cbm-floaty calc(4s + var(--i) * .7s) ease-in-out calc(var(--i) * -.9s) infinite alternate}
   .cb-bw{transition:transform .3s ease-out}
   .cb-bw.is-live{transform:rotateY(var(--sy,0deg)) rotateX(var(--sx,0deg))}
   /* Magnifying glass: it glides over the photo by itself until the pointer takes it. */

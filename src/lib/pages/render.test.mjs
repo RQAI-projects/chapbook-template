@@ -498,3 +498,20 @@ test('openings that are alive from the first second: a giant word behind the pho
   assert.match(lens, /<span class="cb-lens-glass" aria-hidden="true"><i><\/i><\/span>/);
   assert.ok(!renderPage(page([hero('lens')]), { site, editable: true }).includes('cb-lens-glass'), 'the editor shows the plain round photo');
 });
+
+test('the new openings after review: credits outside round frames, the photo\'s own crop, nothing empty', () => {
+  const credited = { src: '/site-images/room.webp', alt: 'A room', focus: 'top', credit: { license: 'by', author: 'A. Person', page: 'https://example.org/p' } };
+  for (const v of ['lens', 'backword']) {
+    const html = renderPage(page([{ type: 'hero', variant: v, data: { heading: 'Hello', picture: credited } }]), { site });
+    assert.equal(count(html, 'class="cb-credit"'), 1, `${v}: the credit appears once`);
+    assert.match(html, /<p class="cb-credits"><small class="cb-credit">/, `${v}: and it is listed under the opening, not inside the round frame where it would be cut off`);
+    const bare = renderPage(page([{ type: 'hero', variant: v, data: { heading: 'Hello' } }]), { site });
+    assert.ok(!/cb-lens"|cb-bw-wrap/.test(bare) && bare.includes('<h1'), `${v}: with no photo the words stand alone`);
+    const tube = renderPage(page([{ type: 'hero', variant: v, data: { heading: 'Hello', video: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' } }]), { site });
+    assert.match(tube, /cb-(lens|bw)-plain/, `${v}: a film that needs its controls gets a plain frame`);
+    assert.ok(!tube.includes('cb-lens-glass') && !tube.includes('cb-bw-bits'));
+  }
+  assert.match(renderPage(page([{ type: 'hero', variant: 'lens', data: { heading: 'Hello', picture: credited } }]), { site }), /--cb-pos:50% 20%/, 'the glass shows the photo cropped as the photo is');
+  assert.match(renderPage(page([{ type: 'hero', variant: 'shatter', data: { heading: 'Hello', picture: credited } }]), { site }), /cb-shatter" data-scroll="exit" style="--cb-pic:[^"]+;--cb-pos:50% 20%"/);
+  assert.ok(!renderPage(page([{ type: 'hero', variant: 'depth', data: { heading: 'Hello' } }]), { site }).includes('cb-depth'), 'no empty frames');
+});

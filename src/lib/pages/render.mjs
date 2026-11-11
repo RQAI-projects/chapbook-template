@@ -216,6 +216,9 @@ function credit(p, cls = 'cb-credit') {
   const licence = cr.licenceUrl ? `<a href="${esc(cr.licenceUrl)}" rel="noopener license">${lic}</a>` : lic;
   return `<small class="${cls}">Photo: ${what}, ${licence}</small>`;
 }
+// Where a photo's point of interest sits, in the words CSS uses, for copies drawn as backgrounds.
+const focusPos = (p) => (p?.focus ? (p.focus === 'top' ? '50% 20%' : p.focus === 'bottom' ? '50% 80%' : p.focus === 'left' ? '20% 50%' : '80% 50%') : '');
+const picVars = (C, p) => `--cb-pic:${esc(cssUrl(imgSrc(C, p.src)))}${focusPos(p) ? `;--cb-pos:${focusPos(p)}` : ''}`;
 // A picture. `eager` for the first screen; `cls` on the <img>.
 function P(C, b, path, p, cls = '', { eager = false, credits = true } = {}) {
   if (!p) return C.editable ? `<div class="cb-pic-empty ${cls}"${ED(C, 'data-cb-img', `${b.id}:${path}`)} role="img" aria-label="Add a picture"><span>Add a picture</span></div>` : '';
@@ -390,7 +393,8 @@ R_.hero = (C, b) => {
     return `<div class="cb-hero-words">${words}${details}</div>${ring}${all.length < 3 && !C.editable ? '' : creditsOf(all)}`;
   }
   if (v === 'depth') {
-    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-depth"><span class="cb-depth-glow"></span><figure class="cb-depth-main">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${morePics(C, b, d, 'cb-depth-more')}</div></div>${creditsOf([d.picture, ...shownMore(b, d)])}`;
+    if (!media && !more.length) return `<div class="cb-hero-words">${words}${details}</div>`;
+    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-depth"><span class="cb-depth-glow"></span>${media ? `<figure class="cb-depth-main">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>` : ''}${morePics(C, b, d, 'cb-depth-more')}</div></div>${creditsOf([d.picture, ...shownMore(b, d)])}`;
   }
   if (v === 'shatter') {
     // The photo is also laid out as a grid of tiles, each showing its own part of it. The page's
@@ -402,7 +406,7 @@ R_.hero = (C, b) => {
         const i = r * cols + c;
         tiles.push(`<i style="--c:${c};--r:${r};--dx:${Math.round((c - (cols - 1) / 2) * 90 + scatter(i, 2) * 60)}px;--dy:${Math.round((r - (rows - 1) / 2) * 110 + scatter(i, 3) * 70 - 40)}px;--dz:${Math.round(scatter(i, 5) * 260)}px;--rx:${Math.round(scatter(i, 7) * 80)}deg;--ry:${Math.round(scatter(i, 11) * 80)}deg"></i>`);
       }
-      photo = `<figure class="cb-hero-pic cb-hero-band cb-shatter" data-scroll="exit" style="--cb-pic:${esc(cssUrl(imgSrc(C, d.picture.src)))}">${P(C, b, 'picture', d.picture, '', { eager: true })}<span class="cb-tiles" aria-hidden="true">${tiles.join('')}</span></figure>`;
+      photo = `<figure class="cb-hero-pic cb-hero-band cb-shatter" data-scroll="exit" style="${picVars(C, d.picture)}">${P(C, b, 'picture', d.picture, '', { eager: true })}<span class="cb-tiles" aria-hidden="true">${tiles.join('')}</span></figure>`;
     }
     return `${head}<div class="cb-poster-foot">${intro}<div>${btns}${details}</div></div>${photo}`;
   }
@@ -410,15 +414,22 @@ R_.hero = (C, b) => {
     // One short word drawn as wide as the page, with the photo (or a film) floating in front of
     // it among a few loose shapes. The shapes are decoration only, so the editor leaves them out.
     const word = T(C, b, 'word', d.word, 'p', 'cb-bw-word', ` style="--len:${Math.max(4, Array.from(d.word || '').length)}"`);
-    const bits = C.editable ? '' : `<span class="cb-bw-bits" aria-hidden="true">${Array.from({ length: 7 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</span>`;
-    return `${word}<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-bw-wrap"><div class="cb-bw"><span class="cb-bw-disc"></span>${pic('cb-hero-pic cb-bw-pic')}${bits}</div></div></div>`;
+    // With nothing to show, the words stand alone. A film file plays silently in the frame; a
+    // YouTube or Vimeo film needs its controls, so it gets a plain frame and no loose shapes.
+    if (!media) return `${word}<div class="cb-hero-words">${words}${details}</div>`;
+    const plain = d.video && !fileBehind;
+    const bits = C.editable || plain ? '' : `<span class="cb-bw-bits" aria-hidden="true">${Array.from({ length: 7 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</span>`;
+    const frame = `<figure class="cb-hero-pic cb-bw-pic">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>`;
+    return `${word}<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-bw-wrap"><div class="cb-bw${plain ? ' cb-bw-plain' : ''}"><span class="cb-bw-disc"></span>${frame}${bits}</div></div></div>${creditsOf([d.picture])}`;
   }
   if (v === 'lens') {
     // A round window on the photo. A magnifying glass glides over it, then follows the pointer.
     // A film plays in the window instead, without the glass.
-    const still = d.picture && !d.video;
+    if (!media) return `<div class="cb-hero-words">${words}${details}</div>`;
+    const still = d.picture && !d.video, plain = d.video && !fileBehind;
     const glass = still && !C.editable ? '<span class="cb-lens-glass" aria-hidden="true"><i></i></span>' : '';
-    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-lens"${still ? ` style="--cb-pic:${esc(cssUrl(imgSrc(C, d.picture.src)))}"` : ''}><span class="cb-lens-ring" aria-hidden="true"></span>${pic('cb-hero-pic cb-lens-pic')}${glass}</div></div>`;
+    const frame = `<figure class="cb-hero-pic cb-lens-pic">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>`;
+    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-lens${plain ? ' cb-lens-plain' : ''}"${still ? ` style="${picVars(C, d.picture)}"` : ''}><span class="cb-lens-ring" aria-hidden="true"></span>${frame}${glass}</div></div>${creditsOf([d.picture])}`;
   }
   if (v === 'blob') {
     const dot = more.length || C.editable ? morePics(C, b, d, 'cb-blob-more', 'cb-blob-dot') : '';
