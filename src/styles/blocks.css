@@ -679,6 +679,8 @@
 
 /* ---- Opening: photo that breaks into tiles ---------------------------------------------- */
 .cb-shatter{position:relative;overflow:visible!important}
+/* The whole photo keeps its exact size, so the tiles that take over from it line up with it. */
+.cbp .cb-shatter>img{scale:1!important;animation:none!important;transform:none!important}
 .cb-tiles{display:none}
 /* The tiles take over from the whole photo only while the page's script is running them. */
 .cb-shatter.is-live>img{visibility:hidden}
