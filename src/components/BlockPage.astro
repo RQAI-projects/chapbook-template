@@ -10,6 +10,7 @@ import { safeBookingUrl } from '../lib/professional.mjs';
 import { fmtDate } from '../lib/home';
 import { postCover } from '../lib/post-cover.mjs';
 import '../styles/blocks.css';
+import '../styles/motion.css';
 import profile from '../data/profile.json';
 const { page, title, description } = Astro.props;
 const endpoint = safeBookingUrl((site as any).contact?.endpoint);
@@ -32,13 +33,21 @@ const html = renderPage({ ...page, blocks }, {
   fallbackEmail: (profile as any).email && (profile as any).email !== 'you@example.com' ? (profile as any).email : '',
   href: (p: string) => withBase(p), postsHref: withBase('/posts/'),
 });
+const moves = html.includes('class="cbp cbm');
 ---
 <Base title={title ?? page.title} description={description ?? (page.description || undefined)}>
   <slot />
+  {/* A page that moves: tell the stylesheet a script is on its way, so things that will arrive on
+      scroll don't flash first. If the script never starts, the page goes back to plain within 3s. */}
+  {moves && <script is:inline data-astro-rerun>document.documentElement.classList.add('cbm-js');setTimeout(function(){if(!window.__cbm)document.documentElement.classList.remove('cbm-js')},3000)</script>}
   <Fragment set:html={html} />
 </Base>
 
 <script>
+  // Movement: things arriving on scroll, counting numbers, pointer effects and the Pause button.
+  import { startPageMotion } from '../scripts/page-motion.js';
+  startPageMotion();
+
   // Block contact forms send without leaving the site and show the result in place.
   function bindBlockForms() {
     for (const form of document.querySelectorAll<HTMLFormElement>('.cbp .cb-form')) {

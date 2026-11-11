@@ -141,6 +141,8 @@ export const INTERACTIVE_SRC = /^\/interactives\/[a-z0-9][a-z0-9-]{0,79}\.html$/
 // Field kinds: line (one line), rich (paragraphs, **bold**, *italic*, [links](…), - lists),
 // plain (several lines, no marks, e.g. opening hours), picture, link, links (buttons), items
 // (a repeating list), bool, number, choice, video, src (interactive file), children (columns).
+// A line marked `panel: true` has no place of its own on the page, so the editor offers it in the
+// block's settings (with its `hint`). A choice may carry `labels` for its options.
 const L = (max, label, ph) => ({ kind: 'line', max, label, ph: ph || `Add ${label.toLowerCase()}` });
 const R = (max, label, ph) => ({ kind: 'rich', max, label, ph: ph || `Add ${label.toLowerCase()}` });
 const PIC = (label = 'Picture') => ({ kind: 'picture', label });
@@ -163,12 +165,20 @@ export const COLUMN_TYPES = ['text', 'image', 'cta', 'contact', 'credentials', '
 export const BLOCK_TYPES = {
   hero: {
     label: 'Opening', hint: 'The first thing people see: a heading, a line or two, buttons and a picture.',
-    variants: { split: 'Words beside a photo', centred: 'Centred', 'photo-behind': 'Words over a photo', panel: 'With a details panel', poster: 'Big type', stacked: 'Photo on top', minimal: 'Words only' },
-    fields: { kicker: L(100, 'Short label'), heading: HEAD, intro: R(1200, 'Introduction'), picture: PIC(), video: { kind: 'video', label: 'Video' }, buttons: BTNS(2), details: { kind: 'bool', label: 'Show opening hours, address and phone' } },
+    variants: {
+      split: 'Words beside a photo', centred: 'Centred', 'photo-behind': 'Words over a photo', panel: 'With a details panel', poster: 'Big type', stacked: 'Photo on top', minimal: 'Words only',
+      // Openings built around movement. Each still reads well with movement turned off.
+      marquee: 'Moving headline', wordmark: 'Giant name', open: 'Name opens to a photo', orbit: 'Circling photos', collage: 'Floating photos', mask: 'Photo inside the letters', arch: 'Arch window', blob: 'Colour block, photo in a moving shape',
+      inset: 'Framed photo with a glass card', stage: 'Rising screen', filmstrip: 'Rolling photos', bento: 'Tiles', curtain: 'Split screen',
+    },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, rotate: { ...L(160, 'Changing words', 'e.g. brands, websites, films'), panel: true, hint: 'A few words with commas between them. They take turns at the end of the heading.' }, intro: R(1200, 'Introduction'), picture: PIC(), pictures: { kind: 'pictures', max: 6, label: 'More photos' },
+      video: { kind: 'video', label: 'Video' }, buttons: BTNS(2), details: { kind: 'bool', label: 'Show opening hours, address and phone' },
+    },
   },
   text: {
     label: 'Text', hint: 'A heading and paragraphs. Can sit beside a picture.',
-    variants: { plain: 'Plain', sidehead: 'Heading on the side', lede: 'Large opening words', boxed: 'Highlighted box', 'picture-left': 'Picture on the left', 'picture-right': 'Picture on the right' },
+    variants: { plain: 'Plain', sidehead: 'Heading on the side', lede: 'Large opening words', boxed: 'Highlighted box', 'picture-left': 'Picture on the left', 'picture-right': 'Picture on the right', lit: 'Lights up as you scroll' },
     fields: { kicker: L(100, 'Short label'), heading: HEAD, body: R(20000, 'Text', 'Add your words'), picture: PIC(), buttons: BTNS(2) },
   },
   image: {
@@ -178,12 +188,12 @@ export const BLOCK_TYPES = {
   },
   gallery: {
     label: 'Photo gallery', hint: 'Several photos in a grid, a mosaic or a strip.',
-    variants: { grid: 'Grid', masonry: 'Mixed heights', mosaic: 'One large, four small', strip: 'Scrolling strip' },
+    variants: { grid: 'Grid', masonry: 'Mixed heights', mosaic: 'One large, four small', strip: 'Scrolling strip', reel: 'Rolling reel' },
     fields: { heading: HEAD, intro: R(600, 'Introduction'), pictures: { kind: 'pictures', max: 24, label: 'Photos' } },
   },
   services: {
     label: 'Services and prices', hint: 'What you offer, with prices, times and booking links.',
-    variants: { menu: 'Menu with dotted lines', cards: 'Cards', numbered: 'Numbered list', table: 'Price table', board: 'Price board', feature: 'Large with photos' },
+    variants: { menu: 'Menu with dotted lines', cards: 'Cards', numbered: 'Numbered list', table: 'Price table', board: 'Price board', feature: 'Large with photos', rows: 'Big rows, photo on hover' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 40, label: 'Services', add: 'Add a service', item: {
@@ -204,7 +214,7 @@ export const BLOCK_TYPES = {
   },
   reviews: {
     label: 'Reviews', hint: 'What customers say about you.',
-    variants: { cards: 'Cards', 'big-quote': 'One big quote', list: 'List', wall: 'Quote wall' },
+    variants: { cards: 'Cards', 'big-quote': 'One big quote', list: 'List', wall: 'Quote wall', ticker: 'Rolling reviews', one: 'One at a time' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD,
       items: { kind: 'items', max: 24, label: 'Reviews', add: 'Add a review', item: {
@@ -233,7 +243,7 @@ export const BLOCK_TYPES = {
   },
   cta: {
     label: 'Call to action', hint: 'A short message with a button, such as “Book now”.',
-    variants: { band: 'Band', card: 'Card', minimal: 'Minimal', split: 'Words and buttons side by side' },
+    variants: { band: 'Band', card: 'Card', minimal: 'Minimal', split: 'Words and buttons side by side', giant: 'Giant type' },
     fields: { kicker: L(100, 'Short label'), heading: HEAD, body: R(800, 'Text'), buttons: BTNS(2) },
   },
   form: {
@@ -253,7 +263,7 @@ export const BLOCK_TYPES = {
   },
   facts: {
     label: 'Key facts', hint: 'A few numbers or short facts, such as “25 years”.',
-    variants: { row: 'In a row', large: 'Large', ruled: 'With lines' },
+    variants: { row: 'In a row', large: 'Large', ruled: 'With lines', tiles: 'Tiles', circles: 'Coloured circles' },
     fields: { kicker: L(100, 'Short label'), heading: HEAD, items: { kind: 'items', max: 6, label: 'Facts', add: 'Add a fact', item: { value: L(24, 'Number or word', 'e.g. 25'), label: L(80, 'What it means', 'e.g. years in business') }, sample: { value: '10', label: 'New fact' } } },
   },
   notice: {
@@ -285,12 +295,40 @@ export const BLOCK_TYPES = {
       url: { kind: 'booking', label: 'Booking page address' }, button: L(40, 'Button text', 'Book online'), note: L(240, 'Small print'),
     },
   },
+  marquee: {
+    label: 'Moving words', hint: 'A band of short words or phrases that rolls across the page.',
+    variants: { line: 'One line', double: 'Two lines, opposite ways', outline: 'Hollow letters', tags: 'Labels' },
+    fields: {
+      items: { kind: 'items', max: 12, label: 'Words', add: 'Add a word', item: { text: L(60, 'Word or phrase', 'e.g. Open late') }, sample: { text: 'New words' } },
+      speed: { kind: 'choice', options: ['s', 'm', 'l'], labels: { s: 'Slow', m: 'Steady', l: 'Quick' }, label: 'Speed' },
+    },
+  },
+  steps: {
+    label: 'Steps', hint: 'How it works, in a few numbered steps. The line draws itself as people scroll.',
+    variants: { line: 'Down a line', row: 'Side by side', big: 'Big numbers' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      items: { kind: 'items', max: 8, label: 'Steps', add: 'Add a step', item: { name: L(100, 'Step', 'Name of the step'), description: R(600, 'What happens') }, sample: { name: 'Next step', description: '' } },
+    },
+  },
+  showcase: {
+    label: 'Showcase', hint: 'A few pieces of work or offers, each with a photo, shown one at a time as people scroll.',
+    variants: { stack: 'Stacking cards', slider: 'Slider', switch: 'List that changes the photo', plates: 'Round photos, the colour changes' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      items: { kind: 'items', max: 8, label: 'Pieces', add: 'Add one', item: {
+        name: L(100, 'Name', 'Name'), tag: L(60, 'Small label'), description: R(600, 'Description'), picture: PIC(), link: { kind: 'link', label: 'Link' },
+      }, sample: { name: 'New piece', description: '' } },
+    },
+  },
   spacer: {
     label: 'Space', hint: 'Extra space, with or without a line.',
     variants: { space: 'Space', line: 'Line', ornament: 'Ornament' },
     fields: { size: { kind: 'choice', options: ['s', 'm', 'l'], label: 'Size' } },
   },
 };
+// How many of an opening's "More photos" each layout shows. Layouts not listed show none.
+export const HERO_PHOTO_ROOM = { orbit: 5, collage: 3, filmstrip: 6, bento: 2, blob: 1 };
 export const TYPE_IDS = Object.keys(BLOCK_TYPES);
 export const variantsOf = (type) => Object.keys(BLOCK_TYPES[type]?.variants || {});
 
@@ -376,6 +414,50 @@ function settleIds(blocks, seen) {
     if (b.data.children) settleIds(b.data.children, seen);
   }
 }
+// ---- movement ------------------------------------------------------------------------------
+// How a page moves. Every choice is one of a fixed list, so a page file can never carry code or
+// free-form styles. Movement only ever adds to a page: with scripts off, or for visitors who ask
+// their device for less motion, every word and picture is simply there.
+export const MOTION = {
+  scroll: { label: 'As people scroll', options: { none: 'Nothing moves', rise: 'Rise into place', fade: 'Fade in', slide: 'Slide in from the sides', zoom: 'Grow into place', wipe: 'Wipe down', blur: 'Come into focus', tilt: 'Tip up' } },
+  heading: { label: 'Opening heading', options: { none: 'Still', words: 'Word by word', letters: 'Letter by letter', typed: 'Typed out', shimmer: 'Moving colour' } },
+  buttons: { label: 'Buttons', options: { none: 'Plain', lift: 'Lift', fill: 'Colour sweep', arrow: 'Arrow slides along', tile: 'Arrow in a tile', shine: 'Shine', press: 'Press down', glow: 'Glow', magnet: 'Follows the pointer' } },
+  pictures: { label: 'Pictures', options: { none: 'Still', drift: 'Drift as you scroll', zoom: 'Slow zoom', tilt: 'Tilt to the pointer', unveil: 'Unveil' } },
+  backdrop: { label: 'Behind the opening', options: { none: 'Nothing', aurora: 'Northern lights', bubbles: 'Bubbles', blobs: 'Soft shapes', waves: 'Waves', orbits: 'Orbits', grid: 'Moving grid', dots: 'Dot field', rays: 'Light rays', shapes: 'Confetti shapes', lines: 'Speed lines', ripples: 'Ripples', petals: 'Falling petals', stars: 'Constellation', spotlight: 'Spotlight', wash: 'Colour wash', grain: 'Film grain' } },
+  opening: { label: 'The opening, as people scroll on', options: { none: 'Scrolls away as usual', cover: 'The page slides over it', recede: 'It sinks back and dims' } },
+  pace: { label: 'Pace', options: { calm: 'Calm', steady: 'Steady', lively: 'Lively' } },
+};
+export const MOTION_KEYS = Object.keys(MOTION);
+// Ready-made combinations. A template's variations each start from one of these.
+export const MOTION_PRESETS = {
+  still: { name: 'Still', hint: 'Nothing moves.', motion: {} },
+  gentle: { name: 'Gentle', hint: 'Sections rise softly into place.', motion: { scroll: 'rise', buttons: 'lift', pace: 'calm', count: true } },
+  editorial: { name: 'Editorial', hint: 'Headlines arrive word by word; pictures unveil.', motion: { scroll: 'fade', heading: 'words', buttons: 'arrow', pictures: 'unveil', pace: 'calm', count: true } },
+  lively: { name: 'Lively', hint: 'Quick, springy and bright.', motion: { scroll: 'rise', heading: 'words', buttons: 'fill', pictures: 'drift', pace: 'lively', count: true } },
+  cinematic: { name: 'Cinematic', hint: 'Slow focus pulls and a slow zoom.', motion: { scroll: 'blur', heading: 'letters', buttons: 'shine', pictures: 'zoom', pace: 'calm', count: true } },
+  playful: { name: 'Playful', hint: 'Things pop, tilt and press.', motion: { scroll: 'zoom', heading: 'words', buttons: 'press', pictures: 'tilt', pace: 'lively', count: true } },
+  bold: { name: 'Bold', hint: 'Sections slide in from the sides.', motion: { scroll: 'slide', heading: 'letters', buttons: 'fill', pictures: 'unveil', pace: 'steady', count: true } },
+  dreamy: { name: 'Dreamy', hint: 'Soft focus, glowing buttons, drifting pictures.', motion: { scroll: 'blur', heading: 'shimmer', buttons: 'glow', pictures: 'drift', pace: 'calm', count: true } },
+  tech: { name: 'Sharp', hint: 'Wipes, a typed headline and buttons that follow the pointer.', motion: { scroll: 'wipe', heading: 'typed', buttons: 'magnet', pictures: 'tilt', pace: 'steady', count: true } },
+  classic: { name: 'Classic', hint: 'A quiet fade and nothing more.', motion: { scroll: 'fade', buttons: 'lift', pace: 'calm' } },
+};
+export function cleanMotion(v) {
+  const d = isObj(v) ? v : {}, out = {};
+  for (const k of MOTION_KEYS) if (typeof d[k] === 'string' && Object.hasOwn(MOTION[k].options, d[k]) && d[k] !== 'none') out[k] = d[k];
+  if (out.pace === 'steady') delete out.pace;
+  if (d.count === true) out.count = true;
+  // A pace alone moves nothing.
+  if (!Object.keys(out).some((k) => k !== 'pace')) return null;
+  if (typeof d.preset === 'string' && Object.hasOwn(MOTION_PRESETS, d.preset)) out.preset = d.preset;
+  return out;
+}
+// The movement a preset gives, optionally over a backdrop: motionFor('lively', 'bubbles').
+export function motionFor(preset, backdrop) {
+  const p = MOTION_PRESETS[preset];
+  if (!p) return null;
+  return cleanMotion({ ...p.motion, ...(backdrop ? { backdrop } : {}), preset });
+}
+
 const FONT_KEYS = ['classic', 'modern', 'editorial', 'clean', 'friendly', 'grotesk', 'mono'];
 const BODY_FONT_KEYS = ['clean', 'reading', 'easy', 'classic', 'grotesk'];
 export const LOOK_COLOURS = ['bg', 'surface', 'ink', 'accent', 'deep'];
@@ -389,6 +471,8 @@ export function cleanLook(v) {
   if (colours.bg && colours.ink && colours.accent) out.colours = colours;
   if (FONT_KEYS.includes(d.font)) out.font = d.font;
   if (BODY_FONT_KEYS.includes(d.bodyFont)) out.bodyFont = d.bodyFont;
+  const motion = cleanMotion(d.motion);
+  if (motion) out.motion = motion;
   return out;
 }
 export function normalisePage(raw, opts = {}) {
@@ -434,6 +518,7 @@ export function newBlock(type, variant, taken = new Set()) {
   if (type === 'posts') data.count = 3;
   if (type === 'contact') data.business = true;
   if (type === 'spacer') data.size = 'm';
+  if (type === 'marquee') data.speed = 'm';
   if (type === 'interactive') data.height = 520;
   if (type === 'booking') data.useSite = true;
   if (type === 'columns') data.children = [newBlock('text', 'plain', taken), newBlock('image', 'normal', taken)];

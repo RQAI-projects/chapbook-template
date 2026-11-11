@@ -3,7 +3,7 @@
 // Everything a writer types is escaped. Rich text allows only paragraphs, **bold**, *italic*,
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
-import { normalisePage, BLOCK_TYPES, cleanHref, cleanHex, videoEmbed, INTERACTIVE_SRC, bookingTarget } from './schema.mjs';
+import { normalisePage, BLOCK_TYPES, cleanHref, cleanHex, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM } from './schema.mjs';
 import { professionalDetails, telHref } from '../professional.mjs';
 
 export * from './schema.mjs';
@@ -15,6 +15,24 @@ const lum = (h) => { const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 
 export const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
 export const readableOn = (hex) => { for (const c of ['#ffffff', '#16181d']) if (contrast(hex, c) >= 4.5) return c; return contrast(hex, '#000000') >= contrast(hex, '#ffffff') ? '#000000' : '#ffffff'; };
 const mix = (a, b, t) => '#' + [1, 3, 5].map((i) => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('');
+
+// A colour turned round the colour wheel by `deg`, keeping how light and how strong it is.
+function turnHue(hex, deg) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+  if (!d) return hex;
+  const sat = d / (1 - Math.abs(2 * l - 1));
+  let h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  h = (((h * 60 + deg) % 360) + 360) % 360;
+  const c = (1 - Math.abs(2 * l - 1)) * sat, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
+  const [r2, g2, b2] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return '#' + [r2, g2, b2].map((v) => Math.round((v + m) * 255).toString(16).padStart(2, '0')).join('');
+}
+// The colours a set of things can take turns wearing: the page's accent, its deep colour and two
+// neighbours of the accent, each with a text colour that reads on it.
+export function turnColours(k) {
+  return [k.accent, k.deep, turnHue(k.accent, 150), turnHue(k.accent, -70), turnHue(k.deep, 60)].map((c) => ({ c, on: readableOn(c) }));
+}
 
 // Heading typefaces a page can choose. Only fonts every published site already loads.
 export const PAGE_FONTS = {
@@ -61,7 +79,7 @@ export function pageColours(look = {}, base = {}) {
 // The tripled attribute outranks the theme and the site's own colour choices.
 export function pageCss(page, base = {}) {
   const look = page.look || {}, k = pageColours(look, base);
-  const v = [`--cb-surface:${k.surface}`, `--cb-surface-ink:${k.surfaceInk}`, `--cb-surface-dim:${k.surfaceDim}`, `--cb-surface-accent:${k.surfaceAccent}`, `--cb-deep:${k.deep}`, `--cb-on-deep:${k.onDeep}`, `--cb-on-accent:${k.onAccent}`, `--cb-accent-text:${k.accentText}`];
+  const v = [`--cb-page-ink:${k.ink}`, `--cb-page-dim:${k.dim}`, `--cb-page-accent:${k.accentText}`, `--cb-surface:${k.surface}`, `--cb-surface-ink:${k.surfaceInk}`, `--cb-surface-dim:${k.surfaceDim}`, `--cb-surface-accent:${k.surfaceAccent}`, `--cb-deep:${k.deep}`, `--cb-on-deep:${k.onDeep}`, `--cb-on-accent:${k.onAccent}`, `--cb-accent-text:${k.accentText}`];
   if (look.colours) {
     v.push(`--bg-0:${k.bg}`, `--bg-1:${k.bg}`, `--bg-2:${k.bg}`, `--bg-3:${mix(k.bg, k.dark ? '#ffffff' : '#000000', 0.06)}`, `--header-bg:${k.bg}`, `--pro-card:${k.bg}`,
       `--ink:${k.ink}`, `--masthead-ink:${k.ink}`, `--ink-dim:${k.dim}`, `--ink-faint:${k.dim}`, `--line:color-mix(in srgb,${k.ink} 14%,transparent)`, `--line-strong:color-mix(in srgb,${k.ink} 30%,transparent)`,
@@ -121,7 +139,7 @@ export function renderPage(rawPage, ctx = {}) {
   // Every page gets one h1: the first opening's heading, or else the first heading on the page.
   // The writer's own email on their profile stands in when Site settings has none.
   if (!biz.email && typeof ctx.fallbackEmail === 'string' && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(ctx.fallbackEmail)) biz.email = ctx.fallbackEmail.slice(0, 254);
-  const C = { ...ctx, page, biz, editable: !!ctx.editable, h1Done: false };
+  const C = { ...ctx, page, biz, editable: !!ctx.editable, h1Done: false, turns: turnColours(pageColours(page.look, ctx.base)) };
   // Every page gets one h1: the first heading that will really appear (an opening first).
   const shows = (b) => {
     if (!b.data.heading) return false;
@@ -132,9 +150,33 @@ export function renderPage(rawPage, ctx = {}) {
   };
   const flat = page.blocks.flatMap((b) => (b.type === 'columns' ? b.data.children || [] : [b]));
   C.h1Id = (flat.find((b) => b.type === 'hero' && shows(b)) || flat.find(shows))?.id;
+  // Movement (see MOTION in schema.mjs). The page's first opening carries the backdrop.
+  const m = page.look.motion || null;
+  C.backdrop = m?.backdrop || '';
+  C.heroId = page.blocks.find((b) => b.type === 'hero')?.id;
   const blocks = page.blocks.map((b) => renderBlock(b, C)).join('');
-  return `<style>${pageCss(page, ctx.base)}</style><div class="cbp${page.look.font ? ' cbp-font' : ''}${page.look.bodyFont ? ' cbp-bodyfont' : ''}" data-page="${esc(page.slug)}">${blocks}</div>`;
+  return `<style>${pageCss(page, ctx.base)}</style><div class="cbp${m ? ' cbm' : ''}${page.look.font ? ` cbp-font cbp-hf-${page.look.font}` : ''}${page.look.bodyFont ? ' cbp-bodyfont' : ''}" data-page="${esc(page.slug)}"${motionAttrs(m)}${C.editable ? ' data-m-edit' : ''}>${blocks}</div>`;
 }
+
+// The page's movement choices as data-m-* attributes; motion.css and page-motion.js read them.
+export function motionAttrs(m) {
+  if (!m) return '';
+  return ['scroll', 'heading', 'buttons', 'pictures', 'opening', 'pace'].filter((k) => m[k] && Object.hasOwn(MOTION[k].options, m[k])).map((k) => ` data-m-${k}="${m[k]}"`).join('') + (m.count ? ' data-m-count' : '');
+}
+// Moving shapes behind a block. Pure decoration: empty elements that the stylesheet arranges and
+// animates in the page's own colours, hidden from screen readers.
+const BACKDROP_PARTS = { aurora: 4, bubbles: 12, blobs: 3, waves: 3, orbits: 4, grid: 2, dots: 2, rays: 2, shapes: 12, lines: 9, ripples: 5, petals: 14, stars: 6, spotlight: 2, wash: 1, grain: 1 };
+export function backdropHtml(kind, cls = '') {
+  if (!Object.hasOwn(BACKDROP_PARTS, kind)) return '';
+  return `<div class="cbm-bd cbm-bd-${kind}${cls}" aria-hidden="true">${kind === 'stars' ? '<canvas></canvas>' : ''}${'<i></i>'.repeat(BACKDROP_PARTS[kind])}</div>`;
+}
+// Styles for showing a page perfectly still (thumbnails, previews, a "movement off" view):
+// nothing animates, and the backdrops that only make sense moving are left out, as they are for
+// visitors who ask for less motion. A rolling headline is shown whole, on as many lines as it needs.
+export const STILL_CSS = '*,*::before,*::after{animation:none!important;transition:none!important}.cbm-bd-bubbles,.cbm-bd-petals,.cbm-bd-lines,.cbm-bd-ripples,.cbm-bd-stars canvas{display:none!important}.cb-mq-hero{width:auto;margin-left:0}.cb-mq-hero .cb-mq-track{width:auto;flex-wrap:wrap}.cb-mq-hero [aria-hidden=true]{display:none}.cbp .cb-mq-hero .cb-hero-h{display:block;flex:0 1 auto;min-width:0;white-space:normal;font-size:clamp(2.8rem,9vw,8rem)}.cb-mq-hero .cb-hero-h::after{display:none}';
+const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+// A picture's address inside a style attribute: url('…') with the characters that could end it encoded.
+const cssUrl = (src) => `url('${String(src).replace(/[\\'"()\s<>]/g, (c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)}')`;
 
 const ED = (C, attr, key) => (C.editable ? ` ${attr}="${esc(key)}"` : '');
 const PH = (C, b, path) => {
@@ -148,10 +190,10 @@ function fieldPh(type, path) {
   return f?.ph || 'Add text';
 }
 // One editable text value. Empty values disappear from the published page.
-function T(C, b, path, value, tag = 'p', cls = '') {
+function T(C, b, path, value, tag = 'p', cls = '', attrs = '') {
   const c = cls ? ` class="${cls}"` : '';
-  if (!value) return C.editable ? `<${tag}${c}${ED(C, 'data-cb', `${b.id}:${path}`)}${PH(C, b, path)}></${tag}>` : '';
-  return `<${tag}${c}${ED(C, 'data-cb', `${b.id}:${path}`)}>${esc(value)}</${tag}>`;
+  if (!value) return C.editable ? `<${tag}${c}${attrs}${ED(C, 'data-cb', `${b.id}:${path}`)}${PH(C, b, path)}></${tag}>` : '';
+  return `<${tag}${c}${attrs}${ED(C, 'data-cb', `${b.id}:${path}`)}>${esc(value)}</${tag}>`;
 }
 function RT(C, b, path, value, cls = 'cb-rich') {
   if (!value) return C.editable ? `<div class="${cls}"${ED(C, 'data-cb', `${b.id}:${path}`)} data-cb-rich${PH(C, b, path)}></div>` : '';
@@ -197,9 +239,9 @@ function LIST(C, b, key, items, each, tag = 'div', cls = '') {
   return `<${tag} class="${cls}"${ED(C, 'data-cb-list', `${b.id}:${key}`)}>${body}</${tag}>`;
 }
 const K = (C, b, d) => T(C, b, 'kicker', d.kicker, 'p', 'cb-kicker');
-function H(C, b, d, tag = 'h2', cls = 'cb-h') {
-  if (b.id === C.h1Id && !C.h1Done) { C.h1Done = true; tag = 'h1'; }
-  return T(C, b, 'heading', d.heading, tag, cls);
+const hTag = (C, b, tag = 'h2') => { if (b.id === C.h1Id && !C.h1Done) { C.h1Done = true; return 'h1'; } return tag; };
+function H(C, b, d, tag = 'h2', cls = 'cb-h', attrs = '') {
+  return T(C, b, 'heading', d.heading, hTag(C, b, tag), cls, attrs);
 }
 
 function bizDetails(C, d, own = false) {
@@ -249,9 +291,29 @@ function heroVideo(C, b, d, behind) {
   return `<iframe class="cb-hero-video" src="${esc(e.src)}" title="${esc(d.heading || `${e.host} video`)}" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
 }
 
+// "Changing words": the last part of the opening heading swaps between a few words.
+const rotWords = (d) => String(d.rotate || '').split(/[,;|]/).map((w) => w.trim()).filter(Boolean).slice(0, 6);
+function heroHeading(C, b, d, cls = 'cb-h cb-hero-h', attrs = '') {
+  const words = rotWords(d);
+  // While editing, the heading stays plain text and the changing words are listed beneath it.
+  if (C.editable) return `${H(C, b, d, 'h2', cls, attrs)}${words.length ? `<p class="cb-rot-edit" data-cb-hint>Changing words: ${esc(words.join(' · '))}</p>` : ''}`;
+  if (!words.length || !d.heading) return H(C, b, d, 'h2', cls, attrs);
+  const tag = hTag(C, b);
+  return `<${tag} class="${cls}"${attrs}>${esc(d.heading)} <span class="cb-rot">${words.map((w, i) => `<span${i ? ' aria-hidden="true"' : ' class="is-on"'}>${esc(w)}</span>`).join('')}</span></${tag}>`;
+}
+// The opening's extra photos, as a list the editor can add to.
+function morePics(C, b, d, cls, eachCls = '') {
+  const pics = (d.pictures || []).slice(0, HERO_PHOTO_ROOM[b.variant] || 0);
+  return LIST(C, b, 'pictures', pics, (p, i, wrap) => wrap(P(C, b, `pictures.${i}`, p, '', { credits: false }), 'figure', eachCls), 'div', cls);
+}
+const creditsOf = (list) => { const c = list.map((p) => credit(p)).filter(Boolean); return c.length ? `<p class="cb-credits">${[...new Set(c)].join(' ')}</p>` : ''; };
+
 R_.hero = (C, b) => {
   const d = b.data, v = b.variant;
-  const head = `${K(C, b, d)}${H(C, b, d, 'h2', 'cb-h cb-hero-h')}`;
+  // Two openings draw the heading their own way, so the shared one must not be made for them
+  // (making it would use up the page's one h1).
+  const ownHeading = v === 'marquee' || v === 'mask' || v === 'wordmark' || v === 'open';
+  const head = ownHeading ? '' : `${K(C, b, d)}${heroHeading(C, b, d)}`;
   const intro = RT(C, b, 'intro', d.intro, 'cb-rich cb-lead');
   const btns = BTNS(C, b, d.buttons);
   const words = `${head}${intro}${btns}`;
@@ -259,10 +321,11 @@ R_.hero = (C, b) => {
   const pic = (cls = 'cb-hero-pic') => (v === 'minimal' ? '' : `<figure class="${cls}">${d.video ? heroVideo(C, b, d, cls.includes('cb-hero-bg')) : P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`);
   const media = d.picture || d.video || C.editable;
   const band = media ? pic('cb-hero-pic cb-hero-band') : '';
+  const more = d.pictures || [];
   // A video file can fill the background; a YouTube or Vimeo video plays under the words instead.
   const fileBehind = d.video && videoEmbed(d.video)?.kind === 'file';
   const player = d.video && !fileBehind && v === 'photo-behind' ? `<div class="cb-hero-player">${heroVideo(C, b, d, false)}</div>` : '';
-  const toggle = fileBehind && v === 'photo-behind' && !C.editable ? '<button type="button" class="cb-video-toggle" aria-label="Pause the video">Pause</button>' : '';
+  const toggle = fileBehind && (v === 'photo-behind' || v === 'inset' || v === 'open') && !C.editable ? '<button type="button" class="cb-video-toggle" aria-label="Pause the video">Pause</button>' : '';
   if (v === 'split') return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div>${pic()}</div>`;
   if (v === 'centred') return `<div class="cb-hero-words">${words}${details}</div>${media ? pic() : ''}`;
   if (v === 'photo-behind') {
@@ -272,6 +335,94 @@ R_.hero = (C, b) => {
   if (v === 'panel') return `<div class="cb-hero-grid"><div class="cb-hero-words">${head}${intro}</div><aside class="cb-hero-panel">${factsList(C, b, d, { cls: 'cb-facts' })}${btns}</aside></div>${band}`;
   if (v === 'poster') return `${head}<div class="cb-poster-foot">${intro}<div>${btns}${details}</div></div>${band}`;
   if (v === 'stacked') return `${pic('cb-hero-pic cb-hero-top')}<div class="cb-hero-card">${words}${details}</div>`;
+
+  // ---- openings built around movement ----
+  if (v === 'marquee') {
+    // The heading rolls across the screen. It is written once for readers and search engines;
+    // the copies that make the loop are hidden from screen readers.
+    let strip;
+    if (C.editable || !d.heading) strip = `<div class="cb-mq cb-mq-hero cb-mq-still"><div class="cb-mq-track">${H(C, b, d, 'h2', 'cb-h cb-hero-h')}</div></div>`;
+    else {
+      const len = [...d.heading].length, copies = clamp(Math.ceil(56 / Math.max(len, 4)) + 1, 3, 14);
+      const tag = hTag(C, b);
+      strip = `<div class="cb-mq cb-mq-hero" style="--mq-shift:${(-100 / copies).toFixed(4)}%;--mq-dur:${clamp(Math.round(len * 0.55), 9, 60)}s"><div class="cb-mq-track"><${tag} class="cb-h cb-hero-h">${esc(d.heading)}</${tag}>${`<span class="cb-h cb-hero-h" aria-hidden="true">${esc(d.heading)}</span>`.repeat(copies - 1)}</div></div>`;
+    }
+    return `${K(C, b, d)}${strip}<div class="cb-poster-foot">${intro}<div>${btns}${details}</div></div>${band}`;
+  }
+  if (v === 'wordmark') {
+    // A short name set as wide as the page. The size is worked out from its length here and
+    // trimmed to an exact fit by the page's script; a long heading wraps like the Big type opening.
+    const len = [...String(d.heading || '')].length;
+    const fit = len && len <= 22 ? ` style="--fit:${clamp(160 / Math.max(len, 3), 6, 34).toFixed(2)}"` : '';
+    return `${K(C, b, d)}${H(C, b, d, 'h2', `cb-h cb-hero-h cb-wordmark${fit ? '' : ' cb-wordmark-long'}`, fit)}<div class="cb-wm-foot"><div class="cb-wm-words">${intro}${btns}${details}</div>${media ? pic('cb-hero-pic cb-wm-pic') : ''}</div>`;
+  }
+  if (v === 'open') {
+    // The name starts together in the middle; its two halves move to opposite corners as the
+    // photo opens between them. Written once, in order, so it reads as one heading.
+    const bg = fileBehind || !d.video ? pic('cb-hero-bg cb-open-bg') : `<figure class="cb-hero-bg cb-open-bg">${P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`;
+    let heading;
+    if (C.editable || !d.heading) heading = H(C, b, d, 'h2', 'cb-h cb-hero-h cb-open-h cb-open-plain');
+    else {
+      const parts = d.heading.split(/\s+/).filter(Boolean), cut = Math.ceil(parts.length / 2), tag = hTag(C, b);
+      const second = parts.slice(cut).join(' ');
+      // A short name starts together in the middle and travels; a long one would not fit there.
+      heading = `<${tag} class="cb-h cb-hero-h cb-open-h${[...d.heading].length > 20 ? ' cb-open-long' : ''}"><span class="cb-open-a">${esc(parts.slice(0, cut).join(' '))}</span>${second ? ` <span class="cb-open-b">${esc(second)}</span>` : ''}</${tag}>`;
+    }
+    return `<div class="cb-open">${bg}${heading}<div class="cb-open-foot">${K(C, b, d)}${intro}${btns}${details}</div>${toggle}</div>`;
+  }
+  if (v === 'blob') {
+    const dot = more.length || C.editable ? morePics(C, b, d, 'cb-blob-more', 'cb-blob-dot') : '';
+    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-blob"><span class="cb-blob-ring"></span>${pic('cb-hero-pic cb-blob-pic')}${dot}</div></div>`;
+  }
+  if (v === 'inset') {
+    // A video file fills the frame; a YouTube or Vimeo video cannot, so its picture does.
+    const bg = fileBehind || !d.video ? pic('cb-hero-bg cb-inset-bg') : `<figure class="cb-hero-bg cb-inset-bg">${P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`;
+    return `<div class="cb-inset">${bg}<div class="cb-hero-words">${words}</div>${details ? `<aside class="cb-inset-card">${details}</aside>` : ''}${toggle}</div>`;
+  }
+  if (v === 'orbit') {
+    const sats = more.length || C.editable
+      ? morePics(C, b, d, 'cb-orbit-sats').replace('class="cb-orbit-sats"', `class="cb-orbit-sats" style="--n:${Math.max(more.slice(0, HERO_PHOTO_ROOM.orbit).length, 1)}"`)
+      : '<div class="cb-orbit-sats cb-orbit-dots" style="--n:3"><i></i><i></i><i></i></div>';
+    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-orbit"><span class="cb-orbit-ring"></span><span class="cb-orbit-ring"></span><figure class="cb-orbit-core">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${sats}</div></div>${creditsOf([d.picture, ...more])}`;
+  }
+  if (v === 'collage') {
+    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-collage"><span class="cb-collage-shape"></span><span class="cb-collage-shape"></span><figure class="cb-collage-main">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${morePics(C, b, d, 'cb-collage-more')}</div></div>${creditsOf([d.picture, ...more])}`;
+  }
+  if (v === 'mask') {
+    // The photo shows through the letters. The editor also shows the photo as a small tile to click.
+    const style = d.picture ? ` style="--cb-mask:${esc(cssUrl(imgSrc(C, d.picture.src)))}"` : '';
+    const thumb = C.editable ? `<figure class="cb-mask-thumb">${P(C, b, 'picture', d.picture, '', { credits: false })}<figcaption>The photo inside the letters</figcaption></figure>` : '';
+    return `${K(C, b, d)}${heroHeading(C, b, d, 'cb-h cb-hero-h cb-mask-h', style)}<div class="cb-poster-foot">${intro}<div>${btns}${details}</div></div>${thumb}${creditsOf([d.picture])}`;
+  }
+  if (v === 'arch') {
+    // The badge's words run once round a circle: short labels repeat, long ones are cut at a word.
+    let label = (d.kicker || C.site?.name || C.site?.masthead || 'Welcome').replace(/\s+/g, ' ').trim();
+    if ([...label].length > 40) label = label.slice(0, 41).replace(/\s+\S*$/, '');
+    let ring = ''; do { ring += `${label} \u2022 `; } while ([...ring].length + [...label].length + 3 <= 46);
+    const ringSize = clamp(276 / ([...ring].length * 0.7), 6, 10).toFixed(2);
+    const badge = `<svg class="cb-arch-badge" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs><path id="cba-${esc(b.id)}" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs><circle cx="60" cy="60" r="58"/><text style="font-size:${ringSize}px"><textPath href="#cba-${esc(b.id)}" textLength="276" lengthAdjust="spacing">${esc(ring.toUpperCase())}</textPath></text><path class="cb-arch-star" d="M60 44l4.2 11.8L76 60l-11.8 4.2L60 76l-4.2-11.8L44 60l11.8-4.2z"/></svg>`;
+    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-arch"><span class="cb-arch-shape"></span>${pic('cb-hero-pic cb-arch-pic')}${badge}</div></div>`;
+  }
+  if (v === 'stage') return `<div class="cb-hero-words">${words}${details}</div>${media ? `<div class="cb-stage"><span class="cb-stage-glow"></span>${pic('cb-hero-pic cb-stage-pic')}</div>` : ''}`;
+  if (v === 'filmstrip') {
+    const all = [d.picture, ...more].filter(Boolean);
+    let film;
+    if (C.editable) film = `<div class="cb-film cb-film-still"><div class="cb-film-row"><figure>${P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${morePics(C, b, d, 'cb-film-more')}</div></div>`;
+    else if (all.length < 2) film = band;
+    else {
+      const tile = (p, hidden) => `<figure${hidden ? ' aria-hidden="true"' : ''}><img src="${esc(imgSrc(C, p.src))}" alt="${hidden ? '' : esc(p.alt)}" loading="lazy" decoding="async"></figure>`;
+      const n = Math.max(2, Math.ceil(8 / all.length));
+      const row = (list, firstReal) => { let out = ''; for (let k = 0; k < n * 2; k++) out += list.map((p) => tile(p, !(firstReal && k === 0))).join(''); return out; };
+      film = `<div class="cb-film" style="--mq-dur:${all.length * n * 7}s"><div class="cb-film-row">${row(all, true)}</div><div class="cb-film-row cb-film-rev">${row([...all].reverse(), false)}</div></div>`;
+    }
+    return `<div class="cb-hero-words">${words}${details}</div>${film}${creditsOf(all)}`;
+  }
+  if (v === 'bento') {
+    const info = d.details ? factsList(C, b, d, { cls: 'cb-facts' }) : '';
+    const tiles = `${more.length || C.editable ? morePics(C, b, d, 'cb-bento-more', 'cb-bento-tile cb-bento-pic') : ''}${info ? `<div class="cb-bento-tile cb-bento-info">${info}</div>` : ''}`;
+    return `<div class="cb-bento"><div class="cb-bento-top"><div class="cb-bento-tile cb-bento-words">${words}</div>${media ? `<figure class="cb-bento-tile cb-bento-pic cb-bento-main">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>` : ''}</div>${tiles ? `<div class="cb-bento-row">${tiles}</div>` : ''}</div>${creditsOf([d.picture, ...more])}`;
+  }
+  if (v === 'curtain') return `<div class="cb-curtain"><div class="cb-curtain-words"><div class="cb-hero-words">${words}${details}</div></div>${media ? pic('cb-hero-pic cb-curtain-pic') : ''}</div>`;
   return `<div class="cb-hero-words">${words}${details}</div>`; // minimal
 };
 
@@ -281,6 +432,8 @@ R_.text = (C, b) => {
   const body = `${RT(C, b, 'body', d.body)}${BTNS(C, b, d.buttons)}`;
   if (v === 'sidehead') return `<div class="cb-side"><div class="cb-side-head">${head}</div><div>${body}</div></div>`;
   if (v === 'picture-left' || v === 'picture-right') return `<div class="cb-pic-text"><figure class="cb-pic-frame">${P(C, b, 'picture', d.picture)}</figure><div>${head}${body}</div></div>`;
+  // Large words that go from faint to full colour as the reader scrolls past them.
+  if (v === 'lit') return `${head}${RT(C, b, 'body', d.body, 'cb-rich cb-lit')}${BTNS(C, b, d.buttons)}`;
   return `${head}${body}`;
 };
 
@@ -295,8 +448,17 @@ R_.gallery = (C, b) => {
   const tile = (p, i) => (p.video
     ? `<video src="${esc(imgSrc(C, p.video))}" poster="${esc(imgSrc(C, p.src))}" controls playsinline preload="none" aria-label="${esc(p.alt || 'Video')}"${ED(C, 'data-cb-video', `${b.id}:pictures.${i}.video`)}></video>`
     : P(C, b, `pictures.${i}`, p, '', { credits: false }));
+  const head = `<div class="cb-head">${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
+  // A reel that rolls by itself. The copies that make the loop are hidden from screen readers.
+  if (b.variant === 'reel' && !C.editable && pics.length > 1) {
+    const one = (p, hidden) => `<figure${hidden ? ' aria-hidden="true"' : ''}>${p.video ? `<video src="${esc(imgSrc(C, p.video))}" poster="${esc(imgSrc(C, p.src))}" muted loop playsinline preload="none"${hidden ? ' tabindex="-1"' : ' controls'} aria-label="${esc(p.alt || 'Video')}"></video>` : `<img src="${esc(imgSrc(C, p.src))}" alt="${hidden ? '' : esc(p.alt)}" loading="lazy" decoding="async">`}</figure>`;
+    const sets = Math.max(2, Math.ceil(9 / pics.length) + 1);
+    let track = pics.map((p) => one(p, false)).join('');
+    for (let k = 1; k < sets; k++) track += pics.map((p) => one(p, true)).join('');
+    return `${head}<div class="cb-mq cb-mq-pics" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${pics.length * 6}s"><div class="cb-mq-track">${track}</div></div>${creditsOf(pics)}`;
+  }
   const list = LIST(C, b, 'pictures', pics, (p, i, wrap) => wrap(`${tile(p, i)}${p.alt || credit(p) ? `<figcaption>${credit(p)}</figcaption>` : ''}`, 'figure'), 'div', 'cb-gallery');
-  return `<div class="cb-head">${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${list}`;
+  return `${head}${list}`;
 };
 
 function serviceLinks(C, b, i, s) {
@@ -317,6 +479,7 @@ R_.services = (C, b) => {
   else if (v === 'cards') list = LIST(C, b, 'items', items, (s, i, w) => w(`${pic(s, i)}<div class="cb-card-body">${name(s, i)}${desc(s, i)}<p class="cb-meta">${time(s, i)}${price(s, i)}</p>${offer(s, i)}${serviceLinks(C, b, i, s)}</div>`), 'div', 'cb-svc cb-svc-cards');
   else if (v === 'numbered') list = LIST(C, b, 'items', items, (s, i, w) => w(`<span class="cb-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div>${name(s, i)}${desc(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}</div><p class="cb-meta">${price(s, i)}${time(s, i)}</p>`), 'ol', 'cb-svc cb-svc-numbered');
   else if (v === 'table') list = LIST(C, b, 'items', items, (s, i, w) => w(`<div>${name(s, i)}${desc(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}</div>${time(s, i)}${price(s, i)}`, 'div'), 'div', 'cb-svc cb-svc-table');
+  else if (v === 'rows') list = LIST(C, b, 'items', items, (s, i, w) => w(`<span class="cb-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div class="cb-row-main">${name(s, i)}${desc(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}</div><p class="cb-meta">${time(s, i)}${price(s, i)}</p>${pic(s, i, 'cb-row-pic')}`), 'div', 'cb-svc cb-svc-rows');
   else if (v === 'board') list = LIST(C, b, 'items', items, (s, i, w) => w(`<div class="cb-menu-line">${name(s, i)}<i aria-hidden="true"></i>${price(s, i)}</div>${desc(s, i)}${time(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}`), 'div', 'cb-svc cb-svc-board');
   else list = LIST(C, b, 'items', items, (s, i, w) => w(`<figure class="cb-svc-pic">${P(C, b, `items.${i}.picture`, s.picture)}</figure><div class="cb-feature-body">${name(s, i)}${desc(s, i)}<p class="cb-meta">${time(s, i)}${price(s, i)}</p>${offer(s, i)}${serviceLinks(C, b, i, s)}</div>`), 'div', 'cb-svc cb-svc-feature');
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${list}`;
@@ -336,7 +499,14 @@ R_.reviews = (C, b) => {
   const d = b.data, items = d.items || [];
   const one = (r, i, w) => w(`${stars(r.stars)}<blockquote>${RT(C, b, `items.${i}.quote`, r.quote, 'cb-rich cb-quote')}</blockquote><footer>${T(C, b, `items.${i}.name`, r.name, 'cite', 'cb-who')}${T(C, b, `items.${i}.detail`, r.detail, 'span', 'cb-who-detail')}</footer>`, 'figure', 'cb-review');
   const more = d.source ? `<p class="cb-more">${BTN(C, b, 'source', d.source, 'cb-link')}</p>` : '';
-  return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div>${LIST(C, b, 'items', items, one, 'div', `cb-reviews cb-reviews-${b.variant}`)}${more}`;
+  const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div>`;
+  // Reviews that roll past. Read once by screen readers; the copies that make the loop are hidden.
+  if (b.variant === 'ticker' && !C.editable && items.length > 1) {
+    const set = (hidden) => items.map((r, i) => one(r, i, (inner, tag, cls) => `<${tag} class="${cls}"${hidden ? ' aria-hidden="true"' : ''}>${inner}</${tag}>`)).join('');
+    const sets = Math.ceil(8 / items.length) + 1;
+    return `${head}<div class="cb-mq cb-mq-cards" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${items.length * 11}s"><div class="cb-mq-track">${set(false)}${set(true).repeat(sets - 1)}</div></div>${more}`;
+  }
+  return `${head}${LIST(C, b, 'items', items, one, 'div', `cb-reviews cb-reviews-${b.variant === 'ticker' ? 'cards' : b.variant}`)}${more}`;
 };
 
 R_.faq = (C, b) => {
@@ -378,6 +548,7 @@ R_.cta = (C, b) => {
   const words = `${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'body', d.body)}`;
   if (b.variant === 'split') return `<div class="cb-cta-split"><div>${words}</div>${BTNS(C, b, d.buttons)}</div>`;
   if (b.variant === 'card') return `<div class="cb-cta-card">${words}${BTNS(C, b, d.buttons)}</div>`;
+  if (b.variant === 'giant') return `${K(C, b, d)}${H(C, b, d, 'h2', 'cb-h cb-giant-h')}<div class="cb-giant-foot">${RT(C, b, 'body', d.body)}${BTNS(C, b, d.buttons)}</div>`;
   return `${words}${BTNS(C, b, d.buttons)}`;
 };
 
@@ -475,14 +646,56 @@ R_.booking = (C, b) => {
   return `${head}${panel}${note}`;
 };
 
+// A band of words that rolls across the page. Written once for readers; the copies that make
+// the loop are hidden from screen readers. In the editor it stands still so it can be changed.
+R_.marquee = (C, b) => {
+  const d = b.data, items = d.items || [], v = b.variant;
+  const one = (x, i, w) => w(T(C, b, `items.${i}.text`, x.text, 'span'), 'span', 'cb-mq-item');
+  if (C.editable) return `<div class="cb-mq cb-mq-still">${LIST(C, b, 'items', items, one, 'div', 'cb-mq-track')}</div>`;
+  const text = items.map((x) => x.text).filter(Boolean);
+  if (!text.length) return '';
+  const chars = text.join('').length + text.length * 3;
+  const sets = clamp(Math.ceil((v === 'tags' ? 220 : 64) / chars) + 1, 2, 24);
+  const dur = Math.round(clamp(chars * (v === 'tags' ? 0.28 : 0.5), 8, 90) * ({ s: 1.7, m: 1, l: 0.6 }[d.speed] || 1));
+  const set = (hidden) => `<span class="cb-mq-set"${hidden ? ' aria-hidden="true"' : ''}>${text.map((t) => `<span class="cb-mq-item">${esc(t)}</span>`).join('')}</span>`;
+  const row = (second) => `<div class="cb-mq${second ? ' cb-mq-rev' : ''}" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${dur}s"><div class="cb-mq-track">${set(second)}${set(true).repeat(sets - 1)}</div></div>`;
+  return v === 'double' ? row(false) + row(true) : row(false);
+};
+
+R_.steps = (C, b) => {
+  const d = b.data, items = d.items || [];
+  const one = (x, i, w) => w(`<span class="cb-step-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div class="cb-step-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-step-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-step-desc')}</div>`, 'li', 'cb-step');
+  return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${LIST(C, b, 'items', items, one, 'ol', `cb-steps cb-steps-${b.variant}`)}`;
+};
+
+R_.showcase = (C, b) => {
+  const d = b.data, items = d.items || [];
+  const one = (x, i, w) => w(`${x.picture || C.editable ? `<figure class="cb-show-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}<div class="cb-show-body">${T(C, b, `items.${i}.tag`, x.tag, 'p', 'cb-show-tag')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-show-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-show-desc')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}</div>`, 'article', `cb-show-item${i ? '' : ' is-on'}`);
+  const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
+  if (b.variant === 'plates') {
+    // Round photos in a row. Each has its own colour; the page's script wipes the whole band to
+    // the colour of the one in the middle. Without it the band keeps the first colour.
+    const turn = (i) => C.turns[i % C.turns.length];
+    const plate = (x, i, w) => w(`${x.picture || C.editable ? `<figure class="cb-show-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}<div class="cb-show-body">${T(C, b, `items.${i}.tag`, x.tag, 'p', 'cb-show-tag')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-show-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-show-desc')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}</div>`, 'article', `cb-show-item${i ? '' : ' is-on'}`)
+      .replace(/<article class="cb-show-item( is-on)?"/, (m) => `${m} data-plate-c="${turn(i).c}" data-plate-on="${turn(i).on}"`);
+    const first = turn(0);
+    return `<div class="cb-plates" style="--plate-c:${first.c};--plate-on:${first.on}"><span class="cb-plates-bg" aria-hidden="true"></span><span class="cb-plates-wipe" aria-hidden="true"></span>${head}${LIST(C, b, 'items', items, plate, 'div', 'cb-show cb-show-plates')}</div>`;
+  }
+  return `${head}${LIST(C, b, 'items', items, one, 'div', `cb-show cb-show-${b.variant}`)}`;
+};
+
 R_.spacer = (C, b) => (b.variant === 'ornament' ? '<p class="cb-ornament" aria-hidden="true"><span></span><span></span><span></span></p>' : b.variant === 'line' ? '<hr>' : '');
 
 function renderBlock(b, C) {
   const inner = R_[b.type](C, b);
   if (!inner && !C.editable) return '';
   const s = b.style;
-  const cls = `cb cb-t-${b.type} cb-${b.type}--${b.variant} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${b.data.size || 'm'}` : ''}`;
+  const cls = `cb${b.id === C.heroId ? ' cb-opening' : ''} cb-t-${b.type} cb-${b.type}--${b.variant} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${b.data.size || 'm'}` : ''}`;
   const backdrop = s.bg === 'picture' && b.data.backdrop ? `<img class="cb-backdrop" src="${esc(imgSrc(C, b.data.backdrop.src))}" alt="" loading="lazy"${ED(C, 'data-cb-img', `${b.id}:backdrop`)}>${credit(b.data.backdrop, 'cb-credit cb-backdrop-credit')}` : '';
-  return `<section class="${cls}"${ED(C, 'data-cb-block', b.id)}>${backdrop}<div class="cb-in">${inner}</div></section>`;
+  // The chosen backdrop moves behind the page's opening, and more quietly behind a coloured call to action.
+  let moving = '';
+  if (C.backdrop && b.id === C.heroId && !['photo-behind', 'inset', 'open'].includes(b.variant) && s.bg !== 'picture') moving = backdropHtml(C.backdrop);
+  else if (C.backdrop && b.type === 'cta' && ['accent', 'dark'].includes(s.bg)) moving = backdropHtml(C.backdrop, ' cbm-bd-echo');
+  return `<section class="${cls}"${ED(C, 'data-cb-block', b.id)}>${backdrop}${moving}<div class="cb-in">${inner}</div></section>`;
 }
 export { renderBlock as _renderBlock };
