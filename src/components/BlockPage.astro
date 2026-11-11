@@ -33,13 +33,13 @@ const html = renderPage({ ...page, blocks }, {
   fallbackEmail: (profile as any).email && (profile as any).email !== 'you@example.com' ? (profile as any).email : '',
   href: (p: string) => withBase(p), postsHref: withBase('/posts/'),
 });
-const moves = html.includes('class="cbp cbm');
 ---
 <Base title={title ?? page.title} description={description ?? (page.description || undefined)}>
   <slot />
-  {/* A page that moves: tell the stylesheet a script is on its way, so things that will arrive on
-      scroll don't flash first. If the script never starts, the page goes back to plain within 3s. */}
-  {moves && <script is:inline data-astro-rerun>document.documentElement.classList.add('cbm-js');setTimeout(function(){if(!window.__cbm)document.documentElement.classList.remove('cbm-js')},3000)</script>}
+  {/* Tell the stylesheet a script is on its way. Until it says so nothing on the page moves by
+      itself (there would be no Pause button), and things that will arrive on scroll don't flash
+      first. If the script never starts, the page goes back to plain and still within 3s. */}
+  <script is:inline data-astro-rerun>document.documentElement.classList.add('cbm-js');setTimeout(function(){if(!window.__cbm)document.documentElement.classList.remove('cbm-js')},3000)</script>
   <Fragment set:html={html} />
 </Base>
 

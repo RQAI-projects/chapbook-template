@@ -46,18 +46,18 @@
 /* ======================================================================================== */
 /* Movement that belongs to a layout: it runs whenever that layout is used.                   */
 /* ======================================================================================== */
-@media (prefers-reduced-motion:no-preference){
+@media screen and (prefers-reduced-motion:no-preference){
   /* Rolling bands */
-  .cb-mq:not(.cb-mq-still) .cb-mq-track{animation:cb-roll var(--mq-dur,30s) linear infinite;will-change:transform}
+  .cb-mq:not(.cb-mq-still) .cb-mq-track{animation:cb-roll var(--mq-dur,30s) linear infinite}
   .cb-mq-rev .cb-mq-track{animation-direction:reverse}
   .cb-mq:hover .cb-mq-track,.cb-mq:focus-within .cb-mq-track{animation-play-state:paused}
-  .cb-film:not(.cb-film-still) .cb-film-row{animation:cb-roll-half var(--mq-dur,60s) linear infinite;will-change:transform}
+  .cb-film:not(.cb-film-still) .cb-film-row{animation:cb-roll-half var(--mq-dur,60s) linear infinite}
   .cb-film-rev{animation-direction:reverse!important}
 
   /* Changing words */
-  .cb-rot>span{transform:translateY(.7em);transition:opacity .5s var(--m-ease),transform .5s var(--m-ease)}
-  .cb-rot>span.is-on{transform:none}
-  .cb-rot>span.is-off{transform:translateY(-.7em)}
+  .cb-rot.is-live>span{transform:translateY(.7em);transition:opacity .5s var(--m-ease),transform .5s var(--m-ease)}
+  .cb-rot.is-live>span.is-on{transform:none}
+  .cb-rot.is-live>span.is-off{transform:translateY(-.7em)}
 
   /* Circling photos: the ring turns and each photo turns back, so the photos stay upright. */
   .cb-orbit-sats{animation:cbm-spin 80s linear infinite}
@@ -102,10 +102,12 @@
   .cb-factlist-circles .cb-fact:nth-child(even){animation-duration:9s;animation-direction:alternate-reverse}
   /* Round photos: the band wipes to the new colour from the middle plate. */
   .cb-plates-wipe.is-on{animation:cbm-wipe .85s cubic-bezier(.6,0,.2,1) both}
-  .cb-plates{transition:color .5s}
-  .cb-show-plates .cb-show-item{transition:scale .5s var(--m-ease),opacity .5s;scale:.86;opacity:.6}
-  .cb-show-plates .cb-show-item.is-on{scale:1;opacity:1}
-  .cbp[data-m-edit] .cb-show-plates .cb-show-item{scale:1;opacity:1}
+  /* The words change colour part-way through the wipe, when the new colour is under them. The
+     plates beside the middle one are smaller, never fainter, so their words stay readable. */
+  .cb-plates{transition:color .25s .3s}
+  .cb-show-plates .cb-show-item{transition:scale .5s var(--m-ease);scale:.86}
+  .cb-show-plates .cb-show-item.is-on{scale:1}
+  .cbp[data-m-edit] .cb-show-plates .cb-show-item{scale:1}
   /* Giant type rises into place as it scrolls into view. */
   @supports (animation-timeline:view()){
     .cb-giant-h{animation:cbm-rise-in linear both;animation-timeline:view();animation-range:entry 0% cover 34%}
@@ -157,6 +159,20 @@
   .cb-show-stack .cb-show-item{position:relative;top:auto}
 }
 
+/* A page whose script is not running (scripts off, blocked, or failed to start) has no Pause
+   button, so nothing on it moves by itself: the same plain, wrapped lines, no endless animation,
+   and the backdrops that only make sense moving are left out. Everything is still there to read. */
+html:not(.cbm-js) .cb-mq,html:not(.cbm-js) .cb-film{width:auto;margin-left:0;-webkit-mask-image:none;mask-image:none;rotate:none;scale:1}
+html:not(.cbm-js) .cb-mq-track,html:not(.cbm-js) .cb-film-row{width:auto;flex-wrap:wrap;justify-content:center;row-gap:.5em;padding-right:0}
+html:not(.cbm-js) .cb-mq [aria-hidden=true],html:not(.cbm-js) .cb-film [aria-hidden=true]{display:none}
+html:not(.cbm-js) .cb-mq-hero .cb-hero-h{display:block;flex:0 1 auto;min-width:0;white-space:normal}
+html:not(.cbm-js) .cb-mq-hero .cb-hero-h::after{display:none}
+html:not(.cbm-js) .cb-mq-hero .cb-mq-track{justify-content:flex-start}
+html:not(.cbm-js) .cbp .cb-mq-hero .cb-hero-h{font-size:clamp(2.8rem,9vw,8rem)}
+html:not(.cbm-js) .cb-t-marquee .cb-mq-item{white-space:normal}
+html:not(.cbm-js) .cbp *,html:not(.cbm-js) .cbp *::before,html:not(.cbm-js) .cbp *::after{animation:none!important}
+html:not(.cbm-js) :is(.cbm-bd-bubbles,.cbm-bd-petals,.cbm-bd-lines,.cbm-bd-ripples,.cbm-bd-stars canvas){display:none}
+
 /* Paused by the visitor, or standing still in the editor. */
 html.cbm-paused .cbp *,html.cbm-paused .cbp *::before,html.cbm-paused .cbp *::after,
 .cbp[data-m-edit] *,.cbp[data-m-edit] *::before,.cbp[data-m-edit] *::after{animation-play-state:paused!important}
@@ -173,7 +189,7 @@ html.cbm-paused .cbm-pause::before{width:0;height:0;border-block:.42rem solid tr
 /* ======================================================================================== */
 /* Movement the writer chooses for a page (.cbm, data-m-*).                                   */
 /* ======================================================================================== */
-@media (prefers-reduced-motion:no-preference){
+@media screen and (prefers-reduced-motion:no-preference){
   /* ---- As people scroll ---------------------------------------------------------------- */
   /* Until the script has marked what to move, hold what it is about to hide so nothing flashes.
      The opening's pictures are never held: they are the first thing a visitor's browser paints. */
@@ -387,11 +403,11 @@ html.cbm-paused .cbm-pause::before{width:0;height:0;border-block:.42rem solid tr
 
 /* Confetti shapes */
 @keyframes cbm-float{from{translate:0 -10px;rotate:var(--r0,0deg)}to{translate:8px 14px;rotate:var(--r1,40deg)}}
-.cbm-bd-shapes>i{left:var(--x);top:var(--y);width:var(--s,1.6rem);aspect-ratio:1;background:var(--c,var(--bd-a));animation:cbm-float var(--t,8s) ease-in-out infinite alternate;animation-delay:var(--d,0s)}
+.cbm-bd-shapes>i{left:var(--x);top:var(--y);width:var(--s,1.6rem);aspect-ratio:1;background:color-mix(in srgb,var(--c,var(--bd-a)) 26%,transparent);animation:cbm-float var(--t,8s) ease-in-out infinite alternate;animation-delay:var(--d,0s)}
 .cbm-bd-shapes>i:nth-child(1){--x:5%;--y:14%;--s:2.4rem;border-radius:50%;--t:9s}
 .cbm-bd-shapes>i:nth-child(2){--x:3%;--y:62%;--s:1.5rem;--c:var(--bd-ink);--r1:90deg;--t:7s}
 .cbm-bd-shapes>i:nth-child(3){--x:21%;--y:6%;--s:1.9rem;--c:var(--bd-c);clip-path:polygon(50% 0,100% 100%,0 100%);--r1:-50deg;--t:11s}
-.cbm-bd-shapes>i:nth-child(4){--x:88%;--y:10%;--s:2.8rem;border-radius:50%;background:none;box-shadow:inset 0 0 0 .34rem var(--bd-a);--t:10s}
+.cbm-bd-shapes>i:nth-child(4){--x:88%;--y:10%;--s:2.8rem;border-radius:50%;background:none;box-shadow:inset 0 0 0 .34rem color-mix(in srgb,var(--bd-a) 40%,transparent);--t:10s}
 .cbm-bd-shapes>i:nth-child(5){--x:93%;--y:52%;--s:1.4rem;--c:var(--bd-c);border-radius:.3rem;--r0:20deg;--r1:110deg;--t:8s}
 .cbm-bd-shapes>i:nth-child(6){--x:95%;--y:86%;--s:2.1rem;--c:var(--bd-ink);clip-path:polygon(35% 0,65% 0,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0 65%,0 35%,35% 35%);--r1:90deg;--t:12s}
 .cbm-bd-shapes>i:nth-child(7){--x:64%;--y:5%;--s:1.1rem;border-radius:50%;--c:var(--bd-ink);--t:6s}
@@ -454,9 +470,9 @@ html.cbm-paused .cbm-pause::before{width:0;height:0;border-block:.42rem solid tr
 .cbm-bd-stars.cbm-live>i{display:none}
 
 /* Spotlight: a soft light that drifts, and follows the pointer once it moves. */
-@keyframes cbm-roam{0%{left:68%;top:30%}33%{left:30%;top:58%}66%{left:76%;top:70%}100%{left:68%;top:30%}}
-.cbm-bd-spotlight>i:nth-child(1){left:var(--sx,68%);top:var(--sy,30%);width:74cqmax;aspect-ratio:1;margin:-37cqmax 0 0 -37cqmax;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--bd-a) 38%,transparent),transparent);animation:cbm-roam 24s ease-in-out infinite}
-.cbm-bd-spotlight.cbm-live>i:nth-child(1){animation:none;transition:left .45s ease-out,top .45s ease-out}
+@keyframes cbm-roam{0%,100%{transform:translate(68cqw,30cqh)}33%{transform:translate(30cqw,58cqh)}66%{transform:translate(76cqw,70cqh)}}
+.cbm-bd-spotlight>i:nth-child(1){left:0;top:0;width:74cqmax;aspect-ratio:1;margin:-37cqmax 0 0 -37cqmax;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--bd-a) 38%,transparent),transparent);transform:translate(68cqw,30cqh);animation:cbm-roam 24s ease-in-out infinite}
+.cbm-bd-spotlight.cbm-live>i:nth-child(1){animation:none;transform:translate(var(--sx,68cqw),var(--sy,30cqh));transition:transform .45s ease-out}
 .cbm-bd-spotlight>i:nth-child(2){inset:0;background:radial-gradient(circle,color-mix(in srgb,var(--bd-ink) 16%,transparent) 1px,transparent 1.5px) 0 0/1.6rem 1.6rem}
 
 /* Colour wash */

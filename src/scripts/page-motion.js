@@ -26,6 +26,9 @@ const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 export function initPageMotion(doc = document, win = window, { clock = win } = {}) {
   const root = doc.querySelector('.cbp');
   if (!root) return () => {};
+  // Started again on a page that is already running: the earlier run is stopped first, so nothing
+  // is ever wrapped, observed or added twice.
+  if (typeof root.__cbmStop === 'function') root.__cbmStop();
   const html = doc.documentElement;
   const media = (q) => { try { return win.matchMedia(q).matches; } catch { return false; } };
   const reduce = media('(prefers-reduced-motion: reduce)');
@@ -34,11 +37,16 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   const finePointer = media('(hover: hover) and (pointer: fine)');
   const look = (k) => root.getAttribute(`data-m-${k}`) || '';
   const undo = [];
+  // False once this run has been stopped; anything still waiting (a frame, a font) checks it.
+  let alive = true;
+  undo.push(() => { alive = false; });
+  const frame = (fn) => clock.requestAnimationFrame(() => { if (alive) fn(); });
   const on = (target, type, fn, opts) => { target.addEventListener(type, fn, opts); undo.push(() => target.removeEventListener(type, fn, opts)); };
   const timers = new Set();
   const later = (fn, ms) => { const t = clock.setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); return t; };
   undo.push(() => { for (const t of timers) clock.clearTimeout(t); timers.clear(); });
   const paused = () => html.classList.contains('cbm-paused');
+  const wakers = [];   // loops to restart when the visitor presses Play again
   const blocks = [...root.children].filter((n) => n.classList?.contains('cb'));
   // The page's opening: its first Opening block, which need not be the very first block.
   const hero = blocks.find((b) => b.classList.contains('cb-opening')) || null;
@@ -63,7 +71,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
       if (text > 0) h.style.setProperty('--fit', clamp(9850 / text, 4, 40).toFixed(3));
     };
     fit();
-    doc.fonts?.ready?.then(fit).catch(() => {});
+    doc.fonts?.ready?.then(() => { if (alive) fit(); }).catch(() => {});
     on(win, 'resize', fit, { passive: true });
   }
 
@@ -79,8 +87,9 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   // ---- changing words in the opening heading ------------------------------------------------
   if (!reduce) {
     for (const rot of root.querySelectorAll('.cb-rot')) {
-      const words = [...rot.children];
+      const words = [...rot.children].filter((w) => !w.classList.contains('cb-rot-sep'));
       if (words.length < 2) continue;
+      rot.classList.add('is-live');
       let i = Math.max(0, words.findIndex((w) => w.classList.contains('is-on')));
       const tick = clock.setInterval(() => {
         if (paused() || doc.hidden) return;
@@ -89,7 +98,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
         next.classList.remove('is-off'); next.classList.add('is-on');
         later(() => old.classList.remove('is-off'), 560);
       }, 2600);
-      undo.push(() => { clock.clearInterval(tick); words.forEach((w, k) => { w.classList.remove('is-off'); w.classList.toggle('is-on', k === 0); }); });
+      undo.push(() => { clock.clearInterval(tick); rot.classList.remove('is-live'); words.forEach((w, k) => { w.classList.remove('is-off'); w.classList.toggle('is-on', k === 0); }); });
     }
   }
 
@@ -100,6 +109,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     const h = hero.querySelector('.cb-hero-h');
     if (h && !h.closest('.cb-mq') && !h.classList.contains('cb-mask-h') && !h.classList.contains('cb-open-h') && !h.isContentEditable) {
       const original = [...h.childNodes].map((n) => n.cloneNode(true));
+      // The changing words are a list in the markup ("brands, websites, films"), so the text as
+      // written is already the right thing to say.
       const label = h.textContent.replace(/\s+/g, ' ').trim();
       const frag = doc.createDocumentFragment();
       let k = 0;
@@ -187,13 +198,14 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
       });
     }, { threshold: [0, 0.1, 0.25], rootMargin: '0px 0px -5% 0px' });
     // Two frames, so the hidden starting state is painted before anything is asked to move.
-    clock.requestAnimationFrame(() => clock.requestAnimationFrame(() => { for (const el of marked) seen.observe(el); }));
+    frame(() => frame(() => { for (const el of marked) seen.observe(el); }));
     undo.push(() => {
-      seen.disconnect(); root.classList.remove('cbm-ready');
+      seen.disconnect();
       for (const el of marked) { el.removeAttribute('data-m'); el.removeAttribute('data-mp'); el.classList.remove('is-in'); for (const p of ['--m-i', '--m-x', '--m-ax']) el.style.removeProperty(p); }
     });
   } else root.classList.add('cbm-ready');
-  if (splitHeading) clock.requestAnimationFrame(() => clock.requestAnimationFrame(() => splitHeading.classList.add('is-in')));
+  undo.push(() => root.classList.remove('cbm-ready'));
+  if (splitHeading) frame(() => frame(() => splitHeading.classList.add('is-in')));
 
   // ---- numbers that count up ----------------------------------------------------------------
   if (!reduce && root.hasAttribute('data-m-count') && 'IntersectionObserver' in win) {
@@ -220,12 +232,13 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   function countUp(el) {
     const final = el.textContent, c = parseCount(final);
     if (!c) return;
-    el.setAttribute('aria-label', final.trim());
+    // While the digits run, assistive technology is given the finished number once.
+    el.setAttribute('role', 'img'); el.setAttribute('aria-label', final.trim());
     el.style.minWidth = `${el.getBoundingClientRect().width}px`;
     const show = (v) => `${c.before}${c.grouped ? v.toLocaleString('en-GB', { minimumFractionDigits: c.decimals, maximumFractionDigits: c.decimals }) : v.toFixed(c.decimals)}${c.after}`;
     const start = clock.performance.now(), length = 1500;
     let frame = 0, done = false;
-    const finish = () => { if (done) return; done = true; clock.cancelAnimationFrame(frame); el.textContent = final; el.style.removeProperty('min-width'); el.removeAttribute('aria-label'); };
+    const finish = () => { if (done) return; done = true; clock.cancelAnimationFrame(frame); el.textContent = final; el.style.removeProperty('min-width'); el.removeAttribute('aria-label'); el.removeAttribute('role'); };
     const step = (now) => {
       const t = clamp((now - start) / length, 0, 1);
       if (t >= 1) return finish();
@@ -265,7 +278,9 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
         for (const item of lit) {
           const r = item.box.getBoundingClientRect();
           if (r.bottom < -vh || r.top > vh * 2) continue;
-          const p = clamp((vh * 0.82 - r.top) / (r.height + vh * 0.3), 0, 1);
+          // Lit from when the block's top is most of the way up the screen until its bottom has
+          // come into view, so the last words light even when the block ends the page.
+          const p = r.bottom <= vh ? 1 : clamp((vh * 0.85 - r.top) / Math.max(r.height - vh * 0.15, vh * 0.25), 0, 1);
           const count = Math.round(p * item.words.length);
           if (count === item.shown) continue;
           const [from, to] = count > item.shown ? [item.shown, count] : [count, item.shown];
@@ -273,7 +288,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
           item.shown = count;
         }
       };
-      const ask = () => { if (!queued) { queued = true; clock.requestAnimationFrame(paint); } };
+      const ask = () => { if (!queued) { queued = true; frame(paint); } };
       on(win, 'scroll', ask, { passive: true }); on(win, 'resize', ask, { passive: true });
       ask();
     }
@@ -308,8 +323,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
       const block = bd.parentElement;
       on(block, 'pointermove', (e) => {
         const r = block.getBoundingClientRect();
-        bd.style.setProperty('--sx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`);
-        bd.style.setProperty('--sy', `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
+        bd.style.setProperty('--sx', `${(e.clientX - r.left).toFixed(0)}px`);
+        bd.style.setProperty('--sy', `${(e.clientY - r.top).toFixed(0)}px`);
         bd.classList.add('cbm-live');
       });
       undo.push(() => { bd.classList.remove('cbm-live'); bd.style.removeProperty('--sx'); bd.style.removeProperty('--sy'); });
@@ -362,7 +377,14 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     const veil = plates.querySelector('.cb-plates-wipe'), bg = plates.querySelector('.cb-plates-bg');
     if (!/^#[0-9a-f]{6}$/i.test(c || '') || !/^#[0-9a-f]{6}$/i.test(ink || '') || !veil || !bg) return;
     if (plates.style.getPropertyValue('--plate-c').trim() === c && !veil.classList.contains('is-on')) return;
-    const settle = () => { plates.style.setProperty('--plate-c', c); veil.classList.remove('is-on'); veil.style.removeProperty('--wipe-c'); };
+    // A wipe already under way finishes first; the band then goes to wherever the visitor ended
+    // up. That keeps large colour changes to about one a second, however fast the band is swiped.
+    if (veil.classList.contains('is-on')) { plates.__next = item; return; }
+    const settle = () => {
+      plates.style.setProperty('--plate-c', c); veil.classList.remove('is-on'); veil.style.removeProperty('--wipe-c');
+      const next = plates.__next; plates.__next = null;
+      if (alive && next && next !== item) wipe(plates, next);
+    };
     plates.style.setProperty('--plate-on', ink);
     if (reduce) return settle();
     const box = veil.getBoundingClientRect(), pic = (item.querySelector('.cb-show-pic') || item).getBoundingClientRect();
@@ -372,7 +394,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     veil.style.setProperty('--wy', `${(((pic.top + pic.height / 2 - box.top) / box.height) * 100).toFixed(1)}%`);
     void veil.offsetWidth;            // restart the wipe from nothing
     veil.classList.add('is-on');
-    clock.clearTimeout(plates.__wipe); plates.__wipe = later(settle, 900);
+    later(settle, 900);
   }
 
   // ---- constellation -------------------------------------------------------------------------
@@ -391,8 +413,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     };
     const draw = () => {
       frame = 0;
-      if (!visible || doc.hidden) return;
-      if (!paused()) {
+      if (!alive || !visible || doc.hidden || paused()) return;
+      {
         ctx.clearRect(0, 0, w, h);
         for (const p of points) {
           p.x += p.vx; p.y += p.vy;
@@ -420,6 +442,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
       on(bd.parentElement, 'pointerleave', () => { pointer = null; });
     }
     on(doc, 'visibilitychange', wake);
+    wakers.push(wake);
     wake();
     undo.push(() => { clock.cancelAnimationFrame(frame); frame = 0; bd.classList.remove('cbm-live'); ctx.clearRect(0, 0, w, h); });
   }
@@ -437,6 +460,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     on(button, 'click', () => {
       const off = html.classList.toggle('cbm-paused');
       try { if (remember) win.sessionStorage.setItem(PAUSE_KEY, off ? '1' : '0'); } catch { /* private browsing */ }
+      if (!off) for (const wake of wakers) wake();
       sync();
     });
     sync();
@@ -444,18 +468,32 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     undo.push(() => button.remove());
   }
 
-  return () => { while (undo.length) { try { undo.pop()(); } catch { /* keep undoing */ } } };
+  const stop = () => { if (root.__cbmStop === stop) delete root.__cbmStop; while (undo.length) { try { undo.pop()(); } catch { /* keep undoing */ } } };
+  root.__cbmStop = stop;
+  return stop;
 }
 
-// On a published page: start now, and again after each in-site page change.
+// On a published page: start now, and again after each in-site page change. The site's router
+// also announces the first page once it has finished loading; that page is already running, so
+// it is left alone (starting again would hide and replay everything already shown).
 export function startPageMotion() {
   if (typeof document === 'undefined') return;
-  let stop = null;
-  const run = () => { stop?.(); stop = initPageMotion(document, window); window.__cbm = true; };
+  let stop = null, running = null;
+  const run = () => {
+    const root = document.querySelector('.cbp');
+    if (root && root === running) return;
+    stop?.(); stop = null; running = null;
+    try { stop = initPageMotion(document, window); running = root; window.__cbm = true; }
+    catch (e) {
+      // Whatever went wrong, the page must not be left waiting for movement that will not come.
+      document.documentElement.classList.remove('cbm-js'); window.__cbm = false;
+      console.warn('page movement:', e && e.message);
+    }
+  };
   run();
   document.addEventListener('astro:page-load', run);
-  document.addEventListener('astro:before-swap', () => { stop?.(); stop = null; });
+  document.addEventListener('astro:before-swap', () => { stop?.(); stop = null; running = null; });
   // A page change inside the site swaps the document in place: say again that a script is here,
-  // before the new page is painted.
-  document.addEventListener('astro:after-swap', () => { if (document.querySelector('.cbp.cbm')) document.documentElement.classList.add('cbm-js'); });
+  // before the new page is painted, and let the page's own safety timer watch this start too.
+  document.addEventListener('astro:after-swap', () => { window.__cbm = false; if (document.querySelector('.cbp')) document.documentElement.classList.add('cbm-js'); });
 }

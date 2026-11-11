@@ -449,6 +449,9 @@ export function cleanMotion(v) {
   // A pace alone moves nothing.
   if (!Object.keys(out).some((k) => k !== 'pace')) return null;
   if (typeof d.preset === 'string' && Object.hasOwn(MOTION_PRESETS, d.preset)) out.preset = d.preset;
+  // `own` marks movement the writer chose themselves, so a later change of template or palette
+  // never replaces it (movement that came with a template variation follows the variation).
+  if (d.own === true) out.own = true;
   return out;
 }
 // The movement a preset gives, optionally over a backdrop: motionFor('lively', 'bubbles').

@@ -299,7 +299,9 @@ function heroHeading(C, b, d, cls = 'cb-h cb-hero-h', attrs = '') {
   if (C.editable) return `${H(C, b, d, 'h2', cls, attrs)}${words.length ? `<p class="cb-rot-edit" data-cb-hint>Changing words: ${esc(words.join(' · '))}</p>` : ''}`;
   if (!words.length || !d.heading) return H(C, b, d, 'h2', cls, attrs);
   const tag = hTag(C, b);
-  return `<${tag} class="${cls}"${attrs}>${esc(d.heading)} <span class="cb-rot">${words.map((w, i) => `<span${i ? ' aria-hidden="true"' : ' class="is-on"'}>${esc(w)}</span>`).join('')}</span></${tag}>`;
+  // Written as a plain list ("brands, websites, films"), so with scripts off or movement turned
+  // down every word is there to read. The page's script then shows them one at a time.
+  return `<${tag} class="${cls}"${attrs}>${esc(d.heading)} <span class="cb-rot">${words.map((w, i) => `<span${i ? '' : ' class="is-on"'}>${esc(w)}</span>`).join('<span class="cb-rot-sep">, </span>')}</span></${tag}>`;
 }
 // The opening's extra photos, as a list the editor can add to.
 function morePics(C, b, d, cls, eachCls = '') {
@@ -307,6 +309,8 @@ function morePics(C, b, d, cls, eachCls = '') {
   return LIST(C, b, 'pictures', pics, (p, i, wrap) => wrap(P(C, b, `pictures.${i}`, p, '', { credits: false }), 'figure', eachCls), 'div', cls);
 }
 const creditsOf = (list) => { const c = list.map((p) => credit(p)).filter(Boolean); return c.length ? `<p class="cb-credits">${[...new Set(c)].join(' ')}</p>` : ''; };
+// The extra photos an opening layout really shows (the rest wait for a layout with room).
+const shownMore = (b, d) => (d.pictures || []).slice(0, HERO_PHOTO_ROOM[b.variant] || 0);
 
 R_.hero = (C, b) => {
   const d = b.data, v = b.variant;
@@ -343,7 +347,9 @@ R_.hero = (C, b) => {
     let strip;
     if (C.editable || !d.heading) strip = `<div class="cb-mq cb-mq-hero cb-mq-still"><div class="cb-mq-track">${H(C, b, d, 'h2', 'cb-h cb-hero-h')}</div></div>`;
     else {
-      const len = [...d.heading].length, copies = clamp(Math.ceil(56 / Math.max(len, 4)) + 1, 3, 14);
+      // One copy is about 92px a letter at its largest, plus the mark between copies; enough of
+      // them to cover a 2800px screen and one more for the loop.
+      const len = [...d.heading].length, copies = clamp(Math.ceil(2800 / (len * 92 + 140)) + 1, 3, 20);
       const tag = hTag(C, b);
       strip = `<div class="cb-mq cb-mq-hero" style="--mq-shift:${(-100 / copies).toFixed(4)}%;--mq-dur:${clamp(Math.round(len * 0.55), 9, 60)}s"><div class="cb-mq-track"><${tag} class="cb-h cb-hero-h">${esc(d.heading)}</${tag}>${`<span class="cb-h cb-hero-h" aria-hidden="true">${esc(d.heading)}</span>`.repeat(copies - 1)}</div></div>`;
     }
@@ -372,7 +378,7 @@ R_.hero = (C, b) => {
   }
   if (v === 'blob') {
     const dot = more.length || C.editable ? morePics(C, b, d, 'cb-blob-more', 'cb-blob-dot') : '';
-    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-blob"><span class="cb-blob-ring"></span>${pic('cb-hero-pic cb-blob-pic')}${dot}</div></div>`;
+    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-blob"><span class="cb-blob-ring"></span>${pic('cb-hero-pic cb-blob-pic')}${dot}</div></div>${creditsOf(shownMore(b, d))}`;
   }
   if (v === 'inset') {
     // A video file fills the frame; a YouTube or Vimeo video cannot, so its picture does.
@@ -383,10 +389,10 @@ R_.hero = (C, b) => {
     const sats = more.length || C.editable
       ? morePics(C, b, d, 'cb-orbit-sats').replace('class="cb-orbit-sats"', `class="cb-orbit-sats" style="--n:${Math.max(more.slice(0, HERO_PHOTO_ROOM.orbit).length, 1)}"`)
       : '<div class="cb-orbit-sats cb-orbit-dots" style="--n:3"><i></i><i></i><i></i></div>';
-    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-orbit"><span class="cb-orbit-ring"></span><span class="cb-orbit-ring"></span><figure class="cb-orbit-core">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${sats}</div></div>${creditsOf([d.picture, ...more])}`;
+    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-orbit"><span class="cb-orbit-ring"></span><span class="cb-orbit-ring"></span><figure class="cb-orbit-core">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${sats}</div></div>${creditsOf([d.picture, ...shownMore(b, d)])}`;
   }
   if (v === 'collage') {
-    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-collage"><span class="cb-collage-shape"></span><span class="cb-collage-shape"></span><figure class="cb-collage-main">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${morePics(C, b, d, 'cb-collage-more')}</div></div>${creditsOf([d.picture, ...more])}`;
+    return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div><div class="cb-collage"><span class="cb-collage-shape"></span><span class="cb-collage-shape"></span><figure class="cb-collage-main">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${morePics(C, b, d, 'cb-collage-more')}</div></div>${creditsOf([d.picture, ...shownMore(b, d)])}`;
   }
   if (v === 'mask') {
     // The photo shows through the letters. The editor also shows the photo as a small tile to click.
@@ -397,7 +403,7 @@ R_.hero = (C, b) => {
   if (v === 'arch') {
     // The badge's words run once round a circle: short labels repeat, long ones are cut at a word.
     let label = (d.kicker || C.site?.name || C.site?.masthead || 'Welcome').replace(/\s+/g, ' ').trim();
-    if ([...label].length > 40) label = label.slice(0, 41).replace(/\s+\S*$/, '');
+    if ([...label].length > 40) label = [...label].slice(0, 41).join('').replace(/\s+\S*$/, '');
     let ring = ''; do { ring += `${label} \u2022 `; } while ([...ring].length + [...label].length + 3 <= 46);
     const ringSize = clamp(276 / ([...ring].length * 0.7), 6, 10).toFixed(2);
     const badge = `<svg class="cb-arch-badge" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs><path id="cba-${esc(b.id)}" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs><circle cx="60" cy="60" r="58"/><text style="font-size:${ringSize}px"><textPath href="#cba-${esc(b.id)}" textLength="276" lengthAdjust="spacing">${esc(ring.toUpperCase())}</textPath></text><path class="cb-arch-star" d="M60 44l4.2 11.8L76 60l-11.8 4.2L60 76l-4.2-11.8L44 60l11.8-4.2z"/></svg>`;
@@ -415,12 +421,12 @@ R_.hero = (C, b) => {
       const row = (list, firstReal) => { let out = ''; for (let k = 0; k < n * 2; k++) out += list.map((p) => tile(p, !(firstReal && k === 0))).join(''); return out; };
       film = `<div class="cb-film" style="--mq-dur:${all.length * n * 7}s"><div class="cb-film-row">${row(all, true)}</div><div class="cb-film-row cb-film-rev">${row([...all].reverse(), false)}</div></div>`;
     }
-    return `<div class="cb-hero-words">${words}${details}</div>${film}${creditsOf(all)}`;
+    return `<div class="cb-hero-words">${words}${details}</div>${film}${all.length < 2 && !C.editable ? '' : creditsOf(all)}`;
   }
   if (v === 'bento') {
     const info = d.details ? factsList(C, b, d, { cls: 'cb-facts' }) : '';
     const tiles = `${more.length || C.editable ? morePics(C, b, d, 'cb-bento-more', 'cb-bento-tile cb-bento-pic') : ''}${info ? `<div class="cb-bento-tile cb-bento-info">${info}</div>` : ''}`;
-    return `<div class="cb-bento"><div class="cb-bento-top"><div class="cb-bento-tile cb-bento-words">${words}</div>${media ? `<figure class="cb-bento-tile cb-bento-pic cb-bento-main">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>` : ''}</div>${tiles ? `<div class="cb-bento-row">${tiles}</div>` : ''}</div>${creditsOf([d.picture, ...more])}`;
+    return `<div class="cb-bento"><div class="cb-bento-top"><div class="cb-bento-tile cb-bento-words">${words}</div>${media ? `<figure class="cb-bento-tile cb-bento-pic cb-bento-main">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>` : ''}</div>${tiles ? `<div class="cb-bento-row">${tiles}</div>` : ''}</div>${creditsOf([d.picture, ...shownMore(b, d)])}`;
   }
   if (v === 'curtain') return `<div class="cb-curtain"><div class="cb-curtain-words"><div class="cb-hero-words">${words}${details}</div></div>${media ? pic('cb-hero-pic cb-curtain-pic') : ''}</div>`;
   return `<div class="cb-hero-words">${words}${details}</div>`; // minimal
@@ -479,7 +485,7 @@ R_.services = (C, b) => {
   else if (v === 'cards') list = LIST(C, b, 'items', items, (s, i, w) => w(`${pic(s, i)}<div class="cb-card-body">${name(s, i)}${desc(s, i)}<p class="cb-meta">${time(s, i)}${price(s, i)}</p>${offer(s, i)}${serviceLinks(C, b, i, s)}</div>`), 'div', 'cb-svc cb-svc-cards');
   else if (v === 'numbered') list = LIST(C, b, 'items', items, (s, i, w) => w(`<span class="cb-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div>${name(s, i)}${desc(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}</div><p class="cb-meta">${price(s, i)}${time(s, i)}</p>`), 'ol', 'cb-svc cb-svc-numbered');
   else if (v === 'table') list = LIST(C, b, 'items', items, (s, i, w) => w(`<div>${name(s, i)}${desc(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}</div>${time(s, i)}${price(s, i)}`, 'div'), 'div', 'cb-svc cb-svc-table');
-  else if (v === 'rows') list = LIST(C, b, 'items', items, (s, i, w) => w(`<span class="cb-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div class="cb-row-main">${name(s, i)}${desc(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}</div><p class="cb-meta">${time(s, i)}${price(s, i)}</p>${pic(s, i, 'cb-row-pic')}`), 'div', 'cb-svc cb-svc-rows');
+  else if (v === 'rows') list = LIST(C, b, 'items', items, (s, i, w) => focusable(C, s.picture, w(`<span class="cb-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div class="cb-row-main">${name(s, i)}${desc(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}</div><p class="cb-meta">${time(s, i)}${price(s, i)}</p>${pic(s, i, 'cb-row-pic')}`)), 'div', 'cb-svc cb-svc-rows');
   else if (v === 'board') list = LIST(C, b, 'items', items, (s, i, w) => w(`<div class="cb-menu-line">${name(s, i)}<i aria-hidden="true"></i>${price(s, i)}</div>${desc(s, i)}${time(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}`), 'div', 'cb-svc cb-svc-board');
   else list = LIST(C, b, 'items', items, (s, i, w) => w(`<figure class="cb-svc-pic">${P(C, b, `items.${i}.picture`, s.picture)}</figure><div class="cb-feature-body">${name(s, i)}${desc(s, i)}<p class="cb-meta">${time(s, i)}${price(s, i)}</p>${offer(s, i)}${serviceLinks(C, b, i, s)}</div>`), 'div', 'cb-svc cb-svc-feature');
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${list}`;
@@ -493,6 +499,9 @@ R_.team = (C, b) => {
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${LIST(C, b, 'items', items, one, 'div', `cb-team cb-team-${v}`)}`;
 };
 
+// A row whose photo appears only when it is pointed at can be reached with the Tab key too, so
+// the photo is there for people who do not use a pointer. Never in the editor.
+const focusable = (C, on, html) => (on && !C.editable ? html.replace(/^<article/, '<article tabindex="0"') : html);
 const initials = (name) => String(name || '').replace(/^(dr|mr|mrs|ms|miss|prof)\.?\s+/i, '').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => [...w][0] || '').join('').toUpperCase() || '+';
 const stars = (n) => (n ? `<p class="cb-stars" role="img" aria-label="${n} out of 5 stars">${'★'.repeat(n)}${'☆'.repeat(5 - n)}</p>` : '');
 R_.reviews = (C, b) => {
@@ -502,7 +511,7 @@ R_.reviews = (C, b) => {
   const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div>`;
   // Reviews that roll past. Read once by screen readers; the copies that make the loop are hidden.
   if (b.variant === 'ticker' && !C.editable && items.length > 1) {
-    const set = (hidden) => items.map((r, i) => one(r, i, (inner, tag, cls) => `<${tag} class="${cls}"${hidden ? ' aria-hidden="true"' : ''}>${inner}</${tag}>`)).join('');
+    const set = (hidden) => items.map((r, i) => one(r, i, (inner, tag, cls) => `<${tag} class="${cls}"${hidden ? ' aria-hidden="true"' : ''}>${hidden ? inner.replace(/<a /g, '<a tabindex="-1" ') : inner}</${tag}>`)).join('');
     const sets = Math.ceil(8 / items.length) + 1;
     return `${head}<div class="cb-mq cb-mq-cards" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${items.length * 11}s"><div class="cb-mq-track">${set(false)}${set(true).repeat(sets - 1)}</div></div>${more}`;
   }
@@ -655,7 +664,10 @@ R_.marquee = (C, b) => {
   const text = items.map((x) => x.text).filter(Boolean);
   if (!text.length) return '';
   const chars = text.join('').length + text.length * 3;
-  const sets = clamp(Math.ceil((v === 'tags' ? 220 : 64) / chars) + 1, 2, 24);
+  // How wide one set is at its largest, roughly, so there are enough sets to cover a 2800px
+  // screen and one more for the loop.
+  const setWidth = v === 'tags' ? text.join('').length * 9 + text.length * 56 : text.join('').length * 44 + text.length * 116;
+  const sets = clamp(Math.ceil(2800 / setWidth) + 1, 2, 80);
   const dur = Math.round(clamp(chars * (v === 'tags' ? 0.28 : 0.5), 8, 90) * ({ s: 1.7, m: 1, l: 0.6 }[d.speed] || 1));
   const set = (hidden) => `<span class="cb-mq-set"${hidden ? ' aria-hidden="true"' : ''}>${text.map((t) => `<span class="cb-mq-item">${esc(t)}</span>`).join('')}</span>`;
   const row = (second) => `<div class="cb-mq${second ? ' cb-mq-rev' : ''}" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${dur}s"><div class="cb-mq-track">${set(second)}${set(true).repeat(sets - 1)}</div></div>`;
@@ -672,6 +684,7 @@ R_.showcase = (C, b) => {
   const d = b.data, items = d.items || [];
   const one = (x, i, w) => w(`${x.picture || C.editable ? `<figure class="cb-show-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}<div class="cb-show-body">${T(C, b, `items.${i}.tag`, x.tag, 'p', 'cb-show-tag')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-show-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-show-desc')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}</div>`, 'article', `cb-show-item${i ? '' : ' is-on'}`);
   const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
+  if (b.variant === 'switch') return `${head}${LIST(C, b, 'items', items, (x, i, w) => focusable(C, x.picture, one(x, i, w)), 'div', 'cb-show cb-show-switch')}`;
   if (b.variant === 'plates') {
     // Round photos in a row. Each has its own colour; the page's script wipes the whole band to
     // the colour of the one in the middle. Without it the band keeps the first colour.

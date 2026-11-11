@@ -295,6 +295,8 @@ test('movement is a fixed set of choices: anything else is dropped', () => {
   assert.equal(cleanMotion('rise'), null);
   assert.deepEqual(cleanMotion({ scroll: 'fade', count: true, preset: 'gentle' }), { scroll: 'fade', count: true, preset: 'gentle' });
   assert.equal(cleanMotion({ scroll: 'fade', preset: 'nope' }).preset, undefined);
+  assert.deepEqual(cleanMotion({ scroll: 'fade', own: true }), { scroll: 'fade', own: true }, 'the writer\'s own choice is remembered');
+  assert.equal(cleanMotion({ scroll: 'fade', own: 'yes' }).own, undefined);
   assert.equal(cleanLook({ motion: { scroll: 'nope' } }).motion, undefined);
   for (const [id, p] of Object.entries(MOTION_PRESETS)) {
     assert.ok(p.name && p.hint, `${id} needs a name and a hint`);
@@ -354,7 +356,7 @@ test('the rolling headline and moving words are written once for readers; the co
 
 test('changing words take turns at the end of the heading; the editor keeps the heading plain', () => {
   const html = renderPage(page([hero('poster', { heading: 'We make', rotate: 'brands, <b>websites</b>;films|  ,' })]), { site });
-  assert.match(html, /<h1 class="cb-h cb-hero-h">We make <span class="cb-rot"><span class="is-on">brands<\/span><span aria-hidden="true">&lt;b&gt;websites&lt;\/b&gt;<\/span><span aria-hidden="true">films<\/span><\/span><\/h1>/);
+  assert.match(html, /<h1 class="cb-h cb-hero-h">We make <span class="cb-rot"><span class="is-on">brands<\/span><span class="cb-rot-sep">, <\/span><span>&lt;b&gt;websites&lt;\/b&gt;<\/span><span class="cb-rot-sep">, <\/span><span>films<\/span><\/span><\/h1>/, 'a plain list every reader gets, with or without the script');
   const edit = renderPage(page([hero('poster', { heading: 'We make', rotate: 'brands, websites' })]), { site, editable: true });
   assert.ok(!edit.includes('cb-rot"'), 'no moving words inside the heading being edited');
   assert.match(edit, /Changing words: brands · websites/);
@@ -410,6 +412,28 @@ test('the new blocks: steps, showcase, rolling reviews and reels, with a still f
   const reel = renderPage(page([{ type: 'gallery', variant: 'reel', data: { pictures: pics } }]), { site });
   assert.ok(reel.includes('cb-mq-pics') && count(reel, 'alt="G1"') === 1);
   assert.ok(renderPage(page([{ type: 'gallery', variant: 'reel', data: { pictures: pics } }]), { site, editable: true }).includes('data-cb-list'), 'the editor can still add photos');
+});
+
+test('photo credits name the photos a layout shows, once each; hidden copies cannot take keyboard focus', () => {
+  const by = (n) => ({ src: `/site-images/c${n}.webp`, alt: `C${n}`, credit: { license: 'by', creator: `Maker ${n}`, page: 'https://example.com/p', version: '4.0', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' } });
+  const blob = renderPage(page([hero('blob', { picture: by(1), pictures: [by(2), by(3)] })]), { site });
+  assert.ok(blob.includes('Maker 1') && blob.includes('Maker 2'), 'both photos shown in the colour block are credited');
+  assert.ok(!blob.includes('Maker 3'), 'a photo the layout does not show is not credited');
+  assert.equal(count(renderPage(page([hero('filmstrip', { picture: by(1), pictures: [] })]), { site }), 'Maker 1'), 1, 'one photo, one credit');
+  assert.ok(!renderPage(page([hero('collage', { picture: by(1), pictures: [by(2), by(3), by(4), by(5)] })]), { site }).includes('Maker 5'));
+  const ticker = renderPage(page([{ type: 'reviews', variant: 'ticker', data: { items: [{ quote: 'See [our post](/posts/x).', name: 'Jo' }, { quote: 'Good.', name: 'Sam' }] } }]), { site });
+  const hidden = ticker.match(/<figure class="cb-review" aria-hidden="true">.*?<\/figure>/g) || [];
+  assert.ok(hidden.length > 0 && hidden.every((h) => !/<a (?!tabindex="-1")/.test(h)), 'links in hidden copies are out of the Tab order');
+  assert.equal(count(ticker.replace(/<figure class="cb-review" aria-hidden="true">.*?<\/figure>/g, ''), 'tabindex="-1"'), 0, 'the real link is not');
+  // Rows and list items whose photo shows on hover can be reached by keyboard, but not in the editor.
+  const rows = [{ name: 'Cut', picture: { src: '/site-images/a.webp', alt: 'A' } }, { name: 'Shave' }];
+  const pub = renderPage(page([{ type: 'services', variant: 'rows', data: { items: rows } }]), { site });
+  assert.equal(count(pub, '<article tabindex="0"'), 1, 'only the row that has a photo');
+  assert.equal(count(renderPage(page([{ type: 'services', variant: 'rows', data: { items: rows } }]), { site, editable: true }), 'tabindex'), 0);
+  const emoji = renderPage(page([hero('arch', { kicker: '\u{1F33A}'.repeat(45) })]), { site });
+  assert.ok(!/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/.test(emoji), 'a long label of emoji is cut between characters, never through one');
+  const wide = renderPage(page([{ type: 'marquee', variant: 'tags', data: { items: [{ text: 'Open' }] } }]), { site });
+  assert.ok(count(wide, 'class="cb-mq-set"') >= 30, 'one short label is repeated often enough to fill a very wide screen');
 });
 
 test('colours that take turns always carry a text colour that reads on them', () => {
