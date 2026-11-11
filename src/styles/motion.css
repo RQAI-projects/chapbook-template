@@ -238,7 +238,7 @@ html.cbm-paused .cbm-pause::before{width:0;height:0;border-block:.42rem solid tr
   /* Until the script has marked what to move, hold what it is about to hide so nothing flashes.
      The opening's pictures are never held: they are the first thing a visitor's browser paints. */
   html.cbm-js .cbm[data-m-scroll]:not(.cbm-ready):not([data-m-edit])>.cb:not(.cb-opening)>.cb-in,
-  html.cbm-js .cbm[data-m-scroll]:not(.cbm-ready):not([data-m-edit])>.cb.cb-opening :is(.cb-kicker,.cb-hero-h,.cb-lead,.cb-actions,.cb-hero-facts,.cb-hero-panel),
+  html.cbm-js .cbm[data-m-scroll]:not(.cbm-ready):not([data-m-edit])>.cb.cb-opening :is(.cb-kicker,.cb-hero-h,.cb-lead,.cb-actions,.cb-bar-wrap,.cb-hero-facts,.cb-hero-panel),
   html.cbm-js .cbm[data-m-heading]:not([data-m-heading=shimmer]):not(.cbm-ready):not([data-m-edit])>.cb.cb-opening .cb-hero-h{opacity:0}
 
   .cbm.cbm-ready [data-m],.cbm.cbm-ready [data-mp]{transition:opacity var(--m-dur) var(--m-ease) calc(var(--m-i,0) * var(--m-step)),transform var(--m-dur) var(--m-ease) calc(var(--m-i,0) * var(--m-step)),filter var(--m-dur) var(--m-ease) calc(var(--m-i,0) * var(--m-step)),-webkit-mask-size calc(var(--m-dur) * 1.3) var(--m-ease) calc(var(--m-i,0) * var(--m-step)),mask-size calc(var(--m-dur) * 1.3) var(--m-ease) calc(var(--m-i,0) * var(--m-step))}
@@ -535,3 +535,67 @@ html.cbm-paused .cbm-pause::before{width:0;height:0;border-block:.42rem solid tr
 @keyframes cbm-grain{0%{translate:0 0}20%{translate:-4% 3%}40%{translate:3% -5%}60%{translate:-2% -3%}80%{translate:4% 4%}100%{translate:0 0}}
 .cbm-bd-grain{background:radial-gradient(ellipse at 50% 40%,transparent 40%,color-mix(in srgb,var(--bd-ink) 14%,transparent))}
 .cbm-bd-grain>i{inset:-12%;opacity:.22;animation:cbm-grain .9s steps(5) infinite;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ======================================================================================== */
+/* Movement that follows the scroll and the pointer, and the photo that stays put.            */
+/* Every piece here is made or marked by the page's script, so with scripts off, for visitors */
+/* who ask for less motion, in print and in the editor none of it exists.                     */
+/* ======================================================================================== */
+/* Photo that stays while the words scroll past: on a wide screen the items scroll by on one
+   side while one frame stays put on the other, taking each item's photo as it reaches the middle
+   of the screen. The items' own photos give way to the frame; their credits stay. */
+@media screen and (prefers-reduced-motion:no-preference) and (min-width:761px){
+  html.cbm-js .cb-story.is-live{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(2rem,5vw,4.5rem);align-items:start}
+  html.cbm-js .cb-story.is-live .cb-show-story .cb-show-item{display:flex;flex-direction:column;justify-content:center;min-height:min(72vh,42rem);padding-block:2rem;border:0}
+  html.cbm-js .cb-story.is-live .cb-show-story .cb-show-pic{margin:0;order:2}
+  /* The items' own photos give way to the frame, but only to the eye: screen readers still read
+     their descriptions (the frame's copies are silent). */
+  html.cbm-js .cb-story.is-live .cb-show-story .cb-show-pic img{position:absolute!important;width:1px!important;height:1px!important;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+  html.cbm-js .cb-story.is-live .cb-show-story .cb-show-pic .cb-pic-empty{display:none}
+  /* Words further from the middle are only slightly quieter, never hard to read. */
+  html.cbm-js .cb-story.is-live .cb-show-body{opacity:.8;transition:opacity .5s var(--m-ease,ease)}
+  html.cbm-js .cb-story.is-live .cb-show-item.is-on .cb-show-body,html.cbm-js .cb-story.is-live .cb-show-item:focus-within .cb-show-body{opacity:1}
+  html.cbm-js .cb-story.is-live .cb-story-frame{display:block;position:sticky;top:calc(var(--header-h,56px) + max(1.5rem,(100vh - var(--header-h,56px) - min(68vh,40rem)) / 2));height:min(68vh,40rem);border-radius:var(--cb-r-img);overflow:hidden;background:var(--cb-surface)}
+  html.cbm-js .cb-story.is-live .cb-story-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;scale:1.05;transition:opacity .7s var(--m-ease,ease),scale 1.4s var(--m-ease,ease)}
+  html.cbm-js .cb-story.is-live .cb-story-frame img.is-on{opacity:1;scale:1}
+}
+
+/* Follows the scroll: a bar across the top that fills, or a line down the side that draws. The
+   script sets --cbm-p from 0 to 1. Under the site's header, clear of the Pause button. */
+.cbm-follow{display:none;position:fixed;z-index:99;pointer-events:none}
+@media screen and (prefers-reduced-motion:no-preference){html.cbm-js .cbm-follow{display:block}}
+.cbm-follow-bar{left:0;right:0;top:var(--header-h,0px);height:4px;background:color-mix(in srgb,var(--ink,#16181d) 8%,transparent)}
+.cbm-follow-bar>i{display:block;height:100%;background:var(--cb-accent-text,var(--accent));transform-origin:0 50%;transform:scaleX(var(--cbm-p,0))}
+.cbm-follow-line{left:clamp(5px,1.1vw,16px);top:calc(var(--header-h,0px) + 1.25rem);bottom:1.25rem;width:2px;border-radius:2px;background:color-mix(in srgb,var(--ink,#16181d) 12%,transparent)}
+.cbm-follow-line>i{position:absolute;left:0;top:0;width:100%;height:calc(var(--cbm-p,0) * 100%);border-radius:inherit;background:var(--cb-accent-text,var(--accent))}
+.cbm-follow-line>i::after{content:"";position:absolute;left:50%;bottom:0;width:9px;height:9px;margin:0 0 -4.5px -4.5px;border-radius:50%;background:inherit;box-shadow:0 0 0 4px color-mix(in srgb,var(--cb-accent-text,var(--accent)) 24%,transparent)}
+
+/* Where the pointer goes (a mouse or trackpad only; the script adds these and moves them).
+   None of them can be clicked: they never stand between a visitor and a link. */
+/* They rest out of sight until the pointer is over the page, whatever state the page is in. */
+.cbm-pointer{position:fixed;left:0;top:0;pointer-events:none;opacity:0;transition:opacity .35s}
+.cbm-pointer.is-on{opacity:1}
+/* A soft light: it sits behind the blocks, so it never covers words or pictures. */
+.cbm-pointer-light{z-index:0;width:34rem;height:34rem;margin:-17rem 0 0 -17rem;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 26%,transparent),color-mix(in srgb,var(--accent) 8%,transparent) 55%,transparent);transform:translate3d(var(--px,-50vw),var(--py,-50vh),0)}
+/* A dot that trails the pointer and opens into a ring over anything that can be clicked. */
+.cbm-pointer-dot{z-index:120;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--cb-accent-text,var(--accent));translate:var(--px,-50vw) var(--py,-50vh);transition:opacity .35s,scale .3s var(--m-ease,ease),background-color .3s,box-shadow .3s}
+/* The ring has a light inside edge and a dark outside one, so it shows on a dark button and a pale page alike. */
+.cbm-pointer-dot.is-big{scale:3.6;background:color-mix(in srgb,var(--bg-0,#fff) 18%,transparent);box-shadow:inset 0 0 0 .45px var(--bg-0,#fff),0 0 0 .45px var(--ink,#16181d)}
+/* The main button's words, following the pointer over the opening. */
+.cbm-pointer-label{z-index:120;max-width:18rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:.55rem 1rem;border-radius:999px;background:var(--accent);color:var(--cb-on-accent,#fff);font:600 .9rem/1.1 var(--font-body,system-ui);box-shadow:0 12px 30px -14px rgba(0,0,0,.5);transform:translate3d(calc(var(--px,-50vw) + 18px),calc(var(--py,-50vh) + 16px),0)}
+html.cbm-paused .cbm-pointer{display:none}
+
+/* Colour appears where the pointer is: pictures are shown toned down in the page's accent colour,
+   and a copy in full colour shows through a soft circle at the pointer. The script marks the
+   pictures (data-mr) only for a mouse or trackpad and when movement is welcome. */
+@property --rr{syntax:'<length>';inherits:true;initial-value:0px}
+html.cbm-js .cbm[data-m-pictures=reveal] [data-mr]{isolation:isolate}
+html.cbm-js .cbm[data-m-pictures=reveal] [data-mr]>img{filter:grayscale(1) contrast(.94) brightness(1.04)}
+.cbm-rv{position:absolute;overflow:hidden;pointer-events:none;transition:--rr .45s var(--m-ease,ease)}
+.cbm-rv>i{position:absolute;inset:0;background:var(--accent);mix-blend-mode:color;opacity:.55}
+/* Full colour whenever the keyboard is inside the picture's block, and once the page has been touched. */
+html.cbm-js .cbm[data-m-pictures=reveal] .cb:focus-within [data-mr]>img,html.cbm-js .cbm.cbm-touch[data-m-pictures=reveal] [data-mr]>img{filter:none}
+.cb:focus-within .cbm-rv,.cbm-touch .cbm-rv{display:none}
+.cbp .cbm-rv>img{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;margin:0!important;aspect-ratio:auto!important;border-radius:0!important;transform:none!important;scale:none!important;translate:none!important;rotate:none!important;animation:none!important;transition:none!important;filter:none!important;opacity:1!important;
+  -webkit-mask:radial-gradient(circle at var(--rx,50%) var(--ry,50%),#000 0,#000 calc(var(--rr) * .5),transparent var(--rr));mask:radial-gradient(circle at var(--rx,50%) var(--ry,50%),#000 0,#000 calc(var(--rr) * .5),transparent var(--rr))}
+@media print{.cbm-follow,.cbm-pointer,.cbm-rv{display:none!important}html .cbm [data-mr]>img{filter:none!important}}

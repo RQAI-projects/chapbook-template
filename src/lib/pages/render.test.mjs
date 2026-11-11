@@ -455,7 +455,7 @@ test('the movement script never turns text into markup, and the styles hide noth
   for (const m of rules.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
     const [, selector, body] = m;
     if (!/(?:^|;)\s*opacity\s*:\s*0\s*(?:;|$)/.test(body)) continue;
-    const ok = /cbm-js|cbm-ready|\.cbm-l\b|\.cb-rot|\.cbm-bd-ripples/.test(selector);
+    const ok = /cbm-js|cbm-ready|\.cbm-l\b|\.cb-rot|\.cbm-bd-ripples|^\s*\.cbm-pointer\s*$/.test(selector);
     assert.ok(ok, `this rule hides something without waiting for the script: ${selector.trim().slice(0, 90)}`);
   }
 });
@@ -514,4 +514,183 @@ test('the new openings after review: credits outside round frames, the photo\'s 
   assert.match(renderPage(page([{ type: 'hero', variant: 'lens', data: { heading: 'Hello', picture: credited } }]), { site }), /--cb-pos:50% 20%/, 'the glass shows the photo cropped as the photo is');
   assert.match(renderPage(page([{ type: 'hero', variant: 'shatter', data: { heading: 'Hello', picture: credited } }]), { site }), /cb-shatter" data-scroll="exit" style="--cb-pic:[^"]+;--cb-pos:50% 20%"/);
   assert.ok(!renderPage(page([{ type: 'hero', variant: 'depth', data: { heading: 'Hello' } }]), { site }).includes('cb-depth'), 'no empty frames');
+});
+
+test('movement that follows the scroll and the pointer: fixed choices, carried as attributes, never in the editor', () => {
+  assert.deepEqual(Object.keys(MOTION.follow.options), ['none', 'bar', 'line']);
+  assert.deepEqual(Object.keys(MOTION.pointer.options), ['none', 'light', 'dot', 'label']);
+  assert.ok(MOTION.pictures.options.reveal);
+  assert.deepEqual(cleanMotion({ follow: 'line', pointer: 'dot', pictures: 'reveal' }), { pictures: 'reveal', follow: 'line', pointer: 'dot' });
+  assert.equal(cleanMotion({ follow: 'sideways', pointer: '<b>' }), null, 'anything else is dropped');
+  assert.deepEqual(cleanMotion({ follow: 'bar' }), { follow: 'bar' }, 'a bar alone is movement');
+  const html = renderPage(page([hero('split')], { look: { motion: { scroll: 'rise', follow: 'bar', pointer: 'label', pictures: 'reveal' } } }), { site });
+  assert.match(html, /data-m-scroll="rise" data-m-pictures="reveal" data-m-follow="bar" data-m-pointer="label">/);
+  assert.ok(!html.includes('cbm-follow') && !html.includes('cbm-pointer'), 'the bar, line, light, dot and label are made by the script, so a page without it has none');
+  // The script makes them only for a page that is moving, never in the editor, never for less movement.
+  const js = readFileSync(new URL('../../scripts/page-motion.js', import.meta.url), 'utf8');
+  assert.match(js, /if \(!reduce && \(follow === 'bar' \|\| follow === 'line'\)\)/);
+  assert.match(js, /if \(!reduce && finePointer\) \{[\s\S]*pointerFollower\(pointer\)[\s\S]*revealColour\(fig\)/, 'pointer effects and the colour reveal need a real mouse or trackpad');
+  assert.match(js, /if \(editing\) return \(\) => \{\};/);
+  const css = readFileSync(new URL('../../styles/motion.css', import.meta.url), 'utf8');
+  assert.match(css, /\.cbm-follow\{display:none;[^}]*pointer-events:none\}/, 'the follow decoration is hidden until the script and the visitor allow it');
+  assert.match(css, /\.cbm-pointer\{position:fixed;left:0;top:0;pointer-events:none;/, 'nothing that follows the pointer can be clicked');
+  assert.match(css, /html\.cbm-paused \.cbm-pointer\{display:none\}/);
+  // The colour reveal leaves out the pictures that other effects already leave out.
+  assert.match(js, /const PICTURES = [^;]*:not\(\.cb-lens-pic\):not\(\.cb-bw-pic\):not\(\.cb-shatter\)/);
+});
+
+test('photo that stays while the words scroll past: a frame of copies, and a plain list without the script', () => {
+  const pic = (n, focus) => ({ src: `/site-images/s${n}.webp`, alt: `Studio ${n}`, ...(focus ? { focus } : {}) });
+  const items = [{ tag: 'Morning', name: 'Slow start', description: 'Tea first.', picture: pic(1, 'top') }, { name: 'No photo here' }, { tag: 'Evening', name: 'Last light', picture: pic(3) }];
+  const html = renderPage(page([{ type: 'showcase', variant: 'story', data: { heading: 'A day here', items } }]), { site });
+  assert.match(html, /<div class="cb-story has-frame"><div class="cb-show cb-show-story"><article class="cb-show-item is-on"><figure class="cb-show-pic"><img src="\/site-images\/s1\.webp" alt="Studio 1"/, 'each item keeps its own photo');
+  assert.match(html, /<div class="cb-story-frame" aria-hidden="true"><img class="is-on" data-i="0" src="\/site-images\/s1\.webp" alt="" loading="lazy" decoding="async" style="object-position:50% 20%"><img data-i="2" src="\/site-images\/s3\.webp" alt=""/, 'the frame holds silent copies, each knowing its item');
+  assert.equal(count(html, 'alt="Studio 1"'), 1, 'each photo is described once');
+  const bare = renderPage(page([{ type: 'showcase', variant: 'story', data: { items: [{ name: 'Words only' }] } }]), { site });
+  assert.ok(bare.includes('<div class="cb-story">') && !bare.includes('cb-story-frame'), 'no photos: no empty frame');
+  const edit = renderPage(page([{ type: 'showcase', variant: 'story', data: { items } }]), { site, editable: true });
+  assert.ok(!edit.includes('cb-story-frame') && /data-cb-img="[a-z0-9]+:items\.1\.picture"/.test(edit), 'the editor shows the plain list, where every photo can be added or changed');
+  assert.equal(renderPage(page([{ type: 'showcase', variant: 'story', data: { items: [] } }]), { site }).includes('cb-show-item'), false);
+  const css = readFileSync(new URL('../../styles/motion.css', import.meta.url), 'utf8');
+  assert.match(css, /@media screen and \(prefers-reduced-motion:no-preference\) and \(min-width:761px\)\{\n  html\.cbm-js \.cb-story\.is-live\{/, 'the frame only stands still beside the words on a wide screen, with the script, for visitors who welcome movement');
+});
+
+test('booking bar in the opening: what it asks for depends on where it sends people; a plain link until its script starts', () => {
+  const bar = (data, s = site) => renderPage(page([hero('split', data)]), { site: s });
+  assert.equal(bar({}), bar({ bar: 'none' }), 'no bar unless one is chosen');
+  assert.equal(BLOCK_TYPES.hero.fields.bar.def, 'none');
+  assert.deepEqual(BLOCK_TYPES.hero.fields.bar.options, ['none', 'page', 'whatsapp', 'email']);
+  // A Cal.com booking page can be told the date, never the number of people.
+  const cal = bar({ bar: 'page', barPeople: true });
+  assert.ok(!cal.includes('<form') && !/<button type="submit"/.test(cal), 'not a form: nothing can be submitted before the script starts');
+  assert.match(cal, /<div class="cb-actions"><a class="cb-btn" href="\/contact\/">Book<\/a><\/div><div class="cb-bar-wrap"><div class="cb-bar" role="group" aria-label="Check availability" data-bar="page" data-bar-to="https:\/\/cal\.com\/harbour\/assessment" data-bar-cal data-site="Harbour Physio" hidden>/);
+  assert.match(cal, /<label for="bd-[a-z0-9]+">Date<\/label><input id="bd-[a-z0-9]+" type="date">/);
+  assert.ok(!cal.includes('People'), 'a booking page is never asked how many people');
+  assert.match(cal, /<a class="cb-btn cb-bar-go" href="https:\/\/cal\.com\/harbour\/assessment" rel="noopener">Check availability<\/a><\/div><p class="cb-bar-plain"><a class="cb-btn" href="https:\/\/cal\.com\/harbour\/assessment" rel="noopener">Check availability<\/a><\/p><p class="cb-small cb-bar-note">Opens the booking page\. Nothing is booked until you confirm there\.<\/p>/, 'the button is a link to the plain place until the script takes it over');
+  // Any other booking page cannot be told anything: the bar is just its button.
+  const other = bar({ bar: 'page', barPeople: true }, { name: 'H', professional: { bookingUrl: 'https://book.example.com/me' } });
+  assert.match(other, /<div class="cb-bar-wrap"><p class="cb-bar-only"><a class="cb-btn" href="https:\/\/book\.example\.com\/me" rel="noopener">Check availability<\/a><\/p><p class="cb-small cb-bar-note">/);
+  assert.ok(!other.includes('type="date"') && !other.includes('data-bar='));
+  const wa = bar({ bar: 'whatsapp', barWhatsapp: '+44 (0)7700 900123', barButton: 'Ask for a table', barPeople: true });
+  assert.match(wa, /data-bar="whatsapp" data-bar-to="447700900123"/, 'the number is cleaned to digits');
+  assert.match(wa, /<label for="bp-[a-z0-9]+">People<\/label><select id="bp-[a-z0-9]+"><option value="1">1<\/option><option value="2" selected>/);
+  assert.match(wa, /<a class="cb-btn cb-bar-go" href="https:\/\/wa\.me\/447700900123\?text=Hello%2C%20I%20would%20like%20to%20check%20availability\." target="_blank" rel="noopener">Ask for a table<\/a>/);
+  assert.ok(!bar({ bar: 'whatsapp', barWhatsapp: '07700 900123' }).includes('cb-bar'), 'a number written the local way is refused');
+  assert.match(BLOCK_TYPES.hero.fields.barWhatsapp.hint, /country code \(44 for the UK\) and leave out the first 0, for example 447700900123/);
+  assert.match(BLOCK_TYPES.order.fields.whatsapp.hint, /leave out the first 0/);
+  assert.match(bar({ bar: 'email' }), /data-bar="email" data-bar-to="hello@harbour\.example"[\s\S]*href="mailto:hello@harbour\.example\?subject=Checking%20availability"/);
+  const bare = { name: 'Harbour', professional: {} };
+  for (const k of ['page', 'whatsapp', 'email']) {
+    assert.ok(!bar({ bar: k }, bare).includes('cb-bar'), `${k}: nowhere to go, nothing drawn`);
+    const ed = renderPage(page([hero('split', { bar: k })]), { site: bare, editable: true });
+    assert.match(ed, /<span class="cb-btn" data-cb="[a-z0-9]+:barButton">Check availability<\/span>/, `${k}: the button words are editable in the editor`);
+    assert.match(ed, /data-cb-hint>Add your/, `${k}: the editor says what is missing`);
+  }
+  assert.match(renderPage(page([hero('split', { bar: 'whatsapp', barPeople: true })]), { site, editable: true }), /<div class="cb-bar cb-bar-still">[\s\S]*disabled tabindex="-1"/);
+  for (const v of variantsOf('hero')) {
+    const html = renderPage(page([hero(v, { bar: 'email' })]), { site });
+    assert.equal(count(html, '<div class="cb-bar" role="group"'), 1, `${v}: the bar appears once`);
+    assert.equal(count(html, '<h1'), 1, `${v}: still one h1`);
+  }
+  assert.equal(normalisePage(page([hero('split', { barWhatsapp: '0044 7700-900 123' })])).blocks[0].data.barWhatsapp, '447700900123');
+  assert.equal(normalisePage(page([hero('split', { barWhatsapp: '12345' })])).blocks[0].data.barWhatsapp, undefined, 'too short');
+  assert.ok(!bar({ bar: 'email', barButton: '<b>x</b>' }).includes('<b>x'), 'the button words are escaped');
+  // In the editor the controls let clicks through to the block, and the button words stay clickable.
+  const css = readFileSync(new URL('../../styles/blocks.css', import.meta.url), 'utf8');
+  assert.match(css, /\[data-m-edit\] :is\(\.cb-bar-still input,\.cb-bar-still select,\.cb-order-step button,[^)]*\.cb-order-who input,\.cb-order-who textarea\)\{pointer-events:none\}/);
+  assert.ok(!/\[data-m-edit\][^{]*\.cb-btn[^{]*\{pointer-events:none/.test(css));
+});
+
+test('choices have an explicit default for when nothing is stored', () => {
+  assert.equal(BLOCK_TYPES.order.fields.send.def, 'email');
+  assert.equal(BLOCK_TYPES.marquee.fields.speed.def, 'm');
+  assert.equal(BLOCK_TYPES.spacer.fields.size.def, 'm');
+  for (const [type, spec] of Object.entries(BLOCK_TYPES)) for (const [k, f] of Object.entries(spec.fields)) if (f.kind === 'choice' && f.def !== undefined) assert.ok(f.options.includes(f.def), `${type}.${k}`);
+  assert.ok(renderPage(page([{ type: 'spacer', variant: 'line', data: {} }]), { site }).includes('cb-size-m'));
+  assert.equal(renderPage(page([{ type: 'marquee', data: { items: [{ text: 'A' }] } }]), { site }), renderPage(page([{ type: 'marquee', data: { speed: 'm', items: [{ text: 'A' }] } }]), { site }));
+});
+
+test('order list: steppers and a running total with the script; a plain price list and one button without it', () => {
+  const items = [{ name: 'House espresso', description: 'Chocolate and hazelnut.', price: '£9.50', picture: { src: '/site-images/beans.webp', alt: 'A bag of beans' } }, { name: 'Birthday cake <b>', price: 'Ask in the shop' }, { price: '£2' }];
+  const order = (data, variant = 'list', s = site) => renderPage(page([{ type: 'order', variant, data: { heading: 'Order ahead', items, ...data } }]), { site: s });
+  const html = order({ send: 'whatsapp', whatsapp: '447700900123', pay: { label: 'Pay now', href: 'https://buy.stripe.com/abc' }, note: 'Collect from 8am.' });
+  assert.match(html, /<div class="cb-order" data-order="whatsapp" data-order-to="447700900123" data-site="Harbour Physio"><ul class="cb-order-items cb-order-list">/);
+  assert.equal(count(html, '<li class="cb-order-item">'), 2, 'something with no name cannot be ordered');
+  assert.match(html, /<div class="cb-order-step" hidden><button type="button" class="cb-order-less" aria-label="One fewer: House espresso">−<\/button><output class="cb-order-qty" aria-live="off" aria-label="How many: House espresso">0<\/output><button type="button" class="cb-order-more" aria-label="One more: House espresso">\+<\/button><\/div>/);
+  assert.ok(html.includes('aria-label="One more: Birthday cake &lt;b&gt;"') && !html.includes('cake <b>'), 'names are escaped, in attributes too');
+  assert.match(html, /<p class="cb-order-total" role="status" aria-live="polite">Nothing chosen yet<\/p>/);
+  assert.match(html, /<label for="on-([a-z0-9]+)">Your name<\/label><p class="cb-small cb-order-hint" id="oh-\1">Needed, so they know whose order it is\.<\/p><input id="on-\1" [^>]*aria-describedby="oh-\1">/, 'a name is asked for up front');
+  assert.match(html, /<a class="cb-btn cb-order-send" href="https:\/\/wa\.me\/447700900123\?text=Hello%2C%20I%20would%20like%20to%20place%20an%20order\." target="_blank" rel="noopener" aria-disabled="true">Send order<\/a><a class="cb-btn cb-btn-2 cb-order-pay" href="https:\/\/buy\.stripe\.com\/abc" rel="noopener" hidden>Pay now<\/a><\/p><p class="cb-small cb-order-need">Choose at least one item<\/p>/, 'send is a link to the plain place, marked unavailable with the reason shown');
+  assert.ok(!/<button[^>]*cb-order-send/.test(html) && !html.includes(' disabled>'), 'nothing is a disabled button');
+  assert.match(html, /<p class="cb-order-plain"><a class="cb-btn" href="https:\/\/wa\.me\/447700900123\?text=Hello%2C%20I%20would%20like%20to%20place%20an%20order\." target="_blank" rel="noopener">Send order<\/a><\/p><p class="cb-small cb-order-note">Nothing is sent until you press send in WhatsApp\. This is a request, not a payment\.<\/p><p class="cb-small">Collect from 8am\.<\/p>/);
+  assert.ok(html.includes('Ask in the shop'), 'the page shows the price exactly as typed');
+  assert.ok(!html.includes('cb-order-pic'), 'rows have no photos');
+  assert.match(order({}, 'cards'), /<li class="cb-order-item"><figure class="cb-order-pic"><img src="\/site-images\/beans\.webp" alt="A bag of beans"/);
+  assert.match(order({}), /data-order="email" data-order-to="hello@harbour\.example"[\s\S]*press send in your email app/, 'by email when nothing is chosen');
+  const nowhere = order({ send: 'whatsapp' });
+  assert.ok(nowhere.includes('House espresso') && !nowhere.includes('cb-order-step') && !nowhere.includes('cb-order-plain'), 'no number: a plain price list');
+  const ed = renderPage(page([{ type: 'order', variant: 'cards', data: { items, send: 'whatsapp' } }]), { site, editable: true });
+  assert.match(ed, /<div class="cb-order-step" aria-hidden="true"><button type="button" disabled tabindex="-1">/);
+  assert.match(ed, /<span class="cb-btn" data-cb="[a-z0-9]+:button">Send order<\/span><a class="cb-btn cb-btn-2 cb-order-pay" href="#" data-cb-link="[a-z0-9]+:pay" data-cb-incomplete>Pay now<\/a>/);
+});
+
+test('an order list that draws nothing never takes the page\'s h1', () => {
+  const empty = { type: 'order', data: { heading: 'Order ahead', items: [{ price: '£2' }] } };
+  assert.equal(renderPage(page([empty]), { site }), renderPage(page([]), { site }), 'nothing to order: nothing drawn');
+  const html = renderPage(page([empty, { type: 'text', data: { heading: 'About us', body: 'Hello.' } }]), { site });
+  assert.match(html, /<h1 class="cb-h">About us<\/h1>/, 'the h1 goes to a heading that appears');
+  assert.match(renderPage(page([{ type: 'order', data: { heading: 'Order ahead', items: [{ name: 'Tea', price: '£2' }] } }]), { site }), /<h1 class="cb-h">Order ahead<\/h1>/);
+});
+
+test('page actions: a price counts only when it is one plain amount; totals in one currency; messages that fit', async () => {
+  const A = await import('../../scripts/page-actions.js');
+  const p = (t) => A.parsePrice(t).pence;
+  for (const [t, v] of [['£9.50', 950], ['£4 each', 400], ['€9,50', 950], ['9,50 €', 950], ['€1.500', 150000], ['£1,200', 120000], ['1.000 kr', 100000], ['1 234,50 €', 123450], ['$1,234.56', 123456], ['1.234,56 €', 123456], ['5 GBP', 500], ['CHF 12', 1200], ['3', 300], ['£0', 0], ['Free', 0], ['free', 0]]) assert.equal(p(t), v, t);
+  for (const t of ['2 for £5', '250g £4.50', 'from £1,250', '£10-£15', '£10 to £15', '£5 per hour', 'Ask in the shop', '', '£5 GBP', '1,23,456', '12 34']) assert.equal(p(t), null, `${t}: priced on request`);
+  assert.equal(A.parsePrice('Free').free, true); assert.equal(A.parsePrice('£0').free, true);
+  assert.equal(A.parsePrice('5 GBP').sign, '£', 'a code that means one sign is that sign');
+  assert.equal(A.formatMoney(1900, '£'), '£19'); assert.equal(A.formatMoney(125005, '£'), '£1,250.05'); assert.equal(A.formatMoney(150000, 'kr'), '1,500 kr');
+  const lines = [{ name: 'House espresso', price: '£9.50', qty: 2 }, { name: 'Cake', price: '2 for £5', qty: 1 }, { name: 'Tap water', price: 'Free', qty: 1 }, { name: 'Flat white', price: '£3.40', qty: 0 }];
+  const t = A.orderTotal(lines);
+  assert.deepEqual(t, { pence: 1900, sign: '£', count: 4, onRequest: 1, priced: 3, mixed: false });
+  assert.equal(A.totalText(t), 'Total: £19 for 4 items, plus 1 priced on request');
+  assert.equal(A.totalText(A.orderTotal([{ name: 'Water', price: 'Free', qty: 2 }])), 'Total: free for 2 items');
+  assert.equal(A.orderTotal([{ name: 'A', price: '€1.500', qty: 1 }, { name: 'B', price: '£2', qty: 0 }]).sign, '€', 'the currency comes from the chosen items only');
+  const mixed = [{ name: 'A', price: '£2', qty: 1 }, { name: 'B', price: '€3', qty: 1 }];
+  assert.equal(A.orderTotal(mixed).mixed, true);
+  assert.equal(A.totalText(A.orderTotal(mixed)), '2 items chosen. Prices are in more than one currency, so there is no single total.');
+  assert.ok(!A.orderMessage({ lines: mixed }).includes('Total'), 'no total is sent for two currencies');
+  assert.equal(A.orderMessage({ site: 'Harbour', lines, name: ' Sam ', notes: 'Collect at 10\nNo nuts' }), 'Order for Harbour\n2 x House espresso (£9.50)\n1 x Cake (price on request)\n1 x Tap water (free)\nTotal: £19, plus 1 priced on request\nName: Sam\nNotes: Collect at 10 / No nuts');
+  // A long order is shortened to fit the address: the notes first, then lines from the end.
+  const many = Array.from({ length: 40 }, (_, i) => ({ name: `Something with a fairly long name number ${i + 1}`, price: '£1.50', qty: 3 }));
+  const long = { site: 'Harbour', lines: many, name: 'Sam', notes: 'Please '.repeat(200) };
+  const url = A.orderUrl('whatsapp', '447700900123', long);
+  assert.ok(url.length <= A.MAX_URL, `${url.length} characters`);
+  const sent = decodeURIComponent(url.split('text=')[1]);
+  assert.match(sent, /more did not fit in this message\.\)\nTotal: £180\nName: Sam$/, 'the total still counts everything; the notes went first');
+  assert.equal(A.orderMessage(long).split('\n').length, 44, 'the full text (for the copy box) keeps every line');
+  assert.ok(A.orderUrl('whatsapp', '447700900123', { lines: [{ name: 'Tea', price: '£2', qty: 1 }], notes: 'Short' }).includes('Notes%3A%20Short'), 'a short order is left whole');
+  assert.equal(A.longDate('2026-11-20'), 'Friday 20 November 2026');
+  assert.equal(A.longDate('2026-02-30'), '');
+  assert.equal(A.barMessage({ site: 'Harbour', date: '2026-11-20', people: '2' }), 'Hello Harbour, I would like to check availability for 2 people on Friday 20 November 2026.');
+  assert.equal(A.barUrl('page', 'https://cal.com/harbour/assessment', { date: '2026-11-20', cal: true }), 'https://cal.com/harbour/assessment?date=2026-11-20');
+  assert.equal(A.barUrl('page', 'javascript:alert(1)'), '');
+  assert.equal(A.barUrl('whatsapp', '0770'), '');
+  assert.equal(A.mailUrl('a@b.co?bcc=x@y.z', 'Hi'), '');
+  const js = readFileSync(new URL('../../scripts/page-actions.js', import.meta.url), 'utf8');
+  for (const banned of ['innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write', 'eval(', 'new Function', 'fetch(', 'sendBeacon', 'XMLHttpRequest']) assert.ok(!js.includes(banned), `page-actions.js must not use ${banned}`);
+  assert.match(js, /export function initPageActions\(doc = document, win = window, \{ open, preview = false, clock = win \} = \{\}\)/);
+});
+
+test('movement fixes: the flag comes back on a slow start, story photos stay described, words stay readable, reveal spares product photos', () => {
+  const js = readFileSync(new URL('../../scripts/page-motion.js', import.meta.url), 'utf8');
+  assert.match(js, /if \(!html\.classList\.contains\('cbm-js'\)\) \{ html\.classList\.add\('cbm-js'\); undo\.push\(\(\) => html\.classList\.remove\('cbm-js'\)\); \}/);
+  assert.match(js, /fig\.matches\('\.cb-order-pic, \.cb-gallery > figure'\)/);
+  assert.match(js, /e\.pointerType === 'touch'\) root\.classList\.add\('cbm-touch'\)/);
+  const css = readFileSync(new URL('../../styles/motion.css', import.meta.url), 'utf8');
+  assert.ok(!/cb-story\.is-live[^{]*\.cb-show-pic[^{]*img[^{]*\{display:none/.test(css), 'the story\'s own photos are never display:none');
+  assert.match(css, /cb-story\.is-live \.cb-show-story \.cb-show-pic img\{position:absolute!important;width:1px!important;height:1px!important;[^}]*clip-path:inset\(50%\)/, 'hidden to the eye only');
+  for (const m of css.matchAll(/cb-story[^{]*\.cb-show-body\{[^}]*opacity:([\d.]+)/g)) assert.ok(Number(m[1]) >= 0.75, `story words at ${m[1]}`);
+  assert.match(css, /\.cbm-pointer\{position:fixed;left:0;top:0;pointer-events:none;opacity:0;/, 'pointer pieces rest hidden whatever the flag');
+  assert.match(css, /\.cb:focus-within \[data-mr\]>img[^{]*\{filter:none\}/, 'full colour for the keyboard');
 });

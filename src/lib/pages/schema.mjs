@@ -148,6 +148,16 @@ const R = (max, label, ph) => ({ kind: 'rich', max, label, ph: ph || `Add ${labe
 const PIC = (label = 'Picture') => ({ kind: 'picture', label });
 const BTNS = (max = 2) => ({ kind: 'links', max, label: 'Buttons' });
 const HEAD = L(160, 'Heading', 'Add a heading');
+// A WhatsApp number: digits only, with the country code and without the leading 0 of a local
+// number (447700900123, not 07700 900123). Anything else is dropped.
+const WA = { kind: 'line', max: 24, digits: true, label: 'WhatsApp number with country code', ph: 'e.g. 447700900123' };
+const WA_HINT = 'Start with the country code (44 for the UK) and leave out the first 0, for example 447700900123.';
+export function cleanWhatsapp(v) {
+  // "+44 (0)7700 900123" is written that way in the UK; the (0) is not dialled from abroad.
+  let s = cleanLine(v, 40).replace(/\(0\)/g, '').replace(/[\s().-]/g, '');
+  if (s.startsWith('+')) s = s.slice(1); else if (s.startsWith('00')) s = s.slice(2);
+  return /^[1-9]\d{7,14}$/.test(s) ? s : '';
+}
 
 export const BACKGROUNDS = ['none', 'tint', 'accent', 'dark', 'picture'];
 export const WIDTHS = ['narrow', 'normal', 'wide', 'full'];
@@ -178,6 +188,12 @@ export const BLOCK_TYPES = {
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, rotate: { ...L(160, 'Changing words', 'e.g. brands, websites, films'), panel: true, hint: 'A few words with commas between them. They take turns at the end of the heading.' }, word: L(12, 'Big word', 'e.g. Fresh'), intro: R(1200, 'Introduction'), picture: PIC(), pictures: { kind: 'pictures', max: 6, label: 'More photos' },
       video: { kind: 'video', label: 'Video' }, buttons: BTNS(2), details: { kind: 'bool', label: 'Show opening hours, address and phone' },
+      // A booking bar under the buttons: a date (and how many people), then one button that opens
+      // the booking page, WhatsApp or an email with the request written out. The page never sends
+      // anything itself.
+      bar: { kind: 'choice', options: ['none', 'page', 'whatsapp', 'email'], def: 'none', labels: { none: 'No booking bar', page: 'Opens my booking page', whatsapp: 'Sends a WhatsApp message', email: 'Sends an email' }, label: 'Booking bar' },
+      barButton: L(40, 'Booking bar button', 'Check availability'), barPeople: { kind: 'bool', label: 'Ask how many people' },
+      barWhatsapp: { ...WA, panel: true, hint: `Only used by a booking bar that sends a WhatsApp message. ${WA_HINT}` },
     },
   },
   text: {
@@ -204,6 +220,20 @@ export const BLOCK_TYPES = {
         name: L(100, 'Name', 'Name of the service'), description: R(600, 'Description'), price: L(60, 'Price', 'Price'), duration: L(60, 'Time', 'Time'),
         offer: L(120, 'Offer'), picture: PIC(), link: { kind: 'link', label: 'Booking link' }, pay: { kind: 'link', label: 'Pay link' },
       }, sample: { name: 'New service', description: '', price: '', duration: '' } },
+    },
+  },
+  order: {
+    label: 'Order list', hint: 'People choose how many of each, see the total, and send you the order.',
+    variants: { list: 'Rows', cards: 'Cards with photos' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      items: { kind: 'items', max: 40, label: 'Things to order', add: 'Add one', item: {
+        name: L(100, 'Name', 'Name'), description: R(600, 'Description'), price: L(60, 'Price', 'Price, such as £9.50'), picture: PIC(),
+      }, sample: { name: 'New item', description: '', price: '' } },
+      // How the order reaches you: by email unless WhatsApp is chosen.
+      send: { kind: 'choice', options: ['whatsapp', 'email'], def: 'email', labels: { whatsapp: 'By WhatsApp', email: 'By email' }, label: 'Orders are sent' },
+      whatsapp: { ...WA, panel: true, hint: `Only used when orders are sent by WhatsApp. ${WA_HINT}` },
+      button: L(40, 'Button text', 'Send order'), pay: { kind: 'link', label: 'Pay link' }, note: L(240, 'Small print'),
     },
   },
   team: {
@@ -304,7 +334,7 @@ export const BLOCK_TYPES = {
     variants: { line: 'One line', double: 'Two lines, opposite ways', outline: 'Hollow letters', tags: 'Labels' },
     fields: {
       items: { kind: 'items', max: 12, label: 'Words', add: 'Add a word', item: { text: L(60, 'Word or phrase', 'e.g. Open late') }, sample: { text: 'New words' } },
-      speed: { kind: 'choice', options: ['s', 'm', 'l'], labels: { s: 'Slow', m: 'Steady', l: 'Quick' }, label: 'Speed' },
+      speed: { kind: 'choice', options: ['s', 'm', 'l'], def: 'm', labels: { s: 'Slow', m: 'Steady', l: 'Quick' }, label: 'Speed' },
     },
   },
   steps: {
@@ -317,7 +347,7 @@ export const BLOCK_TYPES = {
   },
   showcase: {
     label: 'Showcase', hint: 'A few pieces of work or offers, each with a photo, shown one at a time as people scroll.',
-    variants: { stack: 'Stacking cards', slider: 'Slider', switch: 'List that changes the photo', plates: 'Round photos, the colour changes', layers: 'Layers that come apart as you scroll (3D)' },
+    variants: { stack: 'Stacking cards', slider: 'Slider', switch: 'List that changes the photo', plates: 'Round photos, the colour changes', layers: 'Layers that come apart as you scroll (3D)', story: 'Photo that stays while the words scroll past' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 8, label: 'Pieces', add: 'Add one', item: {
@@ -328,18 +358,20 @@ export const BLOCK_TYPES = {
   spacer: {
     label: 'Space', hint: 'Extra space, with or without a line.',
     variants: { space: 'Space', line: 'Line', ornament: 'Ornament' },
-    fields: { size: { kind: 'choice', options: ['s', 'm', 'l'], label: 'Size' } },
+    fields: { size: { kind: 'choice', options: ['s', 'm', 'l'], def: 'm', label: 'Size' } },
   },
 };
 // How many of an opening's "More photos" each layout shows. Layouts not listed show none.
 export const HERO_PHOTO_ROOM = { orbit: 5, collage: 3, filmstrip: 6, bento: 2, blob: 1, carousel: 6, depth: 3 };
 export const TYPE_IDS = Object.keys(BLOCK_TYPES);
+// A choice field's value, or its default (`def`) when nothing is stored.
+export const choiceValue = (type, data, key) => { const f = BLOCK_TYPES[type]?.fields?.[key]; const v = data?.[key]; return f?.kind === 'choice' && f.options.includes(v) ? v : f?.def ?? null; };
 export const variantsOf = (type) => Object.keys(BLOCK_TYPES[type]?.variants || {});
 
 // ---- normalising ---------------------------------------------------------------------------
 function cleanField(f, v, opts) {
   switch (f.kind) {
-    case 'line': return cleanLine(v, f.max);
+    case 'line': return f.digits ? cleanWhatsapp(v) : cleanLine(v, f.max);
     case 'rich': case 'plain': return cleanText(v, f.max);
     case 'picture': return cleanPicture(v, opts);
     case 'pictures': return (Array.isArray(v) ? v : []).map((p) => cleanPicture(p, opts)).filter(Boolean).slice(0, f.max);
@@ -426,8 +458,10 @@ export const MOTION = {
   scroll: { label: 'As people scroll', options: { none: 'Nothing moves', rise: 'Rise into place', fade: 'Fade in', slide: 'Slide in from the sides', zoom: 'Grow into place', wipe: 'Wipe down', blur: 'Come into focus', tilt: 'Tip up' } },
   heading: { label: 'Opening heading', options: { none: 'Still', words: 'Word by word', letters: 'Letter by letter', gather: 'Letters fly together', typed: 'Typed out', shimmer: 'Moving colour' } },
   buttons: { label: 'Buttons', options: { none: 'Plain', lift: 'Lift', fill: 'Colour sweep', arrow: 'Arrow slides along', tile: 'Arrow in a tile', shine: 'Shine', press: 'Press down', glow: 'Glow', magnet: 'Follows the pointer' } },
-  pictures: { label: 'Pictures', options: { none: 'Still', drift: 'Drift as you scroll', zoom: 'Slow zoom', tilt: 'Tilt to the pointer', unveil: 'Unveil' } },
+  pictures: { label: 'Pictures', options: { none: 'Still', drift: 'Drift as you scroll', zoom: 'Slow zoom', tilt: 'Tilt to the pointer', unveil: 'Unveil', reveal: 'Colour appears where the pointer is' } },
   backdrop: { label: 'Behind the opening', options: { none: 'Nothing', aurora: 'Northern lights', bubbles: 'Bubbles', blobs: 'Soft shapes', waves: 'Waves', orbits: 'Orbits', grid: 'Moving grid', dots: 'Dot field', rays: 'Light rays', shapes: 'Confetti shapes', lines: 'Speed lines', ripples: 'Ripples', petals: 'Falling petals', stars: 'Constellation', spotlight: 'Spotlight', wash: 'Colour wash', grain: 'Film grain', globe: 'Turning globe (3D)', ring: 'Turning ring (3D)', terrain: 'Rolling landscape (3D)' } },
+  follow: { label: 'Follows the scroll', options: { none: 'Nothing', bar: 'A bar across the top that fills', line: 'A line down the side that draws' } },
+  pointer: { label: 'Where the pointer goes', options: { none: 'Nothing', light: 'A soft light follows it', dot: 'A dot trails it and grows over buttons and links', label: 'The main button\'s words follow it over the opening' } },
   opening: { label: 'The opening, as people scroll on', options: { none: 'Scrolls away as usual', cover: 'The page slides over it', recede: 'It sinks back and dims' } },
   pace: { label: 'Pace', options: { calm: 'Calm', steady: 'Steady', lively: 'Lively' } },
 };

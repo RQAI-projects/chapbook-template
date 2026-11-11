@@ -59,7 +59,7 @@
   "scripts/flip-scheduled.mjs": "e0d6d8b239d47dc9782c0643ec640b3e26d48ff3",
   "scripts/make-og-default.mjs": "d8602e05c295a5918f80ea2a8eae318c1e87f1b4",
   "scripts/make-template-release.mjs": "9e69ed8145b6e6d820ecca8b0a7fcdb484ad9cd3",
-  "src/components/BlockPage.astro": "15a3c8f318aa003b2532d2a30fdee8d85786eabb",
+  "src/components/BlockPage.astro": "f4da275fa5d496b9f3c6017ace1d045aa1c44638",
   "src/components/GalaxyHero.astro": "c4e918ee189f441636b42bb863d9a0b7f5e274ce",
   "src/components/GlenoidArt.astro": "009da8fa28c278e08e92ec4b25aa54a57d27058a",
   "src/components/GlyphBadge.astro": "249f4877bb539b51a779d774050006ecad06c80d",
@@ -127,8 +127,8 @@
   "src/lib/icons.js": "f5ea35a4a406e7d6892b1087ed35b133c568ec18",
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
   "src/lib/pages/migrate.mjs": "9f5fe20140be5b8460a8ce0e28f619fa96a996ab",
-  "src/lib/pages/render.mjs": "2a206f7e52fa8119239ed085ac19119dc8574532",
-  "src/lib/pages/schema.mjs": "ae25db08ed0f618bbacb0f5e06da4ded1b56a177",
+  "src/lib/pages/render.mjs": "6a2f3c4d4ab11b7b8dfe801ad2d00b76bb53f796",
+  "src/lib/pages/schema.mjs": "b1aeef84e54c1a118123863ee498ae069570dd51",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
   "src/lib/professional.mjs": "f6228b9a5ceb15847a1e8599b87784b1af38f61c",
@@ -159,12 +159,13 @@
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
-  "src/scripts/page-motion.js": "4840942f7962b029ec0caf4c7320980f5ab7234b",
-  "src/styles/blocks.css": "2664205a1e9ef12614ee1c3d23926c45a0b518bc",
+  "src/scripts/page-actions.js": "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9",
+  "src/scripts/page-motion.js": "da63f3fb1c3bb2c5de9a064f8be0ae069cc0353d",
+  "src/styles/blocks.css": "bbda5192b66a93c2f8c64d3b1a347afa31494738",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
   "src/styles/global.css": "cfa4731cb5064fed7c6a09ac13b2dc697d828360",
   "src/styles/headers.css": "806c15e7948c6786dafeb2f11a1cd6d3c4b8ef62",
-  "src/styles/motion.css": "822a12d2a7b78638fc9d0ac9d8171c049e036f9d",
+  "src/styles/motion.css": "ad2323e4e76339b48f9274b1ae6ab66b7d9065a0",
   "src/styles/professional.css": "b44e17c6093f9f22f8a4f923601f7bca02ce8222",
   "src/styles/themes.css": "0b9635ecfaecc749f2e07b5b042b5d2011e527e9",
   "src/styles/themes/_kids-extras.css": "8f3b65c0a42edc8ab6d687fefb433d2b2e24b3f8",
@@ -204,7 +205,17 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "src/components/BlockPage.astro": [
+   "15a3c8f318aa003b2532d2a30fdee8d85786eabb",
+   "15eec77c38e2932aba3b9c86a463a23f39bd4491",
+   "2d6fe15db5862c1abbc93cfae28751fed5ebe95e",
+   "b48354818e26eb565a10bae4e50619958fd4dadc",
+   "4aeb6b0630190e92df0fff8ff3919bb35fb914dc",
+   "a703234e7934d2ebc903b123b21a3da3db828c88",
+   "23df6ebe76d35fe35c1d901c7239db4b9cf47875"
+  ],
   "src/lib/pages/render.mjs": [
+   "2a206f7e52fa8119239ed085ac19119dc8574532",
    "4577ad0b4b22ccf624465560602a61e5a25931f5",
    "5241015c32487b88c735f86c6b5fcf815deb1854",
    "1d87933d1d6a069cbce622018f29a64868af5d0b",
@@ -218,12 +229,25 @@
    "c7226998668f0fbee76774c9de823a6b4e21fcfe",
    "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
   ],
+  "src/lib/pages/schema.mjs": [
+   "ae25db08ed0f618bbacb0f5e06da4ded1b56a177",
+   "1ad93de5bb569b50f1d6fb23d338ff92cd43033e",
+   "efa0ef27f058fe2af1a589e5c50bc8fcb00f1984",
+   "282ea8eba6ddce8be962ea390c5126876bb052ce",
+   "9cf88e37505e75695de46f6e869301cf431c590c",
+   "55b1df5a9a94d15062751a68e366b2059f1bf75a",
+   "df17499ea907e57d793de67a17eb8a8078f753b0",
+   "cf81fb63c6424ce2bedf5f8563fcc91fbbd782ca",
+   "09baab156a3a0a6a1e577eed8db8115618800402"
+  ],
   "src/scripts/page-motion.js": [
+   "4840942f7962b029ec0caf4c7320980f5ab7234b",
    "bf8152f0b8069ece615c70d3552cb496e97b0df4",
    "767f7cd65f0a28cd93411313c13ff3d30b1d5fe5",
    "566e26987acbdb857612c6f4c799d0fc3f68e4e8"
   ],
   "src/styles/blocks.css": [
+   "2664205a1e9ef12614ee1c3d23926c45a0b518bc",
    "b5684235ef4a8b5ace083d5ac8327bc30c2ce925",
    "7fb75b1da8c1a4fa9b3a878f13cd9e23fd60915e",
    "fc3cfff2344375066d775d34c6c348fe0fae711a",
@@ -239,27 +263,10 @@
    "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
   ],
   "src/styles/motion.css": [
+   "822a12d2a7b78638fc9d0ac9d8171c049e036f9d",
    "c17df7e914bb0e00b20ccaf0fd1f3c69f6a63deb",
    "39694d6ce15fd38cbac605d8bd12957f63384bca",
    "2265dfb917491836edacb0257c1e384234ea28aa"
-  ],
-  "src/lib/pages/schema.mjs": [
-   "1ad93de5bb569b50f1d6fb23d338ff92cd43033e",
-   "efa0ef27f058fe2af1a589e5c50bc8fcb00f1984",
-   "282ea8eba6ddce8be962ea390c5126876bb052ce",
-   "9cf88e37505e75695de46f6e869301cf431c590c",
-   "55b1df5a9a94d15062751a68e366b2059f1bf75a",
-   "df17499ea907e57d793de67a17eb8a8078f753b0",
-   "cf81fb63c6424ce2bedf5f8563fcc91fbbd782ca",
-   "09baab156a3a0a6a1e577eed8db8115618800402"
-  ],
-  "src/components/BlockPage.astro": [
-   "15eec77c38e2932aba3b9c86a463a23f39bd4491",
-   "2d6fe15db5862c1abbc93cfae28751fed5ebe95e",
-   "b48354818e26eb565a10bae4e50619958fd4dadc",
-   "4aeb6b0630190e92df0fff8ff3919bb35fb914dc",
-   "a703234e7934d2ebc903b123b21a3da3db828c88",
-   "23df6ebe76d35fe35c1d901c7239db4b9cf47875"
   ],
   "scripts/make-template-release.mjs": [
    "402d0b115b4d2b9016116127526738cbab345ff3",

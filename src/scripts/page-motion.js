@@ -10,11 +10,11 @@ const TARGETS = [
   '.cb-kicker', '.cb-h', '.cb-rich', '.cb-actions', '.cb-facts', '.cb-figure', '.cb-pic-frame', '.cb-hero-pic', '.cb-hero-panel', '.cb-hero-card',
   '.cb-poster-foot', '.cb-giant-foot', '.cb-mq', '.cb-film', '.cb-orbit', '.cb-collage', '.cb-arch', '.cb-stage', '.cb-svc > *', '.cb-team > *', '.cb-reviews > *',
   '.cb-gallery > *', '.cb-fact', '.cb-faq-item', '.cb-post', '.cb-creds > li', '.cb-form', '.cb-booking-cal', '.cb-booking-card', '.cb-video', '.cb-interactive',
-  '.cb-contact-card', '.cb-cta-card', '.cb-cta-split > *', '.cb-notice-text', '.cb-more', '.cb-map', '.cb-socials', '.cb-step', '.cb-show-item', '.cb-credits', '.cb-small', '.cb-head-row > a',
+  '.cb-contact-card', '.cb-cta-card', '.cb-cta-split > *', '.cb-notice-text', '.cb-more', '.cb-map', '.cb-socials', '.cb-step', '.cb-show-item', '.cb-credits', '.cb-small', '.cb-head-row > a', '.cb-bar-wrap', '.cb-order-items > *', '.cb-order-foot',
 ].join(',');
 // Layouts that bring themselves in; the scroll effect leaves them alone.
 const OWN_ENTRANCE = '.cb-bento, .cb-curtain, .cb-open, .cb-hero-bg, .cb-backdrop, .cbm-bd, .cb-mask-thumb, .cb-plates-bg, .cb-plates-wipe';
-const PICTURES = '.cb-pic-frame, .cb-figure, .cb-svc-pic, .cb-portrait, .cb-show-pic, .cb-gallery > figure, .cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-arch-pic):not(.cb-curtain-pic):not(.cb-lens-pic):not(.cb-bw-pic):not(.cb-shatter)';
+const PICTURES = '.cb-pic-frame, .cb-figure, .cb-svc-pic, .cb-order-pic, .cb-portrait, .cb-show-pic, .cb-gallery > figure, .cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-arch-pic):not(.cb-curtain-pic):not(.cb-lens-pic):not(.cb-bw-pic):not(.cb-shatter)';
 const KEEPS_MOVING = '.cb-car:not(.cb-car-still), .cb-depth, .cb-bw, .cb-lens, .cbm-bd canvas, .cb-mq:not(.cb-mq-still), .cb-film:not(.cb-film-still), .cbm-bd, .cb-orbit, .cb-collage, .cb-arch-badge, .cb-mask-h, .cb-rot, .cb-blob, .cb-inset-bg, .cb-open-bg, .cb-factlist-circles';
 const PAUSE_KEY = 'cbm-paused';
 
@@ -40,6 +40,10 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   // False once this run has been stopped; anything still waiting (a frame, a font) checks it.
   let alive = true;
   undo.push(() => { alive = false; });
+  // The page says a script is on its way (html.cbm-js) and takes that back after 3s if none has
+  // started. A slow start can come after that, so the flag is set again here; it is taken away
+  // on stop only if this run put it there.
+  if (!html.classList.contains('cbm-js')) { html.classList.add('cbm-js'); undo.push(() => html.classList.remove('cbm-js')); }
   const frame = (fn) => clock.requestAnimationFrame(() => { if (alive) fn(); });
   const on = (target, type, fn, opts) => { target.addEventListener(type, fn, opts); undo.push(() => target.removeEventListener(type, fn, opts)); };
   const timers = new Set();
@@ -246,6 +250,27 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     }
   }
 
+  // ---- follows the scroll: a bar that fills or a line that draws -----------------------------
+  // How far through the page the visitor is, from 0 to 1, as --cbm-p on a thin piece of
+  // decoration fixed to the screen. Measured once a frame at most.
+  const follow = look('follow');
+  if (!reduce && (follow === 'bar' || follow === 'line')) {
+    const bar = doc.createElement('div');
+    bar.className = `cbm-follow cbm-follow-${follow}`; bar.setAttribute('aria-hidden', 'true');
+    bar.append(doc.createElement('i'));
+    doc.body.append(bar);
+    let queued = false;
+    const place = () => {
+      queued = false;
+      const room = html.scrollHeight - (win.innerHeight || html.clientHeight);
+      bar.style.setProperty('--cbm-p', room > 0 ? clamp((win.scrollY || 0) / room, 0, 1).toFixed(4) : '1');
+    };
+    const ask = () => { if (!queued) { queued = true; frame(place); } };
+    on(win, 'scroll', ask, { passive: true }); on(win, 'resize', ask, { passive: true }); on(win, 'load', ask);
+    place();
+    undo.push(() => bar.remove());
+  }
+
   // ---- shapes in three dimensions ------------------------------------------------------------
   // A globe of dots, a ring, a rolling landscape: points in space, turned a little each frame and
   // drawn smaller and fainter the further away they are. Drawn once and left still for visitors
@@ -391,6 +416,26 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     }
   }
 
+  // Photo that stays while the words scroll past: the item crossing the middle of the screen
+  // brings its photo into the frame. An item without a photo leaves the last one there.
+  if (!reduce && 'IntersectionObserver' in win) {
+    for (const story of root.querySelectorAll('.cb-story.has-frame')) {
+      const list = story.querySelector('.cb-show-story'), frameBox = story.querySelector('.cb-story-frame');
+      if (!list || !frameBox) continue;
+      const items = [...list.children].filter((n) => n.classList.contains('cb-show-item'));
+      const shots = [...frameBox.children];
+      const show = (k) => {
+        if (k < 0) return;
+        items.forEach((it, n) => it.classList.toggle('is-on', n === k));
+        const shot = shots.find((s) => s.getAttribute('data-i') === String(k));
+        if (shot) shots.forEach((s) => s.classList.toggle('is-on', s === shot));
+      };
+      story.classList.add('is-live');
+      const io = new win.IntersectionObserver((entries) => { for (const e of entries) if (e.isIntersecting) show(items.indexOf(e.target)); }, { rootMargin: '-46% 0px -46% 0px' });
+      items.forEach((it) => io.observe(it));
+      undo.push(() => { io.disconnect(); story.classList.remove('is-live'); items.forEach((it, n) => it.classList.toggle('is-on', n === 0)); shots.forEach((s, n) => s.classList.toggle('is-on', n === 0)); });
+    }
+  }
   // ---- pointer effects (a mouse or trackpad only) -------------------------------------------
   if (!reduce && finePointer) {
     if (look('pictures') === 'tilt') {
@@ -461,6 +506,102 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
       });
       undo.push(() => { bd.classList.remove('cbm-live'); bd.style.removeProperty('--sx'); bd.style.removeProperty('--sy'); });
     }
+    // Where the pointer goes: a soft light behind the page, a dot that trails it, or the main
+    // button's words over the opening. Decoration only: none of them can be clicked.
+    const pointer = look('pointer');
+    if (['light', 'dot', 'label'].includes(pointer)) pointerFollower(pointer);
+    // Colour appears where the pointer is.
+    if (look('pictures') === 'reveal') {
+      for (const fig of root.querySelectorAll(PICTURES)) revealColour(fig);
+      // A touch screen on a laptop: once the page is touched, every picture is in full colour.
+      on(root, 'pointerdown', (e) => { if (e.pointerType === 'touch') root.classList.add('cbm-touch'); }, { passive: true });
+      undo.push(() => root.classList.remove('cbm-touch'));
+    }
+  }
+  function pointerFollower(kind) {
+    let area = root, text = '';
+    if (kind === 'label') {
+      area = hero;
+      const main = hero?.querySelector('.cb-actions .cb-btn:not(.cb-btn-2)') || hero?.querySelector('.cb-actions .cb-btn, .cb-bar .cb-btn, .cb-bar-plain .cb-btn');
+      text = (main?.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!area || !text) return;
+    }
+    const el = doc.createElement('span');
+    el.className = `cbm-pointer cbm-pointer-${kind}`; el.setAttribute('aria-hidden', 'true');
+    if (text) el.textContent = text;
+    // The light sits inside the page, before the blocks, so it is drawn behind them.
+    if (kind === 'light') root.prepend(el); else doc.body.append(el);
+    undo.push(() => el.remove());
+    const CLICKABLE = 'a[href], button, input, select, textarea, label, summary, .cb-btn, [tabindex]';
+    let at = null, x = 0, y = 0, raf = 0;
+    const put = (px, py) => { el.style.setProperty('--px', `${px.toFixed(1)}px`); el.style.setProperty('--py', `${py.toFixed(1)}px`); };
+    // The dot trails behind: each frame it closes part of the gap, until it has caught up.
+    const trail = () => {
+      raf = 0;
+      if (!alive || !at) return;
+      x += (at[0] - x) * 0.24; y += (at[1] - y) * 0.24;
+      put(x, y);
+      if (Math.abs(at[0] - x) > 0.4 || Math.abs(at[1] - y) > 0.4) raf = clock.requestAnimationFrame(trail);
+    };
+    on(area, 'pointermove', (e) => {
+      if (e.pointerType && e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+      const first = !at;
+      at = [e.clientX, e.clientY];
+      if (first) { x = at[0]; y = at[1]; put(x, y); }
+      const over = e.target.closest?.(CLICKABLE);
+      if (kind === 'dot') el.classList.toggle('is-big', !!over);
+      if (kind === 'label') el.classList.toggle('is-on', !over && !e.target.closest?.('.cb-bar, .cb-bar-wrap'));
+      else el.classList.add('is-on');
+      if (kind === 'dot') { if (!raf) raf = clock.requestAnimationFrame(trail); return; }
+      if (raf) return;                           // one update a frame is plenty
+      raf = clock.requestAnimationFrame(() => { raf = 0; if (alive && at) put(at[0], at[1]); });
+    }, { passive: true });
+    on(area, 'pointerleave', () => { el.classList.remove('is-on', 'is-big'); at = null; });
+    undo.push(() => { clock.cancelAnimationFrame(raf); raf = 0; });
+  }
+  // A picture is shown toned down; a copy in full colour shows through a circle at the pointer.
+  // The copy is made the first time the pointer comes over the picture.
+  function revealColour(fig) {
+    const img = fig.querySelector(':scope > img');
+    // Product photos in an order list and gallery photos are left in full colour: people choose by them.
+    if (!img || fig.matches('.cb-order-pic, .cb-gallery > figure') || fig.closest(OWN_ENTRANCE) || fig.closest('.cb-story.is-live, .cb-car, .cb-mq, [data-scroll]') || fig.querySelector('video')) return;
+    const placed = win.getComputedStyle(fig).position === 'static';
+    if (placed) fig.style.position = 'relative';
+    fig.setAttribute('data-mr', '');
+    const veil = doc.createElement('span');
+    veil.className = 'cbm-rv'; veil.setAttribute('aria-hidden', 'true');
+    veil.append(doc.createElement('i'));
+    img.after(veil);
+    let copy = null, at = null, waiting = 0;
+    const fit = () => {
+      const cs = win.getComputedStyle(img);
+      Object.assign(veil.style, { left: `${img.offsetLeft}px`, top: `${img.offsetTop}px`, width: `${img.offsetWidth}px`, height: `${img.offsetHeight}px`, borderRadius: cs.borderRadius });
+      if (copy) Object.assign(copy.style, { objectFit: cs.objectFit, objectPosition: cs.objectPosition });
+    };
+    fit();
+    if ('ResizeObserver' in win) { const ro = new win.ResizeObserver(fit); ro.observe(img); undo.push(() => ro.disconnect()); }
+    on(img, 'load', fit);
+    on(fig, 'pointerenter', () => {
+      if (copy) return;
+      copy = img.cloneNode(false);
+      copy.alt = ''; copy.removeAttribute('fetchpriority'); copy.removeAttribute('data-cb-img'); copy.removeAttribute('class');
+      veil.append(copy); fit();
+    });
+    on(fig, 'pointermove', (e) => {
+      at = [e.clientX, e.clientY];
+      if (waiting) return;
+      waiting = clock.requestAnimationFrame(() => {
+        waiting = 0;
+        if (!alive || !at) return;
+        const r = veil.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        veil.style.setProperty('--rx', `${(at[0] - r.left).toFixed(0)}px`);
+        veil.style.setProperty('--ry', `${(at[1] - r.top).toFixed(0)}px`);
+        veil.style.setProperty('--rr', `${Math.round(clamp(Math.min(r.width, r.height) * 0.42, 70, 240))}px`);
+      });
+    }, { passive: true });
+    on(fig, 'pointerleave', () => { at = null; veil.style.setProperty('--rr', '0px'); });
+    undo.push(() => { clock.cancelAnimationFrame(waiting); veil.remove(); fig.removeAttribute('data-mr'); if (placed) fig.style.removeProperty('position'); });
   }
   // The list that changes its photo keeps the last one pointed at.
   for (const list of root.querySelectorAll('.cb-show-switch')) {

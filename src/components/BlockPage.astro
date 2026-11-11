@@ -39,7 +39,9 @@ const html = renderPage({ ...page, blocks }, {
   {/* Tell the stylesheet a script is on its way. Until it says so nothing on the page moves by
       itself (there would be no Pause button), and things that will arrive on scroll don't flash
       first. If the script never starts, the page goes back to plain and still within 3s. */}
-  <script is:inline data-astro-rerun>document.documentElement.classList.add('cbm-js');setTimeout(function(){if(!window.__cbm)document.documentElement.classList.remove('cbm-js')},3000)</script>
+  {/* The same for the booking bar and the order list (cba-js): they show from the first paint,
+      and if their script never starts, their plain buttons come back within 3s. */}
+  <script is:inline data-astro-rerun>document.documentElement.classList.add('cbm-js','cba-js');setTimeout(function(){if(!window.__cbm)document.documentElement.classList.remove('cbm-js');if(!window.__cba)document.documentElement.classList.remove('cba-js')},3000)</script>
   <Fragment set:html={html} />
 </Base>
 
@@ -47,6 +49,9 @@ const html = renderPage({ ...page, blocks }, {
   // Movement: things arriving on scroll, counting numbers, pointer effects and the Pause button.
   import { startPageMotion } from '../scripts/page-motion.js';
   startPageMotion();
+  // The booking bar in the opening and the order list. Not movement: it runs for everyone.
+  import { startPageActions } from '../scripts/page-actions.js';
+  startPageActions();
 
   // Block contact forms send without leaving the site and show the result in place.
   function bindBlockForms() {

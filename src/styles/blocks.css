@@ -954,3 +954,106 @@
 @media (hover:none) and (min-width:761px){.cb-row-pic{position:static;grid-column:2/-1;width:min(100%,17rem);translate:none;rotate:none;scale:1;opacity:1;box-shadow:none}}
 @media (prefers-reduced-motion:reduce){.cb-btn,.cb-faq-accordion summary::after{transition:none}}
 @media print{.cb-bg-accent,.cb-bg-dark,.cb-bg-tint{background:none;color:#000}.cb-actions,.cb-form{display:none}}
+
+/* ---- Photo that stays while the words scroll past (showcase "story") ------------------------
+   Laid out here as a plain list where each item shows its own photo: that is how it reads with
+   the script off, for less movement, on phones and in the editor. motion.css turns it into the
+   still frame beside the scrolling words once the page's script has marked it (.is-live). */
+.cb-show-story{display:block}
+.cb-show-story .cb-show-item{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:clamp(1rem,3vw,2.4rem);align-items:center;padding-block:clamp(1.2rem,2.6vw,2rem);border-top:1px solid var(--line-strong)}
+.cb-show-story .cb-show-item:last-child{border-bottom:1px solid var(--line-strong)}
+.cb-show-story .cb-show-item>.cb-show-body:first-child{grid-column:1/-1}
+.cb-story-frame{display:none}
+.cbp .cb-show-story .cb-show-name{font-size:clamp(1.45rem,2.8vw,2.2rem);line-height:1.12;letter-spacing:-.02em;overflow-wrap:anywhere}
+
+/* ---- Booking bar in the opening ---------------------------------------------------------------
+   It sits on the page's own colours wherever it is (over a photo, on a coloured panel), so its
+   words and fields always read. Without the page's script it is one plain button (.cb-bar-plain);
+   html.cba-js says the script is on its way, so the bar shows from the first paint. */
+.cb-bar-wrap{margin-top:1.3rem;max-width:40rem;text-align:left}
+.cb-actions+.cb-bar-wrap{margin-top:1rem}
+.cb-bar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.6rem;padding:.6rem;border-radius:calc(var(--cb-r) + .35rem);background:var(--bg-0);color:var(--cb-page-ink,#16181d);border:1px solid color-mix(in srgb,var(--cb-page-ink,#16181d) 16%,transparent);box-shadow:0 18px 40px -26px rgba(0,0,0,.45)}
+.cb-bar[hidden]{display:none}
+html.cba-js .cb-bar[hidden]{display:flex}
+html.cba-js .cb-bar-plain{display:none}
+.cb-bar-field{display:grid;gap:.2rem;flex:1 1 9.5rem;min-width:0}
+.cb-bar-people{flex:0 1 7.5rem}
+.cb-bar-field label{padding-left:.15rem;font-size:.78rem;font-weight:650;color:var(--cb-page-dim,#4a4d55)}
+.cb-bar input,.cb-bar select{width:100%;min-height:2.9rem;margin:0;padding:.5rem .7rem;font:inherit;font-size:1rem;color:var(--cb-page-ink,#16181d);background:color-mix(in srgb,var(--bg-0) 93%,var(--cb-page-ink,#16181d));border:1px solid color-mix(in srgb,var(--cb-page-ink,#16181d) 26%,transparent);border-radius:min(var(--cb-r),12px)}
+.cb-bar input:focus-visible,.cb-bar select:focus-visible{outline:3px solid var(--cb-page-accent,var(--accent));outline-offset:1px}
+.cbp .cb-bar .cb-btn{flex:1 1 11rem;background:var(--accent);color:var(--cb-on-accent,#fff);border-color:var(--accent)}
+.cb-bar-still .cb-btn{cursor:text}
+.cb-bar-plain,.cb-bar-only{margin:0}
+.cb-bar-status{margin:.6rem 0 0}
+.cb-bar-status:empty{display:none}
+.cb-bar-status a{color:inherit}
+/* After a press: the request as text, with a button to copy it. On the page's own colours, like the bar. */
+.cb-sent{display:grid;gap:.4rem;max-width:36rem;margin-top:.7rem;padding:.75rem;border-radius:calc(var(--cb-r) + .2rem);background:var(--bg-0);color:var(--cb-page-ink,#16181d);border:1px solid color-mix(in srgb,var(--cb-page-ink,#16181d) 18%,transparent);text-align:left}
+.cb-sent-label{font-size:.82rem;font-weight:650}
+.cb-sent-text{width:100%;font:inherit;font-size:.95rem;line-height:1.45;color:var(--cb-page-ink,#16181d);background:color-mix(in srgb,var(--bg-0) 93%,var(--cb-page-ink,#16181d));border:1px solid color-mix(in srgb,var(--cb-page-ink,#16181d) 26%,transparent);border-radius:min(var(--cb-r),12px);padding:.6rem .7rem;resize:vertical}
+.cb-sent-row{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin:0}
+.cbp .cb-sent .cb-sent-copy{background:transparent;color:var(--cb-page-ink,#16181d);border-color:currentColor}
+.cb-sent-done{font-size:.88rem;font-weight:600}
+.cb-bar-note{margin:.6rem 0 0;max-width:40rem}
+:is(.cb-hero--centred,.cb-hero--stage,.cb-hero--filmstrip,.cb-al-centre) .cb-bar-wrap{margin-inline:auto}
+:is(.cb-hero--centred,.cb-hero--stage,.cb-hero--filmstrip,.cb-al-centre) .cb-bar-note,:is(.cb-hero--centred,.cb-hero--stage,.cb-hero--filmstrip,.cb-al-centre) .cb-bar-plain{text-align:center}
+.cb-hero--photo-behind .cb-bar-note,.cb-inset .cb-bar-note,.cb-open .cb-bar-note{color:rgba(255,255,255,.88)}
+
+/* ---- Order list ---------------------------------------------------------------------------- */
+.cb-order{margin-top:clamp(1.4rem,3vw,2.2rem)}
+.cb-order-items{list-style:none;margin:0;padding:0}
+.cb-order-list{display:grid;border-top:1px solid var(--line-strong)}
+.cb-order-list .cb-order-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:.5rem clamp(.8rem,2vw,1.6rem);padding:1rem 0;border-bottom:1px solid var(--line-strong)}
+.cb-order-list .cb-order-price{grid-column:2}.cb-order-list .cb-order-step{grid-column:3}
+.cb-order-name{margin:0;font-size:1.12rem;line-height:1.3;overflow-wrap:anywhere}
+.cb-order-desc{margin-top:.25rem;color:var(--ink-dim);font-size:.95rem}
+.cb-order-desc p{margin:0}
+.cb-order-price{margin:0;font-weight:650;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;text-align:right}
+.cb-order-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,17.5rem),1fr));gap:clamp(1rem,2.4vw,1.6rem)}
+.cb-order-cards .cb-order-item{display:flex;flex-direction:column;gap:.6rem;padding:1rem;border:1px solid var(--line-strong);border-radius:var(--cb-r);overflow:hidden;background:color-mix(in srgb,var(--bg-0) 60%,transparent)}
+.cb-order-cards .cb-order-pic{margin:-1rem -1rem .2rem}
+.cb-order-pic img,.cb-order-pic .cb-pic-empty{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:0}
+.cb-order-pic img{display:block}
+.cb-order-cards .cb-order-body{flex:1}
+.cb-order-cards .cb-order-price{text-align:left}
+.cb-order-cards .cb-order-step{align-self:flex-start}
+.cb-order-step{display:inline-flex;align-items:center;gap:.3rem}
+.cb-order-step[hidden]{display:none}
+html.cba-js .cb-order-step[hidden]{display:inline-flex}
+.cb-order-step button{display:grid;place-items:center;width:2.75rem;height:2.75rem;padding:0;border-radius:50%;border:1.5px solid currentColor;background:transparent;color:inherit;font:600 1.25rem/1 var(--font-body,inherit);cursor:pointer}
+.cb-order-step button:disabled{opacity:.4;cursor:default}
+.cb-order-step button:focus-visible,.cb-order-who :is(input,textarea):focus-visible{outline:3px solid var(--cb-accent-text,var(--accent));outline-offset:2px}
+.cb-order-qty{min-width:2.2ch;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.cb-order-item.is-chosen .cb-order-step button.cb-order-more{background:var(--accent);color:var(--cb-on-accent,#fff);border-color:var(--accent)}
+.cb-order-foot{display:grid;gap:.8rem;max-width:36rem;margin-top:1.5rem}
+.cb-order-foot[hidden]{display:none}
+html.cba-js .cb-order-foot[hidden]{display:grid}
+html.cba-js .cb-order-plain{display:none}
+.cb-order-total{margin:0;font-size:1.15rem;font-weight:700}
+.cb-order-who{display:grid;gap:.35rem}
+.cb-order-who label{margin-top:.35rem;font-size:.88rem;font-weight:600}
+.cb-order-who input,.cb-order-who textarea{width:100%;font:inherit;font-size:1rem;color:var(--ink);background:color-mix(in srgb,var(--bg-0) 92%,var(--ink));border:1px solid var(--line-strong);border-radius:min(var(--cb-r),12px);padding:.7rem .85rem}
+.cb-bg-accent .cb-order-who :is(input,textarea),.cb-bg-dark .cb-order-who :is(input,textarea){background:rgba(255,255,255,.94);color:#16181d}
+.cb-order-go{display:flex;flex-wrap:wrap;gap:.75rem;margin:.3rem 0 0}
+.cb-order-pay[hidden]{display:none}
+.cb-order-send[aria-disabled=true]{opacity:.55;cursor:not-allowed;filter:none;transform:none}
+.cb-order-hint{margin:0}
+.cb-order-need{margin:.2rem 0 0}
+.cb-order-status{margin:0;font-weight:600}
+.cb-order-status:empty{display:none}
+.cb-order-plain{margin:1.3rem 0 0}
+.cb-order-note{margin:.9rem 0 0}
+.cb-order+.cb-small{margin-top:.6rem}
+.cb-al-centre .cb-order-foot{margin-inline:auto;text-align:left}
+@media (max-width:760px){
+  .cb-show-story .cb-show-item{grid-template-columns:minmax(0,1fr)}
+  .cb-order-list .cb-order-item{grid-template-columns:minmax(0,1fr) auto}
+  .cb-order-list .cb-order-body{grid-column:1/-1}
+  .cb-order-list .cb-order-price{grid-column:1;text-align:left}
+  .cb-order-list .cb-order-step{grid-column:2}
+}
+@media print{.cb-bar-wrap,.cb-order-foot,.cb-order-step,.cb-order-plain{display:none!important}}
+/* In the editor the bar's and the list's controls are pictures of themselves: a click on them goes
+   to the block underneath (a disabled control would swallow it), while the words in the buttons
+   stay clickable and editable. */
+[data-m-edit] :is(.cb-bar-still input,.cb-bar-still select,.cb-order-step button,.cb-order-step .cb-order-qty,.cb-order-who input,.cb-order-who textarea){pointer-events:none}

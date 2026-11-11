@@ -3,7 +3,7 @@
 // Everything a writer types is escaped. Rich text allows only paragraphs, **bold**, *italic*,
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
-import { normalisePage, BLOCK_TYPES, cleanHref, cleanHex, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM } from './schema.mjs';
+import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM } from './schema.mjs';
 import { professionalDetails, telHref } from '../professional.mjs';
 
 export * from './schema.mjs';
@@ -145,6 +145,7 @@ export function renderPage(rawPage, ctx = {}) {
     if (!b.data.heading) return false;
     if (b.type === 'posts') return C.editable || (C.posts || []).length > 0;
     if (b.type === 'form') return C.editable || !!formEndpointOf(C) || !!biz.email;
+    if (b.type === 'order') return C.editable || (b.data.items || []).some((x) => x.name);
     if (b.type === 'booking') return C.editable || !!bookingTarget(b.data.useSite !== false && !b.data.url ? biz.bookingUrl : b.data.url) || !!biz.phone || !!biz.email;
     return true;
   };
@@ -161,7 +162,7 @@ export function renderPage(rawPage, ctx = {}) {
 // The page's movement choices as data-m-* attributes; motion.css and page-motion.js read them.
 export function motionAttrs(m) {
   if (!m) return '';
-  return ['scroll', 'heading', 'buttons', 'pictures', 'opening', 'pace'].filter((k) => m[k] && Object.hasOwn(MOTION[k].options, m[k])).map((k) => ` data-m-${k}="${m[k]}"`).join('') + (m.count ? ' data-m-count' : '');
+  return ['scroll', 'heading', 'buttons', 'pictures', 'follow', 'pointer', 'opening', 'pace'].filter((k) => m[k] && Object.hasOwn(MOTION[k].options, m[k])).map((k) => ` data-m-${k}="${m[k]}"`).join('') + (m.count ? ' data-m-count' : '');
 }
 // Moving shapes behind a block. Pure decoration: empty elements that the stylesheet arranges and
 // animates in the page's own colours, hidden from screen readers.
@@ -325,7 +326,8 @@ R_.hero = (C, b) => {
   const ownHeading = v === 'marquee' || v === 'mask' || v === 'wordmark' || v === 'open';
   const head = ownHeading ? '' : `${K(C, b, d)}${heroHeading(C, b, d)}`;
   const intro = RT(C, b, 'intro', d.intro, 'cb-rich cb-lead');
-  const btns = BTNS(C, b, d.buttons);
+  // The booking bar, when there is one, always sits under the buttons, whatever the layout.
+  const btns = `${BTNS(C, b, d.buttons)}${heroBar(C, b, d)}`;
   const words = `${head}${intro}${btns}`;
   const details = d.details ? factsList(C, b, d, { cls: 'cb-facts cb-hero-facts' }) : '';
   const pic = (cls = 'cb-hero-pic') => (v === 'minimal' ? '' : `<figure class="${cls}">${d.video ? heroVideo(C, b, d, cls.includes('cb-hero-bg')) : P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`);
@@ -485,6 +487,96 @@ R_.hero = (C, b) => {
   }
   if (v === 'curtain') return `<div class="cb-curtain"><div class="cb-curtain-words"><div class="cb-hero-words">${words}${details}</div></div>${media ? pic('cb-hero-pic cb-curtain-pic') : ''}</div>`;
   return `<div class="cb-hero-words">${words}${details}</div>`; // minimal
+};
+
+// ---- the booking bar and the order list -------------------------------------------------------
+// Both only ever open something on the visitor's own device (the booking page, WhatsApp or their
+// email app) with the request written out; the page itself sends nothing. The page's script
+// (page-actions.js) adds the details as they are chosen. Without it, each is one plain button to
+// the same place. A booking bar with nowhere to send is left off the published page; an order
+// list with nowhere to send is shown as a plain price list.
+const MAIL_OK = /^[^\s@<>"'?&#%]+@[^\s@<>"'?&#%]+\.[^\s@<>"'?&#%]+$/;
+const mailOf = (C) => (MAIL_OK.test(C.biz.email || '') ? C.biz.email : '');
+const siteName = (C) => cleanLine(C.site?.name || C.site?.masthead || '', 80);
+export const waHref = (digits, text) => `https://wa.me/${digits}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
+export const mailHref = (to, subject, body) => `mailto:${to}?${[subject ? `subject=${encodeURIComponent(subject)}` : '', body ? `body=${encodeURIComponent(body)}` : ''].filter(Boolean).join('&')}`;
+const BAR_NOTE = {
+  page: 'Opens the booking page. Nothing is booked until you confirm there.',
+  whatsapp: 'Opens WhatsApp with your request written out. Nothing is sent until you press send.',
+  email: 'Opens your email with your request written out. Nothing is sent until you press send.',
+};
+const BAR_MISSING = {
+  page: 'Add your booking link in Site settings and this bar opens it.',
+  whatsapp: 'Add your WhatsApp number in this block’s settings and this bar opens WhatsApp.',
+  email: 'Add your email address in Site settings and this bar opens an email to you.',
+};
+// Where a booking bar sends people, or null when that is missing.
+export function barTarget(d, C) {
+  if (d.bar === 'page') { const t = C.biz?.bookingUrl ? bookingTarget(C.biz.bookingUrl) : null; return t ? { to: t.href, cal: t.kind === 'cal', plain: t.href } : null; }
+  if (d.bar === 'whatsapp') return d.barWhatsapp ? { to: d.barWhatsapp, plain: waHref(d.barWhatsapp, 'Hello, I would like to check availability.') } : null;
+  if (d.bar === 'email') { const to = mailOf(C); return to ? { to, plain: mailHref(to, 'Checking availability') } : null; }
+  return null;
+}
+function heroBar(C, b, d) {
+  const kind = choiceValue('hero', d, 'bar');
+  if (!BAR_NOTE[kind]) return '';
+  const t = barTarget({ ...d, bar: kind }, C);
+  const label = d.barButton || 'Check availability', uid = esc(b.id);
+  // What the bar asks for: a date, unless it opens a booking page that cannot be told one (only
+  // Cal.com can); how many people, only when the request is written out for WhatsApp or email.
+  const askDate = kind !== 'page' || !!t?.cal, askPeople = kind !== 'page' && d.barPeople;
+  const fields = (off) => (askDate ? `<div class="cb-bar-field"><label for="bd-${uid}">Date</label><input id="bd-${uid}" type="date"${off}></div>` : '')
+    + (askPeople ? `<div class="cb-bar-field cb-bar-people"><label for="bp-${uid}">People</label><select id="bp-${uid}"${off}>${Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}"${i === 1 ? ' selected' : ''}>${i + 1}</option>`).join('')}<option value="13">13 or more</option></select></div>` : '');
+  const note = `<p class="cb-small cb-bar-note">${BAR_NOTE[kind]}</p>`;
+  if (C.editable) {
+    const missing = t ? '' : `<p class="cb-note" data-cb-hint>${BAR_MISSING[kind]}</p>`;
+    const button = T(C, b, 'barButton', label, 'span', 'cb-btn');
+    return `<div class="cb-bar-wrap">${askDate || askPeople ? `<div class="cb-bar cb-bar-still">${fields(' disabled tabindex="-1"')}${button}</div>` : `<p class="cb-bar-only">${button}</p>`}${note}${missing}</div>`;
+  }
+  if (!t) return '';
+  const away = kind === 'whatsapp' ? ' target="_blank" rel="noopener"' : kind === 'page' ? ' rel="noopener"' : '';
+  const plain = `<a class="cb-btn" href="${esc(t.plain)}"${away}>${esc(label)}</a>`;
+  // A booking page that cannot be told a date is just its button.
+  if (!askDate && !askPeople) return `<div class="cb-bar-wrap"><p class="cb-bar-only">${plain}</p>${note}</div>`;
+  // Not a form: until the page's script takes it over, the button is a plain link to the same
+  // place, so a press before then still goes somewhere sensible.
+  return `<div class="cb-bar-wrap"><div class="cb-bar" role="group" aria-label="${esc(label)}" data-bar="${kind}" data-bar-to="${esc(t.to)}"${t.cal ? ' data-bar-cal' : ''} data-site="${esc(siteName(C))}" hidden>${fields('')}${plain.replace('class="cb-btn"', 'class="cb-btn cb-bar-go"')}</div><p class="cb-bar-plain">${plain}</p>${note}</div>`;
+}
+
+const ORDER_NOTE = {
+  whatsapp: 'Nothing is sent until you press send in WhatsApp. This is a request, not a payment.',
+  email: 'Nothing is sent until you press send in your email app. This is a request, not a payment.',
+};
+R_.order = (C, b) => {
+  const d = b.data, v = b.variant, uid = esc(b.id);
+  const send = choiceValue('order', d, 'send');
+  const to = send === 'whatsapp' ? d.whatsapp || '' : mailOf(C);
+  // Something with no name cannot be ordered, so it is left off the published list.
+  const items = (d.items || []).filter((x) => C.editable || x.name);
+  if (!items.length && !C.editable) return '';
+  const live = !C.editable && !!to;
+  const step = (x) => (C.editable
+    ? '<div class="cb-order-step" aria-hidden="true"><button type="button" disabled tabindex="-1">−</button><span class="cb-order-qty">0</span><button type="button" disabled tabindex="-1">+</button></div>'
+    : live ? `<div class="cb-order-step" hidden><button type="button" class="cb-order-less" aria-label="One fewer: ${esc(x.name)}">−</button><output class="cb-order-qty" aria-live="off" aria-label="How many: ${esc(x.name)}">0</output><button type="button" class="cb-order-more" aria-label="One more: ${esc(x.name)}">+</button></div>` : '');
+  const one = (x, i, w) => w(`${v === 'cards' && (x.picture || C.editable) ? `<figure class="cb-order-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}<div class="cb-order-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-order-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-order-desc')}</div>${T(C, b, `items.${i}.price`, x.price, 'p', 'cb-order-price')}${step(x)}`, 'li', 'cb-order-item');
+  const list = LIST(C, b, 'items', items, one, 'ul', `cb-order-items cb-order-${v}`);
+  const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
+  const small = `${to || C.editable ? `<p class="cb-small cb-order-note">${ORDER_NOTE[send]}</p>` : ''}${T(C, b, 'note', d.note, 'p', 'cb-small')}`;
+  const label = d.button || 'Send order';
+  const NAME_HINT = 'Needed, so they know whose order it is.';
+  if (C.editable) {
+    const missing = to ? '' : `<p class="cb-note" data-cb-hint>${send === 'whatsapp' ? 'Add your WhatsApp number in this block’s settings so people can send you their order.' : 'Add your email address in Site settings so people can send you their order.'}</p>`;
+    const foot = `<div class="cb-order-foot"><p class="cb-order-total">The total shows here as people choose.</p><div class="cb-order-who"><label>Your name</label><p class="cb-small cb-order-hint">${NAME_HINT}</p><input type="text" disabled tabindex="-1"><label>Notes (optional)</label><textarea rows="2" disabled tabindex="-1"></textarea></div><p class="cb-order-go">${T(C, b, 'button', label, 'span', 'cb-btn')}${BTN(C, b, 'pay', { label: d.pay?.label || 'Pay now', href: d.pay?.href || '' }, 'cb-btn cb-btn-2 cb-order-pay')}</p><p class="cb-note" data-cb-hint>Pay now appears after an order is written out, when it has a pay link.</p></div>`;
+    return `${head}<div class="cb-order">${list}${foot}${small}${missing}</div>`;
+  }
+  if (!live) return `${head}<div class="cb-order">${list}</div>${T(C, b, 'note', d.note, 'p', 'cb-small')}`;
+  const plain = send === 'whatsapp' ? waHref(to, 'Hello, I would like to place an order.') : mailHref(to, 'An order');
+  const away = send === 'whatsapp' ? ' target="_blank" rel="noopener"' : '';
+  const payHref = d.pay?.href ? resolveLink(d.pay.href, C) : '';
+  const pay = payHref ? `<a class="cb-btn cb-btn-2 cb-order-pay" href="${esc(payHref)}" rel="noopener" hidden>${esc(d.pay.label || 'Pay now')}</a>` : '';
+  // Send is a plain link to the same place until the page's script takes it over.
+  const foot = `<div class="cb-order-foot" hidden><p class="cb-order-total" role="status" aria-live="polite">Nothing chosen yet</p><div class="cb-order-who"><label for="on-${uid}">Your name</label><p class="cb-small cb-order-hint" id="oh-${uid}">${NAME_HINT}</p><input id="on-${uid}" class="cb-order-who-name" type="text" autocomplete="name" maxlength="80" aria-describedby="oh-${uid}"><label for="ot-${uid}">Notes (optional)</label><textarea id="ot-${uid}" class="cb-order-who-notes" rows="2" maxlength="600"></textarea></div><p class="cb-order-go"><a class="cb-btn cb-order-send" href="${esc(plain)}"${away} aria-disabled="true">${esc(label)}</a>${pay}</p><p class="cb-small cb-order-need">Choose at least one item</p><p class="cb-order-status" role="status" aria-live="polite"></p></div>`;
+  return `${head}<div class="cb-order" data-order="${send}" data-order-to="${esc(to)}" data-site="${esc(siteName(C))}">${list}${foot}<p class="cb-order-plain"><a class="cb-btn" href="${esc(plain)}"${away}>${esc(label)}</a></p>${small}</div>`;
 };
 
 R_.text = (C, b) => {
@@ -736,7 +828,7 @@ R_.marquee = (C, b) => {
   // screen and one more for the loop.
   const setWidth = v === 'tags' ? text.join('').length * 9 + text.length * 56 : text.join('').length * 44 + text.length * 116;
   const sets = clamp(Math.ceil(2800 / setWidth) + 1, 2, 80);
-  const dur = Math.round(clamp(chars * (v === 'tags' ? 0.28 : 0.5), 8, 90) * ({ s: 1.7, m: 1, l: 0.6 }[d.speed] || 1));
+  const dur = Math.round(clamp(chars * (v === 'tags' ? 0.28 : 0.5), 8, 90) * ({ s: 1.7, m: 1, l: 0.6 }[choiceValue('marquee', d, 'speed')] || 1));
   const set = (hidden) => `<span class="cb-mq-set"${hidden ? ' aria-hidden="true"' : ''}>${text.map((t) => `<span class="cb-mq-item">${esc(t)}</span>`).join('')}</span>`;
   const row = (second) => `<div class="cb-mq${second ? ' cb-mq-rev' : ''}" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${dur}s"><div class="cb-mq-track">${set(second)}${set(true).repeat(sets - 1)}</div></div>`;
   return v === 'double' ? row(false) + row(true) : row(false);
@@ -759,6 +851,15 @@ R_.showcase = (C, b) => {
     const sheets = items.map((x, i) => `<i style="--i:${i};--n:${n}${x.picture ? `;--cb-pic:${esc(cssUrl(imgSrc(C, x.picture.src)))}` : ''}"${x.picture ? ' class="has-pic"' : ''}></i>`).join('');
     return `${head}<div class="cb-layers"${C.editable ? '' : ' data-scroll="enter"'}><div class="cb-layers-stage" aria-hidden="true"><div class="cb-layers-stack">${sheets}</div></div>${LIST(C, b, 'items', items, one, 'div', 'cb-show cb-show-layers')}</div>`;
   }
+  if (b.variant === 'story') {
+    // On a wide screen one photo frame stays put beside the items as they scroll past, taking
+    // each item's photo as it reaches the middle of the screen. The frame holds copies, hidden
+    // from screen readers; each item keeps its own photo, which is what shows with the script off,
+    // for less movement, on phones and in the editor.
+    const shots = C.editable ? [] : items.map((x, i) => [x, i]).filter(([x]) => x.picture);
+    const frame = shots.length ? `<div class="cb-story-frame" aria-hidden="true">${shots.map(([x, i], k) => `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, x.picture.src))}" alt="" loading="lazy" decoding="async"${focusPos(x.picture) ? ` style="object-position:${focusPos(x.picture)}"` : ''}>`).join('')}</div>` : '';
+    return `${head}<div class="cb-story${frame ? ' has-frame' : ''}">${LIST(C, b, 'items', items, one, 'div', 'cb-show cb-show-story')}${frame}</div>`;
+  }
   if (b.variant === 'switch') return `${head}${LIST(C, b, 'items', items, (x, i, w) => focusable(C, x.picture, one(x, i, w)), 'div', 'cb-show cb-show-switch')}`;
   if (b.variant === 'plates') {
     // Round photos in a row. Each has its own colour; the page's script wipes the whole band to
@@ -778,7 +879,7 @@ function renderBlock(b, C) {
   const inner = R_[b.type](C, b);
   if (!inner && !C.editable) return '';
   const s = b.style;
-  const cls = `cb${b.id === C.heroId ? ' cb-opening' : ''} cb-t-${b.type} cb-${b.type}--${b.variant} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${b.data.size || 'm'}` : ''}`;
+  const cls = `cb${b.id === C.heroId ? ' cb-opening' : ''} cb-t-${b.type} cb-${b.type}--${b.variant} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${choiceValue('spacer', b.data, 'size')}` : ''}`;
   const backdrop = s.bg === 'picture' && b.data.backdrop ? `<img class="cb-backdrop" src="${esc(imgSrc(C, b.data.backdrop.src))}" alt="" loading="lazy"${ED(C, 'data-cb-img', `${b.id}:backdrop`)}>${credit(b.data.backdrop, 'cb-credit cb-backdrop-credit')}` : '';
   // The chosen backdrop moves behind the page's opening, and more quietly behind a coloured call to action.
   let moving = '';
