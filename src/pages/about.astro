@@ -11,14 +11,20 @@ import teaching from '../data/teaching.json';
 import { site } from '../lib/site';
 import { aboutDetails } from '../lib/about.mjs';
 import { professionalDetails } from '../lib/professional.mjs';
+import { withBase } from '../lib/withBase';
 const about = aboutDetails(profile, site, professionalDetails((site as any).professional));
+// Nothing has been written for this page yet: it then says one plain line and points to the
+// Contact page, instead of publishing a heading with nothing under it. No facts are made up.
+const aboutLists = [experience, qualifications, publications, conferences, awards, audits, teaching, (profile as any).memberships];
+const aboutEmpty = !about.credentials && !about.role && !about.tagline && !about.bio.length && !about.stats.length && !about.highlights.length
+  && aboutLists.every((l) => !Array.isArray(l) || l.length === 0);
 import BlockPage from '../components/BlockPage.astro';
 import { blockPage } from '../lib/pages/site-pages';
 // An About page built in Chapbook's page editor replaces this one.
 const built = blockPage('about');
 ---
 {built ? <BlockPage page={built} title="About" /> : (
-<Base title="About" description={about.tagline ? `${site.name} — ${about.tagline}` : `About ${site.name}`}>
+<Base title="About" description={about.tagline ? `${site.name}: ${about.tagline}` : `About ${site.name}`}>
 
   <!-- ========== header ========== -->
   <section class="section about-hero">
@@ -34,6 +40,7 @@ const built = blockPage('about');
         {about.credentials && <p class="creds" data-reveal data-delay="0.12">{about.credentials}</p>}
         {about.role && <p class="lead" data-reveal data-delay="0.18" style="margin-top:1.1rem">{about.role}</p>}
         {about.tagline && <p class="lead" data-reveal data-delay="0.2" style="margin-top:.5rem">{about.tagline}</p>}
+        {aboutEmpty && <p class="lead about-empty" data-reveal data-delay="0.18" style="margin-top:1.1rem">To find out more{about.name ? ` about ${about.name}` : ''}, please get in touch through the <a href={withBase('/contact/')}>Contact page</a>.</p>}
       </div>
     </div>
   </section>
@@ -242,6 +249,7 @@ const built = blockPage('about');
 <style>
   .about-hero { overflow: hidden; padding-bottom: 3rem; }
   .about-hero-grid { display: block; }
+  .about-empty a { color: var(--accent-text, var(--cyan)); text-decoration: underline; text-underline-offset: 0.18em; }
   .about-highlights { margin: 1.4rem 0 0; padding-left: 1.1rem; display: grid; gap: .35rem; }
   .creds {
     margin-top: 0.9rem;
