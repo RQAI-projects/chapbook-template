@@ -3,11 +3,16 @@ import Base from '../layouts/Base.astro';
 import profile from '../data/profile.json';
 import {withBase} from '../lib/withBase';
 import { site } from '../lib/site';
-import { professionalDetails, safeBookingUrl } from '../lib/professional.mjs';
+import { professionalDetails, safeBookingUrl, formAddress, telHref } from '../lib/professional.mjs';
+// The same business details the home page shows (Site settings): every one that is filled in
+// appears here, and an empty one leaves nothing behind.
 const professional = professionalDetails(site.professional);
 const email = professional.email || (profile.email !== 'you@example.com' ? profile.email : '');
-const endpoint = safeBookingUrl(site.contact.endpoint);
-const formEnabled = endpoint && !endpoint.includes('/your-id');
+const tel = telHref(professional);
+const hasDetails = !!(tel || email || professional.location || professional.hours);
+// The starter's example form address and an empty one both mean there is no form.
+const endpoint = formAddress(site.contact.endpoint);
+const formEnabled = !!endpoint;
 
 const icons: Record<string, string> = {
   linkedin: '<svg viewBox="0 0 24 24"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>',
@@ -33,10 +38,15 @@ const built = blockPage('contact');
       <div style="position:relative; z-index:1">
         <p class="eyebrow" data-reveal>Contact</p>
         <h1 class="display scrim-text" data-reveal data-delay="0.07" style="font-size:clamp(1.6rem,4vw,2.4rem); margin-top:0.3rem">Get in touch</h1>
-        <p class="lead" data-reveal data-delay="0.14" style="margin-top:0.55rem">
-          For enquiries, use the contact details below.
-        </p>
-        {email && <a class="contact-email" data-reveal data-delay="0.2" href={`mailto:${email}`}>{email}</a>}
+        {(hasDetails || professional.bookingUrl || formEnabled) && <p class="lead" data-reveal data-delay="0.14" style="margin-top:0.55rem">
+          {hasDetails || professional.bookingUrl ? 'For enquiries, use the contact details below.' : 'For enquiries, please send a message.'}
+        </p>}
+        {hasDetails && <dl class="contact-details" data-reveal data-delay="0.2">
+          {tel && <div><dt>Phone</dt><dd><a href={tel}>{professional.phone}</a></dd></div>}
+          {email && <div><dt>Email</dt><dd><a href={`mailto:${email}`}>{email}</a></dd></div>}
+          {professional.location && <div><dt>Address</dt><dd>{professional.location}</dd></div>}
+          {professional.hours && <div><dt>Opening hours</dt><dd>{professional.hours}</dd></div>}
+        </dl>}
         {professional.bookingUrl && <p><a class="pro-link" href={withBase('/appointments/')}>{professional.bookingLabel} ↗</a></p>}
         <div class="socials" data-reveal data-delay="0.26" style="margin-top:2rem">
           {safeBookingUrl(site.socials.linkedin) && <a href={safeBookingUrl(site.socials.linkedin)} aria-label="LinkedIn" target="_blank" rel="noopener" set:html={icons['linkedin']} />}
@@ -58,9 +68,9 @@ const built = blockPage('contact');
           <textarea id="message" name="message" rows="5" required></textarea>
         </div>
         <button class="btn btn-primary" type="submit" style="justify-self:start">Send message</button>
-        <p class="form-note">General enquiries only — please do not include patient-identifiable information.</p>
+        <p class="form-note">General enquiries only. Please do not include private or sensitive information.</p>
       </form>}
-      {!formEnabled && !email && !professional.bookingUrl && <p class="pro-empty">Contact details will appear here when they’re available.</p>}
+      {!formEnabled && !hasDetails && !professional.bookingUrl && <p class="pro-empty">Contact details will appear here when they’re available.</p>}
       <p class="contact-status" id="contactStatus" role="status" aria-live="polite" hidden></p>
     </div>
   </section>
@@ -75,13 +85,20 @@ const built = blockPage('contact');
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
     align-items: start;
   }
-  .contact-email {
-    display: inline-block; margin-top: 1.6rem;
-    font-family: var(--font-display); font-size: 1.1rem; color: var(--accent-text, var(--cyan));
-    border-bottom: 1px solid rgba(34, 211, 238, 0.4);
-    transition: text-shadow 0.25s;
+  .contact-details { display: grid; gap: 1.2rem; margin: 1.6rem 0 0; }
+  .contact-details dt {
+    font-family: var(--font-display); font-size: 0.74rem; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim);
   }
-  .contact-email:hover { text-shadow: 0 0 14px rgba(34, 211, 238, 0.6); }
+  .contact-details dd {
+    margin: 0.25rem 0 0; font-size: 1.1rem; line-height: 1.5; color: var(--ink);
+    white-space: pre-line; overflow-wrap: anywhere;
+  }
+  .contact-details a {
+    font-family: var(--font-display); color: var(--accent-text, var(--cyan));
+    border-bottom: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  }
+  .contact-details a:hover { border-bottom-color: currentColor; }
   .contact-form { display: grid; gap: 1.1rem; }
   .form-note { font-size: 0.78rem; color: var(--ink-faint); }
   .contact-status {
@@ -117,16 +134,16 @@ const built = blockPage('contact');
         });
         if (res.ok) {
           form.style.display = 'none';
-          status.textContent = 'Thank you — your message is on its way. I usually reply.';
+          status.textContent = 'Thank you. Your message is on its way.';
           status.classList.add('ok'); status.hidden = false;
         } else {
           const data = await res.json().catch(() => ({} as any));
-          const msg = data?.errors?.map((x: any) => x.message).join(', ') || 'Something went wrong — please email me directly.';
+          const msg = data?.errors?.map((x: any) => x.message).join(', ') || 'Something went wrong. Please email me directly.';
           status.textContent = msg; status.classList.add('err'); status.hidden = false;
           if (btn) { btn.disabled = false; btn.textContent = label || 'Send message'; }
         }
       } catch {
-        status.textContent = 'Network error — please email me directly.';
+        status.textContent = 'Network error. Please email me directly.';
         status.classList.add('err'); status.hidden = false;
         if (btn) { btn.disabled = false; btn.textContent = label || 'Send message'; }
       }
