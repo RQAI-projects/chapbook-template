@@ -68,3 +68,14 @@ test('Home keeps pictures at an https address', () => {
   const page = pageFromHome({ defaultTheme: 'clinic', professional: { heading: 'x', heroImage: { src: 'https://cdn.example.com/h.jpg', alt: 'Hero' } } }, 'clinic');
   assert.equal(page.blocks.find((b) => b.type === 'hero').data.picture.src, 'https://cdn.example.com/h.jpg');
 });
+
+test('starter wording and a repeated name are never carried into a converted Home page', () => {
+  const page = pageFromHome({ name: 'Harbour Bakery', masthead: 'Harbour Bakery', tagline: 'A line about your blog.', defaultTheme: 'shopfront', professional: { phone: '01202 555 123' } }, 'shopfront');
+  const hero = page.blocks.find((b) => b.type === 'hero');
+  assert.equal(hero.data.heading, 'Harbour Bakery');
+  assert.ok(!hero.data.kicker && !hero.data.intro);
+  assert.ok(!JSON.stringify(page).includes('your blog'));
+  // The owner's own words are kept.
+  const own = pageFromHome({ name: 'Sam Reed', masthead: 'Harbour Bakery', tagline: 'Bread baked every morning.', defaultTheme: 'shopfront' }, 'shopfront').blocks.find((b) => b.type === 'hero');
+  assert.equal(own.data.kicker, 'Sam Reed'); assert.equal(own.data.intro, 'Bread baked every morning.');
+});

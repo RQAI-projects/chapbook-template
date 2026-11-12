@@ -150,3 +150,8 @@ test('the small line above the main heading is left out when it only repeats the
   assert.ok(renderBusinessHome({ theme: 'shopfront', site: { name: 'Sam Reed', masthead: 'Harbour Bakery' } }).includes('<p class="pro-kicker">Sam Reed</p>'));
   assert.ok(renderBusinessHome({ theme: 'shopfront', site: { name: 'Harbour Bakery', masthead: 'Harbour Bakery', professional: { eyebrow: 'Poole Quay' } } }).includes('<p class="pro-kicker">Poole Quay</p>'));
 });
+
+test('starter wording is never drawn as the introduction', () => {
+  for (const t of BUSINESS_LAYOUTS) assert.ok(!renderBusinessHome({ theme: t, site: { name: 'N', masthead: 'M', tagline: 'A line about your blog.' } }).includes('your blog'), t);
+  assert.ok(renderBusinessHome({ theme: 'shopfront', site: { name: 'N', masthead: 'M', tagline: 'Bread baked every morning.' } }).includes('Bread baked every morning.'));
+});

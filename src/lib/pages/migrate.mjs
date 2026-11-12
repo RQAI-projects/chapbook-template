@@ -1,7 +1,7 @@
 // Turns a site's existing Home and About pages into block pages, so switching to the page editor
 // loses nothing. Used by Chapbook the first time a writer opens Home or About in the page editor;
 // nothing is saved until they press Save.
-import { professionalDetails } from '../professional.mjs';
+import { professionalDetails, ownText, sameText } from '../professional.mjs';
 import { designDetails, sectionOrder, defaultTitles, infoSitsInOpening, BUSINESS_LAYOUTS, SECTION_LABELS } from '../business/render.mjs';
 import { aboutDetails } from '../about.mjs';
 import { normalisePage, cleanText } from './schema.mjs';
@@ -30,8 +30,11 @@ export function pageFromHome(site = {}, theme = site.defaultTheme) {
   if (hasContact) buttons.push({ label: p.bookingUrl ? (raw.bookingLabel || BUTTON[theme] || 'Book now') : 'Get in touch', href: p.bookingUrl ? '@booking' : '/contact/' });
   if (p.paymentUrl) buttons.push({ label: p.paymentLabel || 'Pay online', href: p.paymentUrl });
   const heroVariant = HERO[theme] || (p.heroImage ? 'split' : 'minimal');
+  // Starter wording is never carried into the page, and the small line above the heading is
+  // left empty when it would only repeat the heading.
+  const heading = p.heading || site.masthead || site.name || '', kicker = p.eyebrow || site.name || '';
   blocks.push({ type: 'hero', role: 'hero', variant: heroVariant, data: strip({
-    kicker: p.eyebrow || site.name || '', heading: p.heading || site.masthead || site.name || '', intro: p.intro || site.tagline || '',
+    kicker: sameText(kicker, heading) ? '' : kicker, heading, intro: p.intro || ownText(site.tagline),
     picture: pic(p.heroImage), buttons, details: business && infoSitsInOpening(theme) && heroVariant !== 'panel' ? true : undefined,
   }) });
   for (const s of design.sections) {

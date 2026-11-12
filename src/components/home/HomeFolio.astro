@@ -1,7 +1,7 @@
 ---
 import {withBase} from '../../lib/withBase';
 import {site} from '../../lib/site';
-import {professionalDetails,contactHref} from '../../lib/professional.mjs';
+import {professionalDetails,contactHref,sameText} from '../../lib/professional.mjs';
 import {fmtDate} from '../../lib/home';
 const p=professionalDetails((site as any).professional);
 const {name,masthead,tagline,posts,postsHref,aboutHref}=Astro.props;
@@ -9,7 +9,7 @@ const cta=p.bookingUrl?withBase('/appointments/'):contactHref(p);
 ---
 <section class="pro-site folio">
   <section class="folio-opening">
-    <aside class="folio-margin"><span class="pro-kicker">{p.eyebrow||'Independent practice'}</span><p>{name}</p>{p.location&&<span>{p.location}</span>}<a href={aboutHref}>About & background ↗</a></aside>
+    <aside class="folio-margin"><span class="pro-kicker">{p.eyebrow||'Independent practice'}</span>{!sameText(name,p.heading||masthead)&&<p>{name}</p>}{p.location&&<span>{p.location}</span>}<a href={aboutHref}>About & background ↗</a></aside>
     <div class="folio-intro"><h1>{p.heading||masthead}</h1><p class="pro-intro">{p.intro||tagline}</p>{cta&&<a class="pro-link" href={cta}>{p.bookingUrl?p.bookingLabel:'Get in touch'} ↗</a>}</div>
   </section>
   {p.credentials.length>0&&<ul class="folio-credentials">{p.credentials.map(c=><li>{c}</li>)}</ul>}

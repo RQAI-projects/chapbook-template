@@ -1,7 +1,7 @@
 // Every business home page is produced here, from plain data. The same code runs in the site
 // build and in Chapbook's live preview, so what a writer sees is what gets published.
 // All values are escaped; empty details stay hidden; nothing is invented.
-import {professionalDetails,contactHref,telHref,bookingText,paymentHref,sameText} from '../professional.mjs';
+import {professionalDetails,contactHref,telHref,bookingText,paymentHref,sameText,ownText} from '../professional.mjs';
 
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const HEX=/^#[0-9a-fA-F]{6}$/;
@@ -160,7 +160,7 @@ export function renderBusinessHome({theme,site={},posts=[],aboutHref='/about/',p
  const fix=i=>i?{...i,src:resolveImage(i.src)}:i;
  const p={...p0,heroImage:fix(p0.heroImage),gallery:p0.gallery.map(fix),services:p0.services.map(s=>({...s,image:fix(s.image)}))};
  const onMap=Object.fromEntries(design.sections.map(s=>[s.id,s.on]));
- const c={p,raw,posts,name:site.name||'',masthead:site.masthead||site.name||'',tagline:site.tagline||'',aboutHref,postsHref,contactPage,tel:telHref(p),cta:p.bookingUrl?appointmentsHref:contactHref(p),on:id=>onMap[id]!==false};
+ const c={p,raw,posts,name:site.name||'',masthead:site.masthead||site.name||'',tagline:ownText(site.tagline),aboutHref,postsHref,contactPage,tel:telHref(p),cta:p.bookingUrl?appointmentsHref:contactHref(p),on:id=>onMap[id]!==false};
  const render=s=>{
   if(!s.on||!hasContent[s.id]?.(c))return '';
   const title=s.title||layout.t[s.id]||SECTION_LABELS[s.id];
