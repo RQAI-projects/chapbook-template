@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {safeBookingUrl,professionalDetails,contactHref,calBookingLink} from './professional.mjs';
+import {safeBookingUrl,professionalDetails,contactHref,calBookingLink,formAddress,ownText,sameText,titleLine,siteDescription} from './professional.mjs';
 test('booking links only accept HTTPS without embedded credentials',()=>{
  assert.equal(safeBookingUrl('javascript:alert(1)'),'');assert.equal(safeBookingUrl('https://user:secret@example.com'),'');
  assert.equal(safeBookingUrl('https://calendar.example.com/visit?type=first'),'https://calendar.example.com/visit?type=first');
@@ -23,4 +23,32 @@ test('only exact Cal.com event links can load the calendar embed',()=>{
 test('service booking links are sanitized independently and duration survives',()=>{
  const p=professionalDetails({services:[{name:'Facial',duration:'45 minutes',bookingUrl:'https://cal.com/studio/facial'},{name:'Invalid',bookingUrl:'javascript:alert(1)'}]});
  assert.equal(p.services[0].duration,'45 minutes');assert.equal(p.services[1].bookingUrl,'');
+});
+
+test('the starter form address and an empty one both mean no form',()=>{
+ for(const v of ['https://formspree.io/f/your-id','https://formspree.io/f/your-id/','','   ',null,undefined,'http://formspree.io/f/abc','javascript:alert(1)'])assert.equal(formAddress(v),'',String(v));
+ assert.equal(formAddress('https://formspree.io/f/xabcdwxy'),'https://formspree.io/f/xabcdwxy');
+});
+test('starter wording is treated as empty and real wording is kept',()=>{
+ assert.equal(ownText('A line about your blog.'),'');
+ assert.equal(ownText(' A sentence describing your blog — used for SEO and social cards. '),'');
+ assert.equal(ownText('Bread baked every morning.'),'Bread baked every morning.');
+ assert.equal(ownText(null),'');
+});
+test('a browser title says the name once',()=>{
+ assert.equal(titleLine('Harbour Bakery','Harbour Bakery'),'Harbour Bakery');
+ assert.equal(titleLine(' harbour  bakery ','Harbour Bakery'),'harbour  bakery');
+ assert.equal(titleLine('Contact','Harbour Bakery'),'Contact | Harbour Bakery');
+ assert.equal(titleLine('','Harbour Bakery'),'Harbour Bakery');
+ assert.equal(titleLine('Contact',''),'Contact');
+ assert.ok(!/[\u2013\u2014]/.test(titleLine('Notes','Sam Reed')));
+ assert.equal(sameText('',''),false);
+});
+test('the search description is never just the name or starter wording',()=>{
+ const d=siteDescription;
+ assert.equal(d({name:'Harbour Bakery',masthead:'Harbour Bakery',description:'Harbour Bakery',tagline:''}),'Welcome to the website of Harbour Bakery.');
+ assert.equal(d({name:'Harbour Bakery',masthead:'Harbour Bakery',description:'',tagline:'Bread baked every morning.'}),'Bread baked every morning.');
+ assert.equal(d({name:'Harbour Bakery',masthead:'Harbour Bakery',description:'A bakery on the quay.',tagline:'Bread baked every morning.'}),'A bakery on the quay.');
+ assert.equal(d({name:'Your Name',masthead:'Your Blog Name',description:'A sentence describing your blog — used for SEO and social cards.',tagline:'A line about your blog.'}),'Welcome to the website of Your Blog Name.');
+ assert.equal(d({}),'');assert.equal(d(null),'');
 });

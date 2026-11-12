@@ -6,6 +6,29 @@ const text=(v,max=500)=>typeof v==='string'?v.trim().slice(0,max):'';
 export function safeBookingUrl(value){
   try{const u=new URL(text(value,2048));return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch{return '';}
 }
+// Where a contact or sign-up form sends its messages. The starter's example address and an empty
+// value both mean "no form yet", so no form is published for them.
+export function formAddress(value){
+  const u=safeBookingUrl(value);return u&&!u.includes('/your-id')?u:'';
+}
+// Starter wording that older websites still carry in their settings. It is never published.
+const FILLER=new Set(['A line about your blog.','A sentence describing your blog — used for SEO and social cards.']);
+export function ownText(value){const s=typeof value==='string'?value.trim():'';return FILLER.has(s)?'':s;}
+// Two lines that say the same thing, whatever their capitals or spacing.
+export function sameText(a,b){const n=v=>String(v??'').replace(/\s+/g,' ').trim().toLowerCase();return !!n(a)&&n(a)===n(b);}
+// A browser title: "Page | Name". When both are the same the name is said once.
+export function titleLine(title,name){
+  const t=String(title??'').trim(),n=String(name??'').trim();
+  return !t?n:!n||sameText(t,n)?t:`${t} | ${n}`;
+}
+// The line search engines show under the website's name: the owner's own description, else the
+// tagline, else a plain sentence from the name. Never the name alone, and never starter wording.
+export function siteDescription(site){
+  const s=site&&typeof site==='object'?site:{};
+  const name=ownText(s.masthead)||ownText(s.name);
+  const real=v=>{const t=ownText(v);return t&&!sameText(t,s.masthead)&&!sameText(t,s.name)?t:'';};
+  return real(s.description)||real(s.tagline)||(name?`Welcome to the website of ${name}.`:'');
+}
 // Pictures live in the site's own repository (/site-images/…) or at a full https address.
 // `data:` images exist only in Chapbook's live preview, before the writer saves.
 export function safeImage(value,allowData=false){

@@ -1,4 +1,5 @@
 import siteData from '../data/site.json';
+import { formAddress, ownText, titleLine, siteDescription } from './professional.mjs';
 
 export interface SiteConfig {
   name: string;
@@ -49,19 +50,23 @@ export const site = {
   ...raw,
   name: textOf(raw.name),
   masthead: textOf(raw.masthead, textOf(raw.name)),
-  tagline: textOf(raw.tagline),
-  description: textOf(raw.description),
+  // Starter wording and the starter's example form address count as empty, so neither is published.
+  tagline: ownText(textOf(raw.tagline)),
+  description: ownText(textOf(raw.description)),
   url: textOf(raw.url),
   socials: objectOf(raw.socials),
-  newsletter: { endpoint: textOf(objectOf(raw.newsletter).endpoint) },
-  contact: { endpoint: textOf(objectOf(raw.contact).endpoint) },
+  newsletter: { endpoint: formAddress(objectOf(raw.newsletter).endpoint) },
+  contact: { endpoint: formAddress(objectOf(raw.contact).endpoint) },
   nav: Array.isArray(raw.nav) ? raw.nav.filter((n: any) => n && typeof n === 'object') : undefined,
   logo: logoOf(raw.logo),
   postBadges: ['icon', '3d', 'none'].includes(raw.postBadges) ? raw.postBadges : '3d',
 } as SiteConfig;
 
-/** Page <title>: "<title> — <name>" for sub-pages; pass no argument to use the masthead
- *  as the title segment ("<masthead> — <name>"). */
+/** Page <title>: "<title> | <name>" for sub-pages; pass no argument to use the masthead as the
+ *  title. When the title and the name are the same, it is shown once. */
 export function pageTitle(title?: string): string {
-  return title ? `${title} — ${site.name}` : `${site.masthead} — ${site.name}`;
+  return titleLine(title || site.masthead, site.name);
 }
+
+/** What search engines show for the website when a page has no description of its own. */
+export const siteSummary: string = siteDescription(site);
