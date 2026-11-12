@@ -139,3 +139,14 @@ test('secondary text stays readable, and odd colour values are refused', () => {
   assert.ok(contrast(c.dim, c.background) >= 4.5);
   assert.equal(designDetails({ background: ['#101010'] }).background, '');
 });
+
+test('the small line above the main heading is left out when it only repeats the heading', () => {
+  for (const t of BUSINESS_LAYOUTS) {
+    const twice = renderBusinessHome({ theme: t, site: { name: 'Harbour Bakery', masthead: 'Harbour Bakery', tagline: '', professional: { phone: '01202 555 123' } } });
+    assert.equal((twice.match(/Harbour Bakery/g) || []).length, 1, `${t} says the name more than once`);
+    assert.ok(twice.includes('<h1>Harbour Bakery</h1>'), t);
+  }
+  // A different line above the heading stays.
+  assert.ok(renderBusinessHome({ theme: 'shopfront', site: { name: 'Sam Reed', masthead: 'Harbour Bakery' } }).includes('<p class="pro-kicker">Sam Reed</p>'));
+  assert.ok(renderBusinessHome({ theme: 'shopfront', site: { name: 'Harbour Bakery', masthead: 'Harbour Bakery', professional: { eyebrow: 'Poole Quay' } } }).includes('<p class="pro-kicker">Poole Quay</p>'));
+});

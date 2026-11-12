@@ -107,6 +107,9 @@
 .cb-hero--minimal .cb-hero-h{font-size:clamp(2.6rem,7vw,6.2rem);max-width:18ch}
 .cb-hero--minimal .cb-hero-words{border-left:3px solid var(--accent);padding-left:clamp(1rem,3vw,2.5rem)}
 .cb-hero--minimal.cb-al-centre .cb-hero-words{border-left:0;padding-left:0}
+/* Published pages only: where a photo was never added, the words take the whole width and no room is kept for it. */
+.cb-wm-foot.cb-solo,.cb-bento-top.cb-solo,.cb-svc-feature>article.cb-solo{grid-template-columns:minmax(0,1fr)}
+.cb-bento-top.cb-solo .cb-bento-words{min-height:0}
 
 /* ---- Text ----------------------------------------------------------------------------- */
 .cb-side{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:clamp(1.5rem,5vw,5rem);align-items:start}

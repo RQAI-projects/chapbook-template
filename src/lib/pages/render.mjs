@@ -4,7 +4,7 @@
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
 import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM } from './schema.mjs';
-import { professionalDetails, telHref } from '../professional.mjs';
+import { professionalDetails, telHref, sameText } from '../professional.mjs';
 
 export * from './schema.mjs';
 
@@ -245,7 +245,9 @@ function LIST(C, b, key, items, each, tag = 'div', cls = '') {
   if (!body && !C.editable) return '';
   return `<${tag} class="${cls}"${ED(C, 'data-cb-list', `${b.id}:${key}`)}>${body}</${tag}>`;
 }
-const K = (C, b, d) => T(C, b, 'kicker', d.kicker, 'p', 'cb-kicker');
+// The small line above a heading. On the published page it is left out when it only repeats the
+// heading (a new website often starts with its name in both); the editor still shows it.
+const K = (C, b, d) => (!C.editable && sameText(d.kicker, d.heading) ? '' : T(C, b, 'kicker', d.kicker, 'p', 'cb-kicker'));
 const hTag = (C, b, tag = 'h2') => { if (b.id === C.h1Id && !C.h1Done) { C.h1Done = true; return 'h1'; } return tag; };
 function H(C, b, d, tag = 'h2', cls = 'cb-h', attrs = '') {
   return T(C, b, 'heading', d.heading, hTag(C, b, tag), cls, attrs);
@@ -319,8 +321,27 @@ const creditsOf = (list) => { const c = list.map((p) => credit(p)).filter(Boolea
 // The extra photos an opening layout really shows (the rest wait for a layout with room).
 const shownMore = (b, d) => (d.pictures || []).slice(0, HERO_PHOTO_ROOM[b.variant] || 0);
 
+// Openings built round a photo. On the published page one with no photo or film is drawn as its
+// words alone, so no room is kept for a picture that was never added. The editor is not touched:
+// it goes on showing the "Add a picture" prompt in the photo's place.
+const PHOTO_LED = ['split', 'photo-behind', 'stacked', 'blob', 'inset', 'open', 'orbit', 'collage', 'arch', 'curtain'];
+// Of those, the ones whose whole frame is shaped for the photo. Without one they take the plain
+// "words" frame instead of their own.
+const PHOTO_FRAMED = ['photo-behind', 'inset', 'open', 'curtain'];
+const heroBare = (C, b) => !C.editable && b.type === 'hero' && !b.data.picture && !b.data.video && !shownMore(b, b.data).length;
+// The class name an opening is drawn with.
+const heroFrame = (C, b) => (b.type === 'hero' && PHOTO_FRAMED.includes(b.variant) && heroBare(C, b) ? 'words' : b.variant);
+
 R_.hero = (C, b) => {
-  const d = b.data, v = b.variant;
+  let d = b.data;
+  const v = b.variant, bare = heroBare(C, b);
+  // The main photo is missing but others were added: on the published page the first of them
+  // takes its place, so the layout is not left with a hole in the middle.
+  if (!C.editable && !d.picture && !d.video && !bare) { const [first, ...rest] = shownMore(b, d); d = { ...d, picture: first, pictures: rest }; }
+  if (bare && PHOTO_LED.includes(v)) {
+    const inner = `${K(C, b, d)}${heroHeading(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-lead')}${BTNS(C, b, d.buttons)}${heroBar(C, b, d)}${d.details ? factsList(C, b, d, { cls: 'cb-facts cb-hero-facts' }) : ''}`;
+    return inner ? `<div class="cb-hero-words">${inner}</div>` : '';
+  }
   // Two openings draw the heading their own way, so the shared one must not be made for them
   // (making it would use up the page's one h1).
   const ownHeading = v === 'marquee' || v === 'mask' || v === 'wordmark' || v === 'open';
@@ -368,7 +389,7 @@ R_.hero = (C, b) => {
     // trimmed to an exact fit by the page's script; a long heading wraps like the Big type opening.
     const len = [...String(d.heading || '')].length;
     const fit = len && len <= 22 ? ` style="--fit:${clamp(160 / Math.max(len, 3), 6, 34).toFixed(2)}"` : '';
-    return `${K(C, b, d)}${H(C, b, d, 'h2', `cb-h cb-hero-h cb-wordmark${fit ? '' : ' cb-wordmark-long'}`, fit)}<div class="cb-wm-foot"><div class="cb-wm-words">${intro}${btns}${details}</div>${media ? pic('cb-hero-pic cb-wm-pic') : ''}</div>`;
+    return `${K(C, b, d)}${H(C, b, d, 'h2', `cb-h cb-hero-h cb-wordmark${fit ? '' : ' cb-wordmark-long'}`, fit)}<div class="cb-wm-foot${media ? '' : ' cb-solo'}"><div class="cb-wm-words">${intro}${btns}${details}</div>${media ? pic('cb-hero-pic cb-wm-pic') : ''}</div>`;
   }
   if (v === 'open') {
     // The name starts together in the middle; its two halves move to opposite corners as the
@@ -483,7 +504,7 @@ R_.hero = (C, b) => {
   if (v === 'bento') {
     const info = d.details ? factsList(C, b, d, { cls: 'cb-facts' }) : '';
     const tiles = `${more.length || C.editable ? morePics(C, b, d, 'cb-bento-more', 'cb-bento-tile cb-bento-pic') : ''}${info ? `<div class="cb-bento-tile cb-bento-info">${info}</div>` : ''}`;
-    return `<div class="cb-bento"><div class="cb-bento-top"><div class="cb-bento-tile cb-bento-words">${words}</div>${media ? `<figure class="cb-bento-tile cb-bento-pic cb-bento-main">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>` : ''}</div>${tiles ? `<div class="cb-bento-row">${tiles}</div>` : ''}</div>${creditsOf([d.picture, ...shownMore(b, d)])}`;
+    return `<div class="cb-bento"><div class="cb-bento-top${media ? '' : ' cb-solo'}"><div class="cb-bento-tile cb-bento-words">${words}</div>${media ? `<figure class="cb-bento-tile cb-bento-pic cb-bento-main">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>` : ''}</div>${tiles ? `<div class="cb-bento-row">${tiles}</div>` : ''}</div>${creditsOf([d.picture, ...shownMore(b, d)])}`;
   }
   if (v === 'curtain') return `<div class="cb-curtain"><div class="cb-curtain-words"><div class="cb-hero-words">${words}${details}</div></div>${media ? pic('cb-hero-pic cb-curtain-pic') : ''}</div>`;
   return `<div class="cb-hero-words">${words}${details}</div>`; // minimal
@@ -584,6 +605,8 @@ R_.text = (C, b) => {
   const head = `${K(C, b, d)}${H(C, b, d)}`;
   const body = `${RT(C, b, 'body', d.body)}${BTNS(C, b, d.buttons)}`;
   if (v === 'sidehead') return `<div class="cb-side"><div class="cb-side-head">${head}</div><div>${body}</div></div>`;
+  // With no picture, the published page gives the words the whole width.
+  if ((v === 'picture-left' || v === 'picture-right') && !d.picture && !C.editable) return `${head}${body}`;
   if (v === 'picture-left' || v === 'picture-right') return `<div class="cb-pic-text"><figure class="cb-pic-frame">${P(C, b, 'picture', d.picture)}</figure><div>${head}${body}</div></div>`;
   // Large words that go from faint to full colour as the reader scrolls past them.
   if (v === 'lit') return `${head}${RT(C, b, 'body', d.body, 'cb-rich cb-lit')}${BTNS(C, b, d.buttons)}`;
@@ -593,6 +616,9 @@ R_.text = (C, b) => {
 R_.image = (C, b) => {
   const d = b.data;
   const cap = T(C, b, 'caption', d.caption, 'span', 'cb-cap');
+  // A picture block with no picture is left off the published page (its caption, if one was
+  // written, still shows).
+  if (!d.picture && !C.editable) return cap ? `<figure class="cb-figure"><figcaption>${cap}</figcaption></figure>` : '';
   return `<figure class="cb-figure">${P(C, b, 'picture', d.picture, '', { credits: false })}${cap || credit(d.picture) ? `<figcaption>${cap}${credit(d.picture)}</figcaption>` : ''}</figure>`;
 };
 
@@ -601,6 +627,8 @@ R_.gallery = (C, b) => {
   const tile = (p, i) => (p.video
     ? `<video src="${esc(imgSrc(C, p.video))}" poster="${esc(imgSrc(C, p.src))}" controls playsinline preload="none" aria-label="${esc(p.alt || 'Video')}"${ED(C, 'data-cb-video', `${b.id}:pictures.${i}.video`)}></video>`
     : P(C, b, `pictures.${i}`, p, '', { credits: false }));
+  // A gallery with no photos and no words is left off the published page.
+  if (!pics.length && !d.heading && !d.intro && !C.editable) return '';
   const head = `<div class="cb-head">${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
   // A reel that rolls by itself. The copies that make the loop are hidden from screen readers.
   if (b.variant === 'reel' && !C.editable && pics.length > 1) {
@@ -647,7 +675,7 @@ R_.services = (C, b) => {
     return C.editable ? card : card.replace(/^<article/, '<article tabindex="0"');
   }, 'div', 'cb-svc cb-svc-flip');
   else if (v === 'board') list = LIST(C, b, 'items', items, (s, i, w) => w(`<div class="cb-menu-line">${name(s, i)}<i aria-hidden="true"></i>${price(s, i)}</div>${desc(s, i)}${time(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}`), 'div', 'cb-svc cb-svc-board');
-  else list = LIST(C, b, 'items', items, (s, i, w) => w(`<figure class="cb-svc-pic">${P(C, b, `items.${i}.picture`, s.picture)}</figure><div class="cb-feature-body">${name(s, i)}${desc(s, i)}<p class="cb-meta">${time(s, i)}${price(s, i)}</p>${offer(s, i)}${serviceLinks(C, b, i, s)}</div>`), 'div', 'cb-svc cb-svc-feature');
+  else list = LIST(C, b, 'items', items, (s, i, w) => w(`${s.picture || C.editable ? `<figure class="cb-svc-pic">${P(C, b, `items.${i}.picture`, s.picture)}</figure>` : ''}<div class="cb-feature-body">${name(s, i)}${desc(s, i)}<p class="cb-meta">${time(s, i)}${price(s, i)}</p>${offer(s, i)}${serviceLinks(C, b, i, s)}</div>`, 'article', s.picture || C.editable ? '' : 'cb-solo'), 'div', 'cb-svc cb-svc-feature');
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${list}`;
 };
 
@@ -879,11 +907,12 @@ function renderBlock(b, C) {
   const inner = R_[b.type](C, b);
   if (!inner && !C.editable) return '';
   const s = b.style;
-  const cls = `cb${b.id === C.heroId ? ' cb-opening' : ''} cb-t-${b.type} cb-${b.type}--${b.variant} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${choiceValue('spacer', b.data, 'size')}` : ''}`;
+  const frame = heroFrame(C, b);
+  const cls = `cb${b.id === C.heroId ? ' cb-opening' : ''} cb-t-${b.type} cb-${b.type}--${frame} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${choiceValue('spacer', b.data, 'size')}` : ''}`;
   const backdrop = s.bg === 'picture' && b.data.backdrop ? `<img class="cb-backdrop" src="${esc(imgSrc(C, b.data.backdrop.src))}" alt="" loading="lazy"${ED(C, 'data-cb-img', `${b.id}:backdrop`)}>${credit(b.data.backdrop, 'cb-credit cb-backdrop-credit')}` : '';
   // The chosen backdrop moves behind the page's opening, and more quietly behind a coloured call to action.
   let moving = '';
-  if (C.backdrop && b.id === C.heroId && !['photo-behind', 'inset', 'open'].includes(b.variant) && s.bg !== 'picture') moving = backdropHtml(C.backdrop);
+  if (C.backdrop && b.id === C.heroId && !['photo-behind', 'inset', 'open'].includes(frame) && s.bg !== 'picture') moving = backdropHtml(C.backdrop);
   else if (C.backdrop && b.type === 'cta' && ['accent', 'dark'].includes(s.bg)) moving = backdropHtml(C.backdrop, ' cbm-bd-echo');
   return `<section class="${cls}"${ED(C, 'data-cb-block', b.id)}>${backdrop}${moving}<div class="cb-in">${inner}</div></section>`;
 }

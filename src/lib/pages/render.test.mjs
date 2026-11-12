@@ -694,3 +694,75 @@ test('movement fixes: the flag comes back on a slow start, story photos stay des
   assert.match(css, /\.cbm-pointer\{position:fixed;left:0;top:0;pointer-events:none;opacity:0;/, 'pointer pieces rest hidden whatever the flag');
   assert.match(css, /\.cb:focus-within \[data-mr\]>img[^{]*\{filter:none\}/, 'full colour for the keyboard');
 });
+
+test('a published opening keeps no room for a photo that was never added; the editor still asks for one', () => {
+  const words = { kicker: 'Fresh daily', heading: 'Harbour Bakery', intro: 'Bread from seven.', buttons: [{ label: 'Find us', href: '/contact/' }] };
+  for (const variant of variantsOf('hero')) {
+    const pub = renderPage(page([{ type: 'hero', variant, data: words }]), { site });
+    // No empty frame, no stand-in, nothing shaped for a photo.
+    assert.ok(!/<figure[^>]*>\s*<\/figure>/.test(pub), `${variant} publishes an empty picture frame`);
+    for (const cls of ['cb-pic-empty', 'cb-hero-pic', 'cb-hero-bg', 'cb-hero-band', 'cb-blob-ring', 'cb-orbit', 'cb-collage', 'cb-arch-shape', 'cb-curtain"', 'cb-inset"', 'cb-open"']) assert.ok(!pub.includes(cls), `${variant} keeps ${cls} with no photo`);
+    // Only the opening with a details panel still has two columns: its words and its panel.
+    assert.equal(pub.includes('cb-hero-grid'), variant === 'panel', `${variant} keeps a column for a photo`);
+    for (const want of ['Harbour Bakery', 'Fresh daily', 'Bread from seven.', 'Find us']) assert.ok(pub.includes(want), `${variant} lost "${want}"`);
+    assert.equal((pub.match(/<h1/g) || []).length, 1, `${variant} must still have one h1`);
+    // The editor is unchanged: every layout with a place for a photo asks for one.
+    const ed = renderPage(page([{ type: 'hero', variant, data: words }]), { site, editable: true });
+    if (variant !== 'minimal') assert.ok(ed.includes('Add a picture'), `${variant} lost the editor's prompt`);
+    assert.ok(ed.includes(`cb-hero--${variant}`), `${variant} changed frame in the editor`);
+  }
+  // Layouts whose whole frame is shaped for the photo take the plain frame; the others keep theirs.
+  for (const variant of ['photo-behind', 'inset', 'open', 'curtain']) {
+    const pub = renderPage(page([{ type: 'hero', variant, data: words }]), { site });
+    assert.ok(pub.includes('cb-hero--words') && !pub.includes(`cb-hero--${variant}`), variant);
+  }
+  assert.ok(renderPage(page([{ type: 'hero', variant: 'split', data: words }]), { site }).includes('cb-hero--split'));
+  // With a photo nothing changes.
+  const withPic = renderPage(page([{ type: 'hero', variant: 'split', data: { ...words, picture: { src: '/site-images/a.jpg', alt: 'Loaves' } } }]), { site });
+  assert.ok(withPic.includes('cb-hero-grid') && withPic.includes('<figure class="cb-hero-pic"><img'));
+  const behind = renderPage(page([{ type: 'hero', variant: 'photo-behind', data: { ...words, picture: { src: '/site-images/a.jpg', alt: 'Loaves' } } }]), { site });
+  assert.ok(behind.includes('cb-hero--photo-behind') && behind.includes('cb-hero-bg'));
+  // An opening with nothing in it at all is left off the page.
+  assert.ok(!renderPage(page([{ type: 'hero', variant: 'split', data: {} }]), { site }).includes('<section'));
+});
+
+test('extra photos stand in for a missing main photo on the published page', () => {
+  const pics = [{ src: '/site-images/one.jpg', alt: 'One' }, { src: '/site-images/two.jpg', alt: 'Two' }];
+  for (const variant of ['orbit', 'collage', 'depth', 'blob', 'bento']) {
+    const pub = renderPage(page([{ type: 'hero', variant, data: { heading: 'Name', pictures: pics } }]), { site });
+    assert.ok(!/<figure[^>]*>\s*<\/figure>/.test(pub), `${variant} publishes an empty picture frame`);
+    assert.equal((pub.match(/one\.jpg/g) || []).length, 1, `${variant} shows the first extra photo once`);
+  }
+});
+
+test('other blocks keep no room for a missing picture either, and lose none of their words', () => {
+  const pub = (blocks) => renderPage(page(blocks), { site });
+  const text = pub([{ type: 'text', variant: 'picture-left', data: { heading: 'Our story', body: 'We bake.' } }]);
+  assert.ok(!text.includes('cb-pic-text') && !text.includes('<figure') && text.includes('Our story') && text.includes('We bake.'));
+  assert.ok(renderPage(page([{ type: 'text', variant: 'picture-left', data: { heading: 'Our story' } }]), { site, editable: true }).includes('Add a picture'));
+  assert.ok(!pub([{ type: 'image', variant: 'normal', data: {} }]).includes('<section'), 'an empty picture block is left off');
+  const cap = pub([{ type: 'image', variant: 'normal', data: { caption: 'The shop front' } }]);
+  assert.ok(cap.includes('The shop front') && !cap.includes('<img'));
+  assert.ok(!pub([{ type: 'gallery', variant: 'grid', data: {} }]).includes('<section'), 'an empty gallery is left off');
+  assert.ok(pub([{ type: 'gallery', variant: 'grid', data: { heading: 'In the shop' } }]).includes('In the shop'));
+  const feature = pub([{ type: 'services', variant: 'feature', data: { items: [{ name: 'Loaf', price: '£4' }, { name: 'Bun', price: '£3', picture: { src: '/site-images/bun.jpg', alt: 'A bun' } }] } }]);
+  assert.ok(!/<figure[^>]*>\s*<\/figure>/.test(feature) && feature.includes('<article class="cb-solo">') && feature.includes('bun.jpg') && feature.includes('Loaf'));
+});
+
+test('the small line above a heading is not published when it only repeats the heading', () => {
+  const same = [{ type: 'hero', variant: 'minimal', data: { kicker: 'Harbour Bakery', heading: 'Harbour  bakery' } }];
+  const pub = renderPage(page(same), { site });
+  assert.ok(!pub.includes('cb-kicker'));
+  assert.equal((pub.match(/Harbour/g) || []).length, 1);
+  // The editor still shows it, so it can be changed.
+  assert.ok(renderPage(page(same), { site, editable: true }).includes('cb-kicker'));
+  assert.ok(renderPage(page([{ type: 'hero', variant: 'minimal', data: { kicker: 'Poole Quay', heading: 'Harbour Bakery' } }]), { site }).includes('cb-kicker'));
+});
+
+test('the starter form address never becomes a form', () => {
+  for (const formEndpoint of ['https://formspree.io/f/your-id', '', undefined]) {
+    const html = renderPage(page([{ type: 'form', variant: 'normal', data: { heading: 'Write to us' } }]), { site, formEndpoint });
+    assert.ok(!html.includes('<form') && !html.includes('your-id') && html.includes('mailto:hello@harbour.example'));
+  }
+  assert.ok(renderPage(page([{ type: 'form', variant: 'normal', data: { heading: 'Write to us' } }]), { site, formEndpoint: 'https://formspree.io/f/xabcdwxy' }).includes('action="https://formspree.io/f/xabcdwxy"'));
+});

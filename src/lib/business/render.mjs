@@ -1,7 +1,7 @@
 // Every business home page is produced here, from plain data. The same code runs in the site
 // build and in Chapbook's live preview, so what a writer sees is what gets published.
 // All values are escaped; empty details stay hidden; nothing is invented.
-import {professionalDetails,contactHref,telHref,bookingText,paymentHref} from '../professional.mjs';
+import {professionalDetails,contactHref,telHref,bookingText,paymentHref,sameText} from '../professional.mjs';
 
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const HEX=/^#[0-9a-fA-F]{6}$/;
@@ -74,7 +74,10 @@ const heroPhoto=c=>c.p.heroImage?`<figure class="pro-hero-photo">${img(c.p.heroI
 const button=(c,text,cls='pro-button')=>c.cta?`<a class="${cls}" href="${esc(c.cta)}">${esc(text)}</a>`:'';
 const payAll=c=>c.p.paymentUrl?`<a class="pro-button pro-pay" href="${esc(c.p.paymentUrl)}">${esc(c.p.paymentLabel||'Pay online')}</a>`:'';
 const actions=(c,text,cls)=>{const a=button(c,text,cls),b=payAll(c);return a||b?`<div class="pro-actions">${a}${b}</div>`:'';};
-const head=c=>`<p class="pro-kicker">${esc(c.p.eyebrow||c.name)}</p><h1>${esc(c.p.heading||c.masthead)}</h1><p class="pro-intro">${esc(c.p.intro||c.tagline)}</p>`;
+// The small line above the main heading. Left out when it would only repeat the heading, as it
+// does on a new website whose name is also its title.
+const kicker=c=>{const k=c.p.eyebrow||c.name;return k&&!sameText(k,c.p.heading||c.masthead)?`<p class="pro-kicker">${esc(k)}</p>`:'';};
+const head=c=>`${kicker(c)}<h1>${esc(c.p.heading||c.masthead)}</h1><p class="pro-intro">${esc(c.p.intro||c.tagline)}</p>`;
 const infoOn=c=>c.on('info');
 const ct=x=>x?`<h2 class="pro-custom-title">${esc(x)}</h2>`:'';
 const contactLines=c=>`${c.tel?`<p><a href="${esc(c.tel)}">${esc(c.p.phone)}</a></p>`:''}${c.p.email?`<p><a href="mailto:${esc(encodeURIComponent(c.p.email))}">${esc(c.p.email)}</a></p>`:''}`;
@@ -97,7 +100,7 @@ const L={
   services:(c,t)=>`<section class="clinic-fees"><h2>${esc(t)}</h2><div role="list">${c.p.services.map(s=>`<article role="listitem"><div>${svcPhoto(s)}<h3>${esc(s.name)}</h3>${s.description?`<p>${esc(s.description)}</p>`:''}${serviceExtras(s)}</div><span>${esc(s.duration)}</span><b>${esc(s.price)}</b></article>`).join('')}</div></section>`,
   trust:(c,t)=>`<section class="clinic-trust"><h2>${esc(t)}</h2><ul>${items(c.p.credentials)}</ul></section>`,about:(c,t)=>`<p class="trade-about"><a class="pro-link" href="${esc(c.aboutHref)}">${esc(t)} ↗</a></p>`},
  pulse:{cls:'pulse-site',pair:['info','trust','pro-pair'],t:{photos:'In the studio',services:'Classes',story:'About the studio',about:'About the studio',trust:'Your coaches',news:'News'},
-  hero:c=>`<div class="pulse-opening"><p class="pro-kicker">${esc(c.p.eyebrow||c.name)}</p><h1>${esc(c.p.heading||c.masthead)}</h1><div class="pulse-lead"><p class="pro-intro">${esc(c.p.intro||c.tagline)}</p>${actions(c,wants(c,'Book a class')||'Get in touch')}</div></div>${heroPhoto(c)}`,
+  hero:c=>`<div class="pulse-opening">${kicker(c)}<h1>${esc(c.p.heading||c.masthead)}</h1><div class="pulse-lead"><p class="pro-intro">${esc(c.p.intro||c.tagline)}</p>${actions(c,wants(c,'Book a class')||'Get in touch')}</div></div>${heroPhoto(c)}`,
   services:(c,t)=>`<section class="pulse-classes"><h2>${esc(t)}</h2><div>${c.p.services.map(s=>`<article><span class="pulse-time">${esc(s.duration)}</span><div>${svcPhoto(s)}<h3>${esc(s.name)}</h3>${s.description?`<p>${esc(s.description)}</p>`:''}${serviceExtras(s)}</div><b>${esc(s.price)}</b>${s.bookingUrl?`<a class="pro-link" href="${esc(s.bookingUrl)}">Book ↗</a>`:'<span></span>'}</article>`).join('')}</div></section>`,
   info:(c,_t,custom)=>{const p=c.p;return p.hours||p.location||p.phone||p.email?`<section class="pulse-info">${custom?`<div>${ct(custom)}</div>`:''}${p.hours?`<div><h2>Open</h2><p class="pro-hours">${esc(p.hours)}</p></div>`:''}${p.location?`<div><h2>Find us</h2><p>${esc(p.location)}</p></div>`:''}${p.phone||p.email?`<div><h2>Get in touch</h2>${contactLines(c)}</div>`:''}</section>`:''},
   trust:(c,t)=>`<section class="pulse-info"><div><h2>${esc(t)}</h2>${lines(c.p.credentials)}</div></section>`,about:(c,t)=>`<p class="pulse-about"><a class="pro-link" href="${esc(c.aboutHref)}">${esc(t)} ↗</a></p>`},
@@ -126,7 +129,7 @@ const L={
   services:(c,t)=>`<section class="contour-treatments"><h2>${esc(t)}</h2>${serviceMenuHtml(c.p.services)}</section>`,
   trust:(c,t)=>`<section class="contour-profile"><h2>${esc(t)}</h2><div><ul>${items(c.p.credentials)}</ul></div></section>`,about:(c,t)=>`<p class="trade-about"><a class="pro-link" href="${esc(c.aboutHref)}">${esc(t)} ↗</a></p>`},
  cut:{cls:'cut',pair:['services','info','cut-body'],t:{photos:'Our work',services:'The menu',story:'Our story',about:'Meet the team',trust:'',news:'Notes & journal'},
-  hero:c=>{const p=c.p;return `<section class="cut-opening"><div class="cut-rail"><p class="pro-kicker">${esc(p.eyebrow||c.name)}</p>${p.location?`<span>${esc(p.location)}</span>`:''}</div><h1>${esc(p.heading||c.masthead)}</h1><div class="cut-intro"><p class="pro-intro">${esc(p.intro||c.tagline)}</p>${actions(c,`${wants(c,'Book a chair')||'Say hello'} ↗`)}</div></section>${heroPhoto(c)}`},
+  hero:c=>{const p=c.p;return `<section class="cut-opening"><div class="cut-rail">${kicker(c)}${p.location?`<span>${esc(p.location)}</span>`:''}</div><h1>${esc(p.heading||c.masthead)}</h1><div class="cut-intro"><p class="pro-intro">${esc(p.intro||c.tagline)}</p>${actions(c,`${wants(c,'Book a chair')||'Say hello'} ↗`)}</div></section>${heroPhoto(c)}`},
   services:(c,t)=>`<section><h2>${esc(t)}</h2>${serviceMenuHtml(c.p.services)}</section>`,
   info:(c,_t,custom)=>`<aside><h2>${esc(custom||'Find your chair.')}</h2>${c.p.hours?`<p class="pro-hours">${esc(c.p.hours)}</p>`:''}${c.p.location?`<p>${esc(c.p.location)}</p>`:''}${contactLines(c)}</aside>`,
   trust:(c,_t,custom)=>`<div class="pro-plain-list">${ct(custom)}${lines(c.p.credentials)}</div>`,about:(c,t)=>`<p class="trade-about"><a class="pro-link" href="${esc(c.aboutHref)}">${esc(t)} ↗</a></p>`},
@@ -136,7 +139,7 @@ const L={
   info:(c,_t,custom)=>`<section class="still-details"><div><h2>${esc(custom||'Find us')}</h2></div><div>${c.p.location?`<p>${esc(c.p.location)}</p>`:''}${c.p.hours?`<p class="pro-hours">${esc(c.p.hours)}</p>`:''}${contactLines(c)}</div></section>`,
   trust:(c,_t,custom)=>`<div class="pro-plain-list">${ct(custom)}${lines(c.p.credentials)}</div>`,about:(c,t)=>`<p class="trade-about"><a class="pro-link" href="${esc(c.aboutHref)}">${esc(t)} ↗</a></p>`},
  office:{cls:'office',t:{photos:'Recent work',services:'How I can help',story:'Experience & approach',about:'Experience & approach',trust:'Background',news:'Notes & journal'},
-  hero:c=>`<section class="office-opening"><div><p class="pro-kicker">${esc(c.p.eyebrow||c.name)}</p><h1>${esc(c.p.heading||c.masthead)}</h1></div><div class="office-brief"><p class="pro-intro">${esc(c.p.intro||c.tagline)}</p>${actions(c,`${wants(c,'Book a call')||'Discuss a project'} ↗`)}</div></section>${heroPhoto(c)}`,
+  hero:c=>`<section class="office-opening"><div>${kicker(c)}<h1>${esc(c.p.heading||c.masthead)}</h1></div><div class="office-brief"><p class="pro-intro">${esc(c.p.intro||c.tagline)}</p>${actions(c,`${wants(c,'Book a call')||'Discuss a project'} ↗`)}</div></section>${heroPhoto(c)}`,
   services:(c,t)=>`<section class="office-services"><aside><p class="pro-kicker">Scope of work</p><h2>${esc(t)}</h2></aside>${serviceMenuHtml(c.p.services)}</section>`,
   info:(c,_t,custom)=>`<section class="office-profile"><span class="pro-kicker">${esc(custom||'Where and when')}</span>${c.p.location?`<p>${esc(c.p.location)}</p>`:''}${c.p.hours?`<p class="pro-hours">${esc(c.p.hours)}</p>`:''}${contactLines(c)}</section>`,
   trust:(c,t)=>`<section class="office-profile"><span class="pro-kicker">${esc(t)}</span>${lines(c.p.credentials)}</section>`,about:(c,t)=>`<p class="trade-about"><a class="pro-link" href="${esc(c.aboutHref)}">${esc(t)} ↗</a></p>`},
