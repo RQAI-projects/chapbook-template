@@ -16,6 +16,6 @@
     { "href": "/contact/",     "label": "Contact" }
   ],
   "socials": { "linkedin": "", "instagram": "", "github": "" },
-  "newsletter": { "endpoint": "https://formspree.io/f/your-id" },
-  "contact": { "endpoint": "https://formspree.io/f/your-id" }
+  "newsletter": { "endpoint": "" },
+  "contact": { "endpoint": "" }
 }

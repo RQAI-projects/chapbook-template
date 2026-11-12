@@ -96,22 +96,25 @@ const asCard = (p: (typeof posts)[number]) => ({
 )}
 
 <!-- ================= EMAIL CAPTURE ================= -->
+{/* Shown only when the website has a real sign-up address: no address, no card. */}
+{newsletterEndpoint && (
 <section class="section subscribe" id="subscribe" data-reveal>
   <div class="orbs"><div class="orb orb-a" style="opacity:0.3"></div></div>
   <div class="container">
     <div class="subscribe-card" data-reveal="scale">
       <div class="subscribe-copy">
-        <h2 class="subscribe-title">New explainers, occasionally — by email</h2>
+        <h2 class="subscribe-title">New explainers, occasionally, by email</h2>
         <p class="subscribe-sub">No schedule, no noise. A note when something new goes up. Unsubscribe whenever.</p>
       </div>
-      {newsletterEndpoint && <form class="subscribe-form" method="POST" action={newsletterEndpoint}>
+      <form class="subscribe-form" method="POST" action={newsletterEndpoint}>
         <label class="visually-hidden" for="sub-email">Email address</label>
         <input id="sub-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com" />
         <button class="btn btn-primary" type="submit">Subscribe</button>
-      </form>}
+      </form>
     </div>
   </div>
 </section>
+)}
 
 <style>
   .hero { position: relative; min-height: calc(72vh - var(--header-h)); display: flex; align-items: center; overflow: hidden; }
