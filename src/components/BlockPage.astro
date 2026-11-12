@@ -34,6 +34,9 @@ const html = renderPage({ ...page, blocks }, {
   fallbackEmail: (profile as any).email && (profile as any).email !== 'you@example.com' ? (profile as any).email : '',
   href: (p: string) => withBase(p), postsHref: withBase('/posts/'),
 });
+// An About page whose blocks are all still empty would publish with nothing on it. It says one
+// plain line instead and points to the Contact page. Nothing about the business is made up.
+const blankAbout = page.slug === 'about' && !html.includes('<section');
 ---
 <Base title={title ?? page.title} description={description ?? (page.description || undefined)}>
   <slot />
@@ -44,6 +47,13 @@ const html = renderPage({ ...page, blocks }, {
       and if their script never starts, their plain buttons come back within 3s. */}
   <script is:inline data-astro-rerun>document.documentElement.classList.add('cbm-js','cba-js');setTimeout(function(){if(!window.__cbm)document.documentElement.classList.remove('cbm-js');if(!window.__cba)document.documentElement.classList.remove('cba-js')},3000)</script>
   <Fragment set:html={html} />
+  {blankAbout && (
+    <div class="cbp"><section class="cb cb-t-text cb-text--plain cb-bg-none cb-w-normal cb-sp-m cb-al-left"><div class="cb-in">
+      <p class="cb-kicker">About</p>
+      {site.name && <h1 class="cb-h">{site.name}</h1>}
+      <div class="cb-rich"><p>To find out more{site.name ? ` about ${site.name}` : ''}, please get in touch through the <a href={withBase('/contact/')}>Contact page</a>.</p></div>
+    </div></section></div>
+  )}
 </Base>
 
 <script>
