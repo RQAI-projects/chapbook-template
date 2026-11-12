@@ -4,7 +4,7 @@ import topics from '../data/topics.json';
 import themesRegistry from '../data/themes.json';
 import profile from '../data/profile.json';
 import {postCover} from '../lib/post-cover.mjs';
-import { site } from '../lib/site';
+import { site, siteSummary } from '../lib/site';
 import { safeBookingUrl } from '../lib/professional.mjs';
 import { withBase } from '../lib/withBase';
 import { getCollection } from 'astro:content';
@@ -154,7 +154,7 @@ const jsonLd = {
       '@id': `${site.url}/#website`,
       url: `${site.url}/`,
       name: site.masthead,
-      description: site.description,
+      description: siteSummary || undefined,
       inLanguage: 'en-GB',
       publisher: { '@id': `${site.url}/#person` },
     },
@@ -164,7 +164,7 @@ const jsonLd = {
       name: site.name,
       jobTitle: profile.role === 'What you do' ? undefined : (profile.role || undefined),
       url: `${site.url}/`,
-      description: profile.tagline === 'A short line about you and this blog.' ? site.description : profile.tagline,
+      description: profile.tagline === 'A short line about you and this blog.' ? (siteSummary || undefined) : profile.tagline,
       worksFor: { '@type': 'Organisation', name: profile.trust },
       ...(cleanSocials.length ? { sameAs: cleanSocials } : {}),
     },

@@ -4,7 +4,7 @@ import { withBase } from '../lib/withBase';
 // Dev-only reference gallery — the real browse-and-pick lives in the Helm composer.
 if (import.meta.env.PROD) return Astro.redirect(withBase('/'), 302);
 ---
-<Base title="Icon gallery" description="Browse the line-icon library — use any as a post glyph or inline.">
+<Base title="Icon gallery" description="Browse the line-icon library. Use any as a post glyph or inline.">
   <section class="section">
     <div class="container">
       <header class="ico-head" data-reveal>

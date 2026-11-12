@@ -36,7 +36,7 @@ const checks = [
   [home.includes('data-blog-theme="observatory"'), 'home uses site.defaultTheme'],
   [!home.includes('data-site-theme='), 'retired palette layer is absent'],
   [home.includes('ZZNEWS'), 'newsletter endpoint = site.newsletter'],
-  [writing.includes('— ZZNAME'), 'page title suffix = site.name'],
+  [writing.includes('| ZZNAME'), 'page title suffix = site.name'],
   [rss.includes('ZZMAST') || rss.includes('ZZNAME'), 'rss title from site'],
   [!home.includes('Bone Appetite'), 'no hardcoded masthead in home'],
   [!writing.includes('Inayat Panda'), 'no hardcoded name in page title'],

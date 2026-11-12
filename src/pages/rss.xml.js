@@ -1,6 +1,6 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
-import { site } from '../lib/site';
+import { pageTitle, siteSummary } from '../lib/site';
 import { withBase } from '../lib/withBase';
 
 export async function GET(context) {
@@ -13,8 +13,8 @@ export async function GET(context) {
   const channelSite = new URL(import.meta.env.BASE_URL || '/', context.site).href;
 
   return rss({
-    title: `${site.masthead} — ${site.name}`,
-    description: site.description,
+    title: pageTitle(),
+    description: siteSummary,
     site: channelSite,
     items: posts.map((post) => ({
       title: post.data.title,

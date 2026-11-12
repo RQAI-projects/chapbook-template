@@ -19,7 +19,7 @@ const { series } = Astro.props;
 const count = series.posts.length;
 const readMins = (entry: any) =>
   Math.max(1, Math.round((entry.body || '').split(/\s+/).filter(Boolean).length / 200));
-const desc = `A ${count}-part series — ${series.name}.`;
+const desc = `A ${count}-part series: ${series.name}.`;
 ---
 <Base title={series.name} description={desc} progress>
   <section class="section series-page">

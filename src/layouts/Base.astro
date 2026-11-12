@@ -8,7 +8,8 @@ import '../styles/headers.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import { ViewTransitions } from 'astro:transitions';
 import Icon from '../components/Icon.astro';
-import { site, pageTitle } from '../lib/site';
+import { site, pageTitle, siteSummary } from '../lib/site';
+import { getCollection } from 'astro:content';
 import { withBase } from '../lib/withBase';
 import { vocabFor } from '../lib/vocab';
 import { designCss } from '../lib/business/render.mjs';
@@ -45,7 +46,7 @@ interface Props {
 }
 const {
   title,
-  description = site.description,
+  description = siteSummary,
   progress = false,
   ogImage = '/og-default.png',
   ogType = 'website',
@@ -92,6 +93,8 @@ const navLabel = (n: { href: string; label: string; themeLabel?: boolean }): str
 const featureNavLabel = blogTheme === 'observatory' ? 'Observatory' : vocab.topicsLabel;
 const postsNavLabel = blogTheme === 'observatory' ? 'Posts' : vocab.postsTitle;
 const aboutNavLabel = blogTheme === 'observatory' ? 'About' : vocab.aboutLabel;
+// A website with nothing published in its posts has no feed worth offering in the footer.
+const hasPosts = (await getCollection('blog', ({ data }) => !data.draft)).length > 0;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const path = Astro.url.pathname.slice(basePath.length) || '/';
 const isCurrent = (href: string) => {
@@ -156,7 +159,7 @@ const isCurrent = (href: string) => {
         <span>© {new Date().getFullYear()} {site.name}</span>
         <nav aria-label="Footer">
           {nav.map((item) => <a href={withBase(item.href)}>{navLabel(item)}</a>)}
-          <a href={withBase('/rss.xml')}>RSS</a>
+          {hasPosts && <a href={withBase('/rss.xml')}>RSS</a>}
         </nav>
         {socialLinks.length > 0 && (
           <div class="footer-socials">
