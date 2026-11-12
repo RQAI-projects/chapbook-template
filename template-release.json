@@ -1,7 +1,7 @@
 {
  "kind": "chapbook-template-release",
- "release": 5,
- "version": "2026.11.11.5",
+ "release": 6,
+ "version": "2026.11.12.6",
  "managed": [
   "astro.config.mjs",
   "package.json",
@@ -55,11 +55,11 @@
   "scripts/check-galaxy-data.mjs": "3ecbdb69c8202c374afdbf9b707022f73b3defcc",
   "scripts/check-gallery.mjs": "81c7c2328d774c41711ca4e24f924690207b58a3",
   "scripts/check-glyphs.mjs": "9b2bdc5589af7a4c50eefed859f77d955db4c533",
-  "scripts/check-site-config.mjs": "2cb8ca9e2e4c68915f08ec1cfdc7ba4b163d7aa6",
+  "scripts/check-site-config.mjs": "c4fb126c83903dc414ba72db1ae2d9186847e61d",
   "scripts/flip-scheduled.mjs": "e0d6d8b239d47dc9782c0643ec640b3e26d48ff3",
   "scripts/make-og-default.mjs": "d8602e05c295a5918f80ea2a8eae318c1e87f1b4",
-  "scripts/make-template-release.mjs": "9e69ed8145b6e6d820ecca8b0a7fcdb484ad9cd3",
-  "src/components/BlockPage.astro": "f4da275fa5d496b9f3c6017ace1d045aa1c44638",
+  "scripts/make-template-release.mjs": "ed211f421a33ace366f98b7a3b7f165491602bb4",
+  "src/components/BlockPage.astro": "4139fe17af22d0c79510041aeff10143b61a1568",
   "src/components/GalaxyHero.astro": "c4e918ee189f441636b42bb863d9a0b7f5e274ce",
   "src/components/GlenoidArt.astro": "009da8fa28c278e08e92ec4b25aa54a57d27058a",
   "src/components/GlyphBadge.astro": "249f4877bb539b51a779d774050006ecad06c80d",
@@ -76,7 +76,7 @@
   "src/components/home/HomeDesertArchive.astro": "11cd2fc8308c641924b4706f6939eea9561f13da",
   "src/components/home/HomeEssayCover.astro": "127ae305019a9fb4908fef7053fe45e2955fa10f",
   "src/components/home/HomeFieldAtlas.astro": "9900f6d0dfde9e9da95610ba23c3d9cfc1820e4d",
-  "src/components/home/HomeFolio.astro": "dff842b9cb0473b6ddbf7c49202f74e5117da35c",
+  "src/components/home/HomeFolio.astro": "5ed38c70160c3a0ec1af48c1a4aeab8378f40d94",
   "src/components/home/HomeFrontPage.astro": "a9031899911a4b960392bfe245393ed9fa57ad43",
   "src/components/home/HomeIndex.astro": "0a35c2a2e64981e15e3fc8af0c1c7d066a503efb",
   "src/components/home/HomeLightbox.astro": "7167cd98e3ca2e9d6d56b07e925860ef8f5cb5a0",
@@ -89,7 +89,7 @@
   "src/components/home/HomePinboard.astro": "e9e28f0372cdb2dad3dd40f51c85678b61b1b30a",
   "src/components/home/HomePixelQuest.astro": "943379507c8d8bae14d1ddb121ce7ac523409e6d",
   "src/components/home/HomePortrait.astro": "e5a64b072482b43fa7c6f19cc58da6ab665e6674",
-  "src/components/home/HomeRings.astro": "dfe9a3a73c8b18ce2efb4612c5ffedadf78666ec",
+  "src/components/home/HomeRings.astro": "fd62983d68bb55dd4dd1e55e2b00218f70537b91",
   "src/components/home/HomeSolo.astro": "6dc31b403dc0ae9b8dd4fe88be69bfba6f3b1cf5",
   "src/components/home/HomeWoodlandChronicle.astro": "270647c5248a51ffda087862d080b530c393765d",
   "src/components/professional/PracticeNotes.astro": "54b1ddf86658dfae8ea77f318a8ee4bfc44249c9",
@@ -98,9 +98,9 @@
   "src/data/emoji-glyphs.json": "fbce9d599689947db66706c8c88668a38b43bfe5",
   "src/data/themes.json": "947f1a1a32aa15dbd88851f89c2a41bfb5723f79",
   "src/env.d.ts": "9bc5cb41c24efc40c0c90abe23ec56c974f16a6c",
-  "src/layouts/Base.astro": "fce50e1b1b14f9e8b9f69678952785f8aff56a0a",
+  "src/layouts/Base.astro": "cdacb363557dc5474bff12363a32a6b43b129685",
   "src/lib/about.mjs": "0d821ea5a95b6f94f4bf7e94ecc036f62a3108db",
-  "src/lib/business/render.mjs": "1fa2311b8c256a010f576db2441b40be1c016971",
+  "src/lib/business/render.mjs": "a56ec384025e400dc5b969ec338d0481fde855a3",
   "src/lib/darkroom-build.mjs": "26ee8db086a11b56997528f06226139e1ece494c",
   "src/lib/darkroom.mjs": "3bf674d05968d33fe990583d3ba5c83dc96f9c6a",
   "src/lib/galaxy/bodies.js": "66dca81c6fba00cb51271193ae951b8f2da0ac50",
@@ -126,34 +126,34 @@
   "src/lib/home.ts": "d38b76ecd1802d54d3c02618a96d8ca9eb1d9689",
   "src/lib/icons.js": "f5ea35a4a406e7d6892b1087ed35b133c568ec18",
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
-  "src/lib/pages/migrate.mjs": "9f5fe20140be5b8460a8ce0e28f619fa96a996ab",
-  "src/lib/pages/render.mjs": "6a2f3c4d4ab11b7b8dfe801ad2d00b76bb53f796",
+  "src/lib/pages/migrate.mjs": "ac3d603f17de28b7ee79a291ed39ba8b093ad0f5",
+  "src/lib/pages/render.mjs": "ccea8d00bb1e566561bfc52d8fbf59d77b9e1b72",
   "src/lib/pages/schema.mjs": "b1aeef84e54c1a118123863ee498ae069570dd51",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
-  "src/lib/professional.mjs": "f6228b9a5ceb15847a1e8599b87784b1af38f61c",
+  "src/lib/professional.mjs": "38243e7dfcb562107f1fafa511c950db37f23e9e",
   "src/lib/rehype-gallery.mjs": "bb610588d2865746a8911ff0d714fdaa4ee34d8b",
   "src/lib/series.ts": "2cd316b40f4a3a49204a571691408fcfde56ca72",
-  "src/lib/site.ts": "5236a3190b9bb581c7dff63a662468892cdd51cd",
+  "src/lib/site.ts": "30cdc341b44956eff77f89e32ab86c2a9f25c6d3",
   "src/lib/vocab.ts": "cc470586cbe72f4bcc79f8bf87a77dcc3324290d",
   "src/lib/withBase.ts": "5da4a7af1d196465f3b7194baedf162bf7aa0a2c",
   "src/pages/[slug].astro": "7e4cd3a68bbb60f98ab7e2ebe18a289be84a1578",
-  "src/pages/about.astro": "0d77c4bc602b14ec642a03960405b0b10a83a73d",
+  "src/pages/about.astro": "5a61371fa1bfc2e8346efcc386b1c0d96490ebf0",
   "src/pages/appointments.astro": "b2ac55fe8ffe23a6d89d01a496b46564c3f2bd44",
-  "src/pages/apps.astro": "33ec997033e78e054a72c21b5efbb9914f7b9852",
+  "src/pages/apps.astro": "acc07f1db783c9f62f80846dc3f84d95e21b554a",
   "src/pages/blog/[slug].astro": "5600a2f96a9aaec7867fcb51bb554bf4d5ce0013",
   "src/pages/blog/index.astro": "10f13a550ccedc8c9f87a0f34dae995a984d3fce",
   "src/pages/c/[topic].astro": "9487acc8c384f0cae5b4f7bc565d9ed49dbb0da6",
-  "src/pages/contact.astro": "251ef496cb504d404aa82037416aa6c96ba8fa7e",
+  "src/pages/contact.astro": "4c1c28a304fd76a289ec21096f9dc0ddd6a28d8d",
   "src/pages/darkroom.astro": "8569834bc618e09f3d5e76b1266230c40d16e8ac",
   "src/pages/glyph-preview.astro": "f2071ecee5be32769501e99ec9e0f5a4227116a6",
-  "src/pages/icons.astro": "de2c14964f6c511c10c11c7c49388fcdd9900f9d",
-  "src/pages/index.astro": "5643fa5502a9a592af147664a0bdf119a7da9c6a",
-  "src/pages/observatory.astro": "07091bc4017d0f82c8ff5af5c7659cf5909e3fe0",
+  "src/pages/icons.astro": "5de9aed68aea1a8211bec8fa88f42ae774043320",
+  "src/pages/index.astro": "03aee262cb1ef941e7bd85b0f40853f4bf889789",
+  "src/pages/observatory.astro": "a13a1966e903962c32145e3f7fde7bcbd242efe5",
   "src/pages/og/[slug].png.ts": "379b0960c60044bdcd9b5864e81f429e6d87bded",
-  "src/pages/posts/index.astro": "f5607fda208849a5e044de745e8b0062957a5eea",
-  "src/pages/rss.xml.js": "b12dadd32dc0281942605bdc9126bd3e1ec1ee05",
-  "src/pages/series/[slug].astro": "3bd872811786031f9e903d54a31b2bce6014200e",
+  "src/pages/posts/index.astro": "65e941cbe8432d085aa71e8ae14bab08cf76c980",
+  "src/pages/rss.xml.js": "7cb797ee77cb6a3e0bd923d759f2c356d9ab354f",
+  "src/pages/series/[slug].astro": "32ad82a38b70b6d7440c2fbb31a7089551d95dcd",
   "src/pages/writing/index.astro": "5d5130e01a218bf78e31bff1b708b8a811a97c94",
   "src/plugins/remark-base-path.mjs": "d7770814aa7a3eb5b048d68b29e66c40e1a4f7ba",
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
@@ -161,7 +161,7 @@
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
   "src/scripts/page-actions.js": "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9",
   "src/scripts/page-motion.js": "da63f3fb1c3bb2c5de9a064f8be0ae069cc0353d",
-  "src/styles/blocks.css": "bbda5192b66a93c2f8c64d3b1a347afa31494738",
+  "src/styles/blocks.css": "a6d4d3e28247433e07e5f630983e6b26b0a02a66",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
   "src/styles/global.css": "cfa4731cb5064fed7c6a09ac13b2dc697d828360",
   "src/styles/headers.css": "806c15e7948c6786dafeb2f11a1cd6d3c4b8ef62",
@@ -205,7 +205,19 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "scripts/make-template-release.mjs": [
+   "9e69ed8145b6e6d820ecca8b0a7fcdb484ad9cd3",
+   "402d0b115b4d2b9016116127526738cbab345ff3",
+   "22b69f9371e72fa6764363579725e6391354855e",
+   "08e919a5f3995b73fe2522d9c0314250723096d2",
+   "d701cf0abb517f4be962f2b214cd1be0270d8823"
+  ],
+  "src/pages/apps.astro": [
+   "33ec997033e78e054a72c21b5efbb9914f7b9852"
+  ],
   "src/components/BlockPage.astro": [
+   "09ede662e8cb4e2dd82a83b30b084cc8eccc64a0",
+   "f4da275fa5d496b9f3c6017ace1d045aa1c44638",
    "15a3c8f318aa003b2532d2a30fdee8d85786eabb",
    "15eec77c38e2932aba3b9c86a463a23f39bd4491",
    "2d6fe15db5862c1abbc93cfae28751fed5ebe95e",
@@ -214,7 +226,72 @@
    "a703234e7934d2ebc903b123b21a3da3db828c88",
    "23df6ebe76d35fe35c1d901c7239db4b9cf47875"
   ],
+  "src/components/home/HomeFolio.astro": [
+   "dff842b9cb0473b6ddbf7c49202f74e5117da35c",
+   "8e758748a8f00ff585f185c346c5eed4fbcbf140",
+   "5eeddd1000722b596fa2c96da98485a8787b9ff7"
+  ],
+  "src/lib/business/render.mjs": [
+   "f15bb306db99ea5e6a2a2c2836128d364afb9a99",
+   "1fa2311b8c256a010f576db2441b40be1c016971"
+  ],
+  "src/lib/pages/migrate.mjs": [
+   "9f5fe20140be5b8460a8ce0e28f619fa96a996ab",
+   "c729d7bf2cb2d216e9b036db420683a9faf93969"
+  ],
+  "src/pages/about.astro": [
+   "0d77c4bc602b14ec642a03960405b0b10a83a73d",
+   "98832107d09f6ddee836e5fbdb189a3335585097",
+   "f4397df9a2a9baf274713eb5c4aad21f8d9548b6"
+  ],
+  "scripts/check-site-config.mjs": [
+   "2cb8ca9e2e4c68915f08ec1cfdc7ba4b163d7aa6",
+   "9a4b3afdeaa3b3a05b04071191b70afa332a3857"
+  ],
+  "src/layouts/Base.astro": [
+   "fce50e1b1b14f9e8b9f69678952785f8aff56a0a",
+   "251178170e8c7fb3a69f3831c33fa8e6365ad715",
+   "b59b2de11d63fbbe28cea35b576df423c3168ddb",
+   "325bf5713b9bb2db60ae37b9343289aa6978bc80",
+   "8ca222c447d5ef519c0c1f8fc353076f2d5d06d9",
+   "cdcdb5e70cac0f21aa530491f90e94b4d831d154",
+   "564765752a8a2e31eb360104ad0d3551f221d396",
+   "4defff1ef386c08a1871f2f2dd3087139ce77a2f",
+   "8b7165ae94456e16b013f3e68bd3b4411b58b7f6"
+  ],
+  "src/pages/icons.astro": [
+   "de2c14964f6c511c10c11c7c49388fcdd9900f9d",
+   "b6eb8bc4201cca4307516bcefabd97b578cc8a7e"
+  ],
+  "src/pages/index.astro": [
+   "5643fa5502a9a592af147664a0bdf119a7da9c6a",
+   "f46417a2f4f5b80c50a7dd681771f8279edb258a",
+   "9fc550578f67a5e9914c287814941b39f12a4f08",
+   "c6b7e383843fdfb0fbc623406f9dd7dcabf6cd01",
+   "e1b565756dde71acc84587f5520abff9d607430b",
+   "d6c0d92933cfba538ebefc9c871f8f22d579369f",
+   "6268445d58c08849754dbb4ad724d967d504cd75"
+  ],
+  "src/pages/observatory.astro": [
+   "07091bc4017d0f82c8ff5af5c7659cf5909e3fe0",
+   "2af0851a8d106e224026ce3fc90cf23880c49caa"
+  ],
+  "src/pages/posts/index.astro": [
+   "f5607fda208849a5e044de745e8b0062957a5eea",
+   "22ae40cc07cec7ddd71548f4490c1b788a2a2bb0",
+   "d52608e4f662c1e2b3d7211bc9c40ef7b2f5c84c",
+   "af442d1ee848bed1c99bba947eaa32ee6322661a",
+   "f1d107c2fa6cfaf4ff03264788be82f26ab4cca4"
+  ],
+  "src/pages/rss.xml.js": [
+   "b12dadd32dc0281942605bdc9126bd3e1ec1ee05"
+  ],
+  "src/pages/series/[slug].astro": [
+   "3bd872811786031f9e903d54a31b2bce6014200e",
+   "666b77fc6f39669c1e4b99e2218dfb4de3761719"
+  ],
   "src/lib/pages/render.mjs": [
+   "6a2f3c4d4ab11b7b8dfe801ad2d00b76bb53f796",
    "2a206f7e52fa8119239ed085ac19119dc8574532",
    "4577ad0b4b22ccf624465560602a61e5a25931f5",
    "5241015c32487b88c735f86c6b5fcf815deb1854",
@@ -228,6 +305,46 @@
    "364e3e88c2c8a5e0d1efb9b0060b445f44fbb6de",
    "c7226998668f0fbee76774c9de823a6b4e21fcfe",
    "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
+  ],
+  "src/styles/blocks.css": [
+   "bbda5192b66a93c2f8c64d3b1a347afa31494738",
+   "2664205a1e9ef12614ee1c3d23926c45a0b518bc",
+   "b5684235ef4a8b5ace083d5ac8327bc30c2ce925",
+   "7fb75b1da8c1a4fa9b3a878f13cd9e23fd60915e",
+   "fc3cfff2344375066d775d34c6c348fe0fae711a",
+   "330a2f971987799c588773a96f8df7490e0a3c82",
+   "7f71c83646b2feddc1302723f25668e2815973cc",
+   "73800060ff4fd7b8589f8f4ed6380b513ef9b7bd",
+   "9d5b426ecd5a077cc33a564a1b1f5f5a261d6c0b",
+   "ff187c59345dd59f41167ab3a69c44b6fe7ee54e",
+   "e6e3545ade228836264fbb7a8d728d4c56af6d33",
+   "b925c4fe266a1b1500e87725082eec65c780aa43",
+   "7e8e31068b327653f58d71e88f2f3098597ec9ff",
+   "708fe7c01bba959fb46cdc695a801c6b9da0918f",
+   "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
+  ],
+  "src/pages/contact.astro": [
+   "251ef496cb504d404aa82037416aa6c96ba8fa7e",
+   "225fe16df4b9485737ec226432bfa867510c515b",
+   "47fb24e1fb23b5b52f4c153a6173059b01061406",
+   "59ee3d0f95418c09f6a3983643690c7fd0a9a2da"
+  ],
+  "src/components/home/HomeRings.astro": [
+   "dfe9a3a73c8b18ce2efb4612c5ffedadf78666ec",
+   "e5740ecec8d088bda61a3e3ea4317545e8a7ae5f"
+  ],
+  "src/lib/professional.mjs": [
+   "f6228b9a5ceb15847a1e8599b87784b1af38f61c",
+   "aa9f50c5bf4bf64fb0ee5ae0f3935f56ed51cd48"
+  ],
+  "src/lib/site.ts": [
+   "5236a3190b9bb581c7dff63a662468892cdd51cd",
+   "bb9624db071684345458e3d0e70d3590035e7d40",
+   "d5c68ef245b1a6ffbec5692863e85fa2e8dfaa40",
+   "349448c77564e1156836e41d1795587ff9eb8258",
+   "16e8168793aed22b6d4cd931981891cc7575ab24",
+   "c559a0ebae1d8d57a2748943214b59fbb2424217",
+   "32b20e2252b8b789a126560e578649d67c65c21e"
   ],
   "src/lib/pages/schema.mjs": [
    "ae25db08ed0f618bbacb0f5e06da4ded1b56a177",
@@ -246,56 +363,14 @@
    "767f7cd65f0a28cd93411313c13ff3d30b1d5fe5",
    "566e26987acbdb857612c6f4c799d0fc3f68e4e8"
   ],
-  "src/styles/blocks.css": [
-   "2664205a1e9ef12614ee1c3d23926c45a0b518bc",
-   "b5684235ef4a8b5ace083d5ac8327bc30c2ce925",
-   "7fb75b1da8c1a4fa9b3a878f13cd9e23fd60915e",
-   "fc3cfff2344375066d775d34c6c348fe0fae711a",
-   "330a2f971987799c588773a96f8df7490e0a3c82",
-   "7f71c83646b2feddc1302723f25668e2815973cc",
-   "73800060ff4fd7b8589f8f4ed6380b513ef9b7bd",
-   "9d5b426ecd5a077cc33a564a1b1f5f5a261d6c0b",
-   "ff187c59345dd59f41167ab3a69c44b6fe7ee54e",
-   "e6e3545ade228836264fbb7a8d728d4c56af6d33",
-   "b925c4fe266a1b1500e87725082eec65c780aa43",
-   "7e8e31068b327653f58d71e88f2f3098597ec9ff",
-   "708fe7c01bba959fb46cdc695a801c6b9da0918f",
-   "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
-  ],
   "src/styles/motion.css": [
    "822a12d2a7b78638fc9d0ac9d8171c049e036f9d",
    "c17df7e914bb0e00b20ccaf0fd1f3c69f6a63deb",
    "39694d6ce15fd38cbac605d8bd12957f63384bca",
    "2265dfb917491836edacb0257c1e384234ea28aa"
   ],
-  "scripts/make-template-release.mjs": [
-   "402d0b115b4d2b9016116127526738cbab345ff3",
-   "22b69f9371e72fa6764363579725e6391354855e",
-   "08e919a5f3995b73fe2522d9c0314250723096d2",
-   "d701cf0abb517f4be962f2b214cd1be0270d8823"
-  ],
-  "src/lib/pages/migrate.mjs": [
-   "c729d7bf2cb2d216e9b036db420683a9faf93969"
-  ],
   "src/lib/pages/site-pages.ts": [
    "52ca86a38a1dda27ade3583bcac3e3d8fa248c86"
-  ],
-  "src/pages/about.astro": [
-   "98832107d09f6ddee836e5fbdb189a3335585097",
-   "f4397df9a2a9baf274713eb5c4aad21f8d9548b6"
-  ],
-  "src/pages/contact.astro": [
-   "225fe16df4b9485737ec226432bfa867510c515b",
-   "47fb24e1fb23b5b52f4c153a6173059b01061406",
-   "59ee3d0f95418c09f6a3983643690c7fd0a9a2da"
-  ],
-  "src/pages/index.astro": [
-   "f46417a2f4f5b80c50a7dd681771f8279edb258a",
-   "9fc550578f67a5e9914c287814941b39f12a4f08",
-   "c6b7e383843fdfb0fbc623406f9dd7dcabf6cd01",
-   "e1b565756dde71acc84587f5520abff9d607430b",
-   "d6c0d92933cfba538ebefc9c871f8f22d579369f",
-   "6268445d58c08849754dbb4ad724d967d504cd75"
   ],
   "src/styles/global.css": [
    "22f067efcbea5ba35a71327bfca6f9be401b5848",
@@ -324,38 +399,13 @@
    "d20f46c90859552dd741ae0330b2e9207875092e",
    "b713e4119273821c1ee53df7626e35a7a10fca79"
   ],
-  "src/layouts/Base.astro": [
-   "251178170e8c7fb3a69f3831c33fa8e6365ad715",
-   "b59b2de11d63fbbe28cea35b576df423c3168ddb",
-   "325bf5713b9bb2db60ae37b9343289aa6978bc80",
-   "8ca222c447d5ef519c0c1f8fc353076f2d5d06d9",
-   "cdcdb5e70cac0f21aa530491f90e94b4d831d154",
-   "564765752a8a2e31eb360104ad0d3551f221d396",
-   "4defff1ef386c08a1871f2f2dd3087139ce77a2f",
-   "8b7165ae94456e16b013f3e68bd3b4411b58b7f6"
-  ],
   "src/lib/glyphs/presentation.js": [
    "af6abd55757b1ce5ae40c8e70352f7dba9b0e6c9",
    "2518347787558afa88efa85f5701b9e4e6dd5648"
   ],
-  "src/lib/site.ts": [
-   "bb9624db071684345458e3d0e70d3590035e7d40",
-   "d5c68ef245b1a6ffbec5692863e85fa2e8dfaa40",
-   "349448c77564e1156836e41d1795587ff9eb8258",
-   "16e8168793aed22b6d4cd931981891cc7575ab24",
-   "c559a0ebae1d8d57a2748943214b59fbb2424217",
-   "32b20e2252b8b789a126560e578649d67c65c21e"
-  ],
   "src/styles/professional.css": [
    "fbfebb1714b13979b9bee09df5c7a195f801353b",
    "52f9c6043b07cd7c95ab012214bd68d384240e15"
-  ],
-  "src/components/home/HomeFolio.astro": [
-   "8e758748a8f00ff585f185c346c5eed4fbcbf140",
-   "5eeddd1000722b596fa2c96da98485a8787b9ff7"
-  ],
-  "src/components/home/HomeRings.astro": [
-   "e5740ecec8d088bda61a3e3ea4317545e8a7ae5f"
   ],
   "src/components/professional/ServiceMenu.astro": [
    "dbb56c091111108e9004be578dc69d12d3cb7362"
@@ -367,9 +417,6 @@
    "6e88c6a4af5e9e29476db6321ff050da9a7f55dc",
    "1e92d279e921283aa6a844f53f108ff917f92c92",
    "9d30cb4bf9956d47c725acbabad1ec5d6d6f74b9"
-  ],
-  "src/lib/professional.mjs": [
-   "aa9f50c5bf4bf64fb0ee5ae0f3935f56ed51cd48"
   ],
   "src/lib/vocab.ts": [
    "28ca7c2fc48a949638e6876b7d5cf6185335bec1"
@@ -383,21 +430,6 @@
   ],
   "src/pages/c/[topic].astro": [
    "260413cd358cb2ee58bc13e9bfd96cb5b829c00e"
-  ],
-  "src/pages/icons.astro": [
-   "b6eb8bc4201cca4307516bcefabd97b578cc8a7e"
-  ],
-  "src/pages/observatory.astro": [
-   "2af0851a8d106e224026ce3fc90cf23880c49caa"
-  ],
-  "src/pages/posts/index.astro": [
-   "22ae40cc07cec7ddd71548f4490c1b788a2a2bb0",
-   "d52608e4f662c1e2b3d7211bc9c40ef7b2f5c84c",
-   "af442d1ee848bed1c99bba947eaa32ee6322661a",
-   "f1d107c2fa6cfaf4ff03264788be82f26ab4cca4"
-  ],
-  "src/pages/series/[slug].astro": [
-   "666b77fc6f39669c1e4b99e2218dfb4de3761719"
   ],
   "src/styles/themes.css": [
    "32c40c1dfd0e4257713fd687889b7fab6aba4d67",
@@ -464,9 +496,6 @@
   ],
   "src/lib/darkroom-build.mjs": [
    "c116042842a2708e8667f022a8dd9848be858905"
-  ],
-  "scripts/check-site-config.mjs": [
-   "9a4b3afdeaa3b3a05b04071191b70afa332a3857"
   ],
   "src/styles/themes/observatory.css": [
    "8b658063930f2023538c7945b74e5dad95822774",
