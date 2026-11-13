@@ -127,8 +127,8 @@
   "src/lib/icons.js": "f5ea35a4a406e7d6892b1087ed35b133c568ec18",
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
   "src/lib/pages/migrate.mjs": "ac3d603f17de28b7ee79a291ed39ba8b093ad0f5",
-  "src/lib/pages/render.mjs": "ccea8d00bb1e566561bfc52d8fbf59d77b9e1b72",
-  "src/lib/pages/schema.mjs": "b1aeef84e54c1a118123863ee498ae069570dd51",
+  "src/lib/pages/render.mjs": "038bc4787a5965d411dd526a26f62358d7f14fdb",
+  "src/lib/pages/schema.mjs": "207a3263a7a14c887c7542beec35a9233fae99f5",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
   "src/lib/professional.mjs": "38243e7dfcb562107f1fafa511c950db37f23e9e",
@@ -139,12 +139,12 @@
   "src/lib/withBase.ts": "5da4a7af1d196465f3b7194baedf162bf7aa0a2c",
   "src/pages/[slug].astro": "7e4cd3a68bbb60f98ab7e2ebe18a289be84a1578",
   "src/pages/about.astro": "5a61371fa1bfc2e8346efcc386b1c0d96490ebf0",
-  "src/pages/appointments.astro": "b2ac55fe8ffe23a6d89d01a496b46564c3f2bd44",
+  "src/pages/appointments.astro": "13e22d5a6026e60cb45b9f6650679411d5c73145",
   "src/pages/apps.astro": "acc07f1db783c9f62f80846dc3f84d95e21b554a",
   "src/pages/blog/[slug].astro": "5600a2f96a9aaec7867fcb51bb554bf4d5ce0013",
   "src/pages/blog/index.astro": "10f13a550ccedc8c9f87a0f34dae995a984d3fce",
   "src/pages/c/[topic].astro": "9487acc8c384f0cae5b4f7bc565d9ed49dbb0da6",
-  "src/pages/contact.astro": "4c1c28a304fd76a289ec21096f9dc0ddd6a28d8d",
+  "src/pages/contact.astro": "8d40d41385c946bcd5073de51a4ddb20f14de7aa",
   "src/pages/darkroom.astro": "8569834bc618e09f3d5e76b1266230c40d16e8ac",
   "src/pages/glyph-preview.astro": "f2071ecee5be32769501e99ec9e0f5a4227116a6",
   "src/pages/icons.astro": "5de9aed68aea1a8211bec8fa88f42ae774043320",
@@ -205,6 +205,46 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "src/lib/pages/render.mjs": [
+   "ccea8d00bb1e566561bfc52d8fbf59d77b9e1b72",
+   "6a2f3c4d4ab11b7b8dfe801ad2d00b76bb53f796",
+   "2a206f7e52fa8119239ed085ac19119dc8574532",
+   "4577ad0b4b22ccf624465560602a61e5a25931f5",
+   "5241015c32487b88c735f86c6b5fcf815deb1854",
+   "1d87933d1d6a069cbce622018f29a64868af5d0b",
+   "72f5cf087667ae7c3bdfd9373a2f84be5c5ea85c",
+   "0fd8ed5220b418acbefd890df24f645e067cb42b",
+   "e9457fe29130da278763d41668578941a1894592",
+   "1dbaa1c73ffd5cf2b2ea0b1e152e3064b6a65d09",
+   "d64ed1e939908ed31044aac2b2518a2c249173df",
+   "df3c0ce5432af9b1bf7178a7a974d815ee9f4ce4",
+   "364e3e88c2c8a5e0d1efb9b0060b445f44fbb6de",
+   "c7226998668f0fbee76774c9de823a6b4e21fcfe",
+   "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
+  ],
+  "src/lib/pages/schema.mjs": [
+   "b1aeef84e54c1a118123863ee498ae069570dd51",
+   "ae25db08ed0f618bbacb0f5e06da4ded1b56a177",
+   "1ad93de5bb569b50f1d6fb23d338ff92cd43033e",
+   "efa0ef27f058fe2af1a589e5c50bc8fcb00f1984",
+   "282ea8eba6ddce8be962ea390c5126876bb052ce",
+   "9cf88e37505e75695de46f6e869301cf431c590c",
+   "55b1df5a9a94d15062751a68e366b2059f1bf75a",
+   "df17499ea907e57d793de67a17eb8a8078f753b0",
+   "cf81fb63c6424ce2bedf5f8563fcc91fbbd782ca",
+   "09baab156a3a0a6a1e577eed8db8115618800402"
+  ],
+  "src/pages/appointments.astro": [
+   "b2ac55fe8ffe23a6d89d01a496b46564c3f2bd44",
+   "013d789f180b6f0491bd60d97b182f54244457df"
+  ],
+  "src/pages/contact.astro": [
+   "4c1c28a304fd76a289ec21096f9dc0ddd6a28d8d",
+   "251ef496cb504d404aa82037416aa6c96ba8fa7e",
+   "225fe16df4b9485737ec226432bfa867510c515b",
+   "47fb24e1fb23b5b52f4c153a6173059b01061406",
+   "59ee3d0f95418c09f6a3983643690c7fd0a9a2da"
+  ],
   "scripts/make-template-release.mjs": [
    "9e69ed8145b6e6d820ecca8b0a7fcdb484ad9cd3",
    "402d0b115b4d2b9016116127526738cbab345ff3",
@@ -290,22 +330,6 @@
    "3bd872811786031f9e903d54a31b2bce6014200e",
    "666b77fc6f39669c1e4b99e2218dfb4de3761719"
   ],
-  "src/lib/pages/render.mjs": [
-   "6a2f3c4d4ab11b7b8dfe801ad2d00b76bb53f796",
-   "2a206f7e52fa8119239ed085ac19119dc8574532",
-   "4577ad0b4b22ccf624465560602a61e5a25931f5",
-   "5241015c32487b88c735f86c6b5fcf815deb1854",
-   "1d87933d1d6a069cbce622018f29a64868af5d0b",
-   "72f5cf087667ae7c3bdfd9373a2f84be5c5ea85c",
-   "0fd8ed5220b418acbefd890df24f645e067cb42b",
-   "e9457fe29130da278763d41668578941a1894592",
-   "1dbaa1c73ffd5cf2b2ea0b1e152e3064b6a65d09",
-   "d64ed1e939908ed31044aac2b2518a2c249173df",
-   "df3c0ce5432af9b1bf7178a7a974d815ee9f4ce4",
-   "364e3e88c2c8a5e0d1efb9b0060b445f44fbb6de",
-   "c7226998668f0fbee76774c9de823a6b4e21fcfe",
-   "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
-  ],
   "src/styles/blocks.css": [
    "bbda5192b66a93c2f8c64d3b1a347afa31494738",
    "2664205a1e9ef12614ee1c3d23926c45a0b518bc",
@@ -323,12 +347,6 @@
    "708fe7c01bba959fb46cdc695a801c6b9da0918f",
    "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
   ],
-  "src/pages/contact.astro": [
-   "251ef496cb504d404aa82037416aa6c96ba8fa7e",
-   "225fe16df4b9485737ec226432bfa867510c515b",
-   "47fb24e1fb23b5b52f4c153a6173059b01061406",
-   "59ee3d0f95418c09f6a3983643690c7fd0a9a2da"
-  ],
   "src/components/home/HomeRings.astro": [
    "dfe9a3a73c8b18ce2efb4612c5ffedadf78666ec",
    "e5740ecec8d088bda61a3e3ea4317545e8a7ae5f"
@@ -345,17 +363,6 @@
    "16e8168793aed22b6d4cd931981891cc7575ab24",
    "c559a0ebae1d8d57a2748943214b59fbb2424217",
    "32b20e2252b8b789a126560e578649d67c65c21e"
-  ],
-  "src/lib/pages/schema.mjs": [
-   "ae25db08ed0f618bbacb0f5e06da4ded1b56a177",
-   "1ad93de5bb569b50f1d6fb23d338ff92cd43033e",
-   "efa0ef27f058fe2af1a589e5c50bc8fcb00f1984",
-   "282ea8eba6ddce8be962ea390c5126876bb052ce",
-   "9cf88e37505e75695de46f6e869301cf431c590c",
-   "55b1df5a9a94d15062751a68e366b2059f1bf75a",
-   "df17499ea907e57d793de67a17eb8a8078f753b0",
-   "cf81fb63c6424ce2bedf5f8563fcc91fbbd782ca",
-   "09baab156a3a0a6a1e577eed8db8115618800402"
   ],
   "src/scripts/page-motion.js": [
    "4840942f7962b029ec0caf4c7320980f5ab7234b",
@@ -420,9 +427,6 @@
   ],
   "src/lib/vocab.ts": [
    "28ca7c2fc48a949638e6876b7d5cf6185335bec1"
-  ],
-  "src/pages/appointments.astro": [
-   "013d789f180b6f0491bd60d97b182f54244457df"
   ],
   "src/pages/blog/[slug].astro": [
    "8747da0df2516983eee15f503d012c4fe872aa54",

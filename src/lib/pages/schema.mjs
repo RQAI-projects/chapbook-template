@@ -306,7 +306,7 @@ export const BLOCK_TYPES = {
     fields: { text: L(240, 'Notice', 'Add a short notice'), link: { kind: 'link', label: 'Link' } },
   },
   columns: {
-    label: 'Columns', hint: 'Two or three blocks side by side. They stack on phones.',
+    label: 'Columns', hint: 'Two or three sections side by side. They stack on phones.',
     variants: { 'half': 'Two equal', 'wide-left': 'Wider on the left', 'wide-right': 'Wider on the right', thirds: 'Three equal' },
     fields: { children: { kind: 'children', min: 2, max: 3, types: COLUMN_TYPES } },
   },

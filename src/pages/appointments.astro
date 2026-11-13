@@ -1,24 +1,27 @@
 ---
 import Base from '../layouts/Base.astro';
 import {site} from '../lib/site';
-import {professionalDetails,contactHref,calBookingLink} from '../lib/professional.mjs';
+import {professionalDetails,contactHref,calBookingLink,bookingText} from '../lib/professional.mjs';
 import ServiceMenu from '../components/professional/ServiceMenu.astro';
 import {vocabFor} from '../lib/vocab';
 const p=professionalDetails((site as any).professional);
 const href=contactHref(p),calLink=calBookingLink(p.bookingUrl);
 const vocab=vocabFor(site.defaultTheme);
+// The button's words: the owner's own, else the look's own ("Book a table", "Order"), so a bakery is
+// never told to "Book an appointment".
+const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appointments'?'Book an appointment':vocab.bookingNav);
 ---
-<Base title={vocab.bookingNav} description={`Appointments and contact details for ${site.name}.`}>
+<Base title={vocab.bookingNav} description={`Booking and contact details for ${site.name}.`}>
 <div class="pro-site appointment-page">
  <p class="pro-kicker">{site.name}</p><h1>{vocab.bookingTitle}</h1>
- <div class="appointment-layout"><section><h2>{p.bookingUrl?'Choose an appointment':'Arrange an appointment'}</h2>
- <p>{calLink?'Open the calendar below to see available times and book.':p.bookingUrl?'View available times and complete your booking with our booking service.':'Get in touch to ask about availability.'}</p>
- {calLink&&<><button class="pro-button booking-load" type="button" data-booking-link={calLink} aria-controls="booking-calendar">Open booking calendar</button><p class="appointment-note">Opening the calendar connects to Cal.com. Your booking details go directly to the booking service.</p></>}
- {href?<p><a class={calLink?'pro-link':'pro-button'} href={href}>{calLink?'Open booking in a separate page':p.bookingUrl?p.bookingLabel:'Contact us'} ↗</a></p>:<p class="pro-empty">Online booking is not available yet.</p>}
+ <div class="appointment-layout"><section><h2>{p.bookingUrl?'Choose a time':'Get in touch'}</h2>
+ <p>{calLink?'Open the calendar below to see available times and book.':p.bookingUrl?'See available times and book with our booking service.':'Get in touch to ask about availability.'}</p>
+ {calLink&&<><button class="pro-button booking-load" type="button" data-booking-link={calLink} aria-controls="booking-calendar">Show available times</button><p class="appointment-note">Opening the calendar connects to Cal.com. Your booking details go directly to the booking service.</p></>}
+ {href?<p><a class={calLink?'pro-link':'pro-button'} href={href}>{calLink?'Open booking in a separate page':p.bookingUrl?bookWords:'Contact us'} ↗</a></p>:<p class="pro-empty">Online booking is not available yet.</p>}
  {p.bookingUrl&&<p class="appointment-note">Availability, confirmation and any payment are managed by the booking service.</p>}
  </section><aside>{p.location&&<><h2>Where</h2><p>{p.location}</p></>}{p.hours&&<><h2>When</h2><p class="pro-hours">{p.hours}</p></>}{p.email&&<p><a href={'mailto:'+encodeURIComponent(p.email)}>{p.email}</a></p>}{p.phone&&<p><a href={'tel:'+p.phone.replace(/[^+\d]/g,'')}>{p.phone}</a></p>}</aside></div>
  {calLink&&<><p class="booking-status" role="status" aria-live="polite"></p><div id="booking-calendar" class="booking-embed" hidden></div></>}
- {p.services.length>0&&<section class="appointment-services"><h2>Services & appointments</h2><ServiceMenu services={p.services}/></section>}
+ {p.services.length>0&&<section class="appointment-services"><h2>What we offer</h2><ServiceMenu services={p.services}/></section>}
 </div>
 </Base>
 <script>

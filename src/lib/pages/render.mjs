@@ -528,7 +528,7 @@ const BAR_NOTE = {
 };
 const BAR_MISSING = {
   page: 'Add your booking link in Site settings and this bar opens it.',
-  whatsapp: 'Add your WhatsApp number in this block’s settings and this bar opens WhatsApp.',
+  whatsapp: 'Add your WhatsApp number in this section’s settings and this bar opens WhatsApp.',
   email: 'Add your email address in Site settings and this bar opens an email to you.',
 };
 // Where a booking bar sends people, or null when that is missing.
@@ -586,7 +586,7 @@ R_.order = (C, b) => {
   const label = d.button || 'Send order';
   const NAME_HINT = 'Needed, so they know whose order it is.';
   if (C.editable) {
-    const missing = to ? '' : `<p class="cb-note" data-cb-hint>${send === 'whatsapp' ? 'Add your WhatsApp number in this block’s settings so people can send you their order.' : 'Add your email address in Site settings so people can send you their order.'}</p>`;
+    const missing = to ? '' : `<p class="cb-note" data-cb-hint>${send === 'whatsapp' ? 'Add your WhatsApp number in this section’s settings so people can send you their order.' : 'Add your email address in Site settings so people can send you their order.'}</p>`;
     const foot = `<div class="cb-order-foot"><p class="cb-order-total">The total shows here as people choose.</p><div class="cb-order-who"><label>Your name</label><p class="cb-small cb-order-hint">${NAME_HINT}</p><input type="text" disabled tabindex="-1"><label>Notes (optional)</label><textarea rows="2" disabled tabindex="-1"></textarea></div><p class="cb-order-go">${T(C, b, 'button', label, 'span', 'cb-btn')}${BTN(C, b, 'pay', { label: d.pay?.label || 'Pay now', href: d.pay?.href || '' }, 'cb-btn cb-btn-2 cb-order-pay')}</p><p class="cb-note" data-cb-hint>Pay now appears after an order is written out, when it has a pay link.</p></div>`;
     return `${head}<div class="cb-order">${list}${foot}${small}${missing}</div>`;
   }
@@ -829,7 +829,7 @@ R_.booking = (C, b) => {
   const label = d.button || 'Book online';
   const note = T(C, b, 'note', d.note, 'p', 'cb-small');
   if (!t) {
-    if (C.editable) return `${head}<div class="cb-booking-hold" data-cb-hint><p>Add your booking link in Site settings, or paste one in this block’s settings. Cal.com is free and links to Gmail, Outlook or Apple calendars.</p></div>`;
+    if (C.editable) return `${head}<div class="cb-booking-hold" data-cb-hint><p>Add your booking link in Site settings, or paste one in this section’s settings. Cal.com is free and links to Gmail, Outlook or Apple calendars.</p></div>`;
     // No booking page yet: offer the phone or email instead, if there is one.
     const alt = C.biz.phone ? `<a class="cb-btn" href="${esc(telHref(C.biz))}">Call ${esc(C.biz.phone)}</a>` : C.biz.email ? `<a class="cb-btn" href="mailto:${esc(C.biz.email)}">Email to book</a>` : '';
     return alt ? `${head}<div class="cb-actions">${alt}</div>` : '';

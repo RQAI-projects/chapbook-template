@@ -3,12 +3,16 @@ import Base from '../layouts/Base.astro';
 import profile from '../data/profile.json';
 import {withBase} from '../lib/withBase';
 import { site } from '../lib/site';
-import { professionalDetails, safeBookingUrl, formAddress, telHref } from '../lib/professional.mjs';
+import { professionalDetails, safeBookingUrl, formAddress, telHref, bookingText } from '../lib/professional.mjs';
+import { vocabFor } from '../lib/vocab';
 // The same business details the home page shows (Site settings): every one that is filled in
 // appears here, and an empty one leaves nothing behind.
 const professional = professionalDetails(site.professional);
 const email = professional.email || (profile.email !== 'you@example.com' ? profile.email : '');
 const tel = telHref(professional);
+// The booking link's words: the owner's own, else the look's own ("Book a table", "Order").
+const bookNav = vocabFor(site.defaultTheme).bookingNav;
+const bookWords = bookingText(site.professional, bookNav === 'Appointments' ? 'Book an appointment' : bookNav);
 const hasDetails = !!(tel || email || professional.location || professional.hours);
 // The starter's example form address and an empty one both mean there is no form.
 const endpoint = formAddress(site.contact.endpoint);
@@ -25,7 +29,7 @@ import { blockPage } from '../lib/pages/site-pages';
 const built = blockPage('contact');
 ---
 {built ? <BlockPage page={built} title="Contact" /> : (
-<Base title="Contact" description={`Contact ${site.name} for enquiries and appointments.`}>
+<Base title="Contact" description={`How to get in touch with ${site.name}.`}>
 
   <section class="section contact-section">
     <div class="orbs">
@@ -47,7 +51,7 @@ const built = blockPage('contact');
           {professional.location && <div><dt>Address</dt><dd>{professional.location}</dd></div>}
           {professional.hours && <div><dt>Opening hours</dt><dd>{professional.hours}</dd></div>}
         </dl>}
-        {professional.bookingUrl && <p><a class="pro-link" href={withBase('/appointments/')}>{professional.bookingLabel} ↗</a></p>}
+        {professional.bookingUrl && <p><a class="pro-link" href={withBase('/appointments/')}>{bookWords} ↗</a></p>}
         <div class="socials" data-reveal data-delay="0.26" style="margin-top:2rem">
           {safeBookingUrl(site.socials.linkedin) && <a href={safeBookingUrl(site.socials.linkedin)} aria-label="LinkedIn" target="_blank" rel="noopener" set:html={icons['linkedin']} />}
           {safeBookingUrl(site.socials.instagram) && <a href={safeBookingUrl(site.socials.instagram)} aria-label="Instagram" target="_blank" rel="noopener" set:html={icons['instagram']} />}
