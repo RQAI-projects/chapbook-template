@@ -101,16 +101,19 @@ export function orderTotal(lines) {
   return { pence, sign: [...signs][0] || '', count, onRequest, priced, mixed: signs.size > 1 };
 }
 // A PayPal.me link with no amount in it (paypal.me/name) is given the order's total, so the
-// customer does not have to type it: paypal.me/name/19.50GBP. Only a single total in one currency
-// is filled in. With anything priced on request, or no total, the link stays as it was pasted,
-// and so does every other kind of pay link.
+// customer does not have to type it: paypal.me/name/19.50GBP. Only a single total in a currency
+// that is known for certain and that PayPal takes is filled in. A "$" or "¥" could be one of
+// several currencies, and a price with no currency could be anything, so with those, with
+// anything priced on request, or with no total, the link stays exactly as it was pasted, and so
+// does every other kind of pay link.
 const PAYPAL_ME = /^(https:\/\/(?:www\.)?(?:paypal\.me|paypal\.com\/paypalme))\/([A-Za-z0-9_.-]{1,40})\/?(\?[^#]*)?$/i;
-const PAYPAL_CODE = { '£': 'GBP', '€': 'EUR', '¥': 'JPY' };
+const PAYPAL_CODES = new Set(['AUD', 'BRL', 'CAD', 'CHF', 'CZK', 'DKK', 'EUR', 'GBP', 'HKD', 'HUF', 'ILS', 'JPY', 'MXN', 'MYR', 'NOK', 'NZD', 'PHP', 'PLN', 'SEK', 'SGD', 'THB', 'TWD', 'USD']);
 const WHOLE_ONLY = new Set(['JPY', 'HUF', 'TWD']);
 export function payWithTotal(href, t) {
   const m = PAYPAL_ME.exec(String(href || '').trim());
   if (!m || !t || t.mixed || t.onRequest || !t.priced || !(t.pence > 0)) return href;
-  const code = PAYPAL_CODE[t.sign] || (/^[A-Z]{3}$/.test(t.sign) ? t.sign : '');
+  const code = t.sign === '£' ? 'GBP' : t.sign === '€' ? 'EUR' : t.sign;
+  if (!PAYPAL_CODES.has(code)) return href;
   const amount = WHOLE_ONLY.has(code) ? String(Math.round(t.pence / 100)) : (t.pence / 100).toFixed(2);
   return `${m[1]}/${m[2]}/${amount}${code}${m[3] || ''}`;
 }

@@ -802,7 +802,9 @@ test('page actions: a PayPal.me pay link with no amount is given the order total
   assert.equal(A.payWithTotal('https://www.paypal.com/paypalme/harbourkitchen/', two), 'https://www.paypal.com/paypalme/harbourkitchen/19.00GBP');
   assert.equal(A.payWithTotal('https://paypal.me/harbourkitchen?country.x=GB&locale.x=en_GB', two), 'https://paypal.me/harbourkitchen/19.00GBP?country.x=GB&locale.x=en_GB', 'PayPal’s own share link keeps its ending');
   assert.equal(A.payWithTotal('https://paypal.me/harbour', total([{ name: 'A', price: '€1.500', qty: 1 }])), 'https://paypal.me/harbour/1500.00EUR');
-  assert.equal(A.payWithTotal('https://paypal.me/harbour', total([{ name: 'A', price: '$12.50', qty: 1 }])), 'https://paypal.me/harbour/12.50', 'a dollar sign could be any dollar: the account’s own currency is used');
+  for (const price of ['$12.50', '¥88', '12.50', 'ISK 1.500', 'ZAR 150']) assert.equal(A.payWithTotal('https://paypal.me/harbour', total([{ name: 'A', price, qty: 1 }])), 'https://paypal.me/harbour', `${price}: a currency not known for certain, or one PayPal does not take, is not filled in`);
+  assert.equal(A.payWithTotal('https://paypal.me/harbour', total([{ name: 'A', price: '1 500 HUF', qty: 1 }])), 'https://paypal.me/harbour/1500HUF', 'whole numbers where PayPal wants them');
+  assert.equal(A.payWithTotal('https://paypal.me/harbour', total([{ name: 'A', price: '120 SEK', qty: 2 }])), 'https://paypal.me/harbour/240.00SEK');
   assert.equal(A.payWithTotal('https://paypal.me/harbour', total([{ name: 'A', price: 'CHF 12', qty: 1 }])), 'https://paypal.me/harbour/12.00CHF');
   for (const href of ['https://paypal.me/harbour/10GBP', 'https://buy.stripe.com/test_00abc', 'https://www.paypal.com/ncp/payment/ABC123', 'http://paypal.me/harbour', '']) assert.equal(A.payWithTotal(href, two), href, `${href}: left as it was`);
   for (const t of [total([]), total([{ name: 'Water', price: 'Free', qty: 1 }]), total([{ name: 'Cake', price: '2 for £5', qty: 1 }, { name: 'Tea', price: '£2', qty: 1 }]), total([{ name: 'A', price: '£2', qty: 1 }, { name: 'B', price: '€3', qty: 1 }])]) {
