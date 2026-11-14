@@ -62,7 +62,7 @@ const blankAbout = page.slug === 'about' && !html.includes('<section');
   startPageMotion();
   // The booking bar in the opening and the order list. Not movement: it runs for everyone.
   import { startPageActions } from '../scripts/page-actions.js';
-  import { calendarTheme } from '../scripts/booking-calendar.js';
+  import { showCalendar } from '../scripts/booking-calendar.js';
   startPageActions();
 
   // Block contact forms send without leaving the site and show the result in place.
@@ -93,21 +93,7 @@ const blankAbout = page.slug === 'about' && !html.includes('<section');
   bindBlockForms();
   document.addEventListener('astro:page-load', bindBlockForms);
 
-  // Booking calendars load only when a visitor asks for them.
-  let calLoading: Promise<void> | undefined;
-  function loadCal() {
-    if (calLoading) return calLoading;
-    calLoading = new Promise<void>((resolve, reject) => {
-      if ((window as any).Cal?.instance) { resolve(); return; }
-      const cal: any = (...args: any[]) => cal.q.push(args); cal.q = []; cal.ns = {}; (window as any).Cal = cal;
-      const script = document.createElement('script'); script.src = 'https://app.cal.com/embed/embed.js'; script.async = true;
-      const timer = setTimeout(() => { script.remove(); calLoading = undefined; reject(new Error('timeout')); }, 15000);
-      script.onload = () => { clearTimeout(timer); if ((window as any).Cal?.instance) resolve(); else { calLoading = undefined; reject(new Error('initialise')); } };
-      script.onerror = () => { clearTimeout(timer); script.remove(); calLoading = undefined; reject(new Error('load')); };
-      document.head.append(script);
-    });
-    return calLoading;
-  }
+  // Booking calendars load only when a visitor asks for them (scripts/booking-calendar.js).
   function bindBooking() {
     for (const box of document.querySelectorAll<HTMLElement>('.cbp .cb-booking-cal')) {
       const button = box.querySelector<HTMLButtonElement>('.cb-booking-load'), frame = box.querySelector<HTMLElement>('.cb-booking-frame'), status = box.querySelector<HTMLElement>('.cb-booking-status');
@@ -121,14 +107,8 @@ const blankAbout = page.slug === 'about' && !html.includes('<section');
             const f = document.createElement('iframe'); f.src = src; f.title = 'Booking calendar'; f.loading = 'lazy';
             frame.replaceChildren(f); frame.dataset.kind = 'google';
           } else if (kind === 'cal') {
-            await loadCal();
-            const cal = (window as any).Cal; if (typeof cal !== 'function') throw new Error('unavailable');
-            frame.id ||= `booking-${Math.random().toString(36).slice(2, 8)}`;
-            cal('init', { origin: 'https://cal.com' });
-            const theme = calendarTheme(box);
-            // The theme goes in this calendar's own settings only, so a second calendar on the
-            // page (say one on a dark band, one on a light section) keeps its own.
-            cal('inline', { elementOrSelector: `#${frame.id}`, calLink: src, config: { layout: 'month_view', theme } });
+            // Each calendar on the page is its own (one per person, say), with its own light or dark setting.
+            await showCalendar(frame, src, box);
           } else throw new Error('unknown');
           frame.hidden = false; button.hidden = true;
           status.textContent = 'Choose a time in the calendar. If it does not appear, use the link above.';

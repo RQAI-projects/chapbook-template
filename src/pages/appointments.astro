@@ -25,18 +25,7 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
 </div>
 </Base>
 <script>
- import { calendarTheme } from '../scripts/booking-calendar.js';
- let loading: Promise<void>|undefined;
- function loadCal(){
-  if(loading)return loading;
-  loading=new Promise<void>((resolve,reject)=>{
-   if((window as any).Cal?.instance){resolve();return;}
-   const cal:any=(...args:any[])=>cal.q.push(args);cal.q=[];cal.ns={};(window as any).Cal=cal;
-   const script=document.createElement('script');script.src='https://app.cal.com/embed/embed.js';script.async=true;
-   const timer=setTimeout(()=>{script.remove();loading=undefined;reject(new Error('timeout'));},15000);
-   script.onload=()=>{clearTimeout(timer);if((window as any).Cal?.instance)resolve();else{loading=undefined;reject(new Error('initialise'));}};script.onerror=()=>{clearTimeout(timer);script.remove();loading=undefined;reject(new Error('load'));};document.head.append(script);
-  });return loading;
- }
+ import { showCalendar } from '../scripts/booking-calendar.js';
  function setup(){
   const button=document.querySelector<HTMLButtonElement>('.booking-load');
   const target=document.querySelector<HTMLElement>('#booking-calendar');
@@ -46,12 +35,8 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
   button.addEventListener('click',async()=>{
    button.disabled=true;status.textContent='Loading the booking calendar…';
    try{
-    await loadCal();if(!target.isConnected)return;
-    const cal=(window as any).Cal;if(typeof cal!=='function')throw new Error('unavailable');
     target.hidden=false;
-    cal('init',{origin:'https://cal.com'});
-    const theme=calendarTheme(target.parentElement||document.body);
-    cal('inline',{elementOrSelector:target,calLink:button.dataset.bookingLink,config:{layout:'month_view',theme}});
+    await showCalendar(target,button.dataset.bookingLink||'',target.parentElement||document.body);if(!target.isConnected)return;
     status.textContent='Choose a time in the calendar. If it does not load, use the booking link above.';button.hidden=true;
    }catch{status.textContent='The calendar could not load. Please use the booking link above.';button.disabled=false;}
   });
