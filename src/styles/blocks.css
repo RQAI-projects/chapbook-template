@@ -932,6 +932,9 @@
   .cb-hero-band,.cb-hero--centred .cb-hero-pic{aspect-ratio:4/3}
   .cb-svc-numbered>article{grid-template-columns:2.4rem minmax(0,1fr)}
   .cb-svc-numbered .cb-meta{grid-column:2;align-items:flex-start;text-align:left;flex-direction:row}
+  /* Booking and pay links are big enough to press with a thumb. */
+  .cb-person .cb-link,.cb-svc-links .cb-link,.cb-svc-links .cb-btn-small{display:inline-flex;align-items:center;min-height:44px}
+  .cb-booking-cal .cb-small a{display:inline-block;padding-block:.7rem}
   /* A person with no photo yet: a short band with their initials, not a screen-high empty box. */
   .cb-team-grid .cb-initials{aspect-ratio:auto;height:6.5rem}
   .cb-svc-table>div{grid-template-columns:minmax(0,1fr) auto}
