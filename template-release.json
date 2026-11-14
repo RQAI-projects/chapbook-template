@@ -160,7 +160,7 @@
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
-  "src/scripts/page-actions.js": "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9",
+  "src/scripts/page-actions.js": "f1e8d005503afce76faad8de3f6827c42fa62609",
   "src/scripts/page-motion.js": "da63f3fb1c3bb2c5de9a064f8be0ae069cc0353d",
   "src/styles/blocks.css": "046073076b4f75e43c854aa0b556f71109bc0295",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
@@ -206,6 +206,9 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "src/scripts/page-actions.js": [
+   "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9"
+  ],
   "src/styles/blocks.css": [
    "a4cb9239a215652ec26fdec345ef74d526358ae9",
    "ffd208e649ed094839b10140012b801d23c3a997",

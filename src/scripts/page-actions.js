@@ -100,6 +100,20 @@ export function orderTotal(lines) {
   }
   return { pence, sign: [...signs][0] || '', count, onRequest, priced, mixed: signs.size > 1 };
 }
+// A PayPal.me link with no amount in it (paypal.me/name) is given the order's total, so the
+// customer does not have to type it: paypal.me/name/19.50GBP. Only a single total in one currency
+// is filled in. With anything priced on request, or no total, the link stays as it was pasted,
+// and so does every other kind of pay link.
+const PAYPAL_ME = /^(https:\/\/(?:www\.)?(?:paypal\.me|paypal\.com\/paypalme))\/([A-Za-z0-9_.-]{1,40})\/?(\?[^#]*)?$/i;
+const PAYPAL_CODE = { '£': 'GBP', '€': 'EUR', '¥': 'JPY' };
+const WHOLE_ONLY = new Set(['JPY', 'HUF', 'TWD']);
+export function payWithTotal(href, t) {
+  const m = PAYPAL_ME.exec(String(href || '').trim());
+  if (!m || !t || t.mixed || t.onRequest || !t.priced || !(t.pence > 0)) return href;
+  const code = PAYPAL_CODE[t.sign] || (/^[A-Z]{3}$/.test(t.sign) ? t.sign : '');
+  const amount = WHOLE_ONLY.has(code) ? String(Math.round(t.pence / 100)) : (t.pence / 100).toFixed(2);
+  return `${m[1]}/${m[2]}/${amount}${code}${m[3] || ''}`;
+}
 const items = (n) => `${n} ${n === 1 ? 'item' : 'items'}`;
 // What the running total says.
 export function totalText(t) {
@@ -275,6 +289,7 @@ export function initPageActions(doc = document, win = window, { open, preview = 
     const total = list.querySelector('.cb-order-total'), send = list.querySelector('.cb-order-send'), need = list.querySelector('.cb-order-need'), pay = list.querySelector('.cb-order-pay');
     const status = list.querySelector('.cb-order-status'), who = list.querySelector('.cb-order-who-name'), notes = list.querySelector('.cb-order-who-notes');
     if (!rows.length || !foot || !total || !send || !status) continue;
+    const payHref = pay?.getAttribute('href') || '';
     const drawn = { total: total.textContent, status: status.textContent, qty: rows.map((r) => r.out.textContent) };
     const lines = () => rows.map((r) => ({ name: r.name, price: r.price, qty: r.qty }));
     const sync = () => {
@@ -308,6 +323,7 @@ export function initPageActions(doc = document, win = window, { open, preview = 
       go(url, kind === 'whatsapp' ? '_blank' : '_self');
       status.textContent = `We tried to open ${what} with this order. If nothing opened, copy it and send it to ${where(kind, to)}.`;
       box = sentBox(status, box, { text: orderMessage(order), copy: 'Copy order' });
+      if (pay && payHref) setAttr(pay, 'href', payWithTotal(payHref, orderTotal(order.lines)));
       show(pay, true);
     });
     sync();

@@ -793,3 +793,19 @@ test('with no form address the email button keeps the owner’s line about what 
   const plain = renderPage(page([{ type: 'form', data: { heading: 'Send a message' } }]), { site: { professional: { email: 'hello@harbour.example' } } });
   assert.ok(!plain.includes('cb-small'), 'no empty line when the owner wrote none');
 });
+
+test('page actions: a PayPal.me pay link with no amount is given the order total; other pay links are left alone', async () => {
+  const A = await import('../../scripts/page-actions.js');
+  const total = (lines) => A.orderTotal(lines);
+  const two = total([{ name: 'Espresso', price: '£9.50', qty: 2 }]);
+  assert.equal(A.payWithTotal('https://paypal.me/harbourkitchen', two), 'https://paypal.me/harbourkitchen/19.00GBP');
+  assert.equal(A.payWithTotal('https://www.paypal.com/paypalme/harbourkitchen/', two), 'https://www.paypal.com/paypalme/harbourkitchen/19.00GBP');
+  assert.equal(A.payWithTotal('https://paypal.me/harbourkitchen?country.x=GB&locale.x=en_GB', two), 'https://paypal.me/harbourkitchen/19.00GBP?country.x=GB&locale.x=en_GB', 'PayPal’s own share link keeps its ending');
+  assert.equal(A.payWithTotal('https://paypal.me/harbour', total([{ name: 'A', price: '€1.500', qty: 1 }])), 'https://paypal.me/harbour/1500.00EUR');
+  assert.equal(A.payWithTotal('https://paypal.me/harbour', total([{ name: 'A', price: '$12.50', qty: 1 }])), 'https://paypal.me/harbour/12.50', 'a dollar sign could be any dollar: the account’s own currency is used');
+  assert.equal(A.payWithTotal('https://paypal.me/harbour', total([{ name: 'A', price: 'CHF 12', qty: 1 }])), 'https://paypal.me/harbour/12.00CHF');
+  for (const href of ['https://paypal.me/harbour/10GBP', 'https://buy.stripe.com/test_00abc', 'https://www.paypal.com/ncp/payment/ABC123', 'http://paypal.me/harbour', '']) assert.equal(A.payWithTotal(href, two), href, `${href}: left as it was`);
+  for (const t of [total([]), total([{ name: 'Water', price: 'Free', qty: 1 }]), total([{ name: 'Cake', price: '2 for £5', qty: 1 }, { name: 'Tea', price: '£2', qty: 1 }]), total([{ name: 'A', price: '£2', qty: 1 }, { name: 'B', price: '€3', qty: 1 }])]) {
+    assert.equal(A.payWithTotal('https://paypal.me/harbour', t), 'https://paypal.me/harbour', 'no single, whole total: nothing is filled in');
+  }
+});
