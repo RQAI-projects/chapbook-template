@@ -52,7 +52,6 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
     cal('init',{origin:'https://cal.com'});
     const theme=calendarTheme(target.parentElement||document.body);
     cal('inline',{elementOrSelector:target,calLink:button.dataset.bookingLink,config:{layout:'month_view',theme}});
-    cal('ui',{theme,layout:'month_view'});
     status.textContent='Choose a time in the calendar. If it does not load, use the booking link above.';button.hidden=true;
    }catch{status.textContent='The calendar could not load. Please use the booking link above.';button.disabled=false;}
   });

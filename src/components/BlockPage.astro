@@ -126,8 +126,9 @@ const blankAbout = page.slug === 'about' && !html.includes('<section');
             frame.id ||= `booking-${Math.random().toString(36).slice(2, 8)}`;
             cal('init', { origin: 'https://cal.com' });
             const theme = calendarTheme(box);
+            // The theme goes in this calendar's own settings only, so a second calendar on the
+            // page (say one on a dark band, one on a light section) keeps its own.
             cal('inline', { elementOrSelector: `#${frame.id}`, calLink: src, config: { layout: 'month_view', theme } });
-            cal('ui', { theme, layout: 'month_view' });
           } else throw new Error('unknown');
           frame.hidden = false; button.hidden = true;
           status.textContent = 'Choose a time in the calendar. If it does not appear, use the link above.';
