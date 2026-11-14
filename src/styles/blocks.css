@@ -33,6 +33,9 @@
 /* Type */
 .cbp .cb-h,.cbp .cb h3{font-family:var(--cb-head);color:inherit;margin:0;font-weight:600;letter-spacing:-.02em;line-height:1.08;text-wrap:balance}
 .cbp .cb-h{font-size:clamp(1.85rem,3.6vw,3rem);max-width:24ch}
+/* In a centred section the heading's box is centred too. (The rule above resets its margins, so
+   without this a short centred heading sat left of the middle.) */
+.cbp .cb-al-centre .cb-h,.cbp .cb-al-centre .cb-intro{margin-inline:auto}
 .cbp .cb h3{font-size:1.22rem;line-height:1.25;letter-spacing:-.01em}
 .cb-kicker{margin:0 0 1rem;font-size:.95rem;font-weight:600;color:var(--cb-accent-text,var(--accent))}
 .cb-rich{max-width:var(--cb-measure);line-height:1.7;font-size:1.05rem}
@@ -87,7 +90,9 @@
 .cb-hero--photo-behind{min-height:clamp(30rem,82vh,52rem);display:flex;align-items:flex-end;color:#fff;--ink:#fff;--ink-dim:rgba(255,255,255,.88);--line:rgba(255,255,255,.3);--line-strong:rgba(255,255,255,.5);--cb-accent-text:#fff}
 .cb-hero--photo-behind>.cb-in{width:min(var(--cb-max),calc(100% - 2 * var(--cb-gutter)));position:static}
 .cb-hero--photo-behind .cb-hero-words{position:relative}
-.cb-hero-bg{position:absolute;inset:0;z-index:-2}
+/* The picture behind the words may sink as the page scrolls; it must never slide out of its own
+   section over the heading below. */
+.cb-hero-bg{position:absolute;inset:0;z-index:-2;overflow:hidden;overflow:clip}
 .cb-hero-bg img,.cb-hero-bg .cb-pic-empty{width:100%;height:100%;object-fit:cover;border-radius:0;aspect-ratio:auto}
 .cb-hero--photo-behind::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(15deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.45) 45%,rgba(0,0,0,.08) 100%)}
 .cb-hero--photo-behind .cb-hero-words{max-width:46rem}
@@ -357,7 +362,7 @@
 
 /* ---- Announcement --------------------------------------------------------------------- */
 .cb-t-notice{--cb-pad:.7rem}
-.cb-notice-text{margin:0;font-weight:600;font-size:.95rem;display:flex;flex-wrap:wrap;gap:.3rem 1rem;align-items:baseline}
+.cb-notice-text{margin:0;font-weight:600;font-size:.95rem;text-wrap:balance;display:flex;flex-wrap:wrap;gap:.3rem 1rem;align-items:baseline}
 .cb-notice--bar{background:var(--accent);color:var(--cb-on-accent);--ink:var(--cb-on-accent);--cb-accent-text:var(--cb-on-accent)}
 .cb-notice--bar .cb-notice-text{justify-content:center;text-align:center}
 .cb-notice--ribbon{--cb-pad:1.2rem}
@@ -518,7 +523,7 @@
 /* ---- Opening: name opens to a photo ----------------------------------------------------- */
 .cb-hero--open{--cb-pad:clamp(.6rem,1.5vw,1.1rem)}
 .cb-hero--open>.cb-in{width:calc(100% - 2 * clamp(.6rem,1.5vw,1.1rem));max-width:none}
-.cb-open{--oh:clamp(32rem,88vh,58rem);--op:clamp(1.2rem,3.4vw,3rem);position:relative;isolation:isolate;overflow:hidden;container-type:inline-size;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(4rem,1fr) auto;min-height:var(--oh);padding:var(--op);border-radius:clamp(1.1rem,2.6vw,2.2rem);background:var(--cb-deep,#111);color:#fff;--ink:#fff;--ink-dim:rgba(255,255,255,.9);--line:rgba(255,255,255,.3);--line-strong:rgba(255,255,255,.5);--cb-accent-text:#fff}
+.cb-open{--oh:clamp(32rem,82vh,58rem);--op:clamp(1.2rem,3.4vw,3rem);position:relative;isolation:isolate;overflow:hidden;container-type:inline-size;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(4rem,1fr) auto;min-height:var(--oh);padding:var(--op);border-radius:clamp(1.1rem,2.6vw,2.2rem);background:var(--cb-deep,#111);color:#fff;--ink:#fff;--ink-dim:rgba(255,255,255,.9);--line:rgba(255,255,255,.3);--line-strong:rgba(255,255,255,.5);--cb-accent-text:#fff}
 .cb-open::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,.4) 42%,rgba(0,0,0,.74))}
 .cb-open-bg{position:absolute;inset:0;z-index:-2}
 .cbp .cb-open-h{grid-area:1/1/-1/-1;display:grid;grid-template-rows:auto 1fr auto;margin:0;max-width:none;pointer-events:none;font-size:clamp(2rem,11.5cqw,10.5rem);line-height:.9;letter-spacing:-.045em;overflow-wrap:anywhere;text-shadow:0 2px 26px rgba(0,0,0,.45)}
