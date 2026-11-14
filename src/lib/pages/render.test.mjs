@@ -783,3 +783,13 @@ test('latest posts show each post’s picture, however the website hands it over
   }
   assert.ok(!renderPage(page([{ type: 'posts', variant: 'list', data: { heading: 'News', count: 4 } }]), { site, posts }).includes('<img '), 'the plain list has no pictures');
 });
+
+test('with no form address the email button keeps the owner’s line about what not to send', () => {
+  const b = { type: 'form', data: { heading: 'Send a message', button: 'Send', note: 'Please do not include medical details.' } };
+  const html = renderPage(page([b]), { site: { professional: { email: 'hello@harbour.example' } } });
+  assert.ok(html.includes('href="mailto:hello@harbour.example"'));
+  assert.ok(html.includes('<p class="cb-small">Please do not include medical details.</p>'));
+  assert.ok(!html.includes('<form'));
+  const plain = renderPage(page([{ type: 'form', data: { heading: 'Send a message' } }]), { site: { professional: { email: 'hello@harbour.example' } } });
+  assert.ok(!plain.includes('cb-small'), 'no empty line when the owner wrote none');
+});

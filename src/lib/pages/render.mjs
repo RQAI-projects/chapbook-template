@@ -756,8 +756,10 @@ R_.form = (C, b) => {
   const words = `${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
   if (!ep && !C.editable) {
     // No form service yet: offer the email address instead, if there is one.
+    // The owner's own line under the form (often what not to send) is kept under the button.
     const email = C.biz.email ? `<div class="cb-actions"><a class="cb-btn" href="mailto:${esc(C.biz.email)}">Email ${esc(C.biz.email)}</a></div>` : '';
-    return email ? `${words}${email}` : '';
+    const small = email && d.note ? `<p class="cb-small">${esc(d.note)}</p>` : '';
+    return email ? `${words}${email}${small}` : '';
   }
   const uid = esc(b.id);
   const fields = `<label for="n-${uid}">Name</label><input id="n-${uid}" name="name" type="text" required autocomplete="name"${C.editable ? ' tabindex="-1"' : ''}>`

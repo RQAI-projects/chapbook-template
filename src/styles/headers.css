@@ -55,6 +55,8 @@ html:has(.site-header:not([data-header="classic"])) {--header-h:0px}
 .site-header[data-header="portfolio"] .header-identity{max-width:50%;flex:1}
 .site-header[data-header="portfolio"] .logo{font-size:1.2rem;max-width:12ch;line-height:1.15}
 .site-header[data-header="portfolio"] .site-nav{display:grid;grid-template-columns:repeat(2,auto);gap:0 1rem}
+/* A short menu (four tabs or fewer) sits on one line; a longer one stays a two-column index. */
+@media(min-width:901px){.site-header[data-header="portfolio"] .site-nav:not(:has(>:nth-child(5))){grid-template-columns:repeat(4,auto)}}
 .site-header[data-header="portfolio"] .nav-index{display:inline;font:10px monospace;margin-right:1rem;opacity:.5}
 .site-header[data-header="signature"] .logo{font:italic 1.6rem/1.2 'Newsreader',Georgia,serif;transform:rotate(-3deg)}
 .site-header[data-header="signature"]{border:0}

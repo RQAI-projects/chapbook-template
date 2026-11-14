@@ -172,7 +172,7 @@
 .cb-menu-line{display:flex;align-items:baseline;gap:.5rem}
 .cb-menu-line h3{flex:0 1 auto}
 .cb-menu-line i{flex:1 1 2rem;border-bottom:2px dotted var(--line-strong);transform:translateY(-.3em);min-width:1.5rem}
-.cb-svc-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(1.6rem,3vw,2.4rem) clamp(2rem,5vw,4.5rem)}
+.cb-svc-menu{text-align:left;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(1.6rem,3vw,2.4rem) clamp(2rem,5vw,4.5rem)}
 .cb-svc-menu .cb-time{display:block;margin-top:.35rem}
 .cb-svc-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,16rem),1fr));gap:clamp(1rem,2vw,1.5rem)}
 .cb-svc-cards>article{border:1px solid var(--line-strong);border-radius:var(--cb-r);overflow:hidden;display:flex;flex-direction:column;background:color-mix(in srgb,var(--bg-0) 60%,transparent)}
@@ -190,6 +190,8 @@
 .cb-svc-table>div{display:grid;grid-template-columns:minmax(0,1fr) 8rem 10rem;gap:1.2rem;align-items:baseline;padding:1.15rem 0;border-bottom:1px solid var(--line-strong)}
 .cb-svc-table>div:first-child{border-top:2px solid currentColor}
 .cb-svc-table .cb-price{text-align:right;font-size:1.05rem}
+/* A row with no duration keeps its price in the price column, in line with the others. */
+.cb-svc-table>div>.cb-price{grid-column:3}
 .cb-svc-board{background:var(--cb-deep);color:var(--cb-on-deep);--ink:var(--cb-on-deep);--ink-dim:color-mix(in srgb,var(--cb-on-deep) 78%,var(--cb-deep));--line-strong:color-mix(in srgb,var(--cb-on-deep) 40%,transparent);padding:clamp(1.5rem,5vw,4rem);border-radius:var(--cb-r);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(1.4rem,3vw,2.2rem) clamp(2rem,5vw,4.5rem)}
 .cb-bg-dark .cb-svc-board{background:color-mix(in srgb,var(--cb-on-deep) 7%,var(--cb-deep));outline:1px solid var(--line-strong)}
 .cb-svc-board .cb-offer{background:color-mix(in srgb,var(--cb-on-deep) 14%,transparent);color:var(--cb-on-deep)}
@@ -736,6 +738,11 @@
 /* ---- Gallery: photos fly together -------------------------------------------------------- */
 .cb-gallery--gather .cb-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,15rem),1fr));gap:clamp(.6rem,1.5vw,1.1rem)}
 .cb-gallery--gather .cb-gallery img{aspect-ratio:1;object-fit:cover}
+/* Five or six photos fill their rows on a wide screen instead of leaving a gap at the end. */
+@media (min-width:761px){
+  .cb-gallery--gather .cb-gallery:has(>:nth-child(5):last-child){grid-template-columns:repeat(5,minmax(0,1fr))}
+  .cb-gallery--gather .cb-gallery:has(>:nth-child(6):last-child){grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 .cb-gallery--gather{overflow:clip}
 .cb-gallery--gather .cb-gallery.is-live{perspective:1400px}
 .cb-gallery--gather .cb-gallery.is-live>figure{--q:calc(1 - var(--p,1));transition:transform .25s linear,opacity .25s linear;transform:translate3d(calc(var(--q) * var(--dx,0px)),calc(var(--q) * var(--dy,0px)),calc(var(--q) * var(--dz,0px))) rotate(calc(var(--q) * var(--rz,0deg)));opacity:calc(.15 + var(--p,1) * .85)}
@@ -936,7 +943,9 @@
   .cb-cta-split{flex-direction:column;align-items:flex-start}
   .cb-al-centre .cb-cta-split{align-items:center}
   .cb-hero--photo-behind{min-height:clamp(26rem,78vh,40rem)}
-  .cb-creds-strip li{padding-inline:.9rem}
+  .cb-creds-strip{gap:.45rem 1.3rem}
+  .cb-creds-strip li,.cb-creds-strip li:first-child,.cb-al-centre .cb-creds-strip li:first-child{padding-inline:0;border-left:0}
+  .cb-al-centre .cb-creds-strip{justify-content:center}
   .cb-hero--orbit .cb-hero-grid,.cb-hero--collage .cb-hero-grid,.cb-hero--arch .cb-hero-grid,.cb-hero--blob .cb-hero-grid,.cb-wm-foot,.cb-bento-top,.cb-curtain,.cb-show-stack .cb-show-item{grid-template-columns:minmax(0,1fr)!important}
   .cb-blob{width:min(80%,22rem);margin-top:1rem}
   .cb-hero--depth .cb-hero-grid,.cb-hero--backword .cb-hero-grid,.cb-hero--lens .cb-hero-grid,.cb-layers{grid-template-columns:minmax(0,1fr)!important}
@@ -1066,6 +1075,7 @@ html.cba-js .cb-order-plain{display:none}
 .cb-order-plain{margin:1.3rem 0 0}
 .cb-order-note{margin:.9rem 0 0}
 .cb-order+.cb-small{margin-top:.6rem}
+.cb-actions+.cb-small{margin-top:.9rem}
 .cb-al-centre .cb-order-foot{margin-inline:auto;text-align:left}
 @media (max-width:760px){
   .cb-show-story .cb-show-item{grid-template-columns:minmax(0,1fr)}
