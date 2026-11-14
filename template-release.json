@@ -127,7 +127,7 @@
   "src/lib/icons.js": "f5ea35a4a406e7d6892b1087ed35b133c568ec18",
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
   "src/lib/pages/migrate.mjs": "ac3d603f17de28b7ee79a291ed39ba8b093ad0f5",
-  "src/lib/pages/render.mjs": "6df3066093a0851273b0afdb0bf08c9f0fc34872",
+  "src/lib/pages/render.mjs": "95a321ce3718f95afe904fec68be80d6cdaac19a",
   "src/lib/pages/schema.mjs": "207a3263a7a14c887c7542beec35a9233fae99f5",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
@@ -162,7 +162,7 @@
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
   "src/scripts/page-actions.js": "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9",
   "src/scripts/page-motion.js": "da63f3fb1c3bb2c5de9a064f8be0ae069cc0353d",
-  "src/styles/blocks.css": "68f1585f96278960905bf321d898853be24ea870",
+  "src/styles/blocks.css": "8c0e159e3b2bb0fc4ba44a11d62c957ae1ebaa2b",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
   "src/styles/global.css": "cfa4731cb5064fed7c6a09ac13b2dc697d828360",
   "src/styles/headers.css": "806c15e7948c6786dafeb2f11a1cd6d3c4b8ef62",
@@ -207,6 +207,7 @@
  },
  "history": {
   "src/lib/pages/render.mjs": [
+   "6df3066093a0851273b0afdb0bf08c9f0fc34872",
    "038bc4787a5965d411dd526a26f62358d7f14fdb",
    "ccea8d00bb1e566561bfc52d8fbf59d77b9e1b72",
    "6a2f3c4d4ab11b7b8dfe801ad2d00b76bb53f796",
@@ -223,6 +224,25 @@
    "364e3e88c2c8a5e0d1efb9b0060b445f44fbb6de",
    "c7226998668f0fbee76774c9de823a6b4e21fcfe",
    "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
+  ],
+  "src/styles/blocks.css": [
+   "68f1585f96278960905bf321d898853be24ea870",
+   "a6d4d3e28247433e07e5f630983e6b26b0a02a66",
+   "bbda5192b66a93c2f8c64d3b1a347afa31494738",
+   "2664205a1e9ef12614ee1c3d23926c45a0b518bc",
+   "b5684235ef4a8b5ace083d5ac8327bc30c2ce925",
+   "7fb75b1da8c1a4fa9b3a878f13cd9e23fd60915e",
+   "fc3cfff2344375066d775d34c6c348fe0fae711a",
+   "330a2f971987799c588773a96f8df7490e0a3c82",
+   "7f71c83646b2feddc1302723f25668e2815973cc",
+   "73800060ff4fd7b8589f8f4ed6380b513ef9b7bd",
+   "9d5b426ecd5a077cc33a564a1b1f5f5a261d6c0b",
+   "ff187c59345dd59f41167ab3a69c44b6fe7ee54e",
+   "e6e3545ade228836264fbb7a8d728d4c56af6d33",
+   "b925c4fe266a1b1500e87725082eec65c780aa43",
+   "7e8e31068b327653f58d71e88f2f3098597ec9ff",
+   "708fe7c01bba959fb46cdc695a801c6b9da0918f",
+   "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
   ],
   "src/components/BlockPage.astro": [
    "fa63b12ca39f9d7120d9c07090f82433b1335e86",
@@ -272,24 +292,6 @@
    "16e8168793aed22b6d4cd931981891cc7575ab24",
    "c559a0ebae1d8d57a2748943214b59fbb2424217",
    "32b20e2252b8b789a126560e578649d67c65c21e"
-  ],
-  "src/styles/blocks.css": [
-   "a6d4d3e28247433e07e5f630983e6b26b0a02a66",
-   "bbda5192b66a93c2f8c64d3b1a347afa31494738",
-   "2664205a1e9ef12614ee1c3d23926c45a0b518bc",
-   "b5684235ef4a8b5ace083d5ac8327bc30c2ce925",
-   "7fb75b1da8c1a4fa9b3a878f13cd9e23fd60915e",
-   "fc3cfff2344375066d775d34c6c348fe0fae711a",
-   "330a2f971987799c588773a96f8df7490e0a3c82",
-   "7f71c83646b2feddc1302723f25668e2815973cc",
-   "73800060ff4fd7b8589f8f4ed6380b513ef9b7bd",
-   "9d5b426ecd5a077cc33a564a1b1f5f5a261d6c0b",
-   "ff187c59345dd59f41167ab3a69c44b6fe7ee54e",
-   "e6e3545ade228836264fbb7a8d728d4c56af6d33",
-   "b925c4fe266a1b1500e87725082eec65c780aa43",
-   "7e8e31068b327653f58d71e88f2f3098597ec9ff",
-   "708fe7c01bba959fb46cdc695a801c6b9da0918f",
-   "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
   ],
   "src/styles/professional.css": [
    "b44e17c6093f9f22f8a4f923601f7bca02ce8222",

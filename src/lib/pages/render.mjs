@@ -756,7 +756,7 @@ R_.form = (C, b) => {
   const words = `${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
   if (!ep && !C.editable) {
     // No form service yet: offer the email address instead, if there is one.
-    const email = C.biz.email ? `<p><a class="cb-btn" href="mailto:${esc(C.biz.email)}">Email ${esc(C.biz.email)}</a></p>` : '';
+    const email = C.biz.email ? `<div class="cb-actions"><a class="cb-btn" href="mailto:${esc(C.biz.email)}">Email ${esc(C.biz.email)}</a></div>` : '';
     return email ? `${words}${email}` : '';
   }
   const uid = esc(b.id);
