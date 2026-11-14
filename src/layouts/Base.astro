@@ -13,7 +13,7 @@ import { getCollection } from 'astro:content';
 import { withBase } from '../lib/withBase';
 import { vocabFor } from '../lib/vocab';
 import { designCss } from '../lib/business/render.mjs';
-import {professionalDetails, safeNavHref, safeBookingUrl} from '../lib/professional.mjs';
+import {professionalDetails, safeNavHref, safeBookingUrl, addsBookingTab} from '../lib/professional.mjs';
 import themesRegistry from '../data/themes.json';
 
 // Site-wide BLOG THEME (data-blog-theme on <html>). Chosen once at blog creation
@@ -76,7 +76,7 @@ const NAV_FALLBACK = [
 const nav = [...(site.nav && site.nav.length ? site.nav : NAV_FALLBACK)].map((n: any) => ({ ...n, href: safeNavHref(n?.href) })).filter((n: any) => n.href);
 const siteDesignCss = designCss((site as any).design, (themesRegistry.themes as any[]).find((t) => t.id === site.defaultTheme)?.preview || {});
 const professional = professionalDetails(site.professional);
-if (professional.bookingUrl && !nav.some(n => n.href === '/appointments/')) nav.push({href:'/appointments/',label:vocabFor(site.defaultTheme).bookingNav,primary:true});
+if (addsBookingTab(professional, site, nav)) nav.push({href:'/appointments/',label:vocabFor(site.defaultTheme).bookingNav,primary:true});
 
 // Per-theme chrome vocabulary. On the observatory theme the nav keeps its house labels
 // (and the palette switcher's client renamer handles "Observatory"); every other theme

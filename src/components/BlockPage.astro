@@ -62,6 +62,7 @@ const blankAbout = page.slug === 'about' && !html.includes('<section');
   startPageMotion();
   // The booking bar in the opening and the order list. Not movement: it runs for everyone.
   import { startPageActions } from '../scripts/page-actions.js';
+  import { calendarTheme } from '../scripts/booking-calendar.js';
   startPageActions();
 
   // Block contact forms send without leaving the site and show the result in place.
@@ -118,13 +119,15 @@ const blankAbout = page.slug === 'about' && !html.includes('<section');
         try {
           if (kind === 'google' && /^https:\/\/calendar\.google\.com\/calendar\/appointments\/schedules\//.test(src)) {
             const f = document.createElement('iframe'); f.src = src; f.title = 'Booking calendar'; f.loading = 'lazy';
-            frame.replaceChildren(f);
+            frame.replaceChildren(f); frame.dataset.kind = 'google';
           } else if (kind === 'cal') {
             await loadCal();
             const cal = (window as any).Cal; if (typeof cal !== 'function') throw new Error('unavailable');
             frame.id ||= `booking-${Math.random().toString(36).slice(2, 8)}`;
             cal('init', { origin: 'https://cal.com' });
-            cal('inline', { elementOrSelector: `#${frame.id}`, calLink: src, config: { layout: 'month_view' } });
+            const theme = calendarTheme(box);
+            cal('inline', { elementOrSelector: `#${frame.id}`, calLink: src, config: { layout: 'month_view', theme } });
+            cal('ui', { theme, layout: 'month_view' });
           } else throw new Error('unknown');
           frame.hidden = false; button.hidden = true;
           status.textContent = 'Choose a time in the calendar. If it does not appear, use the link above.';

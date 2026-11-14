@@ -59,7 +59,7 @@
   "scripts/flip-scheduled.mjs": "e0d6d8b239d47dc9782c0643ec640b3e26d48ff3",
   "scripts/make-og-default.mjs": "d8602e05c295a5918f80ea2a8eae318c1e87f1b4",
   "scripts/make-template-release.mjs": "ed211f421a33ace366f98b7a3b7f165491602bb4",
-  "src/components/BlockPage.astro": "4139fe17af22d0c79510041aeff10143b61a1568",
+  "src/components/BlockPage.astro": "fa63b12ca39f9d7120d9c07090f82433b1335e86",
   "src/components/GalaxyHero.astro": "c4e918ee189f441636b42bb863d9a0b7f5e274ce",
   "src/components/GlenoidArt.astro": "009da8fa28c278e08e92ec4b25aa54a57d27058a",
   "src/components/GlyphBadge.astro": "249f4877bb539b51a779d774050006ecad06c80d",
@@ -98,7 +98,7 @@
   "src/data/emoji-glyphs.json": "fbce9d599689947db66706c8c88668a38b43bfe5",
   "src/data/themes.json": "947f1a1a32aa15dbd88851f89c2a41bfb5723f79",
   "src/env.d.ts": "9bc5cb41c24efc40c0c90abe23ec56c974f16a6c",
-  "src/layouts/Base.astro": "cdacb363557dc5474bff12363a32a6b43b129685",
+  "src/layouts/Base.astro": "b6fd9f7befafb5a963edb09d50c93bea87f2a1e2",
   "src/lib/about.mjs": "0d821ea5a95b6f94f4bf7e94ecc036f62a3108db",
   "src/lib/business/render.mjs": "a56ec384025e400dc5b969ec338d0481fde855a3",
   "src/lib/darkroom-build.mjs": "26ee8db086a11b56997528f06226139e1ece494c",
@@ -131,15 +131,15 @@
   "src/lib/pages/schema.mjs": "207a3263a7a14c887c7542beec35a9233fae99f5",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
-  "src/lib/professional.mjs": "38243e7dfcb562107f1fafa511c950db37f23e9e",
+  "src/lib/professional.mjs": "f1806dac591239f447e6cd15cb272b40916c1aaf",
   "src/lib/rehype-gallery.mjs": "bb610588d2865746a8911ff0d714fdaa4ee34d8b",
   "src/lib/series.ts": "2cd316b40f4a3a49204a571691408fcfde56ca72",
-  "src/lib/site.ts": "30cdc341b44956eff77f89e32ab86c2a9f25c6d3",
+  "src/lib/site.ts": "d9dc8323ea6399c9992bcd91c32f54dfe5ea9699",
   "src/lib/vocab.ts": "cc470586cbe72f4bcc79f8bf87a77dcc3324290d",
   "src/lib/withBase.ts": "5da4a7af1d196465f3b7194baedf162bf7aa0a2c",
   "src/pages/[slug].astro": "7e4cd3a68bbb60f98ab7e2ebe18a289be84a1578",
   "src/pages/about.astro": "5a61371fa1bfc2e8346efcc386b1c0d96490ebf0",
-  "src/pages/appointments.astro": "13e22d5a6026e60cb45b9f6650679411d5c73145",
+  "src/pages/appointments.astro": "8bfa1a371731efbd0c00df3a54f369720a90d7e3",
   "src/pages/apps.astro": "acc07f1db783c9f62f80846dc3f84d95e21b554a",
   "src/pages/blog/[slug].astro": "5600a2f96a9aaec7867fcb51bb554bf4d5ce0013",
   "src/pages/blog/index.astro": "10f13a550ccedc8c9f87a0f34dae995a984d3fce",
@@ -156,17 +156,18 @@
   "src/pages/series/[slug].astro": "32ad82a38b70b6d7440c2fbb31a7089551d95dcd",
   "src/pages/writing/index.astro": "5d5130e01a218bf78e31bff1b708b8a811a97c94",
   "src/plugins/remark-base-path.mjs": "d7770814aa7a3eb5b048d68b29e66c40e1a4f7ba",
+  "src/scripts/booking-calendar.js": "f1de460bcf5d96af76659439d5394ab8908c730c",
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
   "src/scripts/page-actions.js": "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9",
   "src/scripts/page-motion.js": "da63f3fb1c3bb2c5de9a064f8be0ae069cc0353d",
-  "src/styles/blocks.css": "a6d4d3e28247433e07e5f630983e6b26b0a02a66",
+  "src/styles/blocks.css": "68f1585f96278960905bf321d898853be24ea870",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
   "src/styles/global.css": "cfa4731cb5064fed7c6a09ac13b2dc697d828360",
   "src/styles/headers.css": "806c15e7948c6786dafeb2f11a1cd6d3c4b8ef62",
   "src/styles/motion.css": "ad2323e4e76339b48f9274b1ae6ab66b7d9065a0",
-  "src/styles/professional.css": "b44e17c6093f9f22f8a4f923601f7bca02ce8222",
+  "src/styles/professional.css": "501b97e7eaeab03f7f24d4d66c999b3511f26f7a",
   "src/styles/themes.css": "0b9635ecfaecc749f2e07b5b042b5d2011e527e9",
   "src/styles/themes/_kids-extras.css": "8f3b65c0a42edc8ab6d687fefb433d2b2e24b3f8",
   "src/styles/themes/air.css": "26d337b7b7bc3790c40f6d808f30d2e58a0a1bc4",
@@ -205,6 +206,73 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "src/components/BlockPage.astro": [
+   "4139fe17af22d0c79510041aeff10143b61a1568",
+   "09ede662e8cb4e2dd82a83b30b084cc8eccc64a0",
+   "f4da275fa5d496b9f3c6017ace1d045aa1c44638",
+   "15a3c8f318aa003b2532d2a30fdee8d85786eabb",
+   "15eec77c38e2932aba3b9c86a463a23f39bd4491",
+   "2d6fe15db5862c1abbc93cfae28751fed5ebe95e",
+   "b48354818e26eb565a10bae4e50619958fd4dadc",
+   "4aeb6b0630190e92df0fff8ff3919bb35fb914dc",
+   "a703234e7934d2ebc903b123b21a3da3db828c88",
+   "23df6ebe76d35fe35c1d901c7239db4b9cf47875"
+  ],
+  "src/layouts/Base.astro": [
+   "cdacb363557dc5474bff12363a32a6b43b129685",
+   "fce50e1b1b14f9e8b9f69678952785f8aff56a0a",
+   "251178170e8c7fb3a69f3831c33fa8e6365ad715",
+   "b59b2de11d63fbbe28cea35b576df423c3168ddb",
+   "325bf5713b9bb2db60ae37b9343289aa6978bc80",
+   "8ca222c447d5ef519c0c1f8fc353076f2d5d06d9",
+   "cdcdb5e70cac0f21aa530491f90e94b4d831d154",
+   "564765752a8a2e31eb360104ad0d3551f221d396",
+   "4defff1ef386c08a1871f2f2dd3087139ce77a2f",
+   "8b7165ae94456e16b013f3e68bd3b4411b58b7f6"
+  ],
+  "src/lib/professional.mjs": [
+   "38243e7dfcb562107f1fafa511c950db37f23e9e",
+   "f6228b9a5ceb15847a1e8599b87784b1af38f61c",
+   "aa9f50c5bf4bf64fb0ee5ae0f3935f56ed51cd48"
+  ],
+  "src/lib/site.ts": [
+   "30cdc341b44956eff77f89e32ab86c2a9f25c6d3",
+   "5236a3190b9bb581c7dff63a662468892cdd51cd",
+   "bb9624db071684345458e3d0e70d3590035e7d40",
+   "d5c68ef245b1a6ffbec5692863e85fa2e8dfaa40",
+   "349448c77564e1156836e41d1795587ff9eb8258",
+   "16e8168793aed22b6d4cd931981891cc7575ab24",
+   "c559a0ebae1d8d57a2748943214b59fbb2424217",
+   "32b20e2252b8b789a126560e578649d67c65c21e"
+  ],
+  "src/pages/appointments.astro": [
+   "13e22d5a6026e60cb45b9f6650679411d5c73145",
+   "b2ac55fe8ffe23a6d89d01a496b46564c3f2bd44",
+   "013d789f180b6f0491bd60d97b182f54244457df"
+  ],
+  "src/styles/blocks.css": [
+   "a6d4d3e28247433e07e5f630983e6b26b0a02a66",
+   "bbda5192b66a93c2f8c64d3b1a347afa31494738",
+   "2664205a1e9ef12614ee1c3d23926c45a0b518bc",
+   "b5684235ef4a8b5ace083d5ac8327bc30c2ce925",
+   "7fb75b1da8c1a4fa9b3a878f13cd9e23fd60915e",
+   "fc3cfff2344375066d775d34c6c348fe0fae711a",
+   "330a2f971987799c588773a96f8df7490e0a3c82",
+   "7f71c83646b2feddc1302723f25668e2815973cc",
+   "73800060ff4fd7b8589f8f4ed6380b513ef9b7bd",
+   "9d5b426ecd5a077cc33a564a1b1f5f5a261d6c0b",
+   "ff187c59345dd59f41167ab3a69c44b6fe7ee54e",
+   "e6e3545ade228836264fbb7a8d728d4c56af6d33",
+   "b925c4fe266a1b1500e87725082eec65c780aa43",
+   "7e8e31068b327653f58d71e88f2f3098597ec9ff",
+   "708fe7c01bba959fb46cdc695a801c6b9da0918f",
+   "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
+  ],
+  "src/styles/professional.css": [
+   "b44e17c6093f9f22f8a4f923601f7bca02ce8222",
+   "fbfebb1714b13979b9bee09df5c7a195f801353b",
+   "52f9c6043b07cd7c95ab012214bd68d384240e15"
+  ],
   "src/lib/pages/render.mjs": [
    "ccea8d00bb1e566561bfc52d8fbf59d77b9e1b72",
    "6a2f3c4d4ab11b7b8dfe801ad2d00b76bb53f796",
@@ -234,10 +302,6 @@
    "cf81fb63c6424ce2bedf5f8563fcc91fbbd782ca",
    "09baab156a3a0a6a1e577eed8db8115618800402"
   ],
-  "src/pages/appointments.astro": [
-   "b2ac55fe8ffe23a6d89d01a496b46564c3f2bd44",
-   "013d789f180b6f0491bd60d97b182f54244457df"
-  ],
   "src/pages/contact.astro": [
    "4c1c28a304fd76a289ec21096f9dc0ddd6a28d8d",
    "251ef496cb504d404aa82037416aa6c96ba8fa7e",
@@ -254,17 +318,6 @@
   ],
   "src/pages/apps.astro": [
    "33ec997033e78e054a72c21b5efbb9914f7b9852"
-  ],
-  "src/components/BlockPage.astro": [
-   "09ede662e8cb4e2dd82a83b30b084cc8eccc64a0",
-   "f4da275fa5d496b9f3c6017ace1d045aa1c44638",
-   "15a3c8f318aa003b2532d2a30fdee8d85786eabb",
-   "15eec77c38e2932aba3b9c86a463a23f39bd4491",
-   "2d6fe15db5862c1abbc93cfae28751fed5ebe95e",
-   "b48354818e26eb565a10bae4e50619958fd4dadc",
-   "4aeb6b0630190e92df0fff8ff3919bb35fb914dc",
-   "a703234e7934d2ebc903b123b21a3da3db828c88",
-   "23df6ebe76d35fe35c1d901c7239db4b9cf47875"
   ],
   "src/components/home/HomeFolio.astro": [
    "dff842b9cb0473b6ddbf7c49202f74e5117da35c",
@@ -287,17 +340,6 @@
   "scripts/check-site-config.mjs": [
    "2cb8ca9e2e4c68915f08ec1cfdc7ba4b163d7aa6",
    "9a4b3afdeaa3b3a05b04071191b70afa332a3857"
-  ],
-  "src/layouts/Base.astro": [
-   "fce50e1b1b14f9e8b9f69678952785f8aff56a0a",
-   "251178170e8c7fb3a69f3831c33fa8e6365ad715",
-   "b59b2de11d63fbbe28cea35b576df423c3168ddb",
-   "325bf5713b9bb2db60ae37b9343289aa6978bc80",
-   "8ca222c447d5ef519c0c1f8fc353076f2d5d06d9",
-   "cdcdb5e70cac0f21aa530491f90e94b4d831d154",
-   "564765752a8a2e31eb360104ad0d3551f221d396",
-   "4defff1ef386c08a1871f2f2dd3087139ce77a2f",
-   "8b7165ae94456e16b013f3e68bd3b4411b58b7f6"
   ],
   "src/pages/icons.astro": [
    "de2c14964f6c511c10c11c7c49388fcdd9900f9d",
@@ -330,39 +372,9 @@
    "3bd872811786031f9e903d54a31b2bce6014200e",
    "666b77fc6f39669c1e4b99e2218dfb4de3761719"
   ],
-  "src/styles/blocks.css": [
-   "bbda5192b66a93c2f8c64d3b1a347afa31494738",
-   "2664205a1e9ef12614ee1c3d23926c45a0b518bc",
-   "b5684235ef4a8b5ace083d5ac8327bc30c2ce925",
-   "7fb75b1da8c1a4fa9b3a878f13cd9e23fd60915e",
-   "fc3cfff2344375066d775d34c6c348fe0fae711a",
-   "330a2f971987799c588773a96f8df7490e0a3c82",
-   "7f71c83646b2feddc1302723f25668e2815973cc",
-   "73800060ff4fd7b8589f8f4ed6380b513ef9b7bd",
-   "9d5b426ecd5a077cc33a564a1b1f5f5a261d6c0b",
-   "ff187c59345dd59f41167ab3a69c44b6fe7ee54e",
-   "e6e3545ade228836264fbb7a8d728d4c56af6d33",
-   "b925c4fe266a1b1500e87725082eec65c780aa43",
-   "7e8e31068b327653f58d71e88f2f3098597ec9ff",
-   "708fe7c01bba959fb46cdc695a801c6b9da0918f",
-   "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
-  ],
   "src/components/home/HomeRings.astro": [
    "dfe9a3a73c8b18ce2efb4612c5ffedadf78666ec",
    "e5740ecec8d088bda61a3e3ea4317545e8a7ae5f"
-  ],
-  "src/lib/professional.mjs": [
-   "f6228b9a5ceb15847a1e8599b87784b1af38f61c",
-   "aa9f50c5bf4bf64fb0ee5ae0f3935f56ed51cd48"
-  ],
-  "src/lib/site.ts": [
-   "5236a3190b9bb581c7dff63a662468892cdd51cd",
-   "bb9624db071684345458e3d0e70d3590035e7d40",
-   "d5c68ef245b1a6ffbec5692863e85fa2e8dfaa40",
-   "349448c77564e1156836e41d1795587ff9eb8258",
-   "16e8168793aed22b6d4cd931981891cc7575ab24",
-   "c559a0ebae1d8d57a2748943214b59fbb2424217",
-   "32b20e2252b8b789a126560e578649d67c65c21e"
   ],
   "src/scripts/page-motion.js": [
    "4840942f7962b029ec0caf4c7320980f5ab7234b",
@@ -409,10 +421,6 @@
   "src/lib/glyphs/presentation.js": [
    "af6abd55757b1ce5ae40c8e70352f7dba9b0e6c9",
    "2518347787558afa88efa85f5701b9e4e6dd5648"
-  ],
-  "src/styles/professional.css": [
-   "fbfebb1714b13979b9bee09df5c7a195f801353b",
-   "52f9c6043b07cd7c95ab012214bd68d384240e15"
   ],
   "src/components/professional/ServiceMenu.astro": [
    "dbb56c091111108e9004be578dc69d12d3cb7362"

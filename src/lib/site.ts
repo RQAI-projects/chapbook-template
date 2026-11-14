@@ -26,6 +26,9 @@ export interface SiteConfig {
   /** Colours, heading font, corners and home page sections, set in Chapbook. */
   design?: Record<string, unknown>;
   nav?: Array<{ href: string; label: string; primary?: boolean; themeLabel?: boolean }>;
+  /** `false` when the owner unticked the booking tab in Chapbook: the menu then gets no tab for
+   *  the booking page by itself. Absent = the tab is added while a booking link is saved. */
+  bookingTab?: boolean;
   /** Logo set in Chapbook (Site settings → Logo). Pictures live in /site-images/. */
   logo?: { src: string; showName: boolean; favicon: string } | null;
   /** Badge beside a post title when the writer hasn't picked one: a flat modern icon,

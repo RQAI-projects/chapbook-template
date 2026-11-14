@@ -25,6 +25,7 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
 </div>
 </Base>
 <script>
+ import { calendarTheme } from '../scripts/booking-calendar.js';
  let loading: Promise<void>|undefined;
  function loadCal(){
   if(loading)return loading;
@@ -49,7 +50,9 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
     const cal=(window as any).Cal;if(typeof cal!=='function')throw new Error('unavailable');
     target.hidden=false;
     cal('init',{origin:'https://cal.com'});
-    cal('inline',{elementOrSelector:target,calLink:button.dataset.bookingLink,config:{layout:'month_view'}});
+    const theme=calendarTheme(target.parentElement||document.body);
+    cal('inline',{elementOrSelector:target,calLink:button.dataset.bookingLink,config:{layout:'month_view',theme}});
+    cal('ui',{theme,layout:'month_view'});
     status.textContent='Choose a time in the calendar. If it does not load, use the booking link above.';button.hidden=true;
    }catch{status.textContent='The calendar could not load. Please use the booking link above.';button.disabled=false;}
   });

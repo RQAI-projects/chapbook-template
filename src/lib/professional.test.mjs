@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {safeBookingUrl,professionalDetails,contactHref,calBookingLink,formAddress,ownText,sameText,titleLine,siteDescription} from './professional.mjs';
+import {safeBookingUrl,professionalDetails,contactHref,calBookingLink,formAddress,ownText,sameText,titleLine,siteDescription,addsBookingTab} from './professional.mjs';
 test('booking links only accept HTTPS without embedded credentials',()=>{
  assert.equal(safeBookingUrl('javascript:alert(1)'),'');assert.equal(safeBookingUrl('https://user:secret@example.com'),'');
  assert.equal(safeBookingUrl('https://calendar.example.com/visit?type=first'),'https://calendar.example.com/visit?type=first');
@@ -51,4 +51,11 @@ test('the search description is never just the name or starter wording',()=>{
  assert.equal(d({name:'Harbour Bakery',masthead:'Harbour Bakery',description:'A bakery on the quay.',tagline:'Bread baked every morning.'}),'A bakery on the quay.');
  assert.equal(d({name:'Your Name',masthead:'Your Blog Name',description:'A sentence describing your blog — used for SEO and social cards.',tagline:'A line about your blog.'}),'Welcome to the website of Your Blog Name.');
  assert.equal(d({}),'');assert.equal(d(null),'');
+});
+test('the menu gets a booking tab by itself only with a booking link, no tab of its own and no switch-off',()=>{
+ const p=professionalDetails({bookingUrl:'https://cal.com/harbour/order'}),nav=[{href:'/',label:'Home'},{href:'/contact/',label:'Contact'}];
+ assert.equal(addsBookingTab(p,{},nav),true);assert.equal(addsBookingTab(p,{bookingTab:true},nav),true);assert.equal(addsBookingTab(p,undefined,undefined),true);
+ assert.equal(addsBookingTab(p,{bookingTab:false},nav),false);
+ assert.equal(addsBookingTab(p,{},[...nav,{href:'/appointments/',label:'Book'}]),false);
+ assert.equal(addsBookingTab(professionalDetails(),{},nav),false);assert.equal(addsBookingTab(professionalDetails({bookingUrl:'http://cal.com/x'}),{},nav),false);
 });

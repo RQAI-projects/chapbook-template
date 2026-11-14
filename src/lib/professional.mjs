@@ -71,6 +71,9 @@ export function calBookingLink(value){
 
 export function telHref(p){return p.phone?'tel:'+p.phone.replace(/[^+\d]/g,''):'';}
 // The writer's own button wording wins; otherwise the theme's natural wording for its trade.
+// The menu gets a tab for the booking page by itself while a booking link is saved, unless the
+// menu already has one or the owner switched it off in Chapbook (site.json `bookingTab: false`).
+export function addsBookingTab(details,site,nav){return !!(details&&details.bookingUrl)&&!(site&&site.bookingTab===false)&&!(Array.isArray(nav)?nav:[]).some(n=>n&&n.href==='/appointments/');}
 export function bookingText(raw,fallback){const own=text(raw&&raw.bookingLabel,60);return own||fallback;}
 
 // A Stripe Payment Link can carry a promotion code, which Stripe fills in at checkout.
