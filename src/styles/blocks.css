@@ -292,7 +292,8 @@
 .cb-facts dd p{margin:0}
 .cb-facts a{color:inherit;text-decoration:underline;text-underline-offset:.2em}
 .cb-map{margin-top:1rem}
-.cb-contact-card{max-width:40rem;padding:clamp(1.5rem,4vw,3rem);background:var(--cb-surface);color:var(--cb-surface-ink);--ink:var(--cb-surface-ink);border-radius:var(--cb-r)}
+/* The card sits in the middle of a wide screen, not against one side with the other half empty. */
+.cb-contact-card{max-width:40rem;margin-inline:auto;padding:clamp(1.5rem,4vw,3rem);background:var(--cb-surface);color:var(--cb-surface-ink);--ink:var(--cb-surface-ink);border-radius:var(--cb-r)}
 .cb-al-centre .cb-contact-card{margin-inline:auto}
 .cb-bg-tint .cb-contact-card{background:var(--bg-0)}
 .cb-contact-card .cb-facts{margin-top:1.6rem}

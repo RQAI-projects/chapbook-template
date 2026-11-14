@@ -162,7 +162,7 @@
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
   "src/scripts/page-actions.js": "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9",
   "src/scripts/page-motion.js": "da63f3fb1c3bb2c5de9a064f8be0ae069cc0353d",
-  "src/styles/blocks.css": "424252ea03a918bf184d77c0bcaf6336dcf0382e",
+  "src/styles/blocks.css": "ffd208e649ed094839b10140012b801d23c3a997",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
   "src/styles/global.css": "cfa4731cb5064fed7c6a09ac13b2dc697d828360",
   "src/styles/headers.css": "806c15e7948c6786dafeb2f11a1cd6d3c4b8ef62",
@@ -207,6 +207,7 @@
  },
  "history": {
   "src/styles/blocks.css": [
+   "424252ea03a918bf184d77c0bcaf6336dcf0382e",
    "8c0e159e3b2bb0fc4ba44a11d62c957ae1ebaa2b",
    "68f1585f96278960905bf321d898853be24ea870",
    "a6d4d3e28247433e07e5f630983e6b26b0a02a66",
