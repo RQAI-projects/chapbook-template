@@ -766,3 +766,20 @@ test('the starter form address never becomes a form', () => {
   }
   assert.ok(renderPage(page([{ type: 'form', variant: 'normal', data: { heading: 'Write to us' } }]), { site, formEndpoint: 'https://formspree.io/f/xabcdwxy' }).includes('action="https://formspree.io/f/xabcdwxy"'));
 });
+
+test('latest posts show each post’s picture, however the website hands it over', () => {
+  const posts = [
+    { href: '/blog/a/', title: 'With a picture', dateLabel: '1 Nov', image: { src: '/repo/_astro/loaf.abc.jpg', alt: 'A loaf' } },
+    { href: '/blog/b/', title: 'Plain address', dateLabel: '2 Nov', image: '/site-images/b.jpg' },
+    { href: '/blog/c/', title: 'No picture', dateLabel: '3 Nov', image: null },
+    { href: '/blog/d/', title: 'Odd value', dateLabel: '4 Nov', image: { alt: 'no address' } },
+  ];
+  for (const variant of ['cards', 'feature']) {
+    const html = renderPage(page([{ type: 'posts', variant, data: { heading: 'News', count: 4 } }]), { site, posts });
+    assert.ok(html.includes('<img src="/repo/_astro/loaf.abc.jpg" alt="" loading="lazy">'), variant);
+    assert.ok(html.includes('<img src="/site-images/b.jpg" alt="" loading="lazy">'), variant);
+    assert.equal((html.match(/<img /g) || []).length, 2, `${variant}: no picture is drawn for a post without one`);
+    assert.ok(!html.includes('[object Object]'), variant);
+  }
+  assert.ok(!renderPage(page([{ type: 'posts', variant: 'list', data: { heading: 'News', count: 4 } }]), { site, posts }).includes('<img '), 'the plain list has no pictures');
+});

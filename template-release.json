@@ -127,7 +127,7 @@
   "src/lib/icons.js": "f5ea35a4a406e7d6892b1087ed35b133c568ec18",
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
   "src/lib/pages/migrate.mjs": "ac3d603f17de28b7ee79a291ed39ba8b093ad0f5",
-  "src/lib/pages/render.mjs": "038bc4787a5965d411dd526a26f62358d7f14fdb",
+  "src/lib/pages/render.mjs": "6df3066093a0851273b0afdb0bf08c9f0fc34872",
   "src/lib/pages/schema.mjs": "207a3263a7a14c887c7542beec35a9233fae99f5",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
@@ -206,6 +206,24 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "src/lib/pages/render.mjs": [
+   "038bc4787a5965d411dd526a26f62358d7f14fdb",
+   "ccea8d00bb1e566561bfc52d8fbf59d77b9e1b72",
+   "6a2f3c4d4ab11b7b8dfe801ad2d00b76bb53f796",
+   "2a206f7e52fa8119239ed085ac19119dc8574532",
+   "4577ad0b4b22ccf624465560602a61e5a25931f5",
+   "5241015c32487b88c735f86c6b5fcf815deb1854",
+   "1d87933d1d6a069cbce622018f29a64868af5d0b",
+   "72f5cf087667ae7c3bdfd9373a2f84be5c5ea85c",
+   "0fd8ed5220b418acbefd890df24f645e067cb42b",
+   "e9457fe29130da278763d41668578941a1894592",
+   "1dbaa1c73ffd5cf2b2ea0b1e152e3064b6a65d09",
+   "d64ed1e939908ed31044aac2b2518a2c249173df",
+   "df3c0ce5432af9b1bf7178a7a974d815ee9f4ce4",
+   "364e3e88c2c8a5e0d1efb9b0060b445f44fbb6de",
+   "c7226998668f0fbee76774c9de823a6b4e21fcfe",
+   "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
+  ],
   "src/components/BlockPage.astro": [
    "fa63b12ca39f9d7120d9c07090f82433b1335e86",
    "4139fe17af22d0c79510041aeff10143b61a1568",
@@ -277,23 +295,6 @@
    "b44e17c6093f9f22f8a4f923601f7bca02ce8222",
    "fbfebb1714b13979b9bee09df5c7a195f801353b",
    "52f9c6043b07cd7c95ab012214bd68d384240e15"
-  ],
-  "src/lib/pages/render.mjs": [
-   "ccea8d00bb1e566561bfc52d8fbf59d77b9e1b72",
-   "6a2f3c4d4ab11b7b8dfe801ad2d00b76bb53f796",
-   "2a206f7e52fa8119239ed085ac19119dc8574532",
-   "4577ad0b4b22ccf624465560602a61e5a25931f5",
-   "5241015c32487b88c735f86c6b5fcf815deb1854",
-   "1d87933d1d6a069cbce622018f29a64868af5d0b",
-   "72f5cf087667ae7c3bdfd9373a2f84be5c5ea85c",
-   "0fd8ed5220b418acbefd890df24f645e067cb42b",
-   "e9457fe29130da278763d41668578941a1894592",
-   "1dbaa1c73ffd5cf2b2ea0b1e152e3064b6a65d09",
-   "d64ed1e939908ed31044aac2b2518a2c249173df",
-   "df3c0ce5432af9b1bf7178a7a974d815ee9f4ce4",
-   "364e3e88c2c8a5e0d1efb9b0060b445f44fbb6de",
-   "c7226998668f0fbee76774c9de823a6b4e21fcfe",
-   "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
   ],
   "src/lib/pages/schema.mjs": [
    "b1aeef84e54c1a118123863ee498ae069570dd51",

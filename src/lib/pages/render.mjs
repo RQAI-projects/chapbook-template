@@ -771,12 +771,15 @@ R_.form = (C, b) => {
   return b.variant === 'split' ? `<div class="cb-side"><div class="cb-side-head">${words}</div><div>${form}</div></div>` : `${words}${form}`;
 };
 
+// A post's picture address. The website hands each post's picture over as { src, alt } (what
+// postCover gives); a plain address is taken too. Anything else means no picture.
+const postPicture = (p) => { const im = p && p.image; return typeof im === 'string' ? im : (im && typeof im.src === 'string' ? im.src : ''); };
 R_.posts = (C, b) => {
   const d = b.data, n = d.count || 3, posts = (C.posts || []).slice(0, n);
   if (!posts.length && !C.editable) return '';
   const more = `<a class="cb-link" href="${esc(C.postsHref || (C.href ? C.href('/posts/') : '/posts/'))}"${ED(C, 'data-cb', `${b.id}:more`)}>${esc(d.more || 'All posts')}</a>`;
   const list = posts.length
-    ? posts.map((p, i) => `<a class="cb-post${i === 0 && b.variant === 'feature' ? ' cb-post-lead' : ''}" href="${esc(p.href)}">${p.image && (b.variant !== 'list') ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : ''}<span class="cb-post-date">${esc(p.dateLabel || '')}</span><h3>${esc(p.title)}</h3>${p.description && b.variant !== 'list' ? `<p>${esc(p.description)}</p>` : ''}</a>`).join('')
+    ? posts.map((p, i) => `<a class="cb-post${i === 0 && b.variant === 'feature' ? ' cb-post-lead' : ''}" href="${esc(p.href)}">${b.variant !== 'list' && postPicture(p) ? `<img src="${esc(postPicture(p))}" alt="" loading="lazy">` : ''}<span class="cb-post-date">${esc(p.dateLabel || '')}</span><h3>${esc(p.title)}</h3>${p.description && b.variant !== 'list' ? `<p>${esc(p.description)}</p>` : ''}</a>`).join('')
     : `<p class="cb-note" data-cb-hint>Your newest posts appear here.</p>`;
   return `<div class="cb-head cb-head-row">${H(C, b, d)}${more}</div><div class="cb-posts cb-posts-${b.variant}">${list}</div>`;
 };
