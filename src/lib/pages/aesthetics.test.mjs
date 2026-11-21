@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { renderPage, normalisePage, needsSignature, SIGNATURE_LAYOUTS, SIGNATURE_FIELDS, plainHeading, cleanLook, PAGE_FONTS, MOTION, MOTION_PRESETS, variantsOf } from './render.mjs';
+import { renderPage, normalisePage, needsSignature, lookNeedsSignature, SIGNATURE_LAYOUTS, SIGNATURE_FIELDS, plainHeading, cleanLook, PAGE_FONTS, MOTION, MOTION_PRESETS, variantsOf } from './render.mjs';
 
 const pro = { phone: '01632 960 123', email: 'hello@example.com', location: '2 Linden Court\nHarrogate HG1 1AA', hours: 'Monday to Friday, 9am to 6pm\nSunday, closed', bookingUrl: 'https://cal.com/rick/get-rick-rolled' };
 const SITE = { name: 'Maison Vale', professional: pro };
@@ -109,6 +109,8 @@ test('the release 7 gate knows the new layouts, settings, register links and ita
   assert.ok(needsSignature({ type: 'text', variant: 'plain', data: { heading: 'A *word*' } }));
   assert.ok(!needsSignature({ type: 'text', variant: 'plain', data: { heading: 'Five* service' } }));
   assert.ok(!needsSignature({ type: 'credentials', variant: 'list', data: { items: [{ text: 'x' }] } }));
+  assert.ok(lookNeedsSignature({ font: 'noir' }) && lookNeedsSignature({ motion: { backdrop: 'dawn' } }));
+  assert.ok(!lookNeedsSignature({ font: 'modern', motion: { backdrop: 'aurora' } }) && !lookNeedsSignature(null));
 });
 
 test('the new heading typefaces, the still wash and the Nocturne style are fixed choices', () => {

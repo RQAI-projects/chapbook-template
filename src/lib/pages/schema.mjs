@@ -513,6 +513,10 @@ const hasEm = (v) => typeof v === 'string' && v.includes('*') && new RegExp(HEAD
 const filled = (v) => v !== undefined && v !== '' && v !== false && v !== null;
 // Whether a block needs website design release 7 to be drawn as it is meant.
 export const needsSignature = (b) => !!b && (SIGNATURE_TYPES.includes(b.type) || (SIGNATURE_LAYOUTS[b.type] || []).includes(b.variant) || (SIGNATURE_FIELDS[b.type] || []).some((k) => filled(b.data?.[k])) || (SIGNATURE_ITEM_FIELDS[b.type] || []).some((k) => (b.data?.items || []).some((x) => filled(x?.[k]))) || hasEm(b.data?.heading) || (b.data?.children || []).some(needsSignature));
+// A page's own look can need release 7 too: the two new heading typefaces and the still wash
+// (an older design would quietly fall back to its own font and no wash).
+export const SIGNATURE_LOOK = { font: ['fine', 'noir'], backdrop: ['dawn'] };
+export const lookNeedsSignature = (look) => !!look && (SIGNATURE_LOOK.font.includes(look.font) || SIGNATURE_LOOK.backdrop.includes(look.motion?.backdrop));
 // A heading as plain words, with the stars of an italic word taken out (for labels and titles).
 export const plainHeading = (v) => String(v ?? '').replace(new RegExp(HEADING_EM.source, 'g'), '$1$2');
 export const WEEK_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
