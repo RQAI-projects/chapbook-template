@@ -21,6 +21,22 @@ export function titleLine(title,name){
   const t=String(title??'').trim(),n=String(name??'').trim();
   return !t?n:!n||sameText(t,n)?t:`${t} | ${n}`;
 }
+// The town in an address: its last line without the postcode ("3 Church Lane\nWimborne BH21 1JH"
+// gives "Wimborne"). Nothing when it is unclear.
+export function townOf(location){
+  const lines=String(location??'').split(/\n|,/).map((l)=>l.trim()).filter(Boolean);
+  for(let i=lines.length-1;i>=0;i--){const t=lines[i].replace(/\s*[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i,'').trim();if(t&&!/\d/.test(t)&&t.length<=40)return t;}
+  return '';
+}
+// A business home page's search title: what it does and where, from the business details
+// ("Skin and aesthetics in Harrogate"), which titleLine follows with the website's name. With
+// neither, the name alone, as before.
+export function homeTitle(site){
+  const s=site&&typeof site==='object'?site:{},p=s.professional&&typeof s.professional==='object'?s.professional:{};
+  const what=String(p.eyebrow??'').replace(/\s+/g,' ').trim().slice(0,60),town=townOf(p.location);
+  if(!what)return s.masthead||s.name||'';
+  return town&&!what.toLowerCase().includes(town.toLowerCase())?`${what} in ${town}`:what;
+}
 // The line search engines show under the website's name: the owner's own description, else the
 // tagline, else a plain sentence from the name. Never the name alone, and never starter wording.
 export function siteDescription(site){

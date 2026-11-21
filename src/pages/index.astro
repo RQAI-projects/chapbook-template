@@ -5,7 +5,7 @@ import themesRegistry from '../data/themes.json';
 import profile from '../data/profile.json';
 import {postCover} from '../lib/post-cover.mjs';
 import { site, siteSummary } from '../lib/site';
-import { safeBookingUrl } from '../lib/professional.mjs';
+import { safeBookingUrl, homeTitle } from '../lib/professional.mjs';
 import { withBase } from '../lib/withBase';
 import { getCollection } from 'astro:content';
 import type { HomeProps, HomePost, HomeConstellation } from '../lib/home';
@@ -172,7 +172,7 @@ const jsonLd = {
 };
 ---
 {homeBlocks ? (
-  <BlockPage page={homeBlocks} title={site.masthead} description={homeBlocks.description || undefined}>
+  <BlockPage page={homeBlocks} title={homeTitle(site)} description={homeBlocks.description || undefined}>
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g,'\\u003c')} />
   </BlockPage>
 ) : (

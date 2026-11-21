@@ -6,6 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { homeTitle, titleLine, townOf } from '../professional.mjs';
 import { renderPage, normalisePage, needsSignature, lookNeedsSignature, SIGNATURE_LAYOUTS, SIGNATURE_FIELDS, plainHeading, cleanLook, PAGE_FONTS, MOTION, MOTION_PRESETS, variantsOf } from './render.mjs';
 
 const pro = { phone: '01632 960 123', email: 'hello@example.com', location: '2 Linden Court\nHarrogate HG1 1AA', hours: 'Monday to Friday, 9am to 6pm\nSunday, closed', bookingUrl: 'https://cal.com/rick/get-rick-rolled' };
@@ -146,4 +147,12 @@ test('every new layout survives normalising, so a page file can never carry anyt
   assert.equal(n.blocks[2].data.items[0].duration, '60 min');
   assert.equal(n.blocks[4].data.items[0].price, '£90');
   assert.equal(n.blocks[6].data.items[0].link.label, 'Check the GMC register');
+});
+
+test('a business home page is found by what it does and where', () => {
+  const site = { name: 'Maison Vale', masthead: 'Maison Vale', professional: { eyebrow: 'Skin and aesthetics', location: '2 Linden Court, Station Parade\nHarrogate HG1 1AA' } };
+  assert.equal(titleLine(homeTitle(site), site.name), 'Skin and aesthetics in Harrogate | Maison Vale');
+  assert.equal(homeTitle({ masthead: 'Maison Vale' }), 'Maison Vale', 'no details: the name, as before');
+  assert.equal(homeTitle({ masthead: 'X', professional: { eyebrow: 'Dentist in Leeds', location: '1 Road\nLeeds LS1 1AA' } }), 'Dentist in Leeds');
+  assert.equal(townOf('Studio 2, Loom Mill, Ancoats\nManchester M4 1AA'), 'Manchester');
 });
