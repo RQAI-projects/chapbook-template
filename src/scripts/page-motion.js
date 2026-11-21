@@ -60,6 +60,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   // The page's opening: its first Opening block, which need not be the very first block.
   const hero = blocks.find((b) => b.classList.contains('cb-opening')) || null;
   const pace = { calm: [1050, 110], lively: [600, 55], measured: [800, 75] }[look('pace')] || [750, 70];
+  const measured = look('pace') === 'measured';
 
   // ---- the giant name: trimmed to fill the width exactly ------------------------------------
   for (const h of root.querySelectorAll('.cb-wordmark:not(.cb-wordmark-long)')) {
@@ -185,6 +186,9 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
           // Pieces that fly with the scroll, and photos held in a 3D scene, arrive their own way.
           if (el.closest('[data-scroll]') || el.matches('.cb-lens-pic, .cb-bw-pic')) continue;
           if (el === splitHeading || el.matches('.pe-add-cell, .pe-add, .cb-add-btn')) continue;
+          // With the measured pace, the words on the opening's first screen are simply there (the
+          // heading has its own movement): they are what a phone paints first.
+          if (isHero && measured && el.closest('.cb-hero-words, .cb-statement, .cb-pinhero-first, .cb-reveal-words, .cb-hero-grid')) continue;
           const pic = isHero && el.matches('.cb-hero-pic, .cb-orbit, .cb-collage, .cb-arch, .cb-stage, .cb-film');
           if (pic && unveil && el.matches(PICTURES)) continue;   // unveiled below instead
           el.setAttribute('data-m', pic ? 'pic' : '');

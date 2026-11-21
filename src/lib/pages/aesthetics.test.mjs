@@ -165,3 +165,12 @@ test('a photo with a phone copy is drawn with both sizes; anything else is dropp
   assert.equal(n.blocks[0].data.picture.phone, undefined, 'only the site’s own images');
   assert.ok(!renderPage(page([{ type: 'hero', variant: 'reveal', data: { heading: 'Hi', picture: { src: pic2.src, alt: 'x' } } }]), { site: SITE }).includes('srcset'));
 });
+
+test('a page that opens with words only asks for its first photo at once; one with an opening photo does not', () => {
+  const words = renderPage(page([{ type: 'hero', variant: 'minimal', data: { heading: 'Treatments' } }, BLOCKS[1]]), { site: SITE });
+  assert.equal((words.match(/fetchpriority="high"/g) || []).length, 1);
+  assert.match(words, /<img src="\/site-images\/cbp-b\.webp" alt="Photo b" fetchpriority="high"/);
+  const photoFirst = renderPage(page([BLOCKS[0], BLOCKS[1]]), { site: SITE });
+  assert.equal((photoFirst.match(/fetchpriority="high"/g) || []).length, 1, 'only the opening photo');
+  assert.ok(!renderPage(page([{ type: 'hero', variant: 'minimal', data: { heading: 'T' } }, BLOCKS[1]]), { site: SITE, editable: true }).includes('fetchpriority'));
+});

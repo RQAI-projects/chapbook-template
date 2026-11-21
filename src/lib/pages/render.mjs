@@ -161,6 +161,10 @@ export function renderPage(rawPage, ctx = {}) {
   const m = page.look.motion || null;
   C.backdrop = m?.backdrop || '';
   C.heroId = page.blocks.find((b) => b.type === 'hero')?.id;
+  // A page that opens with words only: its first photo is what a phone paints largest, so it is
+  // asked for at once instead of waiting until it is scrolled near.
+  const first = page.blocks[0];
+  C.eagerLeft = first?.type === 'hero' && (first.data.picture || first.data.video || (first.data.pictures || []).length) ? 0 : 1;
   const blocks = page.blocks.map((b) => renderBlock(b, C)).join('');
   return `<style>${pageCss(page, ctx.base)}</style><div class="cbp${m ? ' cbm' : ''}${page.look.font ? ` cbp-font cbp-hf-${page.look.font}` : ''}${page.look.bodyFont ? ' cbp-bodyfont' : ''}" data-page="${esc(page.slug)}"${motionAttrs(m)}${C.editable ? ' data-m-edit' : ''}>${blocks}</div>`;
 }
@@ -228,6 +232,7 @@ const focusPos = (p) => (p?.focus ? (p.focus === 'top' ? '50% 20%' : p.focus ===
 const picVars = (C, p) => `--cb-pic:${esc(cssUrl(imgSrc(C, p.src)))}${focusPos(p) ? `;--cb-pos:${focusPos(p)}` : ''}`;
 // A picture. `eager` for the first screen; `cls` on the <img>.
 function P(C, b, path, p, cls = '', { eager = false, credits = true } = {}) {
+  if (p && !eager && !C.editable && C.eagerLeft > 0) { eager = true; C.eagerLeft = 0; }
   if (!p) return C.editable ? `<div class="cb-pic-empty ${cls}"${ED(C, 'data-cb-img', `${b.id}:${path}`)} role="img" aria-label="Add a picture"><span>Add a picture</span></div>` : '';
   const focus = p.focus ? ` style="object-position:${p.focus === 'top' ? '50% 20%' : p.focus === 'bottom' ? '50% 80%' : p.focus === 'left' ? '20% 50%' : '80% 50%'}"` : '';
   return `<img${cls ? ` class="${cls}"` : ''} src="${esc(imgSrc(C, p.src))}"${srcsetOf(C, p)} alt="${esc(p.alt)}"${eager ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async"${focus}${ED(C, 'data-cb-img', `${b.id}:${path}`)}>${credits ? credit(p) : ''}`;
@@ -1280,7 +1285,9 @@ R_.compare = (C, b) => {
       if (!C.editable && !x.before && !x.after) return cap ? w(`<div class="cb-cmp-cap">${cap}</div>`, 'article', 'cb-cmp-item') : '';
       return w(`${side}<div class="cb-cmp-cap">${cap}</div>`, 'article', 'cb-cmp-item');
     }
-    const slider = `<div class="cb-cmp-stage" data-cmp style="--pos:50%"><img class="cb-cmp-b" src="${esc(imgSrc(C, x.after.src))}" alt="${esc(x.after.alt || lb)}" loading="lazy" decoding="async"><div class="cb-cmp-a"><img src="${esc(imgSrc(C, x.before.src))}" alt="${esc(x.before.alt || la)}" loading="lazy" decoding="async"></div><span class="cb-cmp-tag cb-cmp-tag-a">${esc(la)}</span><span class="cb-cmp-tag cb-cmp-tag-b">${esc(lb)}</span><span class="cb-cmp-handle" aria-hidden="true"></span><input class="cb-cmp-range" type="range" min="0" max="100" value="50" step="1" aria-label="${esc(`${x.name ? `${x.name}: ` : ''}how much of the ${la.toLowerCase()} photo shows`)}" hidden></div>`;
+    const soon = !C.editable && C.eagerLeft > 0 ? ' fetchpriority="high"' : ' loading="lazy"';
+    if (soon.includes('high')) C.eagerLeft = 0;
+    const slider = `<div class="cb-cmp-stage" data-cmp style="--pos:50%"><img class="cb-cmp-b" src="${esc(imgSrc(C, x.after.src))}" alt="${esc(x.after.alt || lb)}"${soon} decoding="async"><div class="cb-cmp-a"><img src="${esc(imgSrc(C, x.before.src))}" alt="${esc(x.before.alt || la)}"${soon} decoding="async"></div><span class="cb-cmp-tag cb-cmp-tag-a">${esc(la)}</span><span class="cb-cmp-tag cb-cmp-tag-b">${esc(lb)}</span><span class="cb-cmp-handle" aria-hidden="true"></span><input class="cb-cmp-range" type="range" min="0" max="100" value="50" step="1" aria-label="${esc(`${x.name ? `${x.name}: ` : ''}how much of the ${la.toLowerCase()} photo shows`)}" hidden></div>`;
     return w(`${slider}${creditsOf([x.before, x.after])}<div class="cb-cmp-cap">${cap}</div>`, 'article', 'cb-cmp-item');
   };
   const list = LIST(C, b, 'items', items, one, 'div', `cb-cmp cb-cmp-${v}`);
