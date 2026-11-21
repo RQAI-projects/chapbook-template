@@ -4,6 +4,8 @@ interface Props { theme: string; name: string; logo?: { src: string; showName: b
 const {theme,name,logo,context,nav,navLabel,isCurrent}=Astro.props;
 const variants:Record<string,string>={ledger:'register',air:'quiet',broadsheet:'press',journal:'spine',kiosk:'ticker',neon:'signal',zine:'cutout',scrapbook:'label',doodle:'tabs',rocket:'console',pixel:'cartridge',comic:'panel','field-atlas':'register',darkroom:'exhibit','contact-sheet':'proof',polaroid:'letter',folio:'portfolio',practice:'practice',petal:'salon',contour:'gallery',cut:'studio',still:'quiet',office:'directory',portrait:'signature',table:'salon',trade:'directory',clinic:'practice',pulse:'studio',counsel:'portfolio',shopfront:'salon'};
 const variant=variants[theme]||'classic';
+// The website's Book item (its booking page). Where the menu folds away it stays in sight.
+const book=nav.find(n=>n.href==='/appointments/');
 ---
 <header class="site-header" data-header={variant}>
   <div class="container">
@@ -13,6 +15,7 @@ const variant=variants[theme]||'classic';
         : <a class="logo" href={withBase('/')}>{name}</a>}
       {context && <span class="header-context">{context}</span>}
     </div>
+    {book && <a class="header-book" href={withBase(book.href)} data-booking="true" aria-current={isCurrent(book.href)?'page':undefined}>{navLabel(book)}</a>}
     <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="site-nav"><span class="nav-toggle-label">Menu</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     <nav class="nav-primary" aria-label="Primary">
       {nav.filter(n=>n.primary).map(n=><a href={withBase(n.href)} aria-current={isCurrent(n.href)?'page':undefined} data-fixed-label={n.themeLabel?undefined:''} data-booking={n.href==='/appointments/'?'true':undefined}>{navLabel(n)}</a>)}

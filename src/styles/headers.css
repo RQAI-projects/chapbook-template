@@ -42,6 +42,16 @@ html:has(.site-header:not([data-header="classic"])) {--header-h:0px}
 .site-header :is(.site-nav,.nav-primary) a[data-booking]:hover{background:var(--accent);color:var(--cb-on-accent,var(--pro-button-ink,#fff));filter:brightness(.93)}
 .site-header .site-nav a[data-booking] .nav-index{display:none}
 .site-header .site-nav a[data-booking][aria-current="page"]::after{display:none}
+/* Where the menu folds away (a gallery header on any screen; every header but the classic one on
+   a phone), the Book item stays in sight beside the Menu button. */
+.site-header .header-book{display:none}
+.site-header:is([data-header="exhibit"],[data-header="gallery"]) .header-book{display:inline-flex;align-items:center;min-height:44px;padding:0 1.1rem;margin-left:auto;border-radius:var(--radius,10px);background:var(--accent);color:var(--cb-on-accent,var(--pro-button-ink,#fff));font-weight:650;font-size:.88rem;line-height:1.2;white-space:nowrap;text-decoration:none}
+.site-header:is([data-header="exhibit"],[data-header="gallery"]):has(.header-book) .nav-toggle{margin-left:.6rem}
+@media(max-width:640px){
+ .site-header:not([data-header="classic"]) .header-book{display:inline-flex;align-items:center;order:2;min-height:44px;padding:0 .9rem;margin-left:auto;border-radius:var(--radius,10px);background:var(--accent);color:var(--cb-on-accent,var(--pro-button-ink,#fff));font-weight:650;font-size:.85rem;line-height:1.2;white-space:nowrap;text-decoration:none}
+ .site-header:not([data-header="classic"]):has(.header-book) .nav-toggle{margin-left:0}
+ .site-header:not([data-header="classic"]):has(.header-book) .header-identity{max-width:calc(100% - 64px - 8.5rem)}
+}
 /* Galleries let the work lead; an explicit Menu replaces the long nav on desktop. */
 .site-header:is([data-header="exhibit"],[data-header="gallery"]) .container{min-height:88px;align-items:center}
 .site-header:is([data-header="exhibit"],[data-header="gallery"]) .logo{font-size:.85rem;font-weight:400;letter-spacing:.08em;text-transform:uppercase}
