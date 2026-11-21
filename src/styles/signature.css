@@ -785,9 +785,9 @@ html:not(.cbm-js) .cb-rail-band{display:none}
   .cb-mbi-row>details[open] .cb-mb-desc{animation:cbs-soft-open .3s cubic-bezier(.22,1,.36,1)}
   /* Tiles that open: pointed at or focused, the panel slides up and the photo eases in. A finger,
      and the editor, keep the panel open. */
+  /* At rest the panel's first line, the time and the price, peeks up from the foot of the tile,
+     so a mouse user sees what each costs before pointing at it; pointed at, the rest slides up. */
   @media (hover:hover) and (pointer:fine) and (min-width:761px){
-    /* At rest the panel's first line, the time and the price, peeks up from the foot of the tile,
-       so a mouse user sees what each costs before pointing at it; pointed at, the rest slides up. */
     html.cbm-js .cbp:not([data-m-edit]) .cb-tl-open .cb-tl-item.has-panel .cb-tl-panel{transform:translate3d(0,calc(100% - var(--cb-tl-peek,2.85rem)),0);transition:transform .5s cubic-bezier(.22,1,.36,1)}
     html.cbm-js .cbp:not([data-m-edit]) .cb-tl-open .cb-tl-item.has-panel .cb-tl-panel>:not(.cb-tl-meta){opacity:0;transition:opacity .35s ease}
     html.cbm-js .cbp:not([data-m-edit]) .cb-tl-open .cb-tl-item.has-panel:is(:hover,:focus-within,:focus-visible) .cb-tl-panel>*{opacity:1}
