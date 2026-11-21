@@ -144,6 +144,8 @@ const isCurrent = (href: string) => {
 
     <ViewTransitions />
     {siteDesignCss && <style is:inline set:html={siteDesignCss}></style>}
+    {/* A page may ask for its first picture early (a block page's opening photo). */}
+    <slot name="head" />
   </head>
   <body data-default-theme={site.defaultTheme}>
     {progress && <div class="progress-bar" id="progress-bar"></div>}

@@ -35,11 +35,17 @@ const html = renderPage({ ...page, blocks }, {
   fallbackEmail: (profile as any).email && (profile as any).email !== 'you@example.com' ? (profile as any).email : '',
   href: (p: string) => withBase(p), postsHref: withBase('/posts/'),
 });
+// The opening's photo is the largest thing a phone paints first: it is asked for before the
+// stylesheets are read, so the page's largest paint is not held up by them.
+const opening = blocks.find((b: any) => b.type === 'hero');
+const openingSrc = opening && !opening.data?.video && typeof opening.data?.picture?.src === 'string' ? opening.data.picture.src : '';
+const preloadSrc = /^\/site-images\/[A-Za-z0-9][A-Za-z0-9._-]{0,120}$/.test(openingSrc) ? withBase(openingSrc) : /^https:\/\//.test(openingSrc) ? openingSrc : '';
 // An About page whose blocks are all still empty would publish with nothing on it. It says one
 // plain line instead and points to the Contact page. Nothing about the business is made up.
 const blankAbout = page.slug === 'about' && !html.includes('<section');
 ---
 <Base title={title ?? page.title} description={description ?? (page.description || undefined)}>
+  {preloadSrc && <link slot="head" rel="preload" as="image" href={preloadSrc} fetchpriority="high" />}
   <slot />
   {/* Tell the stylesheet a script is on its way. Until it says so nothing on the page moves by
       itself (there would be no Pause button), and things that will arrive on scroll don't flash
