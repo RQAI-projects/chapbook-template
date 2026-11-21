@@ -73,7 +73,8 @@ function cleanLink(v, maxLabel = 60) {
 // not saved yet (a data: URL); the published site never accepts one.
 export const SITE_IMAGE = /^\/site-images\/[A-Za-z0-9][A-Za-z0-9._-]{0,120}$/;
 const DATA_IMAGE = /^data:image\/(?:png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/;
-const CREDIT_LICENCES = ['cc0', 'pdm', 'by', 'by-sa'];
+// `ai-generated`: a sample photo made for Chapbook by an image model, credited as what it is.
+const CREDIT_LICENCES = ['cc0', 'pdm', 'by', 'by-sa', 'ai-generated'];
 function cleanCredit(v) {
   if (!isObj(v)) return null;
   const licence = String(v.license || v.licence || '').toLowerCase();

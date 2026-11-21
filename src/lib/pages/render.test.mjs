@@ -85,6 +85,14 @@ test('CC BY photos carry their credit on the published page', () => {
   assert.ok(!cc0.includes('CC BY'));
 });
 
+test('an AI-made sample photo keeps its own credit, never turned into public domain', () => {
+  const p = cleanPicture({ src: '/site-images/cbp-c1-hero.webp', alt: 'A reception', credit: { license: 'ai-generated', creator: 'Chapbook', title: 'AI-made sample photo' } });
+  assert.deepEqual(p.credit, { creator: 'Chapbook', title: 'AI-made sample photo', license: 'ai-generated', page: '' });
+  assert.equal(cleanPicture({ src: '/site-images/a.webp', credit: { license: 'made-up' } }).credit, undefined);
+  // Nothing is printed under it: the photo is the website's own sample, not someone else's work.
+  assert.ok(!renderPage(page([{ type: 'image', data: { picture: p } }]), {}).includes('cb-credit'));
+});
+
 test('editor markers name the block and the value path', () => {
   const b = { id: 'b7f3', type: 'services', variant: 'menu', data: { heading: 'Fees', items: [{ id: 'i1', name: 'Massage', price: '£65' }] } };
   const html = renderPage(page([b]), { editable: true });
