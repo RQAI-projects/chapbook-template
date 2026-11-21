@@ -816,7 +816,13 @@ html:not(.cbm-js) .cb-rail-band{display:none}
 .cb-closed{margin:1.1rem 0 0;padding:.8rem 1rem;border-left:3px solid var(--cb-accent-text,var(--accent));border-radius:0 var(--cb-r) var(--cb-r) 0;background:color-mix(in srgb,var(--accent) 7%,transparent);font-size:.96rem;line-height:1.5;max-width:40rem}
 .cb-closed p{margin:0}
 .cb-closed a{color:inherit;text-decoration-thickness:1px;text-underline-offset:.18em}
-.cb-hero-now{margin:1.1rem 0 0}
+.cb-hero-now{margin:1.1rem 0 0;justify-self:start;align-self:start;width:max-content;max-width:100%}
+/* The heading's marked word, per typeface: the warm serif in its own light italic (the bold
+   italic is not loaded, and would come out heavy); the geometric sans has no italic, so its
+   word is set upright in the accent colour instead of a slanted copy. */
+.cbp-hf-modern :is(.cb-h,.cb h3) em{font-weight:400}
+.cbp-hf-grotesk .cb-h em{font-style:normal;color:var(--cb-accent-text,var(--accent))}
+.cb-bg-dark.cbp-hf-grotesk .cb-h em,.cbp-hf-grotesk .cb-bg-dark .cb-h em,.cbp-hf-grotesk .cb-bg-accent .cb-h em{color:inherit}
 
 /* ---- Quick actions over an Open now card (C1's opening) ------------------------------------ */
 /* The first screen must hold the heading, Open now and the actions: less room above it. */
@@ -878,6 +884,8 @@ html:not(.cbm-js) .cb-rail-band{display:none}
 .cb-team-card .cb-person-quals{font-size:.88rem;color:var(--ink-dim)}
 @media (min-width:761px){.cb-team-card{flex-basis:clamp(15.5rem,21vw,18.5rem)}}
 
+/* A tile's link, and a service's own Book link, are full touch targets (44px), as everywhere else. */
+.cbp .cb-tl-item .cb-link,.cbp .cb-svc-links .cb-link{display:inline-flex;align-items:center;min-height:max(2.75rem,44px)}
 /* Words over a bright photo on a small tile: on a phone the shade starts higher, so white words
    stay readable over white rooms. */
 @media (max-width:760px){.cb-tl-item.has-pic:not(.has-panel) .cb-tl-pic::after{background:linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.6) 36%,rgba(0,0,0,.86))}}
