@@ -708,7 +708,8 @@ test('a published opening keeps no room for a photo that was never added; the ed
     assert.equal((pub.match(/<h1/g) || []).length, 1, `${variant} must still have one h1`);
     // The editor is unchanged: every layout with a place for a photo asks for one.
     const ed = renderPage(page([{ type: 'hero', variant, data: words }]), { site, editable: true });
-    if (variant !== 'minimal') assert.ok(ed.includes('Add a picture'), `${variant} lost the editor's prompt`);
+    // (Words only and the one large statement have no place for a photo, by design.)
+    if (!['minimal', 'statement'].includes(variant)) assert.ok(ed.includes('Add a picture'), `${variant} lost the editor's prompt`);
     assert.ok(ed.includes(`cb-hero--${variant}`), `${variant} changed frame in the editor`);
   }
   // Layouts whose whole frame is shaped for the photo take the plain frame; the others keep theirs.

@@ -50,11 +50,12 @@
    takes it away while the strip itself, or the foot of the page, is on screen. */
 .cb-bookbar{display:none}
 @media (max-width:760px){
-  html.cba-js .cb-bookbar.is-live{display:flex;gap:.6rem;position:fixed;left:0;right:0;bottom:0;z-index:60;padding:.6rem max(.9rem,env(safe-area-inset-left)) calc(.6rem + env(safe-area-inset-bottom)) max(.9rem,env(safe-area-inset-right));background:color-mix(in srgb,var(--bg-0,#fff) 94%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line-strong);transform:translate3d(0,110%,0);transition:transform .32s cubic-bezier(.2,.7,.2,1);color:var(--ink)}
+  html.cba-js .cb-bookbar.is-live{display:flex;gap:.6rem;position:fixed;left:0;right:0;bottom:0;z-index:60;padding:.6rem max(.9rem,env(safe-area-inset-left)) calc(.6rem + env(safe-area-inset-bottom)) max(.9rem,env(safe-area-inset-right));background:color-mix(in srgb,var(--bg-0,#fff) 94%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line-strong);transform:translate3d(0,110%,0);transition:transform .3s cubic-bezier(.22,1,.36,1);color:var(--ink)}
   html.cba-js .cb-bookbar.is-live.is-on{transform:none}
   .cb-bookbar .cb-btn{flex:1;min-height:3rem}
   /* Room under the page, so the bar never rests on the last lines of the footer. */
   body:has(.cb-bookbar.is-live){padding-bottom:calc(4.4rem + env(safe-area-inset-bottom))}
+  body:has(.cb-bookbar.is-live.is-on) .cbm-pause{bottom:calc(5rem + env(safe-area-inset-bottom))}
 }
 @media (prefers-reduced-motion:reduce){.cb-bookbar{transition:none!important}}
 @media print{.cb-bookbar{display:none!important}}
@@ -179,7 +180,9 @@
 .cb-tl-pic img,.cb-tl-pic .cb-pic-empty{width:100%;aspect-ratio:auto;height:100%;min-height:7rem;object-fit:cover;border-radius:0}
 .cb-tl-item.has-pic{color:#fff;--ink:#fff;--ink-dim:rgba(255,255,255,.9);--cb-accent-text:#fff;background:#16181d;min-height:13rem}
 .cb-tl-item.has-pic .cb-tl-pic{position:absolute;inset:0;z-index:-1}
-.cb-tl-item.has-pic .cb-tl-pic::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.12) 30%,rgba(0,0,0,.8))}
+.cb-tl-item.has-pic .cb-tl-pic::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 28%,rgba(0,0,0,.42) 55%,rgba(0,0,0,.82))}
+.cb-tl-item.has-pic .cb-tl-body{text-shadow:0 1px 14px rgba(0,0,0,.45)}
+.cbp .cb .cb-tl-item h3.cb-tl-name{font-size:clamp(1.15rem,1.8vw,1.45rem);line-height:1.2}
 .cb-tl-item.has-pic .cb-credit{position:absolute;right:.5rem;top:.4rem;color:#fff}
 /* A tile led by a number takes the accent colour, every other one. */
 .cb-tl-item.has-value:not(.has-pic):nth-child(odd){background:var(--accent);color:var(--cb-on-accent);--ink:var(--cb-on-accent);--ink-dim:color-mix(in srgb,var(--cb-on-accent) 86%,var(--accent));--cb-accent-text:var(--cb-on-accent)}
@@ -328,6 +331,84 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
   .cb-sc-item:nth-child(even) .cb-sc-pic{order:2}
 }
 
+.cb-faq-accordion details[open] summary::after{content:"\2212";transform:rotate(180deg)}
+
+/* ---- Marked words (M16): plain underline or highlight; the page's script draws it in ---- */
+.cbp mark.cb-mark{background:none;color:inherit;text-decoration:underline;text-decoration-color:var(--cb-accent-text,var(--accent));text-decoration-thickness:max(2px,.07em);text-underline-offset:.16em;text-decoration-skip-ink:none}
+.cbp[data-m-mark=highlight] mark.cb-mark{text-decoration:none;background:linear-gradient(transparent 58%,color-mix(in srgb,var(--accent) 24%,transparent) 0);-webkit-box-decoration-break:clone;box-decoration-break:clone}
+:is(.cb-bg-dark,.cb-bg-accent,.cb-bg-picture) mark.cb-mark{text-decoration-color:currentColor}
+.cbp[data-m-mark=highlight] :is(.cb-bg-dark,.cb-bg-accent,.cb-bg-picture) mark.cb-mark{background:linear-gradient(transparent 58%,color-mix(in srgb,currentColor 22%,transparent) 0)}
+
+/* ---- Opening: large words, then a photo from edge to edge (S2, with M1) ------------------ */
+.cb-reveal{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(2rem,5vw,4.5rem)}
+.cb-reveal-words{max-width:64rem}
+.cbp .cb-hero--reveal .cb-hero-h{font-size:clamp(2.6rem,7.2vw,7.4rem);line-height:.98;max-width:15ch}
+.cbp:is(.cbp-hf-clean,.cbp-hf-grotesk) .cb-hero--reveal .cb-hero-h{letter-spacing:-.02em}
+.cb-reveal .cb-lead{max-width:38rem;font-size:clamp(1.06rem,1.4vw,1.22rem);line-height:1.6}
+.cbp .cb-reveal-pic{position:relative;width:100vw;margin:0 0 0 calc(50% - 50vw);height:clamp(22rem,74vh,54rem);overflow:hidden;background:var(--cb-surface)}
+.cb-reveal-in{display:block;width:100%;height:100%}
+.cbp .cb-reveal-in :is(img,video,.cb-pic-empty){display:block;width:100%;height:100%;object-fit:cover;border-radius:0}
+.cb-hero--reveal .cb-credits{margin-top:.6rem}
+@media (max-width:760px){.cbp .cb-reveal-pic{height:58vh}}
+
+/* ---- Opening: one statement that fills the first screen (S3) ------------------------------ */
+.cb-statement{display:flex;flex-direction:column;justify-content:flex-end;gap:1.2rem;min-height:min(74vh,50rem);padding-block:clamp(1rem,5vh,3rem)}
+.cbp .cb-hero--statement .cb-hero-h{font-size:clamp(2.8rem,8.4vw,8.8rem);line-height:.98;max-width:16ch;margin:0}
+.cbp:is(.cbp-hf-clean,.cbp-hf-grotesk) .cb-hero--statement .cb-hero-h{letter-spacing:-.025em}
+.cb-statement .cb-lead{max-width:36rem;font-size:clamp(1.06rem,1.4vw,1.22rem);line-height:1.6}
+@media (max-width:760px){.cb-statement{min-height:60vh}}
+
+/* ---- Treatment or service list, pinned beside a photo (S6, with M3) ---------------------- */
+.cb-pin-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line-strong)}
+.cb-pin-item{display:grid;gap:1rem clamp(1.5rem,4vw,3.5rem);padding:clamp(1.4rem,3vw,2.2rem) 0;border-bottom:1px solid var(--line-strong)}
+.cb-pin-pic{margin:0}
+.cb-pin-pic img,.cb-pin-pic .cb-pic-empty{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--cb-r-img)}
+.cb-pin-n{margin:0 0 .5rem;font:600 .85rem/1 var(--cb-head);letter-spacing:.06em;color:var(--cb-accent-text,var(--accent));font-variant-numeric:tabular-nums}
+.cbp .cb .cb-pin-item h3.cb-svc-name{font-size:clamp(1.8rem,3.6vw,3.2rem);line-height:1.02;margin:0}
+.cbp:is(.cbp-hf-clean,.cbp-hf-grotesk) .cb-pin-item h3.cb-svc-name{letter-spacing:-.02em}
+.cb-pin-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem 1.2rem;margin:.75rem 0 0;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.cb-pin-meta:empty{display:none}
+.cb-pin-meta .cb-price{font-weight:650}
+.cb-pin-meta .cb-time{color:var(--ink-dim)}
+.cb-pin-body .cb-svc-desc{margin-top:.6rem;max-width:44ch;color:var(--ink-dim)}
+.cb-pin-body .cb-svc-links{margin-top:.9rem}
+.cb-pin-body .cb-svc-links .cb-link{display:inline-flex;align-items:center;min-height:2.75rem}
+.cb-pin-stage{display:none}
+@media (min-width:761px){.cb-pin-item{grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);align-items:center}.cb-pin-item>.cb-pin-body:only-child{grid-column:1/-1}}
+
+/* ---- Sticky steps (S14, with M10); each step may end in its own button -------------------- */
+.cb-stk-rail{display:none}
+.cb-steps-sticky{display:grid}
+.cb-steps-sticky>.cb-step{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.4rem clamp(1rem,3vw,2rem);align-items:start;padding:clamp(1.3rem,3vw,2rem) 0;border-top:1px solid var(--line-strong)}
+.cb-steps-sticky>.cb-step:last-child{border-bottom:1px solid var(--line-strong)}
+.cb-steps-sticky .cb-step-n{font-size:clamp(2.4rem,6vw,3.6rem);font-weight:500;letter-spacing:-.03em;min-width:2ch}
+.cbp .cb .cb-steps-sticky h3.cb-step-name{font-size:clamp(1.35rem,2.4vw,2.1rem);line-height:1.12}
+.cb-step-go{margin:1rem 0 0}
+.cb-step-go .cb-btn{min-height:2.75rem}
+
+/* ---- Team: each person's own Book button (S9) -------------------------------------------- */
+.cb-person-book{margin:1rem 0 0}
+.cb-person-book .cb-btn{min-height:2.75rem}
+
+/* ---- Open now (S15): filled in by the page's script from the opening hours ---------------- */
+.cb-opennow{display:inline-flex;align-items:center;gap:.6rem;margin:.1rem 0 1rem;padding:.45rem .95rem;border-radius:99px;font-weight:650;font-size:.95rem;line-height:1.3;background:color-mix(in srgb,currentColor 8%,transparent)}
+.cb-opennow::before{content:"";flex:none;width:.6rem;height:.6rem;border-radius:50%;background:currentColor;opacity:.45}
+.cb-opennow.is-open::before{background:#2f8f5b;opacity:1;box-shadow:0 0 0 .22rem color-mix(in srgb,#2f8f5b 28%,transparent)}
+
+/* ---- Numbers in a band (S17, with M9 on the page's count) --------------------------------- */
+.cb-factlist-band{grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr));gap:0;border-top:1px solid var(--line-strong)}
+.cb-factlist-band>.cb-fact{display:flex;flex-direction:column;gap:.7rem;padding:clamp(1.3rem,3vw,2.2rem) clamp(1rem,2.4vw,2rem) .4rem 0}
+.cb-factlist-band>.cb-fact+.cb-fact{border-left:1px solid var(--line-strong);padding-left:clamp(1rem,2.4vw,2rem)}
+.cb-factlist-band .cb-fact-value{font-size:clamp(3rem,6.6vw,6.2rem);font-weight:500;line-height:.92;letter-spacing:-.035em;color:inherit}
+.cb-factlist-band .cb-fact-label{max-width:20ch;font-size:1rem}
+@media (max-width:760px){.cb-factlist-band{grid-template-columns:repeat(2,minmax(0,1fr))}.cb-factlist-band>.cb-fact:nth-child(odd){border-left:0;padding-left:0}.cb-factlist-band>.cb-fact:nth-child(n+3){border-top:1px solid var(--line-strong)}}
+
+/* ---- Accreditation row, set as type (S18) ------------------------------------------------- */
+.cb-creds-row{display:flex;flex-wrap:wrap;border-block:1px solid var(--line-strong)}
+.cb-creds-row>li{flex:1 1 auto;padding:1.2rem clamp(1rem,2.4vw,1.8rem);font-family:var(--cb-head);font-size:clamp(1.02rem,1.5vw,1.28rem);line-height:1.25;text-align:center}
+.cb-creds-row>li+li{border-left:1px solid var(--line-strong)}
+@media (max-width:760px){.cb-creds-row{display:grid}.cb-creds-row>li{padding:.95rem 0;text-align:left}.cb-creds-row>li+li{border-left:0;border-top:1px solid var(--line)}}
+
 /* ======================================================================================== */
 /* Movement                                                                                  */
 /* ======================================================================================== */
@@ -335,8 +416,12 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
 @keyframes cbs-arrive-fade{from{opacity:0}to{opacity:1}}
 @keyframes cbs-arrive-lift{from{opacity:0;transform:translate3d(0,26px,0)}to{opacity:1;transform:none}}
 @keyframes cbs-veil{from{transform:scaleY(1)}to{transform:scaleY(0)}}
-@keyframes cbs-depth-a{from{transform:translate3d(0,2.6rem,0)}to{transform:translate3d(0,-2.6rem,0)}}
-@keyframes cbs-depth-b{from{transform:translate3d(0,-1.3rem,0)}to{transform:translate3d(0,1.3rem,0)}}
+@keyframes cbs-depth-a{from{transform:translate3d(0,40px,0)}to{transform:translate3d(0,-40px,0)}}
+@keyframes cbs-depth-b{from{transform:translate3d(0,-8px,0)}to{transform:translate3d(0,8px,0)}}
+@keyframes cbs-depth-c{from{transform:translate3d(0,8px,0)}to{transform:translate3d(0,-8px,0)}}
+@keyframes cbs-reveal-frame{from{transform:scale(.76)}to{transform:none}}
+@keyframes cbs-reveal-in{from{transform:scale(1.4737)}to{transform:none}}
+@keyframes cbs-soft-open{from{opacity:0;transform:translate3d(0,-6px,0)}to{opacity:1;transform:none}}
 @keyframes cbs-pin{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 0 0 1.5rem transparent}}
 
 @media screen and (prefers-reduced-motion:no-preference){
@@ -362,8 +447,11 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
 
   /* ---- Pictures at their own depth: neighbours travel at different speeds ----------------- */
   @supports (animation-timeline:view()){
-    .cbm[data-m-pictures=depth]:not([data-m-edit]) :is(.cb-pic-frame,.cb-figure,.cb-show-pic,.cb-cs-main,.cb-gallery>figure:nth-child(odd),.cb-tl-item:nth-child(odd),.cb-cs-more>figure:nth-child(odd),.cb-team:not(.cb-team-carousel)>article:nth-child(odd) .cb-portrait){animation:cbs-depth-a linear both;animation-timeline:view();will-change:transform}
-    .cbm[data-m-pictures=depth]:not([data-m-edit]) :is(.cb-gallery>figure:nth-child(even),.cb-tl-item:nth-child(even),.cb-cs-more>figure:nth-child(even),.cb-team:not(.cb-team-carousel)>article:nth-child(even) .cb-portrait){animation:cbs-depth-b linear both;animation-timeline:view();will-change:transform}
+    .cbm[data-m-pictures=depth]:not([data-m-edit]) :is(.cb-pic-frame,.cb-figure,.cb-show-pic,.cb-cs-main){animation:cbs-depth-a linear both;animation-timeline:view();will-change:transform}
+    /* Neighbours in a grid travel less and in turn, so they never run into each other; a portrait
+       stays put, so it never covers the name under it. */
+    .cbm[data-m-pictures=depth]:not([data-m-edit]) :is(.cb-gallery>figure,.cb-tl-item,.cb-cs-more>figure):nth-child(odd){animation:cbs-depth-c linear both;animation-timeline:view();will-change:transform}
+    .cbm[data-m-pictures=depth]:not([data-m-edit]) :is(.cb-gallery>figure,.cb-tl-item,.cb-cs-more>figure):nth-child(even){animation:cbs-depth-b linear both;animation-timeline:view();will-change:transform}
     .cbm[data-m-pictures=depth]:not([data-m-edit]) .cb-hero-bg :is(img,video){animation:cbm-sink linear both;animation-timeline:scroll(root);animation-range:0 100vh}
   }
 
@@ -382,6 +470,26 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
   @media (min-width:761px){.cbm .cb-pl-cards>.cb-pl-item.is-popular{transform:translate3d(0,-.6rem,0);transition:transform .45s var(--m-ease)}}
   /* The map pin lands, then rings three times. */
   html.cbm-js .cbm:not([data-m-edit]) .cb-find-pin{animation:cbs-pin 1.6s ease-out 3}
+
+  /* ---- The plan's measured pace: entrances ease out, 800ms, 75ms apart, 28px of travel ----- */
+  .cbp[data-m-pace=measured]{--m-dur:.8s;--m-step:75ms;--m-ease:cubic-bezier(.22,1,.36,1);--m-dist:28px}
+  /* ---- The opening heading, line by line from behind a mask (M2: 800ms each, 80ms apart) ---- */
+  .cbm[data-m-heading=rising] .cbm-w>span{transform:translate3d(0,105%,0);transition:transform .8s cubic-bezier(.22,1,.36,1) calc(var(--k,0) * 80ms)}
+  .cbm[data-m-heading=rising] .is-in .cbm-w>span{transform:none}
+  /* ---- The curtain opening (M1): inset 12% at 1.12, open over 1400ms, once ----------------- */
+  html.cbm-js .cbm:not([data-m-edit]) .cb-reveal-pic{animation:cbs-reveal-frame 1.4s cubic-bezier(.22,1,.36,1) .15s both}
+  html.cbm-js .cbm:not([data-m-edit]) .cb-reveal-in{animation:cbs-reveal-in 1.4s cubic-bezier(.22,1,.36,1) .15s both}
+  /* ---- Marked words drawn left to right (M16: 700ms) --------------------------------------- */
+  html.cbm-js .cbp mark.cb-mark.cbm-mk{text-decoration:none;background:none;position:relative;z-index:0}
+  html.cbm-js .cbp mark.cb-mark.cbm-mk::after{content:"";position:absolute;left:0;right:0;bottom:.02em;height:max(2px,.07em);z-index:-1;background:var(--cb-accent-text,var(--accent));transform:scaleX(0);transform-origin:0 50%;transition:transform .7s cubic-bezier(.22,1,.36,1)}
+  html.cbm-js .cbp[data-m-mark=highlight] mark.cb-mark.cbm-mk::after{bottom:.08em;height:.42em;background:color-mix(in srgb,var(--accent) 24%,transparent)}
+  html.cbm-js .cbp :is(.cb-bg-dark,.cb-bg-accent,.cb-bg-picture) mark.cb-mark.cbm-mk::after{background:currentColor}
+  html.cbm-js .cbp[data-m-mark=highlight] :is(.cb-bg-dark,.cb-bg-accent,.cb-bg-picture) mark.cb-mark.cbm-mk::after{background:color-mix(in srgb,currentColor 22%,transparent)}
+  html.cbm-js .cbp mark.cb-mark.cbm-mk.is-on::after{transform:none}
+
+  /* ---- Questions open softly (M17): the answer fades in as it drops 6px, 300ms; + becomes − -- */
+  .cb-faq-accordion details[open] .cb-a{animation:cbs-soft-open .3s cubic-bezier(.22,1,.36,1)}
+  .cb-faq-accordion summary::after{transition:transform .3s cubic-bezier(.22,1,.36,1)}
 
   /* ---- Reviews drifting past each other --------------------------------------------------- */
   @media (min-width:761px){
@@ -432,6 +540,35 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
   html.cbm-js .cb-sc-full.is-live .cb-sc-item:first-child{min-height:calc(100vh - var(--header-h,0px))}
   html.cbm-js .cb-sc-full.is-live .cb-sc-body{max-width:31rem;padding:clamp(1.4rem,2.6vw,2.1rem);border-radius:calc(var(--cb-r) + .5rem);box-shadow:0 24px 60px -30px rgba(0,0,0,.6)}
   html.cbm-js .cb-sc-full.is-live .cb-sc-ticks{right:1.5rem}
+}
+
+/* ---- Pinned list (M3) and sticky steps (M10): a wide screen, the script, movement allowed --- */
+@media screen and (prefers-reduced-motion:no-preference) and (min-width:761px){
+  html.cbm-js .cb-pin.is-live{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(2rem,5vw,5rem);align-items:start}
+  html.cbm-js .cb-pin.is-live .cb-pin-stage{display:block;position:sticky;order:2;top:calc(var(--header-h,0px) + max(1.5rem,(100vh - var(--header-h,0px) - min(72vh,42rem)) / 2));height:min(72vh,42rem);overflow:hidden;border-radius:calc(var(--cb-r-img) + .4rem);background:var(--cb-surface)}
+  html.cbm-js .cb-pin.is-live .cb-pin-stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s cubic-bezier(.65,0,.35,1)}
+  html.cbm-js .cb-pin.is-live .cb-pin-stage img.is-on{opacity:1}
+  html.cbm-js .cb-pin.is-live .cb-pin-pic{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%)}
+  html.cbm-js .cb-pin.is-live .cb-pin-item{display:flex;flex-direction:column;justify-content:center;min-height:min(66vh,38rem)}
+  html.cbm-js .cb-pin.is-live .cb-pin-item h3.cb-svc-name{opacity:.3;transition:opacity .4s cubic-bezier(.65,0,.35,1)}
+  html.cbm-js .cb-pin.is-live .cb-pin-item :is(.cb-pin-meta,.cb-svc-desc,.cb-offer,.cb-svc-links){opacity:0;transform:translate3d(0,16px,0);transition:opacity .4s cubic-bezier(.22,1,.36,1),transform .4s cubic-bezier(.22,1,.36,1)}
+  html.cbm-js .cb-pin.is-live .cb-pin-item:is(.is-on,:focus-within) h3.cb-svc-name{opacity:1}
+  html.cbm-js .cb-pin.is-live .cb-pin-item:is(.is-on,:focus-within) :is(.cb-pin-meta,.cb-svc-desc,.cb-offer,.cb-svc-links){opacity:1;transform:none}
+  html.cbm-js .cb-pin.is-live .cb-pin-item:is(.is-on,:focus-within) .cb-pin-meta{transition-delay:.06s}
+  html.cbm-js .cb-pin.is-live .cb-pin-item:is(.is-on,:focus-within) .cb-svc-desc{transition-delay:.12s}
+
+  html.cbm-js .cb-stk.is-live{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(2rem,6vw,6rem);align-items:start}
+  html.cbm-js .cb-stk.is-live .cb-stk-rail{display:grid;gap:1.1rem;align-content:start;position:sticky;top:calc(var(--header-h,0px) + 20vh)}
+  .cb-stk-num{position:relative;display:block;height:1em;overflow:hidden;font-family:var(--cb-head);font-size:clamp(6rem,13vw,12rem);font-weight:500;line-height:1;letter-spacing:-.04em;color:var(--cb-accent-text,var(--accent));font-variant-numeric:tabular-nums}
+  .cb-stk-num>span{position:absolute;left:0;top:0;opacity:0;transform:translate3d(0,100%,0);transition:transform .25s cubic-bezier(.22,1,.36,1),opacity .25s cubic-bezier(.22,1,.36,1)}
+  .cb-stk-num>span.is-on{opacity:1;transform:none}
+  .cb-stk-num>span.is-past{transform:translate3d(0,-100%,0)}
+  .cb-stk-of{font-size:.9rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim)}
+  .cb-stk-bar{display:block;width:min(14rem,80%);height:2px;background:var(--line-strong)}
+  .cb-stk-bar i{display:block;height:100%;background:var(--cb-accent-text,var(--accent));transform-origin:0 50%;transform:scaleX(calc(var(--k,1) / var(--n,1)));transition:transform .25s cubic-bezier(.22,1,.36,1)}
+  html.cbm-js .cb-stk.is-live .cb-steps-sticky>.cb-step{grid-template-columns:minmax(0,1fr);min-height:min(56vh,30rem);align-content:center;opacity:.38;transition:opacity .4s cubic-bezier(.65,0,.35,1)}
+  html.cbm-js .cb-stk.is-live .cb-steps-sticky>.cb-step:is(.is-on,:focus-within){opacity:1}
+  html.cbm-js .cb-stk.is-live .cb-steps-sticky .cb-step-n{display:none}
 }
 
 /* A page that stands still (print, thumbnails) shows every strip and wall in full. */

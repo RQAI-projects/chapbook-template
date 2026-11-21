@@ -165,7 +165,7 @@ export function renderPage(rawPage, ctx = {}) {
 // The page's movement choices as data-m-* attributes; motion.css and page-motion.js read them.
 export function motionAttrs(m) {
   if (!m) return '';
-  return ['scroll', 'heading', 'buttons', 'pictures', 'follow', 'pointer', 'opening', 'arrive', 'pace'].filter((k) => m[k] && Object.hasOwn(MOTION[k].options, m[k])).map((k) => ` data-m-${k}="${m[k]}"`).join('') + (m.count ? ' data-m-count' : '');
+  return ['scroll', 'heading', 'buttons', 'pictures', 'follow', 'pointer', 'opening', 'arrive', 'mark', 'pace'].filter((k) => m[k] && Object.hasOwn(MOTION[k].options, m[k])).map((k) => ` data-m-${k}="${m[k]}"`).join('') + (m.count ? ' data-m-count' : '');
 }
 // Moving shapes behind a block. Pure decoration: empty elements that the stylesheet arranges and
 // animates in the page's own colours, hidden from screen readers.
@@ -253,7 +253,25 @@ function LIST(C, b, key, items, each, tag = 'div', cls = '') {
 const K = (C, b, d) => (!C.editable && sameText(d.kicker, d.heading) ? '' : T(C, b, 'kicker', d.kicker, 'p', 'cb-kicker'));
 const hTag = (C, b, tag = 'h2') => { if (b.id === C.h1Id && !C.h1Done) { C.h1Done = true; return 'h1'; } return tag; };
 function H(C, b, d, tag = 'h2', cls = 'cb-h', attrs = '') {
-  return T(C, b, 'heading', d.heading, hTag(C, b, tag), cls, attrs);
+  return withMark(C, d, T(C, b, 'heading', d.heading, hTag(C, b, tag), cls, attrs));
+}
+// "Words to mark": on the published page the first place those words appear (in the heading, or
+// else in the words under it) is wrapped in <mark>, which the stylesheet underlines or highlights
+// and the page's script draws in. The words themselves are never changed, and the editor leaves
+// the heading as plain text so it can be typed into.
+function withMark(C, d, html) {
+  const want = C.editable || !d?.mark || C.marked?.has(d) ? '' : esc(d.mark);
+  if (!want) return html;
+  let done = false;
+  const out = html.split(/(<[^>]*>)/).map((part) => {
+    if (done || part.startsWith('<')) return part;
+    const at = part.toLowerCase().indexOf(want.toLowerCase());
+    if (at < 0) return part;
+    done = true;
+    return `${part.slice(0, at)}<mark class="cb-mark">${part.slice(at, at + want.length)}</mark>${part.slice(at + want.length)}`;
+  }).join('');
+  if (done) (C.marked ||= new Set()).add(d);
+  return out;
 }
 
 function bizDetails(C, d, own = false) {
@@ -262,8 +280,9 @@ function bizDetails(C, d, own = false) {
   return { address: biz.location, hours: biz.hours, phone: biz.phone, email: biz.email };
 }
 // The facts list used by contact blocks and the hero's details panel.
-function factsList(C, b, d, { own = false, cls = 'cb-facts' } = {}) {
+function factsList(C, b, d, { own = false, cls = 'cb-facts', skip = '' } = {}) {
   const f = bizDetails(C, d, own);
+  if (skip) f[skip] = '';
   const row = (label, key, html) => (html ? `<div><dt>${label}</dt><dd>${html}</dd></div>` : '');
   const val = (key, html, isPlain) => {
     if (own) {
@@ -327,7 +346,7 @@ const shownMore = (b, d) => (d.pictures || []).slice(0, HERO_PHOTO_ROOM[b.varian
 // Openings built round a photo. On the published page one with no photo or film is drawn as its
 // words alone, so no room is kept for a picture that was never added. The editor is not touched:
 // it goes on showing the "Add a picture" prompt in the photo's place.
-const PHOTO_LED = ['split', 'photo-behind', 'stacked', 'blob', 'inset', 'open', 'orbit', 'collage', 'arch', 'curtain'];
+const PHOTO_LED = ['split', 'photo-behind', 'stacked', 'blob', 'inset', 'open', 'orbit', 'collage', 'arch', 'curtain', 'reveal'];
 // Of those, the ones whose whole frame is shaped for the photo. Without one they take the plain
 // "words" frame instead of their own.
 const PHOTO_FRAMED = ['photo-behind', 'inset', 'open', 'curtain'];
@@ -349,7 +368,7 @@ R_.hero = (C, b) => {
   // (making it would use up the page's one h1).
   const ownHeading = v === 'marquee' || v === 'mask' || v === 'wordmark' || v === 'open';
   const head = ownHeading ? '' : `${K(C, b, d)}${heroHeading(C, b, d)}`;
-  const intro = RT(C, b, 'intro', d.intro, 'cb-rich cb-lead');
+  const intro = withMark(C, d, RT(C, b, 'intro', d.intro, 'cb-rich cb-lead'));
   // The booking bar, when there is one, always sits under the buttons, whatever the layout.
   const btns = `${BTNS(C, b, d.buttons)}${heroBar(C, b, d)}`;
   const words = `${head}${intro}${btns}`;
@@ -510,6 +529,10 @@ R_.hero = (C, b) => {
     return `<div class="cb-bento"><div class="cb-bento-top${media ? '' : ' cb-solo'}"><div class="cb-bento-tile cb-bento-words">${words}</div>${media ? `<figure class="cb-bento-tile cb-bento-pic cb-bento-main">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>` : ''}</div>${tiles ? `<div class="cb-bento-row">${tiles}</div>` : ''}</div>${creditsOf([d.picture, ...shownMore(b, d)])}`;
   }
   if (v === 'curtain') return `<div class="cb-curtain"><div class="cb-curtain-words"><div class="cb-hero-words">${words}${details}</div></div>${media ? pic('cb-hero-pic cb-curtain-pic') : ''}</div>`;
+  // Large words, then a photo from edge to edge that opens out like a curtain as the page opens.
+  if (v === 'reveal') return `<div class="cb-reveal"><div class="cb-hero-words cb-reveal-words">${words}${details}</div>${media ? `<figure class="cb-hero-pic cb-reveal-pic"><span class="cb-reveal-in">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</span></figure>${creditsOf([d.picture])}` : ''}${toggle}</div>`;
+  // One statement that fills the first screen. No photo, by design.
+  if (v === 'statement') return `<div class="cb-statement">${words}${details}</div>`;
   return `<div class="cb-hero-words">${words}${details}</div>`; // minimal
 };
 
@@ -606,7 +629,7 @@ R_.order = (C, b) => {
 R_.text = (C, b) => {
   const d = b.data, v = b.variant;
   const head = `${K(C, b, d)}${H(C, b, d)}`;
-  const body = `${RT(C, b, 'body', d.body)}${BTNS(C, b, d.buttons)}`;
+  const body = `${withMark(C, d, RT(C, b, 'body', d.body))}${BTNS(C, b, d.buttons)}`;
   if (v === 'sidehead') return `<div class="cb-side"><div class="cb-side-head">${head}</div><div>${body}</div></div>`;
   // With no picture, the published page gives the words the whole width.
   if ((v === 'picture-left' || v === 'picture-right') && !d.picture && !C.editable) return `${head}${body}`;
@@ -683,15 +706,44 @@ R_.services = (C, b) => {
     return C.editable ? card : card.replace(/^<article/, '<article tabindex="0"');
   }, 'div', 'cb-svc cb-svc-flip');
   else if (v === 'board') list = LIST(C, b, 'items', items, (s, i, w) => w(`<div class="cb-menu-line">${name(s, i)}<i aria-hidden="true"></i>${price(s, i)}</div>${desc(s, i)}${time(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}`), 'div', 'cb-svc cb-svc-board');
+  else if (v === 'pinned') return pinnedList(C, b, d, items, { name, desc, price, time, offer });
   else list = LIST(C, b, 'items', items, (s, i, w) => w(`${s.picture || C.editable ? `<figure class="cb-svc-pic">${P(C, b, `items.${i}.picture`, s.picture)}</figure>` : ''}<div class="cb-feature-body">${name(s, i)}${desc(s, i)}<p class="cb-meta">${time(s, i)}${price(s, i)}</p>${offer(s, i)}${serviceLinks(C, b, i, s)}</div>`, 'article', s.picture || C.editable ? '' : 'cb-solo'), 'div', 'cb-svc cb-svc-feature');
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${list}`;
 };
 
+// Names set large, one to a screen, with a photo beside them that stays put and changes to match
+// the one being read (the page's script does that on a wide screen, with movement allowed). Each
+// entry keeps its own photo: that is what shows on phones, with movement turned down, with
+// scripts off and in the editor. The stage holds copies, hidden from screen readers.
+function pinnedList(C, b, d, items, f) {
+  const one = (s, i, w) => w(`${s.picture || C.editable ? `<figure class="cb-pin-pic">${P(C, b, `items.${i}.picture`, s.picture)}</figure>` : ''}<div class="cb-pin-body"><p class="cb-pin-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</p>${f.name(s, i)}<p class="cb-pin-meta">${f.time(s, i)}${f.price(s, i)}</p>${f.desc(s, i)}${f.offer(s, i)}${serviceLinks(C, b, i, s)}</div>`, 'li', `cb-pin-item${i ? '' : ' is-on'}`);
+  const shots = C.editable ? [] : items.map((s, i) => [s, i]).filter(([s]) => s.picture);
+  const stage = shots.length > 1 ? `<div class="cb-pin-stage" aria-hidden="true">${shots.map(([s, i], k) => `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, s.picture.src))}" alt="" loading="lazy" decoding="async"${focusPos(s.picture) ? ` style="object-position:${focusPos(s.picture)}"` : ''}>`).join('')}</div>` : '';
+  const list = LIST(C, b, 'items', items, one, 'ol', 'cb-pin-list');
+  return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div><div class="cb-pin${stage ? ' has-stage' : ''}"${stage ? ' data-pinlist' : ''}>${list}${stage}</div>${creditsOf(items.map((s) => s.picture).filter(Boolean))}`;
+}
+
+// The words on a person's own Book button: "Book with Hannah", "Book with Dr Osei".
+export function bookWith(name) {
+  const n = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!n.length) return 'Book';
+  const title = /^(dr|mr|mrs|ms|miss|prof)\.?$/i.test(n[0]) ? n[0].replace(/\.$/, '') : '';
+  return title && n.length > 1 ? `Book with ${title} ${n[n.length - 1]}` : `Book with ${title ? n[0] : n[0]}`;
+}
 R_.team = (C, b) => {
   const d = b.data, v = b.variant, items = d.items || [];
   // No photo yet: a tile with the person's initials, so the team still looks finished.
   const face = (p, i) => (p.picture ? P(C, b, `items.${i}.picture`, p.picture) : `<span class="cb-initials"${ED(C, 'data-cb-img', `${b.id}:items.${i}.picture`)} aria-hidden="true">${esc(initials(p.name))}</span>`);
-  const one = (p, i, w) => w(`<figure class="cb-portrait">${face(p, i)}</figure><div class="cb-person">${T(C, b, `items.${i}.name`, p.name, 'h3', 'cb-person-name')}${T(C, b, `items.${i}.role`, p.role, 'p', 'cb-person-role')}${T(C, b, `items.${i}.quals`, p.quals, 'p', 'cb-person-quals')}${RT(C, b, `items.${i}.bio`, p.bio, 'cb-rich cb-bio')}${p.link ? BTN(C, b, `items.${i}.link`, p.link, 'cb-link') : ''}</div>`);
+  // Each person's own Book button, when chosen: their own booking link, else the website's, else
+  // a call or the Contact page, so it is never a button that goes nowhere.
+  const book = (p, i) => {
+    if (!d.bookEach) return '';
+    const label = p.book?.label || bookWith(p.name);
+    if (C.editable) return `<p class="cb-person-book">${BTN(C, b, `items.${i}.book`, { label, href: p.book?.href || '@booking' }, 'cb-btn cb-btn-small')}</p>`;
+    const way = bookWays(C, { own: p.book, label })[0];
+    return `<p class="cb-person-book">${wayLink(way.kind === 'book' ? way : { ...way, label: way.kind === 'contact' ? `Ask about ${(String(p.name || '').trim().split(/\s+/)[0]) || 'an appointment'}` : way.label }, 'cb-btn cb-btn-small')}</p>`;
+  };
+  const one = (p, i, w) => w(`<figure class="cb-portrait">${face(p, i)}</figure><div class="cb-person">${T(C, b, `items.${i}.name`, p.name, 'h3', 'cb-person-name')}${T(C, b, `items.${i}.role`, p.role, 'p', 'cb-person-role')}${T(C, b, `items.${i}.quals`, p.quals, 'p', 'cb-person-quals')}${RT(C, b, `items.${i}.bio`, p.bio, 'cb-rich cb-bio')}${p.link ? BTN(C, b, `items.${i}.link`, p.link, 'cb-link') : ''}${book(p, i)}</div>`);
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${LIST(C, b, 'items', items, one, 'div', `cb-team cb-team-${v}`)}`;
 };
 
@@ -737,7 +789,11 @@ R_.contact = (C, b) => {
   const d = b.data, own = !d.business;
   const facts = factsList(C, b, d, { own });
   const map = d.map ? BTN(C, b, 'map', d.map, 'cb-link') : '';
-  const head = `${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
+  // "Open now, closes at 6pm": worked out on the visitor's device from the opening hours, so it
+  // is right whenever the page is read. Without the script it is simply not there.
+  const hoursText = bizDetails(C, d, own).hours || '';
+  const openNow = !d.openNow || !hoursText ? '' : C.editable ? '<p class="cb-note" data-cb-hint>On your website a line here says whether you are open now, worked out from your opening hours.</p>' : `<p class="cb-opennow" data-open="${esc(hoursText.split('\n').map((l) => l.trim()).filter(Boolean).join('|'))}" hidden></p>`;
+  const head = `${K(C, b, d)}${H(C, b, d)}${openNow}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
   const acts = `${d.business ? socials(C) : ''}${BTNS(C, b, d.buttons)}${map ? `<p class="cb-map">${map}</p>` : ''}`;
   if (!facts && !d.heading && !d.intro && !(d.buttons || []).length && !C.editable) return '';
   // Opening hours as a table, one line of the hours to a row, so the page's script can mark today.
@@ -745,8 +801,8 @@ R_.contact = (C, b) => {
   if (b.variant === 'hours' || b.variant === 'map') {
     const f = bizDetails(C, d, own);
     const lines = String(f.hours || '').split('\n').map((l) => l.trim()).filter(Boolean);
-    const table = lines.length && !(own && C.editable) ? `<table class="cb-hours-table" data-hours><caption class="cb-sr">Opening hours</caption><tbody>${lines.map((l) => { const m = l.match(/^([^:]{2,40}):\s+(.+)$/) || l.match(/^(\D{2,40}?)\s+(\d.*)$/); return m ? `<tr><th scope="row">${esc(m[1].trim())}</th><td>${esc(m[2].trim())}</td></tr>` : `<tr><td colspan="2">${esc(l)}</td></tr>`; }).join('')}</tbody></table>` : '';
-    const rest = table ? factsList(C, b, { ...d, hours: '' }, { own, cls: 'cb-facts' }).replace(/<div><dt>Opening hours<\/dt><dd>[\s\S]*?<\/dd><\/div>/, '') : facts;
+    const table = lines.length && !(own && C.editable) ? `<table class="cb-hours-table" data-hours><caption class="cb-sr">Opening hours</caption><tbody>${lines.map((l) => { const m = l.match(/^([^:]{2,40}):\s+(.+)$/) || l.match(/^(\D{2,40}?),\s*(.+)$/) || l.match(/^(\D{2,40}?)\s+(\d.*)$/); return m ? `<tr><th scope="row">${esc(m[1].trim())}</th><td>${esc(m[2].trim())}</td></tr>` : `<tr><td colspan="2">${esc(l)}</td></tr>`; }).join('')}</tbody></table>` : '';
+    const rest = table ? factsList(C, b, d, { own, cls: 'cb-facts', skip: 'hours' }) : facts;
     if (b.variant === 'hours') return `<div class="cb-find cb-find-hours"><div class="cb-find-words">${head}${rest}${acts}</div>${table ? `<div class="cb-find-table">${table}</div>` : ''}</div>`;
     // A drawn map: decoration only, in the page's colours. The real map is the link.
     const streets = Array.from({ length: 7 }, (_, i) => `<i style="--i:${i}"></i>`).join('');
@@ -770,10 +826,10 @@ function socials(C) {
 
 R_.cta = (C, b) => {
   const d = b.data;
-  const words = `${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'body', d.body)}`;
+  const words = `${K(C, b, d)}${H(C, b, d)}${withMark(C, d, RT(C, b, 'body', d.body))}`;
   if (b.variant === 'split') return `<div class="cb-cta-split"><div>${words}</div>${BTNS(C, b, d.buttons)}</div>`;
   if (b.variant === 'card') return `<div class="cb-cta-card">${words}${BTNS(C, b, d.buttons)}</div>`;
-  if (b.variant === 'giant') return `${K(C, b, d)}${H(C, b, d, 'h2', 'cb-h cb-giant-h')}<div class="cb-giant-foot">${RT(C, b, 'body', d.body)}${BTNS(C, b, d.buttons)}</div>`;
+  if (b.variant === 'giant') return `${K(C, b, d)}${H(C, b, d, 'h2', 'cb-h cb-giant-h')}<div class="cb-giant-foot">${withMark(C, d, RT(C, b, 'body', d.body))}${BTNS(C, b, d.buttons)}</div>`;
   return `${words}${BTNS(C, b, d.buttons)}`;
 };
 
@@ -897,7 +953,8 @@ R_.marquee = (C, b) => {
   // screen and one more for the loop.
   const setWidth = v === 'tags' ? text.join('').length * 9 + text.length * 56 : text.join('').length * 44 + text.length * 116;
   const sets = clamp(Math.ceil(2800 / setWidth) + 1, 2, 80);
-  const dur = Math.round(clamp(chars * (v === 'tags' ? 0.28 : 0.5), 8, 90) * ({ s: 1.7, m: 1, l: 0.6 }[choiceValue('marquee', d, 'speed')] || 1));
+  const speed = choiceValue('marquee', d, 'speed');
+  const dur = speed === 'xs' ? clamp(Math.round(setWidth / 38), 40, 60) : Math.round(clamp(chars * (v === 'tags' ? 0.28 : 0.5), 8, 90) * ({ s: 1.7, m: 1, l: 0.6 }[speed] || 1));
   const set = (hidden) => `<span class="cb-mq-set"${hidden ? ' aria-hidden="true"' : ''}>${text.map((t) => `<span class="cb-mq-item">${esc(t)}</span>`).join('')}</span>`;
   const row = (second) => `<div class="cb-mq${second ? ' cb-mq-rev' : ''}" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${dur}s"><div class="cb-mq-track">${set(second)}${set(true).repeat(sets - 1)}</div></div>`;
   return v === 'double' ? row(false) + row(true) : row(false);
@@ -905,8 +962,18 @@ R_.marquee = (C, b) => {
 
 R_.steps = (C, b) => {
   const d = b.data, items = d.items || [];
-  const one = (x, i, w) => w(`<span class="cb-step-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div class="cb-step-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-step-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-step-desc')}</div>`, 'li', 'cb-step');
-  return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${LIST(C, b, 'items', items, one, 'ol', `cb-steps cb-steps-${b.variant}`)}`;
+  // A step can end in the button that does it ("Register", "Book a first visit").
+  const go = (x, i) => (x.link ? `<p class="cb-step-go">${BTN(C, b, `items.${i}.link`, x.link, 'cb-btn cb-btn-small')}</p>` : '');
+  const one = (x, i, w) => w(`<span class="cb-step-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div class="cb-step-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-step-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-step-desc')}${go(x, i)}</div>`, 'li', `cb-step${i || b.variant !== 'sticky' ? '' : ' is-on'}`);
+  const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
+  const list = LIST(C, b, 'items', items, one, 'ol', `cb-steps cb-steps-${b.variant}`);
+  // Sticky steps: one large number stays put beside the steps and changes as each one passes. It
+  // is decoration (every step has its own number), so it is hidden from screen readers.
+  if (b.variant === 'sticky' && !C.editable && items.length > 1) {
+    const n = items.length, two = (k) => String(k).padStart(2, '0');
+    return `${head}<div class="cb-stk" data-stk style="--n:${n}"><div class="cb-stk-rail" aria-hidden="true"><span class="cb-stk-num">${items.map((_, k) => `<span${k ? '' : ' class="is-on"'}>${two(k + 1)}</span>`).join('')}</span><span class="cb-stk-of">of ${two(n)}</span><span class="cb-stk-bar"><i></i></span></div>${list}</div>`;
+  }
+  return `${head}${list}`;
 };
 
 R_.showcase = (C, b) => {
@@ -1056,6 +1123,10 @@ R_.spaces = (C, b) => {
     const when = dp
       ? `<time class="cb-sp-date" datetime="${esc(x.date)}"><span class="cb-sp-dow">${dp.dow}</span><span class="cb-sp-day">${dp.day}</span><span class="cb-sp-mon">${dp.mon}${dp.year !== Number(today.slice(0, 4)) ? ` ${dp.year}` : ''}</span></time>`
       : C.editable ? '<span class="cb-sp-date cb-sp-nodate" data-cb-hint>No date yet</span>' : '';
+    // A row can follow a Cal.com event with seats: the page's script then asks Cal.com for the
+    // seats left on that day and shows them, naming Cal.com. The number set by hand stays as
+    // what shows until the answer arrives, and if it never does.
+    const follow = x.date ? calEvent(/^https:\/\//i.test(x.cal || '') ? x.cal : x.cal ? `https://${x.cal}` : '') : '';
     const full = x.left === 0, words = past ? 'Finished' : spacesWords(x.left);
     // The number is only shown once the page's script has checked the date against today, so a
     // page left open, or one read with scripts off, never shows spaces for a day that has gone.
@@ -1072,10 +1143,6 @@ R_.spaces = (C, b) => {
     }
     const meta = `${T(C, b, `items.${i}.time`, x.time, 'span', 'cb-sp-time')}${T(C, b, `items.${i}.detail`, x.detail, 'span', 'cb-sp-detail')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-sp-price')}`;
     const body = `<div class="cb-sp-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sp-name')}${meta ? `<p class="cb-sp-meta">${meta}</p>` : ''}</div>`;
-    // A row can follow a Cal.com event with seats: the page's script then asks Cal.com for the
-    // seats left on that day and shows them, naming Cal.com. The number set by hand stays as
-    // what shows until the answer arrives, and if it never does.
-    const follow = x.date ? calEvent(/^https:\/\//i.test(x.cal || '') ? x.cal : x.cal ? `https://${x.cal}` : '') : '';
     return w(`${when}${body}<div class="cb-sp-state">${state}</div>${acts ? `<p class="cb-sp-acts">${acts}</p>` : ''}`, 'li', `cb-sp-item${past ? ' is-past' : ''}${full ? ' is-full' : ''}`)
       .replace(/^<li /, `<li${x.date ? ` data-date="${esc(x.date)}"` : ''}${follow && !C.editable ? ` data-cal="${esc(follow)}"` : ''} `);
   };

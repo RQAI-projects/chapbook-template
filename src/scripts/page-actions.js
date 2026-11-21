@@ -47,19 +47,86 @@ export function dayInLabel(label, dow) {
   for (let i = 0; i < found.length; i++) {
     const a = found[i], b = found[i + 1];
     // "Mon to Fri", "Mon - Fri", "Fri until Sun": every day from the first to the second, round the week.
-    if (b && /^\s*(to|until|through|till|-|–|—)\s*$/.test(text.slice(a.end, b.at))) {
+    if (b && /^\s*(to|until|through|till|-|\u2013|\u2014)\s*$/.test(text.slice(a.end, b.at))) {
       for (let d = a.d; ; d = (d + 1) % 7) { if (d === dow) return true; if (d === b.d) break; }
       i++;
     } else if (a.d === dow) return true;
   }
   return false;
 }
+// Opening hours, read the way people write them: "Monday to Friday, 9am to 6pm", "Sat 10-2",
+// "Sunday: closed", "Tue and Thu 9.30am to 1pm, 2pm to 5.30pm". A time is minutes after midnight.
+const TIME = String.raw`(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?|noon|midday|midnight`;
+const RANGE = new RegExp(String.raw`(${TIME})\s*(?:to|until|till|-|\u2013|\u2014)\s*(${TIME})`, 'gi');
+function readTime(t) {
+  const s = String(t).trim().toLowerCase();
+  if (s === 'noon' || s === 'midday') return { m: 720, half: '' };
+  if (s === 'midnight') return { m: 1440, half: '' };
+  const m = /^(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?$/.exec(s);
+  if (!m || +m[1] > 24 || (m[2] && +m[2] > 59)) return null;
+  const half = m[3] ? m[3][0] : '';
+  let h = +m[1] % (half ? 12 : 24);
+  if (half === 'p') h += 12;
+  return { m: h * 60 + (+m[2] || 0), half };
+}
+// The times a line of opening hours gives: [[open, close], …], or [] for "closed".
+export function hoursSpans(line) {
+  const out = [];
+  for (const r of String(line || '').matchAll(RANGE)) {
+    const a = readTime(r[1]), b = readTime(r[5]);
+    if (!a || !b) continue;
+    let open = a.m, close = b.m;
+    // "9 to 5.30", "9 to 6pm", "1 to 6pm": a time with no am or pm is read the way people mean it.
+    if (!a.half && !b.half && open < 7 * 60) open += 720;
+    if (!b.half && close <= open && close + 720 <= 1440) close += 720;
+    if (!a.half && b.half === 'p' && open + 720 < close && open < 720 && open < 7 * 60) open += 720;
+    if (close > open) out.push([open, close]);
+  }
+  return out;
+}
+// Today's opening times from the lines of opening hours: [[open, close], …]; [] when closed all
+// day; null when no line speaks of that day (or none can be read).
+export function hoursOn(lines, dow) {
+  let found = null;
+  for (const line of lines || []) {
+    const text = String(line || '');
+    const days = text.replace(new RegExp(RANGE.source, 'gi'), ' ');
+    if (!dayInLabel(days, dow)) continue;
+    const spans = hoursSpans(text);
+    if (spans.length) found = [...(found || []), ...spans];
+    else if (/\bclosed\b/i.test(text)) found = found || [];
+  }
+  return found ? found.sort((x, y) => x[0] - y[0]) : null;
+}
+// 540 → "9am", 570 → "9.30am", 720 → "12pm", 1080 → "6pm".
+export function timeText(m) {
+  const h = Math.floor(m / 60) % 24, min = m % 60, half = h < 12 ? 'am' : 'pm', h12 = h % 12 || 12;
+  return m === 1440 ? 'midnight' : `${h12}${min ? `.${String(min).padStart(2, '0')}` : ''}${half}`;
+}
+// What a place's opening hours mean right now: { open, text }, or null when they cannot be read.
+// "Open now, closes at 6pm" · "Closed now, opens at 2pm" · "Closed now, opens tomorrow at 9am" ·
+// "Closed now, opens Monday at 9am".
+export function openState(lines, now = new Date()) {
+  const dow = now.getDay(), mins = now.getHours() * 60 + now.getMinutes();
+  const today = hoursOn(lines, dow);
+  if (today === null && [0, 1, 2, 3, 4, 5, 6].every((d) => hoursOn(lines, d) === null)) return null;
+  const span = (today || []).find(([a, b]) => mins >= a && mins < b);
+  if (span) return { open: true, text: `Open now, closes at ${timeText(span[1])}` };
+  const later = (today || []).find(([a]) => a > mins);
+  if (later) return { open: false, text: `Closed now, opens at ${timeText(later[0])}` };
+  for (let k = 1; k <= 7; k++) {
+    const d = (dow + k) % 7, next = hoursOn(lines, d);
+    if (next && next.length) return { open: false, text: `Closed now, opens ${k === 1 ? 'tomorrow' : `on ${DAYS[d]}`} at ${timeText(next[0][0])}` };
+  }
+  return null;
+}
+
 // The address a page asks Cal.com for free times: a person's own event, between two days.
 // No key is needed for this (Cal.com's own documentation says so); it only reads.
 export const CAL_API = 'https://api.cal.com/v2/slots';
 export const CAL_VERSION = '2024-09-04';
 export function calSlotsUrl(event, start, end, timeZone = 'UTC') {
-  const m = /^([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_-]{1,120})$/.exec(String(event || ''));
+  const m = /^([A-Za-z0-9][A-Za-z0-9_.-]{0,79})\/([A-Za-z0-9][A-Za-z0-9_-]{0,119})$/.exec(String(event || ''));
   if (!m || !/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(end)) return '';
   return `${CAL_API}?eventTypeSlug=${encodeURIComponent(m[2])}&username=${encodeURIComponent(m[1])}&start=${start}&end=${end}&timeZone=${encodeURIComponent(timeZone)}`;
 }
@@ -460,10 +527,20 @@ export function initPageActions(doc = document, win = window, { open, preview = 
     undo.push(() => bar.classList.remove('is-on'));
     if ('IntersectionObserver' in win) {
       const io = new win.IntersectionObserver((entries) => { for (const e of entries) { if (e.isIntersecting) hidden.add(e.target); else hidden.delete(e.target); } sync(); });
-      for (const el of [section, doc.querySelector('footer.site-footer, body > footer')]) if (el) io.observe(el);
+      // Hidden while the opening is still on screen (M15: it comes once the opening has gone),
+      // while the strip itself is (its own Book button is there), and over the foot of the page.
+      for (const el of [section, root.querySelector('.cb-opening'), doc.querySelector('footer.site-footer, body > footer')]) if (el) io.observe(el);
       undo.push(() => io.disconnect());
     }
     sync();
+  }
+
+  // Open now: the line under a "find us" heading says whether the place is open as the page is
+  // read, from the opening hours written on it. Hours it cannot read leave the line out.
+  for (const line of root.querySelectorAll('.cb-opennow[data-open]')) {
+    const st = openState(String(line.getAttribute('data-open') || '').split('|'), now());
+    if (!st) continue;
+    setText(line, st.text); addClass(line, st.open ? 'is-open' : 'is-closed'); show(line, true);
   }
 
   // Spaces remaining: a date that has passed takes itself off (or says Finished), and only then
@@ -537,9 +614,10 @@ export function initPageActions(doc = document, win = window, { open, preview = 
         io.disconnect();
         const t0 = clock.performance.now();
         const step = (t) => {
-          const k = (t - t0) / 1700;
+          const k = (t - t0) / 1000;
           if (!alive || touched || k >= 1) { if (alive && !touched) { range.value = '50'; put(50); } return; }
-          const v = 50 + Math.sin(k * Math.PI * 2) * 16 * (1 - k * 0.3);
+          // One nudge: 8% across and back again.
+          const v = 50 + Math.sin(k * Math.PI) * 8;
           range.value = String(Math.round(v)); put(v);
           clock.requestAnimationFrame(step);
         };

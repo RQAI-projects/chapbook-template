@@ -13,10 +13,11 @@ const TARGETS = [
   '.cb-contact-card', '.cb-cta-card', '.cb-cta-split > *', '.cb-notice-text', '.cb-more', '.cb-map', '.cb-socials', '.cb-step', '.cb-show-item', '.cb-credits', '.cb-small', '.cb-head-row > a', '.cb-bar-wrap', '.cb-order-items > *', '.cb-order-foot',
   // Signature sections (release 7).
   '.cb-bs', '.cb-pl > *', '.cb-sp > *', '.cb-mb-col', '.cb-mb-tablist', '.cb-tl > *', '.cb-cmp-item', '.cb-tt-day', '.cb-find > *', '.cb-cs-top > *', '.cb-cs-part', '.cb-cs-more > *', '.cb-sc-item', '.cb-rv-drift', '.cb-gal-side .cb-hs-track > *',
+  '.cb-pin-item', '.cb-stk-rail', '.cb-person-book',
 ].join(',');
 // Layouts that bring themselves in; the scroll effect leaves them alone.
-const OWN_ENTRANCE = '.cb-bento, .cb-curtain, .cb-open, .cb-hero-bg, .cb-backdrop, .cbm-bd, .cb-mask-thumb, .cb-plates-bg, .cb-plates-wipe';
-const PICTURES = '.cb-pic-frame, .cb-figure, .cb-svc-pic, .cb-order-pic, .cb-portrait, .cb-show-pic, .cb-gallery > figure, .cb-cs-main, .cb-cs-more > figure, .cb-cmp-one, .cb-sc-pic, .cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-arch-pic):not(.cb-curtain-pic):not(.cb-lens-pic):not(.cb-bw-pic):not(.cb-shatter)';
+const OWN_ENTRANCE = '.cb-bento, .cb-curtain, .cb-open, .cb-hero-bg, .cb-backdrop, .cbm-bd, .cb-mask-thumb, .cb-plates-bg, .cb-plates-wipe, .cb-reveal-pic, .cb-pin-stage';
+const PICTURES = '.cb-pic-frame, .cb-figure, .cb-svc-pic, .cb-order-pic, .cb-portrait, .cb-show-pic, .cb-gallery > figure, .cb-cs-main, .cb-cs-more > figure, .cb-cmp-one, .cb-sc-pic, .cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-arch-pic):not(.cb-curtain-pic):not(.cb-lens-pic):not(.cb-bw-pic):not(.cb-shatter):not(.cb-reveal-pic)';
 const KEEPS_MOVING = '.cb-rv-drift, .cb-car:not(.cb-car-still), .cb-depth, .cb-bw, .cb-lens, .cbm-bd canvas, .cb-mq:not(.cb-mq-still), .cb-film:not(.cb-film-still), .cbm-bd, .cb-orbit, .cb-collage, .cb-arch-badge, .cb-mask-h, .cb-rot, .cb-blob, .cb-inset-bg, .cb-open-bg, .cb-factlist-circles';
 const PAUSE_KEY = 'cbm-paused';
 
@@ -56,7 +57,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   const blocks = [...root.children].filter((n) => n.classList?.contains('cb'));
   // The page's opening: its first Opening block, which need not be the very first block.
   const hero = blocks.find((b) => b.classList.contains('cb-opening')) || null;
-  const pace = { calm: [1050, 110], lively: [600, 55] }[look('pace')] || [750, 70];
+  const pace = { calm: [1050, 110], lively: [600, 55], measured: [800, 75] }[look('pace')] || [750, 70];
 
   // ---- the giant name: trimmed to fill the width exactly ------------------------------------
   for (const h of root.querySelectorAll('.cb-wordmark:not(.cb-wordmark-long)')) {
@@ -111,7 +112,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   // ---- the opening heading: word by word, letter by letter, typed ---------------------------
   const headingStyle = look('heading');
   let splitHeading = null;
-  if (!reduce && hero && ['words', 'letters', 'typed', 'gather'].includes(headingStyle)) {
+  if (!reduce && hero && ['words', 'letters', 'typed', 'gather', 'rising'].includes(headingStyle)) {
     const h = hero.querySelector('.cb-hero-h');
     if (h && !h.closest('.cb-mq') && !h.classList.contains('cb-mask-h') && !h.classList.contains('cb-open-h') && !h.isContentEditable) {
       const original = [...h.childNodes].map((n) => n.cloneNode(true));
@@ -152,6 +153,15 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
       if (headingStyle === 'typed') { const caret = span('cbm-caret'); holder.append(caret); later(() => caret.remove(), k * 46 + 3200); }
       h.replaceChildren(frag);
       if (letters && label) h.setAttribute('aria-label', label);
+      // Line by line: every word on one line shares that line's number, so the line rises as one.
+      if (headingStyle === 'rising') {
+        let line = -1, top = null;
+        for (const w of h.querySelectorAll(':scope > .cbm-w')) {
+          const t = Math.round(w.offsetTop);
+          if (top === null || Math.abs(t - top) > 4) { line++; top = t; }
+          w.firstElementChild?.style.setProperty('--k', String(line));
+        }
+      }
       splitHeading = h;
       undo.push(() => { h.replaceChildren(...original); h.removeAttribute('aria-label'); h.classList.remove('is-in'); });
     }
@@ -342,7 +352,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
         countUp(e.target);
       }
     }, { threshold: 0.6 });
-    for (const el of root.querySelectorAll('.cb-fact-value')) if (parseCount(el.textContent)) counted.observe(el);
+    for (const el of root.querySelectorAll('.cb-fact-value, .cb-tl-value')) if (parseCount(el.textContent)) counted.observe(el);
     undo.push(() => counted.disconnect());
   }
   function parseCount(text) {
@@ -362,7 +372,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     el.setAttribute('role', 'img'); el.setAttribute('aria-label', final.trim());
     el.style.minWidth = `${el.getBoundingClientRect().width}px`;
     const show = (v) => `${c.before}${c.grouped ? v.toLocaleString('en-GB', { minimumFractionDigits: c.decimals, maximumFractionDigits: c.decimals }) : v.toFixed(c.decimals)}${c.after}`;
-    const start = clock.performance.now(), length = 1500;
+    const start = clock.performance.now(), length = 1200;
     let frame = 0, done = false;
     const finish = () => { if (done) return; done = true; clock.cancelAnimationFrame(frame); el.textContent = final; el.style.removeProperty('min-width'); el.removeAttribute('aria-label'); el.removeAttribute('role'); };
     const step = (now) => {
@@ -373,6 +383,25 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     };
     frame = clock.requestAnimationFrame(step);
     undo.push(finish);
+  }
+
+  // ---- marked words: a line (or a highlight) draws itself under them as they come into view -----
+  // Only words on one line are drawn this way; words that wrap keep the plain underline, which
+  // follows them from line to line. They are marked whatever happens, so nothing is lost.
+  if (!reduce && look('mark') && 'IntersectionObserver' in win) {
+    const marks = [...root.querySelectorAll('mark.cb-mark')].filter((m) => m.getClientRects().length === 1);
+    if (marks.length) {
+      const io = new win.IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          io.unobserve(e.target);
+          // In the opening it waits for the heading to arrive first.
+          later(() => e.target.classList.add('is-on'), hero && hero.contains(e.target) ? 900 : 250);
+        }
+      }, { threshold: 1 });
+      for (const m of marks) { m.classList.add('cbm-mk'); io.observe(m); }
+      undo.push(() => { io.disconnect(); for (const m of marks) m.classList.remove('cbm-mk', 'is-on'); });
+    }
   }
 
   // ---- words that light up as the reader scrolls --------------------------------------------
@@ -533,7 +562,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
             if (!r.width || !r.height) return;
             const px = clamp((x - r.left) / r.width, 0, 1), py = clamp((y - r.top) / r.height, 0, 1);
             el.style.setProperty('--lx', `${((0.5 - py) * 7).toFixed(2)}deg`);
-            el.style.setProperty('--ly', `${((px - 0.5) * 9).toFixed(2)}deg`);
+            el.style.setProperty('--ly', `${((px - 0.5) * 8).toFixed(2)}deg`);   // 4 degrees at most (M13)
             el.style.setProperty('--gx', `${(px * 100).toFixed(1)}%`);
             el.style.setProperty('--gy', `${(py * 100).toFixed(1)}%`);
             el.classList.add('is-lean');
@@ -865,11 +894,44 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
         }
       });
     }
+
+    // ---- a list pinned beside its photo (M3) and sticky steps (M10) ---------------------------
+    // The entry or step crossing the middle of the screen is the one that is "on": the photo
+    // beside a list crossfades to its photo; the big number beside steps slides to its number.
+    const middle = (fn) => new win.IntersectionObserver((entries) => { for (const e of entries) if (e.isIntersecting) fn(e.target); }, { rootMargin: '-45% 0px -45% 0px' });
+    const lists = [...root.querySelectorAll('[data-pinlist]')].map((box) => ({ box, items: [...box.querySelectorAll('.cb-pin-item')], shots: [...box.querySelectorAll('.cb-pin-stage img')] })).filter((p) => p.items.length > 1 && p.shots.length > 1);
+    const steps = [...root.querySelectorAll('[data-stk]')].map((box) => ({ box, items: [...box.querySelectorAll('.cb-steps-sticky > .cb-step')], nums: [...box.querySelectorAll('.cb-stk-num > span')], bar: box.querySelector('.cb-stk-bar') })).filter((p) => p.items.length > 1);
+    if ((lists.length || steps.length) && 'IntersectionObserver' in win) {
+      const showList = (p, k) => {
+        p.items.forEach((it, n) => it.classList.toggle('is-on', n === k));
+        const img = p.shots.find((x) => x.getAttribute('data-i') === String(k));
+        if (img) p.shots.forEach((x) => x.classList.toggle('is-on', x === img));
+      };
+      const showStep = (p, k) => {
+        p.items.forEach((it, n) => it.classList.toggle('is-on', n === k));
+        p.nums.forEach((x, n) => { x.classList.toggle('is-on', n === k); x.classList.toggle('is-past', n < k); });
+        p.bar?.style.setProperty('--k', String(k + 1));
+      };
+      const io = middle((el) => {
+        const l = lists.find((p) => p.items.includes(el));
+        if (l) return showList(l, l.items.indexOf(el));
+        const st = steps.find((p) => p.items.includes(el));
+        if (st) showStep(st, st.items.indexOf(el));
+      });
+      for (const p of [...lists, ...steps]) { p.box.classList.add('is-live'); p.items.forEach((it) => io.observe(it)); }
+      undo.push(() => {
+        io.disconnect();
+        for (const p of lists) { p.box.classList.remove('is-live'); showList(p, 0); }
+        for (const p of steps) { p.box.classList.remove('is-live'); showStep(p, 0); p.bar?.style.removeProperty('--k'); for (const x of p.nums) x.classList.remove('is-past'); }
+      });
+    }
   }
 
   // ---- the Pause button ----------------------------------------------------------------------
   // Anything that keeps moving for more than a few seconds must be stoppable by the visitor.
-  if (!reduce && !editing && (root.querySelector(KEEPS_MOVING) || ['zoom'].includes(look('pictures')) || ['glow', 'shine'].includes(look('buttons')) || look('heading') === 'shimmer')) {
+  // (The wall of drifting reviews only drifts on a wide screen.)
+  const keepsMoving = [...root.querySelectorAll(KEEPS_MOVING)].some((n) => wide || !n.matches('.cb-rv-drift'));
+  if (!reduce && !editing && (keepsMoving || ['zoom'].includes(look('pictures')) || ['glow', 'shine'].includes(look('buttons')) || look('heading') === 'shimmer')) {
     const button = doc.createElement('button');
     button.type = 'button'; button.className = 'cbm-pause';
     const sync = () => { const off = paused(); button.textContent = off ? 'Play movement' : 'Pause movement'; button.setAttribute('aria-pressed', String(off)); };
