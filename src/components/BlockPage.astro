@@ -56,10 +56,13 @@ const fontPreloads = [...new Set([headingFile, BODY_FILES[look.bodyFont] || ''].
 const blankAbout = page.slug === 'about' && !html.includes('<section');
 ---
 <Base title={title ?? page.title} description={description ?? (page.description || undefined)}>
-  {preloadSrc && (openingPhone
-    ? <link slot="head" rel="preload" as="image" href={preloadSrc} imagesrcset={`${openingPhone} 800w, ${preloadSrc} 1600w`} imagesizes={PHONE_SIZES} fetchpriority="high" />
-    : <link slot="head" rel="preload" as="image" href={preloadSrc} fetchpriority="high" />)}
-  {fontPreloads.map((href) => <link slot="head" rel="preload" as="font" type="font/woff2" href={href} crossorigin />)}
+  {/* Everything for the head in one place: several expressions naming the same slot keep only one. */}
+  <Fragment slot="head">
+    {preloadSrc && (openingPhone
+      ? <link rel="preload" as="image" href={preloadSrc} imagesrcset={`${openingPhone} 800w, ${preloadSrc} 1600w`} imagesizes={PHONE_SIZES} fetchpriority="high" />
+      : <link rel="preload" as="image" href={preloadSrc} fetchpriority="high" />)}
+    {fontPreloads.map((href) => <link rel="preload" as="font" type="font/woff2" href={href} crossorigin />)}
+  </Fragment>
   <slot />
   {/* Tell the stylesheet a script is on its way. Until it says so nothing on the page moves by
       itself (there would be no Pause button), and things that will arrive on scroll don't flash
