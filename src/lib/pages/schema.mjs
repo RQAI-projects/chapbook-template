@@ -95,6 +95,9 @@ export function cleanPicture(v, { allowData = false } = {}) {
   const ok = (SITE_IMAGE.test(src) && !src.includes('..')) || https || (allowData && src.length < 12e6 && DATA_IMAGE.test(src));
   if (!ok) return null;
   const out = { src, alt: cleanLine(v.alt, 240) };
+  // A smaller copy of the same photo for phones (about 800px wide), in the site's own images.
+  const phone = typeof v.phone === 'string' ? v.phone.trim() : '';
+  if (phone && SITE_IMAGE.test(phone) && !phone.includes('..') && SITE_IMAGE.test(src)) out.phone = phone;
   const credit = cleanCredit(v.credit);
   if (credit) out.credit = credit;
   // Where the picture's centre of interest is, so crops keep faces in frame.

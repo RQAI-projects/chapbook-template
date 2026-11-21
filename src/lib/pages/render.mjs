@@ -230,8 +230,11 @@ const picVars = (C, p) => `--cb-pic:${esc(cssUrl(imgSrc(C, p.src)))}${focusPos(p
 function P(C, b, path, p, cls = '', { eager = false, credits = true } = {}) {
   if (!p) return C.editable ? `<div class="cb-pic-empty ${cls}"${ED(C, 'data-cb-img', `${b.id}:${path}`)} role="img" aria-label="Add a picture"><span>Add a picture</span></div>` : '';
   const focus = p.focus ? ` style="object-position:${p.focus === 'top' ? '50% 20%' : p.focus === 'bottom' ? '50% 80%' : p.focus === 'left' ? '20% 50%' : '80% 50%'}"` : '';
-  return `<img${cls ? ` class="${cls}"` : ''} src="${esc(imgSrc(C, p.src))}" alt="${esc(p.alt)}"${eager ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async"${focus}${ED(C, 'data-cb-img', `${b.id}:${path}`)}>${credits ? credit(p) : ''}`;
+  return `<img${cls ? ` class="${cls}"` : ''} src="${esc(imgSrc(C, p.src))}"${srcsetOf(C, p)} alt="${esc(p.alt)}"${eager ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async"${focus}${ED(C, 'data-cb-img', `${b.id}:${path}`)}>${credits ? credit(p) : ''}`;
 }
+// A photo with a smaller copy for phones: the browser takes the copy on a small screen.
+export const PHONE_SIZES = '(max-width: 760px) 100vw, 60vw';
+const srcsetOf = (C, p) => (p.phone ? ` srcset="${esc(imgSrc(C, p.phone))} 800w, ${esc(imgSrc(C, p.src))} 1600w" sizes="${PHONE_SIZES}"` : '');
 // A button or link. Hidden on the published page when it has nowhere to go.
 function BTN(C, b, path, link, cls = 'cb-btn') {
   const href = link?.href ? resolveLink(link.href, C) : '';
