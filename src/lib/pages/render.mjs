@@ -1141,7 +1141,7 @@ R_.plans = (C, b) => {
   if (b.variant === 'fan' && !C.editable && items.length > 1) {
     const mid = (items.length - 1) / 2;
     let k = -1;
-    list = list.replace(/^<div class="cb-pl cb-pl-fan"/, `<div class="cb-pl cb-pl-fan" data-scroll="enter" style="--n:${items.length}"`)
+    list = list.replace(/^<div class="cb-pl cb-pl-fan"/, `<div class="cb-pl cb-pl-fan" data-scroll="enter" data-scroll-span="0.8" style="--n:${items.length}"`)
       .replace(/<article class="cb-pl-item/g, () => { k++; return `<article style="--fi:${(k - mid).toFixed(2)};--fa:${Math.abs(k - mid).toFixed(2)}" class="cb-pl-item`; });
   }
   const money = C.editable ? '<p class="cb-note" data-cb-hint>Each card takes its own pay link (Stripe, PayPal, SumUp or Square). The money goes straight to you.</p>' : '';

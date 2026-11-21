@@ -65,7 +65,7 @@ test('menu index: plain links to each group, a line with words opens, times show
 test('ways to pay held like a hand: each card knows its place, and a card with no pay link still leads somewhere', () => {
   for (const site of [SITE, NOTHING]) {
     const html = renderPage(page([BLOCKS[3]]), { site });
-    assert.match(html, /class="cb-pl cb-pl-fan" data-scroll="enter" style="--n:3"/);
+    assert.match(html, /class="cb-pl cb-pl-fan" data-scroll="enter" data-scroll-span="0.8" style="--n:3"/);
     assert.deepEqual([...html.matchAll(/--fi:(-?[\d.]+)/g)].map((m) => Number(m[1])), [-1, 0, 1]);
     for (const m of html.matchAll(/<a\b[^>]*?href="([^"]*)"/g)) assert.ok(m[1] && m[1] !== '#', `dead link with ${JSON.stringify(site.professional)}`);
   }

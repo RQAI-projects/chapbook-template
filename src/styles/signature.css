@@ -461,7 +461,7 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
   }
 
   /* ---- Cards and tiles lean towards the pointer (the script sets the angles) -------------- */
-  .cbm[data-m-pointer=lean] [data-lean]{transform:perspective(1000px) rotateX(var(--lx,0deg)) rotateY(var(--ly,0deg)) translate3d(0,0,0);transition:transform .28s ease-out;will-change:transform}
+  .cbm[data-m-pointer=lean] [data-lean]{transform:perspective(1000px) rotateX(var(--lean-x,0deg)) rotateY(var(--lean-y,0deg)) translate3d(0,0,0);transition:transform .28s ease-out;will-change:transform}
   .cbm[data-m-pointer=lean] [data-lean].is-lean{transition:transform .08s linear}
   .cbm[data-m-pointer=lean] [data-lean]::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(22rem circle at var(--gx,50%) var(--gy,50%),color-mix(in srgb,#fff 22%,transparent),transparent 60%)}
   .cbm[data-m-pointer=lean] [data-lean].is-lean::after{opacity:1}
@@ -771,6 +771,6 @@ html:not(.cbm-js) .cb-rail-band{display:none}
   .cb-pinhero:not(.cb-solo) .cb-pinhero-pic{position:sticky;top:calc(var(--header-h,0px) + 1.5rem)}
   @supports (animation-timeline:view()){html.cbm-js .cbm:not([data-m-edit]) .cb-pinhero-pic img{animation:cbs-slow-zoom linear both;animation-timeline:view()}}
   /* Ways to pay, held like a hand until the section comes into view (--p from the script). */
-  html.cbm-js .cbm .cb-pl-fan.is-live>.cb-pl-item{transform-origin:50% 130%;transform:translate3d(calc((1 - var(--p,0)) * var(--fi,0) * (-100% - clamp(1rem,2vw,1.5rem))),calc((1 - var(--p,0)) * (var(--fa,0) * 1.6rem + 2.4rem) - var(--p,0) * var(--lift,0rem)),0) rotate(calc((1 - var(--p,0)) * var(--fi,0) * 8deg)) perspective(1000px) rotateX(var(--lx,0deg)) rotateY(var(--ly,0deg));will-change:transform}
+  html.cbm-js .cbm .cb-pl-fan.is-live>.cb-pl-item{transform-origin:50% 130%;transform:translate3d(calc((1 - var(--p,0)) * var(--fi,0) * (-100% - clamp(1rem,2vw,1.5rem))),calc((1 - var(--p,0)) * (var(--fa,0) * 1.6rem + 2.4rem) - var(--p,0) * var(--lift,0rem)),0) rotate(calc((1 - var(--p,0)) * var(--fi,0) * 8deg)) perspective(1000px) rotateX(var(--lean-x,0deg)) rotateY(var(--lean-y,0deg));will-change:transform}
   html.cbm-js .cbm .cb-pl-fan.is-live>.cb-pl-item.is-popular{--lift:.8rem}
 }

@@ -256,7 +256,9 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
           // Arriving is finished once the piece has come about its own height into view, or the
           // page has no further to scroll: nothing is left half-way.
           if (atEnd && r.top < vh) return 1;
-          return clamp((vh * 0.95 - r.top) / Math.min(vh * 0.6, Math.max(r.height * 0.9, 160)), 0, 1);
+          // A piece may ask to take longer, as a share of the screen's height (data-scroll-span).
+          const span = Number(el.getAttribute('data-scroll-span')) || 0;
+          return clamp((vh * 0.95 - r.top) / (span > 0 && span <= 1 ? vh * span : Math.min(vh * 0.6, Math.max(r.height * 0.9, 160))), 0, 1);
         });
         moving.forEach((el, i) => { if (next[i] != null) el.style.setProperty('--p', next[i].toFixed(3)); });
       };
@@ -574,14 +576,15 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
             const r = el.getBoundingClientRect();
             if (!r.width || !r.height) return;
             const px = clamp((x - r.left) / r.width, 0, 1), py = clamp((y - r.top) / r.height, 0, 1);
-            el.style.setProperty('--lx', `${((0.5 - py) * 7).toFixed(2)}deg`);
-            el.style.setProperty('--ly', `${((px - 0.5) * 8).toFixed(2)}deg`);   // 4 degrees at most (M13)
+            // (Not --lx and --ly: those are numbers, registered for the magnifying glass.)
+            el.style.setProperty('--lean-x', `${((0.5 - py) * 7).toFixed(2)}deg`);
+            el.style.setProperty('--lean-y', `${((px - 0.5) * 8).toFixed(2)}deg`);   // 4 degrees at most (M13)
             el.style.setProperty('--gx', `${(px * 100).toFixed(1)}%`);
             el.style.setProperty('--gy', `${(py * 100).toFixed(1)}%`);
             el.classList.add('is-lean');
           });
         });
-        const rest = () => { at = null; el.classList.remove('is-lean'); el.style.removeProperty('--lx'); el.style.removeProperty('--ly'); };
+        const rest = () => { at = null; el.classList.remove('is-lean'); el.style.removeProperty('--lean-x'); el.style.removeProperty('--lean-y'); };
         on(el, 'pointerleave', rest);
         undo.push(() => { rest(); el.removeAttribute('data-lean'); for (const v of ['--gx', '--gy']) el.style.removeProperty(v); if (placed) el.style.removeProperty('position'); });
       }
