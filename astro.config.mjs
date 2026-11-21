@@ -2,6 +2,9 @@ import { defineConfig } from 'astro/config';
 import rehypeGallery from './src/lib/rehype-gallery.mjs';
 import remarkBasePath from './src/plugins/remark-base-path.mjs';
 import siteConfig from './src/data/site.json';
+import themeRegistry from './src/data/themes.json';
+import { fileURLToPath } from 'node:url';
+import { homeFileFor } from './src/lib/blog-homes.mjs';
 
 // A website wears one look (site.json defaultTheme), and every look's rules are scoped to its own
 // [data-blog-theme], so the other looks' stylesheets can never apply. themes.css lists all of
@@ -20,8 +23,21 @@ function oneLook() {
   };
 }
 
+// The same for the home page: index.astro imports `virtual:chapbook-home`, which is only the
+// website's own look's home component (src/lib/blog-homes.mjs). Each blog home's styles are
+// bundled with it, so a business home page no longer waits for the thirty blog homes' styles.
+function oneHome() {
+  const id = 'virtual:chapbook-home', resolved = '\0' + id;
+  const file = fileURLToPath(new URL(`./src/components/home/${homeFileFor(ownLook, themeRegistry)}.astro`, import.meta.url));
+  return {
+    name: 'chapbook-one-home',
+    resolveId(source) { return source === id ? resolved : null; },
+    load(source) { return source === resolved ? `export { default } from ${JSON.stringify(file)};` : null; },
+  };
+}
+
 export default defineConfig({
-  vite: { plugins: [oneLook()] },
+  vite: { plugins: [oneLook(), oneHome()] },
   site: siteConfig.url,
   // Serve at a GitHub Pages project sub-path when BASE_PATH is set
   // (e.g. BASE_PATH=/repo/). Unset → '/' → the owner's root-domain site,

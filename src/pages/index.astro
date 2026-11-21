@@ -1,7 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
 import topics from '../data/topics.json';
-import themesRegistry from '../data/themes.json';
 import profile from '../data/profile.json';
 import {postCover} from '../lib/post-cover.mjs';
 import { site, siteSummary } from '../lib/site';
@@ -19,73 +18,13 @@ const homeBlocks = blockPage('home');
 // Every theme's `hero` archetype (src/data/themes.json) selects a STRUCTURALLY
 // distinct first screen. The interlocked-rings WebGL hero (archetype `rings`) is
 // reserved for `observatory`. Adding a theme with a new archetype = add its
-// Home component here + a `hero` id in the registry.
-import HomeRings from '../components/home/HomeRings.astro';
-import HomeIndex from '../components/home/HomeIndex.astro';
-import HomeSolo from '../components/home/HomeSolo.astro';
-import HomeBlueprintBoard from '../components/home/HomeBlueprintBoard.astro';
-import HomeFrontPage from '../components/home/HomeFrontPage.astro';
-import HomeEssayCover from '../components/home/HomeEssayCover.astro';
-import HomeNewsWall from '../components/home/HomeNewsWall.astro';
-import HomeDesertArchive from '../components/home/HomeDesertArchive.astro';
-import HomeMarquee from '../components/home/HomeMarquee.astro';
-import HomeCollage from '../components/home/HomeCollage.astro';
-import HomePinboard from '../components/home/HomePinboard.astro';
-import HomeWoodlandChronicle from '../components/home/HomeWoodlandChronicle.astro';
-import HomeNotebook from '../components/home/HomeNotebook.astro';
-import HomeMissionControl from '../components/home/HomeMissionControl.astro';
-import HomePixelQuest from '../components/home/HomePixelQuest.astro';
-import HomeManga from '../components/home/HomeManga.astro';
-import HomeFieldAtlas from '../components/home/HomeFieldAtlas.astro';
-import HomeLightbox from '../components/home/HomeLightbox.astro';
-import HomeContactSheet from '../components/home/HomeContactSheet.astro';
-import HomePhotoPile from '../components/home/HomePhotoPile.astro';
-import HomeFolio from '../components/home/HomeFolio.astro';
-import HomePortrait from '../components/home/HomePortrait.astro';
-import HomeBusiness from '../components/home/HomeBusiness.astro';
-
-const HOMES: Record<string, any> = {
-  folio: HomeFolio,
-  practice: HomeBusiness,
-  petal: HomeBusiness,
-  contour: HomeBusiness,
-  cut: HomeBusiness,
-  still: HomeBusiness,
-  office: HomeBusiness,
-  portrait: HomePortrait,
-  table: HomeBusiness,
-  trade: HomeBusiness,
-  clinic: HomeBusiness,
-  pulse: HomeBusiness,
-  counsel: HomeBusiness,
-  shopfront: HomeBusiness,
-  rings: HomeRings,
-  index: HomeIndex,
-  solo: HomeSolo,
-  'blueprint-board': HomeBlueprintBoard,
-  frontpage: HomeFrontPage,
-  'essay-cover': HomeEssayCover,
-  'news-wall': HomeNewsWall,
-  'desert-scroll': HomeDesertArchive,
-  marquee: HomeMarquee,
-  collage: HomeCollage,
-  pinboard: HomePinboard,
-  'woodland-trail': HomeWoodlandChronicle,
-  notebook: HomeNotebook,
-  'mission-control': HomeMissionControl,
-  'pixel-quest': HomePixelQuest,
-  manga: HomeManga,
-  'field-atlas': HomeFieldAtlas,
-  lightbox: HomeLightbox,
-  'contact-sheet': HomeContactSheet,
-  'photo-pile': HomePhotoPile,
-};
+// Home component in src/components/home/ + its archetype in src/lib/blog-homes.mjs.
+// Only the website's own look's Home is built in (astro.config.mjs, `oneHome`), so a page
+// never waits for the other looks' home styles.
+import Home from 'virtual:chapbook-home';
 
 // The active blog theme (must match Base.astro's data-blog-theme resolution).
 const blogTheme = site.defaultTheme || 'observatory';
-const entry = themesRegistry.themes.find((t) => t.id === blogTheme);
-const archetype = (entry as any)?.hero || 'rings';
-const Home = HOMES[archetype] || HomeRings;
 
 // --- shape the collection ONCE for whichever Home renders ------------------
 const rawPosts = (await getCollection('blog', ({ data }) => !data.draft))

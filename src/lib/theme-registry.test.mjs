@@ -35,7 +35,9 @@ test('the four repetitive themes are replaced, not duplicated', () => {
 
 test('every registered theme has CSS and every homepage archetype is wired', () => {
   const themeImports = readFileSync(join(root, 'src/styles/themes.css'), 'utf8');
-  const homepage = readFileSync(join(root, 'src/pages/index.astro'), 'utf8');
+  // The archetype to home component map lives in src/lib/blog-homes.mjs (index.astro takes only
+  // the website's own look's home, through astro.config.mjs).
+  const homepage = readFileSync(join(root, 'src/lib/blog-homes.mjs'), 'utf8');
 
   for (const theme of registry.themes) {
     const cssPath = join(root, `src/styles/themes/${theme.id}.css`);
