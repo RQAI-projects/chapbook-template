@@ -42,6 +42,15 @@ const openingSrc = opening && !opening.data?.video && typeof opening.data?.pictu
 const preloadSrc = /^\/site-images\/[A-Za-z0-9][A-Za-z0-9._-]{0,120}$/.test(openingSrc) ? withBase(openingSrc) : /^https:\/\//.test(openingSrc) ? openingSrc : '';
 // With a phone copy, a phone asks for that one instead.
 const openingPhone = preloadSrc && typeof opening.data?.picture?.phone === 'string' && /^\/site-images\/[A-Za-z0-9][A-Za-z0-9._-]{0,120}$/.test(opening.data.picture.phone) ? withBase(opening.data.picture.phone) : '';
+// The page's own typefaces that the site serves itself (the warm serifs and the extra-clear
+// sans) are asked for at once too, so words set in them are not repainted late, after the
+// stylesheets have been read. At most two: the heading's and the text's.
+const HEADING_FILES: Record<string, string> = { modern: 'fraunces-latin-600-normal', fine: 'fraunces-latin-400-normal', noir: 'fraunces-latin-900-italic', editorial: 'newsreader-latin-600-normal', mixed: 'newsreader-latin-400-italic' };
+const BODY_FILES: Record<string, string> = { easy: 'atkinson-hyperlegible-latin-400-normal', reading: 'newsreader-latin-400-normal' };
+const look = (page as any).look || {};
+// The clean sans with a serif italic only needs its italic when a heading has a marked word.
+const headingFile = look.font === 'mixed' && !html.includes('<em>') ? '' : HEADING_FILES[look.font] || '';
+const fontPreloads = [...new Set([headingFile, BODY_FILES[look.bodyFont] || ''].filter(Boolean))].map((f) => withBase(`/fonts/${f}.woff2`));
 // An About page whose blocks are all still empty would publish with nothing on it. It says one
 // plain line instead and points to the Contact page. Nothing about the business is made up.
 const blankAbout = page.slug === 'about' && !html.includes('<section');
@@ -50,6 +59,7 @@ const blankAbout = page.slug === 'about' && !html.includes('<section');
   {preloadSrc && (openingPhone
     ? <link slot="head" rel="preload" as="image" href={preloadSrc} imagesrcset={`${openingPhone} 800w, ${preloadSrc} 1600w`} imagesizes={PHONE_SIZES} fetchpriority="high" />
     : <link slot="head" rel="preload" as="image" href={preloadSrc} fetchpriority="high" />)}
+  {fontPreloads.map((href) => <link slot="head" rel="preload" as="font" type="font/woff2" href={href} crossorigin />)}
   <slot />
   {/* Tell the stylesheet a script is on its way. Until it says so nothing on the page moves by
       itself (there would be no Pause button), and things that will arrive on scroll don't flash
