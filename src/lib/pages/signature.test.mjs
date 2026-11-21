@@ -261,3 +261,53 @@ test('the proof palettes keep every text colour readable', () => {
     assert.ok(contrast(k.ink, k.bg) >= 4.5 && contrast(k.surfaceInk, k.surface) >= 4.5 && contrast(k.onAccent, k.accent) >= 4.5 && contrast(k.onDeep, k.deep) >= 4.5, JSON.stringify(colours));
   }
 });
+
+test('consultant doctors: a portrait set in type, a photo that opens from a circle, drawn lines, beats and recovery', async () => {
+  const { traceSvg } = await import('./render.mjs');
+  const { lookNeedsSignature } = await import('./schema.mjs');
+  // The portrait: the letters of the name, large, never a made-up face; a photo once added.
+  const portrait = (data, editable = false) => renderPage(page([{ id: 'p', type: 'hero', variant: 'portrait', data }]), { site: SITE, editable });
+  const plain = portrait({ heading: 'Dr Eleanor Marsh', intro: 'Consultant cardiologist.', frame: 'circle' });
+  assert.match(plain, /<div class="cb-prt cb-frame-circle"><figure class="cb-prt-pic"><span class="cb-mono" aria-hidden="true"><span class="cb-mono-letters">EM<\/span><\/span><\/figure>/);
+  assert.match(plain, /<h1 class="cb-h cb-hero-h">Dr Eleanor Marsh<\/h1>/);
+  assert.ok(!plain.includes('<img'));
+  assert.match(portrait({ heading: 'Dr Eleanor Marsh', monogram: 'EHM' }), /cb-frame-arch[\s\S]*cb-mono-letters">EHM</);
+  assert.match(portrait({ heading: 'x', picture: pic('own') }), /cb-prt-pic"><img src="\/site-images\/cbp-own\.webp"/);
+  const ed = portrait({ heading: 'Dr Eleanor Marsh', monogram: 'EM' }, true);
+  assert.match(ed, /data-cb-img="p:picture"/); assert.match(ed, /data-cb="p:monogram"/); assert.match(ed, /Add a picture/);
+  // The aperture: the photo inside a circle inside the frame, loaded first; the words as ever.
+  const ap = renderPage(page([{ type: 'hero', variant: 'aperture', data: { heading: 'See clearly', picture: pic('eye'), buttons: [{ label: 'Book', href: '@booking' }] } }]), { site: SITE });
+  assert.match(ap, /<figure class="cb-hero-pic cb-ap-pic"><span class="cb-ap-ring"><span class="cb-ap-in"><img src="\/site-images\/cbp-eye\.webp"[^>]*fetchpriority="high"/);
+  assert.ok(!renderPage(page([{ type: 'hero', variant: 'aperture', data: { heading: 'See clearly' } }]), { site: SITE }).includes('cb-ap-'));
+  // Lines beside steps: one stretch a step, hidden from screen readers, a faint whole copy behind.
+  assert.equal((traceSvg('heart', 3).match(/L\d+(\.\d+)? 4 /g) || []).length, 3, 'one beat a step');
+  assert.match(traceSvg('wave', 2), /viewBox="0 0 200 40"/);
+  const steps = (variant, trace, editable = false) => renderPage(page([{ id: 's', type: 'steps', variant, data: { heading: 'Your first appointment', trace, items: [{ name: 'One' }, { name: 'Two' }, { name: 'Three' }] } }]), { site: SITE, editable });
+  const sticky = steps('sticky', 'heart');
+  assert.match(sticky, /<div class="cb-stk has-trace" data-stk style="--n:3"><span class="cb-trace cb-trace-heart cb-trace-top" data-scroll="enter" aria-hidden="true"><span class="cb-trace-ghost"><svg/);
+  assert.match(sticky, /<span class="cb-trace cb-trace-heart cb-stk-trace" aria-hidden="true">/);
+  assert.ok(!sticky.includes('cb-stk-bar'), 'the drawn line takes the place of the bar');
+  assert.ok(steps('sticky', 'none').includes('cb-stk-bar') && !steps('sticky', 'none').includes('cb-trace'));
+  assert.match(steps('line', 'wave'), /cb-trace cb-trace-wave cb-trace-top" data-scroll="enter"/);
+  assert.match(steps('sticky', 'wave', true), /cb-trace cb-trace-wave cb-trace-top" aria-hidden="true"/);
+  for (const w of ['One', 'Two', 'Three']) assert.ok(sticky.includes(`>${w}</h3>`));
+  // Numbers that beat once, after counting; a card's typical recovery, first and large.
+  assert.match(renderPage(page([{ type: 'facts', variant: 'band', data: { beat: true, items: [{ value: '20', label: 'years' }] } }]), { site: SITE }), /cb-factlist cb-factlist-band cb-beat/);
+  assert.match(readFileSync(new URL('../../scripts/page-motion.js', import.meta.url), 'utf8'), /if \(el\.closest\('\.cb-beat'\)\) el\.classList\.add\('is-beat'\)/);
+  const rail = renderPage(page([{ type: 'services', variant: 'rail', data: { heading: 'Conditions', items: [{ name: 'Knee pain', recovery: '6 to 12 weeks', description: 'Words.' }, { name: 'Hip pain' }] } }]), { site: SITE });
+  assert.match(rail, /<dl class="cb-rail-facts"><div class="cb-rail-rec"><dt>Typical recovery<\/dt><dd><span>6 to 12 weeks<\/span><\/dd><\/div><\/dl>/);
+  assert.match(rail, /cb-rail-card cb-solo has-facts/);
+  // The release gate knows every one of them; a choice of "none" needs nothing new.
+  for (const b of [{ type: 'hero', variant: 'portrait', data: {} }, { type: 'hero', variant: 'aperture', data: {} }, { type: 'steps', variant: 'line', data: { trace: 'heart' } }, { type: 'facts', variant: 'row', data: { beat: true } }, { type: 'services', variant: 'list', data: { items: [{ name: 'x', recovery: '6 weeks' }] } }]) assert.ok(needsSignature(b), JSON.stringify(b));
+  assert.ok(!needsSignature({ type: 'steps', variant: 'line', data: { trace: 'none' } }));
+  assert.ok(lookNeedsSignature({ font: 'lyric' }));
+  assert.equal(normalisePage(page([], { font: 'lyric' })).look.font, 'lyric');
+  // The new movement only runs for visitors who have not asked for less, and moves transforms only.
+  const css = readFileSync(new URL('../../styles/signature.css', import.meta.url), 'utf8');
+  const batch = css.slice(css.indexOf('Consultant doctors batch'));
+  for (const m of batch.matchAll(/animation:cbs-(aperture|beat|act-rise)|transition:transform \.7s/g)) {
+    const before = batch.slice(0, m.index);
+    assert.ok(before.lastIndexOf('@media screen and (prefers-reduced-motion:no-preference)') > before.lastIndexOf('\n}'), `${m[0]} outside the reduce-motion guard`);
+  }
+  for (const k of batch.matchAll(/@keyframes [\w-]+\{([^@]*?)\}\}/g)) assert.doesNotMatch(k[1], /(width|height|left|top|margin|clip-path):/);
+});

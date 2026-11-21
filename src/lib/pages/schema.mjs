@@ -217,6 +217,10 @@ export const BLOCK_TYPES = {
       pinned: 'Photo that stays put while the story scrolls beside it',
       // Release 7, doctor clinics: the first screen answers is it open, how do I book, how do I call.
       actions: 'Words and a photo, with large quick actions over an Open now card',
+      // Release 7, consultant doctors: a portrait set in type (the letters of a name) until a
+      // photo is added, and a photo that opens from a small circle in the middle.
+      portrait: 'Words beside a portrait (letters until you add a photo)',
+      aperture: 'Large words, then a photo that opens from a circle',
     },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, rotate: { ...L(160, 'Changing words', 'e.g. brands, websites, films'), panel: true, hint: 'A few words with commas between them. They take turns at the end of the heading.' }, word: L(12, 'Big word', 'e.g. Fresh'), intro: R(1200, 'Introduction'), picture: PIC(), pictures: { kind: 'pictures', max: 6, label: 'More photos' },
@@ -237,6 +241,10 @@ export const BLOCK_TYPES = {
       openNow: { kind: 'bool', label: 'Say whether you are open now' },
       // What to do when closed (for a doctor: NHS 111, and 999 in an emergency).
       closed: R(400, 'When you are closed', 'e.g. When we are closed, call NHS 111. In an emergency, call 999.'),
+      // The portrait layout: the letters set large in the portrait until a photo is added, and
+      // the frame's shape.
+      monogram: { ...L(3, 'Letters in the portrait', 'e.g. EM'), panel: true, hint: 'Up to three letters, set large where a photo would be, until you add a photo.' },
+      frame: { kind: 'choice', options: ['arch', 'circle', 'square'], def: 'arch', labels: { arch: 'Arch', circle: 'Circle', square: 'Square' }, label: 'Portrait frame' },
     },
   },
   text: {
@@ -264,6 +272,8 @@ export const BLOCK_TYPES = {
         offer: L(120, 'Offer'), picture: PIC(), link: { kind: 'link', label: 'Booking link' }, pay: { kind: 'link', label: 'Pay link' },
         // Shown on the sideways cards (a speciality's consultant and usual wait).
         who: L(80, 'Who you will see', 'e.g. Dr Amelia Hart'), wait: L(40, 'Usual wait', 'e.g. 5 days'),
+        // Shown on the sideways cards too: how long people usually take to recover.
+        recovery: L(60, 'Typical recovery', 'e.g. 6 to 12 weeks'),
       }, sample: { name: 'New service', description: '', price: '', duration: '' } },
       // A band of large words that rolls slowly above the cards of the sideways layout.
       band: { ...L(200, 'Moving words above the cards', 'e.g. Facials, Peels, Skin boosters'), panel: true, hint: 'A few words with commas between them, rolling slowly above the cards that travel sideways. Leave it empty for none.' },
@@ -353,7 +363,9 @@ export const BLOCK_TYPES = {
   facts: {
     label: 'Key facts', hint: 'A few numbers or short facts, such as “25 years”.',
     variants: { row: 'In a row', large: 'Large', ruled: 'With lines', tiles: 'Tiles', circles: 'Coloured circles', ticker: 'Rolling band of numbers', band: 'Big numbers in a band, with fine lines between' },
-    fields: { kicker: L(100, 'Short label'), heading: HEAD, items: { kind: 'items', max: 6, label: 'Facts', add: 'Add a fact', item: { value: L(24, 'Number or word', 'e.g. 25'), label: L(80, 'What it means', 'e.g. years in business') }, sample: { value: '10', label: 'New fact' } } },
+    fields: { kicker: L(100, 'Short label'), heading: HEAD, items: { kind: 'items', max: 6, label: 'Facts', add: 'Add a fact', item: { value: L(24, 'Number or word', 'e.g. 25'), label: L(80, 'What it means', 'e.g. years in business') }, sample: { value: '10', label: 'New fact' } },
+      // Once a number has counted up, it beats once, like a pulse.
+      beat: { kind: 'bool', label: 'Numbers beat once after counting up' } },
   },
   notice: {
     label: 'Announcement', hint: 'A short notice, such as a holiday closure or an offer.',
@@ -398,6 +410,8 @@ export const BLOCK_TYPES = {
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 8, label: 'Steps', add: 'Add a step', item: { name: L(100, 'Step', 'Name of the step'), description: R(600, 'What happens'), link: { kind: 'link', label: 'Button' } }, sample: { name: 'Next step', description: '' } },
+      // A thin line beside the steps that draws one more stretch as each step passes.
+      trace: { kind: 'choice', options: ['none', 'heart', 'wave'], def: 'none', labels: { none: 'No line', heart: 'A calm heart trace', wave: 'A sound wave' }, label: 'Line drawn beside the steps' },
     },
   },
   showcase: {
@@ -555,21 +569,22 @@ export const BLOCK_TYPES = {
 export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'tiles', 'compare', 'timetable', 'casestudy', 'scenes', 'regulator'];
 // Layouts of older section types that came with the same release. On an older design they would
 // quietly become the type's first layout, so they need the update too.
-export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions'], services: ['pinned', 'rail'], steps: ['sticky'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
+export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture'], services: ['pinned', 'rail'], steps: ['sticky'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
 // Settings of older section types that came with release 7: an older design ignores them.
-export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'] };
+export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat'] };
 // Settings of an entry in a list that came with release 7 (an older design drops them).
-export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait'] };
+export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'] };
 // A word in a heading set in italic, written *like this*. Release 7 draws it; an older design
 // would show the stars.
 export const HEADING_EM = /(^|[\s(\u201c"'])\*([^*\s](?:[^*]{0,60}?[^*\s])?)\*(?=$|[\s.,;:?)\u201d"'])/g;
 const hasEm = (v) => typeof v === 'string' && v.includes('*') && new RegExp(HEADING_EM.source).test(v);
-const filled = (v) => v !== undefined && v !== '' && v !== false && v !== null;
+// A choice of "none" uses nothing new either.
+const filled = (v) => v !== undefined && v !== '' && v !== false && v !== null && v !== 'none';
 // Whether a block needs website design release 7 to be drawn as it is meant.
 export const needsSignature = (b) => !!b && (SIGNATURE_TYPES.includes(b.type) || (SIGNATURE_LAYOUTS[b.type] || []).includes(b.variant) || (SIGNATURE_FIELDS[b.type] || []).some((k) => filled(b.data?.[k])) || (SIGNATURE_ITEM_FIELDS[b.type] || []).some((k) => (b.data?.items || []).some((x) => filled(x?.[k]))) || hasEm(b.data?.heading) || (b.data?.children || []).some(needsSignature));
 // A page's own look can need release 7 too: the two new heading typefaces and the still wash
 // (an older design would quietly fall back to its own font and no wash).
-export const SIGNATURE_LOOK = { font: ['fine', 'noir', 'mixed'], backdrop: ['dawn'] };
+export const SIGNATURE_LOOK = { font: ['fine', 'noir', 'mixed', 'lyric'], backdrop: ['dawn'] };
 export const lookNeedsSignature = (look) => !!look && (SIGNATURE_LOOK.font.includes(look.font) || SIGNATURE_LOOK.backdrop.includes(look.motion?.backdrop));
 // A heading as plain words, with the stars of an italic word taken out (for labels and titles).
 export const plainHeading = (v) => String(v ?? '').replace(new RegExp(HEADING_EM.source, 'g'), '$1$2');
@@ -724,7 +739,7 @@ export function motionFor(preset, backdrop) {
   return cleanMotion({ ...p.motion, ...(backdrop ? { backdrop } : {}), preset });
 }
 
-const FONT_KEYS = ['classic', 'modern', 'editorial', 'clean', 'friendly', 'grotesk', 'mono', 'fine', 'noir', 'mixed'];
+const FONT_KEYS = ['classic', 'modern', 'editorial', 'clean', 'friendly', 'grotesk', 'mono', 'fine', 'noir', 'mixed', 'lyric'];
 const BODY_FONT_KEYS = ['clean', 'reading', 'easy', 'classic', 'grotesk'];
 export const LOOK_COLOURS = ['bg', 'surface', 'ink', 'accent', 'deep'];
 export function cleanLook(v) {

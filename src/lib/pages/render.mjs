@@ -48,6 +48,8 @@ export const PAGE_FONTS = {
   noir: { label: 'Heavy italic serif', css: "'Fraunces',Georgia,serif" },
   // Release 7, doctor clinics: a clean sans set tight, with one warm serif italic phrase.
   mixed: { label: 'Clean sans, one warm italic phrase', css: "'Inter Variable','Inter',system-ui,sans-serif" },
+  // Release 7, consultant doctors: the warm serif set light and in italic throughout.
+  lyric: { label: 'Light italic serif', css: "'Fraunces',Georgia,serif" },
 };
 
 // Typefaces for running text: all easy to read at length, all already loaded by every site.
@@ -598,6 +600,19 @@ R_.hero = (C, b) => {
   }
   if (v === 'curtain') return `<div class="cb-curtain"><div class="cb-curtain-words"><div class="cb-hero-words">${words}${details}</div></div>${media ? pic('cb-hero-pic cb-curtain-pic') : ''}</div>`;
   // Large words, then a photo from edge to edge that opens out like a curtain as the page opens.
+  // A photo that opens from a small circle in the middle until it fills the width (the camera's
+  // aperture). Moved by one number the stylesheet animates (--ap): the circle grows by it and the
+  // photo inside shrinks by it, so the photo itself stays still. Without movement, it is simply
+  // the photo.
+  if (v === 'aperture') return `<div class="cb-reveal cb-aperture"><div class="cb-hero-words cb-reveal-words">${words}${details}</div>${media ? `<figure class="cb-hero-pic cb-ap-pic"><span class="cb-ap-ring"><span class="cb-ap-in">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</span></span></figure>${creditsOf([d.picture])}` : ''}${toggle}</div>`;
+  // Words beside a portrait. Until the person adds a photo of their own, the portrait is set in
+  // type: the letters of their name, large, in a frame (never a made-up face).
+  if (v === 'portrait') {
+    const frame = choiceValue('hero', d, 'frame');
+    const letters = String(d.monogram || initials(plainHeading(d.heading))).slice(0, 3);
+    const face = d.picture ? P(C, b, 'picture', d.picture, '', { eager: true, credits: false }) : `<span class="cb-mono"${ED(C, 'data-cb-img', `${b.id}:picture`)} aria-hidden="true">${T(C, b, 'monogram', letters, 'span', 'cb-mono-letters')}${C.editable ? '<span class="cb-mono-add">Add a picture</span>' : ''}</span>`;
+    return `<div class="cb-prt cb-frame-${frame}"><figure class="cb-prt-pic">${face}</figure><div class="cb-hero-words">${words}${details}</div></div>${d.picture ? creditsOf([d.picture]) : ''}`;
+  }
   if (v === 'reveal') return `<div class="cb-reveal"><div class="cb-hero-words cb-reveal-words">${words}${details}</div>${media ? `<figure class="cb-hero-pic cb-reveal-pic"><span class="cb-reveal-in">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</span></figure>${creditsOf([d.picture])}` : ''}${toggle}</div>`;
   // One statement that fills the first screen. No photo, by design.
   if (v === 'statement') {
@@ -810,11 +825,12 @@ function railList(C, b, d, items, f) {
   // A card with who you will see and the usual wait (a speciality) sets those out as a short
   // table with the fee, instead of the time and price line.
   const facts = (s, i) => {
-    if (!(s.who || s.wait) && !(C.editable && items.some((x) => x.who || x.wait))) return `<p class="cb-rail-meta">${f.time(s, i)}${f.price(s, i)}</p>`;
-    const row = (k, label, v) => (v || C.editable ? `<div><dt>${label}</dt><dd>${T(C, b, `items.${i}.${k}`, v, 'span')}</dd></div>` : '');
-    return `<dl class="cb-rail-facts">${row('who', 'With', s.who)}${row('wait', 'Usual wait', s.wait)}${row('price', 'Fee', s.price)}</dl>`;
+    // A condition's card can say how long people usually take to recover, set out first and large.
+    if (!(s.who || s.wait || s.recovery) && !(C.editable && items.some((x) => x.who || x.wait || x.recovery))) return `<p class="cb-rail-meta">${f.time(s, i)}${f.price(s, i)}</p>`;
+    const row = (k, label, v, cls = '') => (v || C.editable ? `<div${cls ? ` class="${cls}"` : ''}><dt>${label}</dt><dd>${T(C, b, `items.${i}.${k}`, v, 'span')}</dd></div>` : '');
+    return `<dl class="cb-rail-facts">${row('recovery', 'Typical recovery', s.recovery, 'cb-rail-rec')}${row('who', 'With', s.who)}${row('wait', 'Usual wait', s.wait)}${row('price', 'Fee', s.price)}</dl>`;
   };
-  const card = (s, i, w) => w(`${s.picture || C.editable ? `<figure class="cb-rail-pic">${P(C, b, `items.${i}.picture`, s.picture, '', { credits: false })}</figure>` : ''}<div class="cb-rail-body"><p class="cb-rail-n" aria-hidden="true">${two(i + 1)}</p>${f.name(s, i)}${facts(s, i)}${f.desc(s, i)}${f.offer(s, i)}${serviceLinks(C, b, i, s)}</div>`, 'article', `cb-rail-card${s.picture || C.editable ? '' : ' cb-solo'}${s.who || s.wait ? ' has-facts' : ''}`);
+  const card = (s, i, w) => w(`${s.picture || C.editable ? `<figure class="cb-rail-pic">${P(C, b, `items.${i}.picture`, s.picture, '', { credits: false })}</figure>` : ''}<div class="cb-rail-body"><p class="cb-rail-n" aria-hidden="true">${two(i + 1)}</p>${f.name(s, i)}${facts(s, i)}${f.desc(s, i)}${f.offer(s, i)}${serviceLinks(C, b, i, s)}</div>`, 'article', `cb-rail-card${s.picture || C.editable ? '' : ' cb-solo'}${s.who || s.wait || s.recovery ? ' has-facts' : ''}`);
   const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
   const words = railWords(d);
   if (C.editable) return `${head}${words.length ? `<p class="cb-note" data-cb-hint>Moving words above the cards: ${esc(words.join(', '))}</p>` : ''}${LIST(C, b, 'items', items, card, 'div', 'cb-rail cb-rail-still')}`;
@@ -1035,7 +1051,7 @@ R_.facts = (C, b) => {
     const set = (hidden) => `<span class="cb-mq-set"${hidden ? ' aria-hidden="true"' : ''}>${facts.map((x) => `<span class="cb-mq-item cb-ft"><span class="cb-ft-value">${esc(x.value || '')}</span><span class="cb-ft-label">${esc(x.label || '')}</span></span>`).join('')}</span>`;
     return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div><div class="cb-mq cb-mq-facts" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${clamp(Math.round(width / 60), 14, 80)}s"><div class="cb-mq-track">${set(false)}${set(true).repeat(sets - 1)}</div></div>`;
   }
-  return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div>${LIST(C, b, 'items', d.items || [], (x, i, w) => w(`${T(C, b, `items.${i}.value`, x.value, 'span', 'cb-fact-value')}${T(C, b, `items.${i}.label`, x.label, 'span', 'cb-fact-label')}`, 'div', 'cb-fact'), 'div', `cb-factlist cb-factlist-${b.variant}`)}`;
+  return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div>${LIST(C, b, 'items', d.items || [], (x, i, w) => w(`${T(C, b, `items.${i}.value`, x.value, 'span', 'cb-fact-value')}${T(C, b, `items.${i}.label`, x.label, 'span', 'cb-fact-label')}`, 'div', 'cb-fact'), 'div', `cb-factlist cb-factlist-${b.variant}${d.beat ? ' cb-beat' : ''}`)}`;
 };
 
 R_.notice = (C, b) => {
@@ -1117,14 +1133,35 @@ R_.steps = (C, b) => {
   const one = (x, i, w) => w(`<span class="cb-step-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div class="cb-step-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-step-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-step-desc')}${go(x, i)}</div>`, 'li', `cb-step${i || b.variant !== 'sticky' ? '' : ' is-on'}`);
   const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
   const list = LIST(C, b, 'items', items, one, 'ol', `cb-steps cb-steps-${b.variant}`);
+  // A thin line (a calm heart trace, or a sound wave) with one stretch for each step. It is
+  // decoration, so it is hidden from screen readers. Beside sticky steps it draws one more
+  // stretch as each step passes; elsewhere it sits under the heading and draws as it comes into
+  // view. Without movement it is simply there, whole.
+  const trace = choiceValue('steps', d, 'trace');
+  const svg = trace === 'heart' || trace === 'wave' ? traceSvg(trace, Math.max(items.length, 1)) : '';
+  const line = (cls, extra = '') => (svg ? `<span class="cb-trace cb-trace-${trace} ${cls}"${extra} aria-hidden="true"><span class="cb-trace-ghost">${svg}</span><span class="cb-trace-win"><span class="cb-trace-in">${svg}</span></span></span>` : '');
   // Sticky steps: one large number stays put beside the steps and changes as each one passes. It
   // is decoration (every step has its own number), so it is hidden from screen readers.
   if (b.variant === 'sticky' && !C.editable && items.length > 1) {
     const n = items.length, two = (k) => String(k).padStart(2, '0');
-    return `${head}<div class="cb-stk" data-stk style="--n:${n}"><div class="cb-stk-rail" aria-hidden="true"><span class="cb-stk-num">${items.map((_, k) => `<span${k ? '' : ' class="is-on"'}>${two(k + 1)}</span>`).join('')}</span><span class="cb-stk-of">of ${two(n)}</span><span class="cb-stk-bar"><i></i></span></div>${list}</div>`;
+    return `${head}<div class="cb-stk${svg ? ' has-trace' : ''}" data-stk style="--n:${n}">${line('cb-trace-top', ' data-scroll="enter"')}<div class="cb-stk-rail" aria-hidden="true"><span class="cb-stk-num">${items.map((_, k) => `<span${k ? '' : ' class="is-on"'}>${two(k + 1)}</span>`).join('')}</span><span class="cb-stk-of">of ${two(n)}</span>${svg ? line('cb-stk-trace') : '<span class="cb-stk-bar"><i></i></span>'}</div>${list}</div>`;
   }
-  return `${head}${list}`;
+  return `${head}${line('cb-trace-top', C.editable ? '' : ' data-scroll="enter"')}${list}`;
 };
+// The drawn line: a calm heart trace (one beat a stretch) or a sound wave (one swell a stretch),
+// 100 wide and 40 high for each stretch, drawn with a hairline that never thickens when stretched.
+export function traceSvg(kind, n) {
+  let path = 'M0 20';
+  for (let i = 0; i < n; i++) {
+    const x = i * 100, X = (k) => +(x + k).toFixed(2);
+    if (kind === 'heart') path += ` L${X(30)} 20 Q${X(35)} 15 ${X(40)} 20 L${X(47)} 20 L${X(50)} 24 L${X(53)} 4 L${X(57)} 33 L${X(60)} 20 L${X(68)} 20 Q${X(76)} 12 ${X(84)} 20 L${X(100)} 20`;
+    else {
+      const amps = [2, 5, 9, 14, 17, 14, 9, 5, 2, 1];
+      amps.forEach((a, k) => { const w = 10, sx = x + k * w; path += ` Q${X(k * w + w / 4)} ${20 - a} ${X(k * w + w / 2)} 20 Q${X(k * w + (3 * w) / 4)} ${20 + a} ${+(sx + w).toFixed(2)} 20`; });
+    }
+  }
+  return `<svg class="cb-trace-svg" viewBox="0 0 ${n * 100} 40" preserveAspectRatio="none" focusable="false"><path d="${path}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`;
+}
 
 R_.showcase = (C, b) => {
   const d = b.data, items = d.items || [];

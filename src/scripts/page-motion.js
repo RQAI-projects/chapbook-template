@@ -389,7 +389,9 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     const show = (v) => `${c.before}${c.grouped ? v.toLocaleString('en-GB', { minimumFractionDigits: c.decimals, maximumFractionDigits: c.decimals }) : v.toFixed(c.decimals)}${c.after}`;
     const start = clock.performance.now(), length = 1200;
     let frame = 0, done = false;
-    const finish = () => { if (done) return; done = true; clock.cancelAnimationFrame(frame); el.textContent = final; el.style.removeProperty('min-width'); el.removeAttribute('aria-label'); el.removeAttribute('role'); };
+    // A band set to beat gives each number one pulse once it has counted up (the class stays, so
+    // the pulse is never repeated).
+    const finish = () => { if (done) return; done = true; clock.cancelAnimationFrame(frame); el.textContent = final; el.style.removeProperty('min-width'); el.removeAttribute('aria-label'); el.removeAttribute('role'); if (el.closest('.cb-beat')) el.classList.add('is-beat'); };
     const step = (now) => {
       const t = clamp((now - start) / length, 0, 1);
       if (t >= 1) return finish();
@@ -926,7 +928,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     // beside a list crossfades to its photo; the big number beside steps slides to its number.
     const middle = (fn) => new win.IntersectionObserver((entries) => { for (const e of entries) if (e.isIntersecting) fn(e.target); }, { rootMargin: '-45% 0px -45% 0px' });
     const lists = [...root.querySelectorAll('[data-pinlist]')].map((box) => ({ box, items: [...box.querySelectorAll('.cb-pin-item')], shots: [...box.querySelectorAll('.cb-pin-stage img')] })).filter((p) => p.items.length > 1 && p.shots.length > 1);
-    const steps = [...root.querySelectorAll('[data-stk]')].map((box) => ({ box, items: [...box.querySelectorAll('.cb-steps-sticky > .cb-step')], nums: [...box.querySelectorAll('.cb-stk-num > span')], bar: box.querySelector('.cb-stk-bar') })).filter((p) => p.items.length > 1);
+    const steps = [...root.querySelectorAll('[data-stk]')].map((box) => ({ box, items: [...box.querySelectorAll('.cb-steps-sticky > .cb-step')], nums: [...box.querySelectorAll('.cb-stk-num > span')], bar: box.querySelector('.cb-stk-bar, .cb-stk-trace') })).filter((p) => p.items.length > 1);
     if ((lists.length || steps.length) && 'IntersectionObserver' in win) {
       const showList = (p, k) => {
         p.items.forEach((it, n) => it.classList.toggle('is-on', n === k));

@@ -46,7 +46,7 @@ const openingPhone = preloadSrc && typeof opening.data?.picture?.phone === 'stri
 // The page's own typefaces that the site serves itself (the warm serifs and the extra-clear
 // sans) are asked for at once too, so words set in them are not repainted late, after the
 // stylesheets have been read. At most two: the heading's and the text's.
-const HEADING_FILES: Record<string, string> = { modern: 'fraunces-latin-600-normal', fine: 'fraunces-latin-400-normal', noir: 'fraunces-latin-900-italic', editorial: 'newsreader-latin-600-normal', mixed: 'newsreader-latin-400-italic' };
+const HEADING_FILES: Record<string, string> = { modern: 'fraunces-latin-600-normal', fine: 'fraunces-latin-400-normal', noir: 'fraunces-latin-900-italic', editorial: 'newsreader-latin-600-normal', mixed: 'newsreader-latin-400-italic', lyric: 'fraunces-latin-400-italic' };
 const BODY_FILES: Record<string, string> = { easy: 'atkinson-hyperlegible-latin-400-normal', reading: 'newsreader-latin-400-normal' };
 const look = (page as any).look || {};
 // The clean sans with a serif italic only needs its italic when a heading has a marked word.
