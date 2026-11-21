@@ -722,9 +722,12 @@ html:not(.cbm-js) .cb-rail-band{display:none}
   .cb-tl-open>:only-child{grid-column:span 4}
 }
 .cb-tl-open .cb-tl-item.has-panel .cb-tl-pic::after{background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0) 42%,rgba(0,0,0,0) 62%,rgba(0,0,0,.3))}
-.cb-tl-panel{display:grid;gap:.35rem;padding:clamp(.9rem,1.8vw,1.2rem) clamp(1rem,2vw,1.4rem);background:rgba(14,12,22,.66);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
-.cb-tl-panel .cb-tl-text{color:rgba(255,255,255,.92)}
-.cb-tl-panel .cb-link{display:inline-flex;align-items:center;min-height:max(2.75rem,44px);color:#fff;text-decoration-color:currentColor}
+/* The panel is frosted glass in the page's own colour (light on a light palette, dark on a dark
+   one), with the page's own text colours, so it belongs to the palette instead of darkening it. */
+.cb-tl-panel{display:grid;gap:.35rem;padding:clamp(.9rem,1.8vw,1.2rem) clamp(1rem,2vw,1.4rem);background:color-mix(in srgb,var(--bg-0,#ffffff) 90%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.15);backdrop-filter:blur(14px) saturate(1.15);color:var(--cb-page-ink,#16181d);--ink:var(--cb-page-ink,#16181d);--ink-dim:var(--cb-page-dim,#3d4250);text-shadow:none;box-shadow:0 -1px 0 color-mix(in srgb,var(--cb-page-ink,#16181d) 8%,transparent)}
+.cb-tl-panel .cb-tl-meta .cb-tl-price{color:var(--cb-page-accent,var(--cb-page-ink,#16181d))}
+.cb-tl-panel .cb-tl-text{color:var(--cb-page-dim,#3d4250)}
+.cb-tl-panel .cb-link{display:inline-flex;align-items:center;min-height:max(2.75rem,44px);color:var(--cb-page-accent,var(--cb-page-ink,#16181d));text-decoration-color:currentColor}
 .cb-tl-item.has-panel:focus-visible{outline:3px solid var(--cb-accent-text,var(--accent));outline-offset:3px}
 
 /* ---- Photos that float beside a statement (S3 with M5) ------------------------------------- */
@@ -783,7 +786,11 @@ html:not(.cbm-js) .cb-rail-band{display:none}
   /* Tiles that open: pointed at or focused, the panel slides up and the photo eases in. A finger,
      and the editor, keep the panel open. */
   @media (hover:hover) and (pointer:fine) and (min-width:761px){
-    html.cbm-js .cbp:not([data-m-edit]) .cb-tl-open .cb-tl-item.has-panel .cb-tl-panel{transform:translate3d(0,101%,0);transition:transform .5s cubic-bezier(.22,1,.36,1)}
+    /* At rest the panel's first line, the time and the price, peeks up from the foot of the tile,
+       so a mouse user sees what each costs before pointing at it; pointed at, the rest slides up. */
+    html.cbm-js .cbp:not([data-m-edit]) .cb-tl-open .cb-tl-item.has-panel .cb-tl-panel{transform:translate3d(0,calc(100% - var(--cb-tl-peek,2.85rem)),0);transition:transform .5s cubic-bezier(.22,1,.36,1)}
+    html.cbm-js .cbp:not([data-m-edit]) .cb-tl-open .cb-tl-item.has-panel .cb-tl-panel>:not(.cb-tl-meta){opacity:0;transition:opacity .35s ease}
+    html.cbm-js .cbp:not([data-m-edit]) .cb-tl-open .cb-tl-item.has-panel:is(:hover,:focus-within,:focus-visible) .cb-tl-panel>*{opacity:1}
     html.cbm-js .cbp:not([data-m-edit]) .cb-tl-open .cb-tl-item.has-panel:is(:hover,:focus-within,:focus-visible) .cb-tl-panel{transform:none}
     html.cbm-js .cbp:not([data-m-edit]) .cb-tl-open .cb-tl-item.has-panel .cb-tl-pic img{transition:transform .9s cubic-bezier(.22,1,.36,1)}
     html.cbm-js .cbp:not([data-m-edit]) .cb-tl-open .cb-tl-item.has-panel:is(:hover,:focus-within) .cb-tl-pic img{transform:scale(1.06)}
