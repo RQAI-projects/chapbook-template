@@ -37,6 +37,11 @@ html:has(.site-header:not([data-header="classic"])) {--header-h:0px}
 .site-header[data-header="salon"] .logo{font:400 clamp(1.8rem,4vw,3rem)/1.1 'Newsreader',Georgia,serif;text-align:center}
 .site-header[data-header="salon"] .header-context{display:block;text-align:center;margin-top:.5rem;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase}
 .site-header[data-header="salon"] .site-nav a[data-booking]{border:1px solid var(--ink);border-radius:30px;padding-inline:1.1rem}
+/* The Book item is a button in every header, on a computer and in the phone's quick row. The booking link is set once, in the website's details, and this is where it shows first. */
+.site-header :is(.site-nav,.nav-primary) a[data-booking]{background:var(--accent);color:var(--cb-on-accent,var(--pro-button-ink,#fff));border:1px solid var(--accent);border-radius:var(--radius,10px);padding-inline:1.1rem;font-weight:650;text-decoration:none}
+.site-header :is(.site-nav,.nav-primary) a[data-booking]:hover{background:var(--accent);color:var(--cb-on-accent,var(--pro-button-ink,#fff));filter:brightness(.93)}
+.site-header .site-nav a[data-booking] .nav-index{display:none}
+.site-header .site-nav a[data-booking][aria-current="page"]::after{display:none}
 /* Galleries let the work lead; an explicit Menu replaces the long nav on desktop. */
 .site-header:is([data-header="exhibit"],[data-header="gallery"]) .container{min-height:88px;align-items:center}
 .site-header:is([data-header="exhibit"],[data-header="gallery"]) .logo{font-size:.85rem;font-weight:400;letter-spacing:.08em;text-transform:uppercase}

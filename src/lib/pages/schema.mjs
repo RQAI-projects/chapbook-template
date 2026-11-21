@@ -17,6 +17,14 @@ export function cleanText(v, max = 2000) {
 export function cleanLine(v, max = 200) {
   return cleanText(v, max * 2).replace(/\s*\n\s*/g, ' ').slice(0, max).trim();
 }
+// A calendar date as the page file keeps it: 2026-12-05. Anything that is not a real day is dropped.
+export function cleanDate(v) {
+  const m = typeof v === 'string' ? v.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/) : null;
+  if (!m) return '';
+  const y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+  if (y < 2000 || y > 2100 || mo < 1 || mo > 12 || d < 1) return '';
+  return d <= new Date(Date.UTC(y, mo, 0)).getUTCDate() ? m[0] : '';
+}
 const HEX = /^#[0-9a-f]{6}$/i;
 export const cleanHex = (v) => (typeof v === 'string' && HEX.test(v) ? v.toLowerCase() : '');
 const ID = /^[a-z0-9]{1,12}$/;
@@ -140,7 +148,9 @@ export const INTERACTIVE_SRC = /^\/interactives\/[a-z0-9][a-z0-9-]{0,79}\.html$/
 // ---- block types ---------------------------------------------------------------------------
 // Field kinds: line (one line), rich (paragraphs, **bold**, *italic*, [links](…), - lists),
 // plain (several lines, no marks, e.g. opening hours), picture, link, links (buttons), items
-// (a repeating list), bool, number, choice, video, src (interactive file), children (columns).
+// (a repeating list), bool, number, choice, video, src (interactive file), children (columns),
+// date (a calendar day, kept as 2026-12-05). A number may carry `step` for its plus and minus
+// buttons in the editor, and `quick: true` to have those buttons beside the entry on the page.
 // A line marked `panel: true` has no place of its own on the page, so the editor offers it in the
 // block's settings (with its `hint`). A choice may carry `labels` for its options.
 const L = (max, label, ph) => ({ kind: 'line', max, label, ph: ph || `Add ${label.toLowerCase()}` });
@@ -208,7 +218,7 @@ export const BLOCK_TYPES = {
   },
   gallery: {
     label: 'Photo gallery', hint: 'Several photos in a grid, a mosaic or a strip.',
-    variants: { grid: 'Grid', masonry: 'Mixed heights', mosaic: 'One large, four small', strip: 'Scrolling strip', reel: 'Rolling reel', gather: 'Photos fly together as you scroll' },
+    variants: { grid: 'Grid', masonry: 'Mixed heights', mosaic: 'One large, four small', strip: 'Scrolling strip', reel: 'Rolling reel', gather: 'Photos fly together as you scroll', sideways: 'Slides sideways as people scroll down' },
     fields: { heading: HEAD, intro: R(600, 'Introduction'), pictures: { kind: 'pictures', max: 24, label: 'Photos' } },
   },
   services: {
@@ -238,17 +248,17 @@ export const BLOCK_TYPES = {
   },
   team: {
     label: 'Team', hint: 'The people behind the business, with photos and short bios.',
-    variants: { grid: 'Grid', rows: 'Rows', single: 'One person, large', circles: 'Round photos' },
+    variants: { grid: 'Grid', rows: 'Rows', single: 'One person, large', circles: 'Round photos', carousel: 'Carousel that slides sideways' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 24, label: 'People', add: 'Add a person', item: {
-        name: L(100, 'Name', 'Name'), role: L(120, 'Role', 'Role'), bio: R(2000, 'About them'), picture: PIC('Photo'), link: { kind: 'link', label: 'Link' },
+        name: L(100, 'Name', 'Name'), role: L(120, 'Role', 'Role'), quals: L(160, 'Qualifications', 'e.g. qualifications and registration'), bio: R(2000, 'About them'), picture: PIC('Photo'), link: { kind: 'link', label: 'Link' },
       }, sample: { name: 'New person', role: '', bio: '' } },
     },
   },
   reviews: {
     label: 'Reviews', hint: 'What customers say about you.',
-    variants: { cards: 'Cards', 'big-quote': 'One big quote', list: 'List', wall: 'Quote wall', ticker: 'Rolling reviews', one: 'One at a time' },
+    variants: { cards: 'Cards', 'big-quote': 'One big quote', list: 'List', wall: 'Quote wall', ticker: 'Rolling reviews', one: 'One at a time', drift: 'Wall of columns that drift past each other' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD,
       items: { kind: 'items', max: 24, label: 'Reviews', add: 'Add a review', item: {
@@ -267,7 +277,7 @@ export const BLOCK_TYPES = {
   },
   contact: {
     label: 'Contact details', hint: 'Address, opening hours, phone and email.',
-    variants: { card: 'Card', inline: 'In a row', split: 'Heading beside details', band: 'Coloured band' },
+    variants: { card: 'Card', inline: 'In a row', split: 'Heading beside details', band: 'Coloured band', map: 'Card with a drawn map, today marked', hours: 'Opening hours as a table, today marked' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       business: { kind: 'bool', label: 'Use my business details' },
@@ -297,7 +307,7 @@ export const BLOCK_TYPES = {
   },
   facts: {
     label: 'Key facts', hint: 'A few numbers or short facts, such as “25 years”.',
-    variants: { row: 'In a row', large: 'Large', ruled: 'With lines', tiles: 'Tiles', circles: 'Coloured circles' },
+    variants: { row: 'In a row', large: 'Large', ruled: 'With lines', tiles: 'Tiles', circles: 'Coloured circles', ticker: 'Rolling band of numbers' },
     fields: { kicker: L(100, 'Short label'), heading: HEAD, items: { kind: 'items', max: 6, label: 'Facts', add: 'Add a fact', item: { value: L(24, 'Number or word', 'e.g. 25'), label: L(80, 'What it means', 'e.g. years in business') }, sample: { value: '10', label: 'New fact' } } },
   },
   notice: {
@@ -355,12 +365,128 @@ export const BLOCK_TYPES = {
       }, sample: { name: 'New piece', description: '' } },
     },
   },
+  // ---- Signature sections (website design release 7) ----------------------------------------
+  // Built for complete business websites. Each one reads and works with scripts off and with
+  // movement turned down; the page's scripts only ever add to them.
+  bookstrip: {
+    label: 'Booking strip', hint: 'People choose what they want, then press Book. It uses your booking link, or your phone and Contact page when there is none.',
+    variants: { strip: 'One strip: choose, then Book', cards: 'A card for each thing to book', bar: 'Slim bar with Book and Call' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(600, 'Introduction'),
+      items: { kind: 'items', max: 12, label: 'Things to book', add: 'Add one', item: {
+        name: L(80, 'Name', 'e.g. Dinner for two'), duration: L(40, 'Time', 'e.g. 90 min'), price: L(40, 'Price', 'e.g. £45'), link: { kind: 'link', label: 'Its own booking link' },
+      }, sample: { name: 'New booking', duration: '', price: '' } },
+      button: L(40, 'Button text', 'Book'),
+      sticky: { kind: 'bool', label: 'On phones, keep a Book bar at the bottom of the screen' },
+      // Off unless chosen: it makes each visitor's browser ask Cal.com for the free times as the
+      // page opens. It only works with a Cal.com booking link; with any other it shows nothing.
+      live: { kind: 'bool', label: 'Show how many times are free today, read from Cal.com as the page opens' },
+      whatsapp: { ...WA, panel: true, hint: `Shown as a WhatsApp button when the website has no booking link. ${WA_HINT}` },
+      note: L(240, 'Small print'),
+    },
+  },
+  plans: {
+    label: 'Ways to pay', hint: 'Cards for paying in full, a deposit, a membership or a package. Each has its own pay link, and the money goes straight to you.',
+    variants: { cards: 'Cards side by side', ladder: 'Steps that rise', rows: 'Rows' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      items: { kind: 'items', max: 6, label: 'Ways to pay', add: 'Add a way to pay', item: {
+        name: L(60, 'Name', 'e.g. Deposit'), price: L(40, 'Price', 'e.g. £20'), per: L(40, 'For what or how often', 'e.g. a month'),
+        includes: R(600, 'What is included', 'A short list of what is included'), small: L(160, 'Small print', 'e.g. Balance due on the day'),
+        pay: { kind: 'link', label: 'Pay link' }, popular: { kind: 'bool', label: 'Most popular' },
+      }, sample: { name: 'New way to pay', price: '', includes: '' } },
+      note: L(240, 'Small print'),
+    },
+  },
+  spaces: {
+    label: 'Spaces remaining', hint: 'Dated classes, courses, events or tables, each with the spaces left. You set the number; a date that has passed takes itself off.',
+    variants: { rows: 'Rows', cards: 'Cards', tickets: 'Tickets' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      items: { kind: 'items', max: 30, label: 'Dates', add: 'Add a date', item: {
+        name: L(100, 'What it is', 'e.g. Pasta class'), date: { kind: 'date', label: 'Date' }, time: L(40, 'Time', 'e.g. 6.30pm'), detail: L(120, 'Detail', 'e.g. With Sam, in the studio'), price: L(40, 'Price', 'Price'),
+        capacity: { kind: 'number', min: 1, max: 999, step: 1, label: 'Spaces in all' }, left: { kind: 'number', min: 0, max: 999, step: 1, quick: true, label: 'Spaces left' },
+        link: { kind: 'link', label: 'Booking link' }, pay: { kind: 'link', label: 'Pay link' }, waitlist: { kind: 'link', label: 'Waiting list link' },
+        // Follow a Cal.com event with seats: the website then reads the seats left from Cal.com
+        // as the page opens (no key is needed), and the number set by hand is only the fallback.
+        cal: { ...L(160, 'Cal.com event to follow', 'e.g. cal.com/sam/pasta-class'), panel: true, hint: 'Paste the link of a Cal.com event that has seats. Your website then shows its seats left for this date, read from Cal.com as the page opens. Leave it empty to set the number yourself.' },
+      }, sample: { name: 'New date', time: '', capacity: 10, left: 10 } },
+      past: { kind: 'choice', options: ['hide', 'finished'], def: 'hide', labels: { hide: 'Take them off the page', finished: 'Show them as Finished' }, label: 'Dates that have passed' },
+      note: L(240, 'Small print'),
+    },
+  },
+  menuboard: {
+    label: 'Menu board', hint: 'A menu or treatment list in groups, such as Starters, Mains and Puddings.',
+    variants: { slide: 'Board that slides sideways as people scroll', columns: 'Groups side by side', tabs: 'One group at a time' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      items: { kind: 'items', max: 60, label: 'Lines', add: 'Add a line', item: {
+        group: L(40, 'Group it starts', 'e.g. Starters'), name: L(100, 'Name', 'Name'), description: L(240, 'Description'), price: L(40, 'Price', 'Price'), tag: L(24, 'Small label', 'e.g. Vegan'),
+      }, sample: { name: 'New line', price: '' } },
+      note: L(240, 'Small print'),
+    },
+  },
+  tiles: {
+    label: 'Tiles', hint: 'A grid of tiles in mixed sizes: photos, a few words, a big number.',
+    variants: { mosaic: 'Mixed sizes', feature: 'One large, the rest small', row: 'One row of tall tiles' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      items: { kind: 'items', max: 9, label: 'Tiles', add: 'Add a tile', item: {
+        value: L(16, 'Big number or word', 'e.g. 12'), name: L(60, 'Heading', 'Heading'), text: L(200, 'Words'), picture: PIC(), link: { kind: 'link', label: 'Link' },
+      }, sample: { name: 'New tile', text: '' } },
+    },
+  },
+  compare: {
+    label: 'Before and after', hint: 'Two photos of the same thing. People drag a handle, or use the arrow keys, to compare them.',
+    variants: { slider: 'Drag to compare', side: 'Side by side' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      items: { kind: 'items', max: 6, label: 'Pairs', add: 'Add a pair', item: {
+        name: L(100, 'Name', 'Name'), before: PIC('First photo'), after: PIC('Second photo'), beforeLabel: L(24, 'Word for the first photo', 'Before'), afterLabel: L(24, 'Word for the second photo', 'After'), description: R(400, 'Description'),
+      }, sample: { name: 'New pair' } },
+    },
+  },
+  timetable: {
+    label: 'Timetable', hint: 'Classes or sessions through the week, day by day, with today marked.',
+    variants: { week: 'The week across the page', days: 'Day by day' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      items: { kind: 'items', max: 60, label: 'Sessions', add: 'Add a session', item: {
+        day: { kind: 'choice', options: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'], def: 'mon', labels: { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday' }, label: 'Day' },
+        time: L(40, 'Time', 'e.g. 6.30pm'), name: L(80, 'Name', 'Name of the session'), detail: L(100, 'Detail', 'e.g. With Sam, 60 min'), level: L(24, 'Small label', 'e.g. Beginners'), link: { kind: 'link', label: 'Booking link' },
+      }, sample: { day: 'mon', time: '', name: 'New session' } },
+      note: L(240, 'Small print'),
+    },
+  },
+  casestudy: {
+    label: 'Case study', hint: 'One piece of work told properly: the brief, what you did and the result, with photos and a few facts.',
+    variants: { spread: 'Large photo with the facts beside it', chapters: 'Brief, work and result as three chapters' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'), picture: PIC('Main photo'), pictures: { kind: 'pictures', max: 4, label: 'More photos' },
+      items: { kind: 'items', max: 6, label: 'Facts', add: 'Add a fact', item: { label: L(40, 'What', 'e.g. Time taken'), value: L(60, 'Answer', 'e.g. Five days') }, sample: { label: 'New fact', value: '' } },
+      brief: R(800, 'The brief'), work: R(1200, 'What we did'), result: R(800, 'The result'), buttons: BTNS(2),
+    },
+  },
+  scenes: {
+    label: 'Pinned scenes', hint: 'The photo stays put while the words change as people scroll. On phones, and with movement turned down, each scene simply follows the last.',
+    variants: { split: 'Photo pinned beside the words', full: 'Full screen, each photo wipes over the last' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      items: { kind: 'items', max: 6, label: 'Scenes', add: 'Add a scene', item: {
+        tag: L(40, 'Small label'), name: L(100, 'Heading', 'Heading'), description: R(500, 'Words'), picture: PIC(), link: { kind: 'link', label: 'Link' },
+      }, sample: { name: 'New scene', description: '' } },
+    },
+  },
   spacer: {
     label: 'Space', hint: 'Extra space, with or without a line.',
     variants: { space: 'Space', line: 'Line', ornament: 'Ornament' },
     fields: { size: { kind: 'choice', options: ['s', 'm', 'l'], def: 'm', label: 'Size' } },
   },
 };
+// The section types that came with website design release 7. A website on an older design
+// cannot draw them, so Chapbook asks it to update first.
+export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'tiles', 'compare', 'timetable', 'casestudy', 'scenes'];
+export const WEEK_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 // How many of an opening's "More photos" each layout shows. Layouts not listed show none.
 export const HERO_PHOTO_ROOM = { orbit: 5, collage: 3, filmstrip: 6, bento: 2, blob: 1, carousel: 6, depth: 3 };
 export const TYPE_IDS = Object.keys(BLOCK_TYPES);
@@ -383,6 +509,7 @@ function cleanField(f, v, opts) {
     case 'video': return cleanVideo(v);
     case 'src': return typeof v === 'string' && INTERACTIVE_SRC.test(v) ? v : '';
     case 'booking': return bookingTarget(v)?.href || '';
+    case 'date': return cleanDate(v);
     default: return null;
   }
 }
@@ -409,6 +536,10 @@ function cleanData(type, data, opts, depth) {
     else c = cleanField(f, d[k], opts);
     if (!emptyValue(c)) out[k] = c;
   }
+  // Only one way to pay can be the most popular: the first one marked keeps it.
+  if (type === 'plans' && out.items) { let seen = false; for (const x of out.items) { if (x.popular) { if (seen) delete x.popular; seen = true; } } }
+  // There can never be more spaces left than there are spaces.
+  if (type === 'spaces' && out.items) for (const x of out.items) if (x.capacity != null && x.left != null && x.left > x.capacity) x.left = x.capacity;
   // Any block may carry a backdrop picture, used when its background is "Picture".
   const backdrop = cleanPicture(d.backdrop, opts);
   if (backdrop) out.backdrop = backdrop;
@@ -455,14 +586,15 @@ function settleIds(blocks, seen) {
 // free-form styles. Movement only ever adds to a page: with scripts off, or for visitors who ask
 // their device for less motion, every word and picture is simply there.
 export const MOTION = {
-  scroll: { label: 'As people scroll', options: { none: 'Nothing moves', rise: 'Rise into place', fade: 'Fade in', slide: 'Slide in from the sides', zoom: 'Grow into place', wipe: 'Wipe down', blur: 'Come into focus', tilt: 'Tip up' } },
+  scroll: { label: 'As people scroll', options: { none: 'Nothing moves', rise: 'Rise into place', fade: 'Fade in', slide: 'Slide in from the sides', zoom: 'Grow into place', wipe: 'Wipe down', blur: 'Come into focus', tilt: 'Tip up', cascade: 'Arrive in a wave, corner to corner', curtain: 'Open like a curtain' } },
   heading: { label: 'Opening heading', options: { none: 'Still', words: 'Word by word', letters: 'Letter by letter', gather: 'Letters fly together', typed: 'Typed out', shimmer: 'Moving colour' } },
   buttons: { label: 'Buttons', options: { none: 'Plain', lift: 'Lift', fill: 'Colour sweep', arrow: 'Arrow slides along', tile: 'Arrow in a tile', shine: 'Shine', press: 'Press down', glow: 'Glow', magnet: 'Follows the pointer' } },
-  pictures: { label: 'Pictures', options: { none: 'Still', drift: 'Drift as you scroll', zoom: 'Slow zoom', tilt: 'Tilt to the pointer', unveil: 'Unveil', reveal: 'Colour appears where the pointer is' } },
+  pictures: { label: 'Pictures', options: { none: 'Still', drift: 'Drift as you scroll', zoom: 'Slow zoom', tilt: 'Tilt to the pointer', unveil: 'Unveil', reveal: 'Colour appears where the pointer is', depth: 'Move at their own depth as you scroll', sheet: 'A coloured sheet slides off them' } },
   backdrop: { label: 'Behind the opening', options: { none: 'Nothing', aurora: 'Northern lights', bubbles: 'Bubbles', blobs: 'Soft shapes', waves: 'Waves', orbits: 'Orbits', grid: 'Moving grid', dots: 'Dot field', rays: 'Light rays', shapes: 'Confetti shapes', lines: 'Speed lines', ripples: 'Ripples', petals: 'Falling petals', stars: 'Constellation', spotlight: 'Spotlight', wash: 'Colour wash', grain: 'Film grain', globe: 'Turning globe (3D)', ring: 'Turning ring (3D)', terrain: 'Rolling landscape (3D)' } },
   follow: { label: 'Follows the scroll', options: { none: 'Nothing', bar: 'A bar across the top that fills', line: 'A line down the side that draws' } },
-  pointer: { label: 'Where the pointer goes', options: { none: 'Nothing', light: 'A soft light follows it', dot: 'A dot trails it and grows over buttons and links', label: 'The main button\'s words follow it over the opening' } },
+  pointer: { label: 'Where the pointer goes', options: { none: 'Nothing', light: 'A soft light follows it', dot: 'A dot trails it and grows over buttons and links', label: 'The main button\'s words follow it over the opening', lean: 'Cards and tiles lean towards it' } },
   opening: { label: 'The opening, as people scroll on', options: { none: 'Scrolls away as usual', cover: 'The page slides over it', recede: 'It sinks back and dims' } },
+  arrive: { label: 'As the page opens', options: { none: 'It is simply there', dissolve: 'Fades in', settle: 'Lifts into place', veil: 'A sheet in your colour slides away' } },
   pace: { label: 'Pace', options: { calm: 'Calm', steady: 'Steady', lively: 'Lively' } },
 };
 export const MOTION_KEYS = Object.keys(MOTION);
@@ -478,6 +610,10 @@ export const MOTION_PRESETS = {
   dreamy: { name: 'Dreamy', hint: 'Soft focus, glowing buttons, drifting pictures.', motion: { scroll: 'blur', heading: 'shimmer', buttons: 'glow', pictures: 'drift', pace: 'calm', count: true } },
   tech: { name: 'Sharp', hint: 'Wipes, a typed headline and buttons that follow the pointer.', motion: { scroll: 'wipe', heading: 'typed', buttons: 'magnet', pictures: 'tilt', pace: 'steady', count: true } },
   classic: { name: 'Classic', hint: 'A quiet fade and nothing more.', motion: { scroll: 'fade', buttons: 'lift', pace: 'calm' } },
+  // Styles built for the signature websites.
+  hearth: { name: 'Fireside', hint: 'The page lifts in; sections open like a curtain and pictures move at their own depth.', motion: { scroll: 'curtain', heading: 'words', buttons: 'fill', pictures: 'depth', arrive: 'settle', pace: 'calm', count: true } },
+  gallery: { name: 'Gallery', hint: 'Tiles arrive in a wave and lean to the pointer; a sheet slides off each picture.', motion: { scroll: 'cascade', heading: 'letters', buttons: 'arrow', pictures: 'sheet', pointer: 'lean', arrive: 'dissolve', pace: 'steady', count: true } },
+  showtime: { name: 'Showtime', hint: 'A coloured sheet opens the page; everything arrives in a quick wave.', motion: { scroll: 'cascade', heading: 'words', buttons: 'press', pictures: 'depth', pointer: 'lean', arrive: 'veil', pace: 'lively', count: true } },
 };
 export function cleanMotion(v) {
   const d = isObj(v) ? v : {}, out = {};

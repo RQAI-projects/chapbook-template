@@ -34,6 +34,63 @@ export function isoToday(now = new Date()) {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
+// ---- signature sections: the pure parts ------------------------------------------------------
+// What a number of spaces is called: "6 spaces left", "Last 2", "Last space", "Full".
+export const spacesText = (left) => (!(left > 0) ? 'Full' : left === 1 ? 'Last space' : left === 2 ? 'Last 2' : `${Math.floor(left)} spaces left`);
+// Whether a line of opening hours ("Mon to Fri", "Saturday", "Tue, Thu and Sat", "Every day")
+// covers a day of the week (0 is Sunday). A line that names no day covers none.
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+export function dayInLabel(label, dow) {
+  const text = String(label || '').toLowerCase();
+  if (/\b(every ?day|daily|all week|7 days)\b/.test(text)) return true;
+  const found = [...text.matchAll(/\b(sun|mon|tue|wed|thu|fri|sat)[a-z]*\b/g)].map((m) => ({ d: DAY_KEYS.indexOf(m[1]), at: m.index, end: m.index + m[0].length }));
+  for (let i = 0; i < found.length; i++) {
+    const a = found[i], b = found[i + 1];
+    // "Mon to Fri", "Mon - Fri", "Fri until Sun": every day from the first to the second, round the week.
+    if (b && /^\s*(to|until|through|till|-|–|—)\s*$/.test(text.slice(a.end, b.at))) {
+      for (let d = a.d; ; d = (d + 1) % 7) { if (d === dow) return true; if (d === b.d) break; }
+      i++;
+    } else if (a.d === dow) return true;
+  }
+  return false;
+}
+// The address a page asks Cal.com for free times: a person's own event, between two days.
+// No key is needed for this (Cal.com's own documentation says so); it only reads.
+export const CAL_API = 'https://api.cal.com/v2/slots';
+export const CAL_VERSION = '2024-09-04';
+export function calSlotsUrl(event, start, end, timeZone = 'UTC') {
+  const m = /^([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_-]{1,120})$/.exec(String(event || ''));
+  if (!m || !/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(end)) return '';
+  return `${CAL_API}?eventTypeSlug=${encodeURIComponent(m[2])}&username=${encodeURIComponent(m[1])}&start=${start}&end=${end}&timeZone=${encodeURIComponent(timeZone)}`;
+}
+// The day after (or n days after) a date, as the same kind of text.
+export function addDays(iso, n = 1) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  if (!m) return '';
+  return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3] + n)).toISOString().slice(0, 10);
+}
+// What a booking strip says about the free times Cal.com gave: how many are left today, or
+// when the next one is. `slots` is Cal.com's answer ({ "2026-11-23": [{ start }, …] }).
+export function freeTimesText(slots, today, now = Date.now()) {
+  if (!slots || typeof slots !== 'object') return '';
+  const later = (list) => (Array.isArray(list) ? list.filter((x) => x && Date.parse(x.start) > now) : []);
+  const n = later(slots[today]).length;
+  if (n) return `${n} ${n === 1 ? 'time' : 'times'} free today`;
+  const next = Object.keys(slots).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && d > today && later(slots[d]).length).sort()[0];
+  if (!next) return '';
+  const long = longDate(next);
+  return `Next free time: ${long.replace(/ \d{4}$/, '')}`;
+}
+// The seats left on one day of an event with seats, from Cal.com's answer; null when the answer
+// says nothing about seats (an ordinary appointment), 0 when the day has no place left.
+export function seatsOn(slots, day) {
+  if (!slots || typeof slots !== 'object') return null;
+  const list = Array.isArray(slots[day]) ? slots[day] : [];
+  const seated = list.filter((x) => x && Number.isFinite(x.seatsRemaining));
+  if (!seated.length) return list.length ? null : { left: 0, total: null };
+  return { left: seated.reduce((n, x) => n + Math.max(0, x.seatsRemaining), 0), total: seated.reduce((n, x) => n + (Number.isFinite(x.seatsTotal) ? x.seatsTotal : 0), 0) || null };
+}
+
 // A currency written as a sign (£, €, $…) or a code (GBP, kr…). Codes that mean one sign are
 // read as that sign, so "£5" and "5 GBP" are the same currency.
 const CODES = 'GBP|EUR|USD|AUD|CAD|NZD|CHF|SEK|NOK|DKK|ISK|PLN|CZK|HUF|JPY|INR|ZAR|kr|zł|Kč|Ft|Rs|R';
@@ -195,6 +252,9 @@ export function orderUrl(kind, to, order, max = MAX_URL) {
 // A page being edited (data-m-edit) is left alone. Returns a stop function that puts the page back
 // exactly as it was drawn, including the boot flag (html.cba-js) the bar and list rely on.
 export function initPageActions(doc = document, win = window, { open, preview = false, clock = win } = {}) {
+  // Two more options, for tests and for previews that must not age: `fetch` (how Cal.com is
+  // asked) and `now` (what the time is).
+  const { fetch: fetcher, now = () => new Date() } = arguments[2] || {};
   const root = doc.querySelector('.cbp');
   if (!root || root.hasAttribute('data-m-edit')) return () => {};
   if (typeof root.__cbaStop === 'function') root.__cbaStop();
@@ -334,6 +394,204 @@ export function initPageActions(doc = document, win = window, { open, preview = 
       for (const [i, r] of rows.entries()) { r.qty = 0; r.out.textContent = drawn.qty[i]; }
       total.textContent = drawn.total; status.textContent = drawn.status;
     });
+  }
+
+  // ---- signature sections -------------------------------------------------------------------
+  let alive = true;
+  undo.push(() => { alive = false; });
+  const media = (q) => { try { return win.matchMedia(q).matches; } catch { return false; } };
+  const reduce = media('(prefers-reduced-motion: reduce)');
+  const classes = [];
+  const addClass = (el, name) => { if (el && !el.classList.contains(name)) { el.classList.add(name); classes.push([el, name]); } };
+  undo.push(() => { for (const [el, name] of classes) el.classList.remove(name); classes.length = 0; });
+  const texts = new Map();
+  const setText = (el, text) => { if (!el) return; if (!texts.has(el)) texts.set(el, el.textContent); el.textContent = text; };
+  undo.push(() => { for (const [el, t] of texts) el.textContent = t; texts.clear(); });
+  const safeHref = (h) => (/^https:\/\/[^\s"'<>]+$/.test(h || '') || /^\/(?!\/)[^\s"'<>]*$/.test(h || '') ? h : '');
+
+  // Free times from Cal.com. Asked for only where the owner chose it, never in Chapbook's own
+  // preview, and never more than once for the same event and days. Whatever goes wrong, the
+  // page simply keeps what it already shows.
+  const asked = new Map();
+  const calSlots = (event, start, end) => {
+    let tz = 'UTC'; try { tz = new win.Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { /* keep UTC */ }
+    const url = calSlotsUrl(event, start, end, tz);
+    const get = fetcher || (typeof win.fetch === 'function' ? win.fetch.bind(win) : null);
+    if (!url || !get || preview) return Promise.resolve(null);
+    if (!asked.has(url)) asked.set(url, Promise.resolve().then(() => get(url, { headers: { 'cal-api-version': CAL_VERSION }, credentials: 'omit', referrerPolicy: 'no-referrer' })).then((r) => (r && r.ok ? r.json() : null)).then((j) => (j && j.status === 'success' && j.data && typeof j.data === 'object' ? j.data : null)).catch(() => null));
+    return asked.get(url);
+  };
+
+  // Booking strip: the choice says where Book goes. A choice with a booking page of its own sends
+  // the button there; any other leaves it on the website's booking page.
+  for (const strip of root.querySelectorAll('[data-bs]')) {
+    const book = strip.querySelector('.cb-bs-book');
+    if (!book) continue;
+    const home = book.getAttribute('href');
+    const sync = () => {
+      const own = safeHref(strip.querySelector('input[type=radio]:checked')?.getAttribute('data-href'));
+      setAttr(book, 'href', own || home);
+      setAttr(book, 'rel', own ? 'noopener' : book.getAttribute('rel'));
+    };
+    on(strip, 'change', sync);
+    sync();
+  }
+  for (const line of root.querySelectorAll('.cb-bs-live[data-cal]')) {
+    const today = isoToday(now());
+    calSlots(line.getAttribute('data-cal'), today, addDays(today, 14)).then((slots) => {
+      const text = alive ? freeTimesText(slots, today, now().getTime()) : '';
+      if (!text) return;
+      setText(line, `${text}. Live from Cal.com.`);
+      show(line, true);
+    });
+  }
+
+  // The Book bar at the bottom of a phone screen. It is lifted out of its section (whose
+  // movement would carry it along) and shown once the strip itself has scrolled away, and never
+  // over the foot of the page.
+  for (const bar of root.querySelectorAll('[data-bookbar]')) {
+    if (!media('(max-width: 760px)')) continue;
+    const home = bar.parentElement, after = bar.nextSibling, section = bar.closest('.cb');
+    root.append(bar);
+    undo.push(() => { if (home?.isConnected) home.insertBefore(bar, after?.parentNode === home ? after : null); else bar.remove(); });
+    show(bar, true); addClass(bar, 'is-live');
+    const hidden = new Set();
+    const sync = () => bar.classList.toggle('is-on', !hidden.size);
+    undo.push(() => bar.classList.remove('is-on'));
+    if ('IntersectionObserver' in win) {
+      const io = new win.IntersectionObserver((entries) => { for (const e of entries) { if (e.isIntersecting) hidden.add(e.target); else hidden.delete(e.target); } sync(); });
+      for (const el of [section, doc.querySelector('footer.site-footer, body > footer')]) if (el) io.observe(el);
+      undo.push(() => io.disconnect());
+    }
+    sync();
+  }
+
+  // Spaces remaining: a date that has passed takes itself off (or says Finished), and only then
+  // are the numbers shown, so no day that has gone ever shows spaces. A row that follows a
+  // Cal.com event then takes its number from Cal.com, and says so.
+  const spaceLists = [...root.querySelectorAll('.cb-sp[data-past]')];
+  const checkSpaces = () => {
+    const today = isoToday(now());
+    for (const list of spaceLists) {
+      const rows = [...list.children].filter((n) => n.classList.contains('cb-sp-item'));
+      let showing = 0;
+      for (const row of rows) {
+        const date = row.getAttribute('data-date') || '';
+        const left = row.querySelector('.cb-sp-left'), meter = row.querySelector('.cb-sp-meter'), acts = row.querySelector('.cb-sp-acts');
+        const past = /^\d{4}-\d{2}-\d{2}$/.test(date) && date < today && !row.classList.contains('is-past');
+        if (past && list.getAttribute('data-past') !== 'finished') { show(row, false); continue; }
+        if (past) {
+          addClass(row, 'is-past'); setAttr(row, 'data-cal', null);
+          if (left) { setText(left, 'Finished'); left.classList.remove('is-last', 'is-full'); show(left, true); }
+          show(meter, false); show(acts, false);
+        } else if (!row.classList.contains('is-past')) { if (left && left.textContent.trim()) show(left, true); show(meter, true); }
+        showing++;
+      }
+      const none = list.parentElement?.querySelector('.cb-sp-none');
+      if (none) show(none, !showing);
+    }
+  };
+  if (spaceLists.length) {
+    checkSpaces();
+    on(doc, 'visibilitychange', () => { if (!doc.hidden) checkSpaces(); });
+    const byEvent = new Map();
+    for (const row of root.querySelectorAll('.cb-sp-item[data-cal][data-date]:not(.is-past):not([hidden])')) { const k = row.getAttribute('data-cal'); byEvent.set(k, [...(byEvent.get(k) || []), row]); }
+    for (const [event, rows] of byEvent) {
+      const days = rows.map((r) => r.getAttribute('data-date')).sort();
+      calSlots(event, days[0], addDays(days[days.length - 1], 1)).then((slots) => {
+        if (!alive || !slots) return;
+        for (const row of rows) {
+          const seats = seatsOn(slots, row.getAttribute('data-date'));
+          const left = row.querySelector('.cb-sp-left');
+          if (!seats || !left || row.classList.contains('is-past')) continue;
+          setText(left, `${spacesText(seats.left)} `);
+          const src = make('span', 'cb-sp-src', 'live from Cal.com'); left.append(src); madeHere.push(src);
+          left.classList.toggle('is-full', seats.left === 0); left.classList.toggle('is-last', seats.left > 0 && seats.left <= 2);
+          row.classList.toggle('is-full', seats.left === 0);
+          show(left, true);
+          const meter = row.querySelector('.cb-sp-meter');
+          if (meter && seats.total) { keep(meter, 'style'); meter.style.setProperty('--f', Math.max(0, Math.min(1, 1 - seats.left / seats.total)).toFixed(3)); show(meter, true); }
+          const none = left.closest('.cb')?.querySelector('.cb-sp-asof');
+          if (none && rows.length === root.querySelectorAll('.cb-sp-item:not(.is-past):not([hidden])').length) show(none, false);
+        }
+      });
+    }
+  }
+
+  // Before and after: one frame with a handle. The handle is a range control, so a finger, a
+  // mouse and the arrow keys all move it. The first time it comes into view it moves a little
+  // by itself, to show that it can (not for visitors who ask for less motion).
+  for (const stage of root.querySelectorAll('[data-cmp]')) {
+    const range = stage.querySelector('.cb-cmp-range');
+    if (!range) continue;
+    const before = stage.querySelector('.cb-cmp-tag-a')?.textContent || 'first photo';
+    const put = (v) => { keep(stage, 'style'); stage.style.setProperty('--pos', `${v}%`); setAttr(range, 'aria-valuetext', `${Math.round(v)}% ${before}`); };
+    addClass(stage, 'is-live'); show(range, true);
+    let touched = false;
+    on(range, 'input', () => { touched = true; put(Number(range.value)); });
+    put(Number(range.value));
+    fields.push([range, '50']);
+    if (!reduce && !preview && 'IntersectionObserver' in win && typeof clock.requestAnimationFrame === 'function') {
+      const io = new win.IntersectionObserver(([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        const t0 = clock.performance.now();
+        const step = (t) => {
+          const k = (t - t0) / 1700;
+          if (!alive || touched || k >= 1) { if (alive && !touched) { range.value = '50'; put(50); } return; }
+          const v = 50 + Math.sin(k * Math.PI * 2) * 16 * (1 - k * 0.3);
+          range.value = String(Math.round(v)); put(v);
+          clock.requestAnimationFrame(step);
+        };
+        clock.requestAnimationFrame(step);
+      }, { threshold: 0.6 });
+      io.observe(stage);
+      undo.push(() => io.disconnect());
+    }
+  }
+
+  // Menu board, one group at a time: a row of tabs, made from the groups' own names.
+  for (const box of root.querySelectorAll('[data-tabs]')) {
+    const cols = [...box.querySelectorAll('.cb-mb-col')], names = cols.map((c) => c.querySelector('.cb-mb-group'));
+    if (cols.length < 2 || names.some((n) => !n || !n.id)) continue;
+    const list = make('div', 'cb-mb-tablist'); list.setAttribute('role', 'tablist');
+    const tabs = cols.map((col, i) => {
+      const t = make('button', '', names[i].textContent); t.type = 'button'; t.id = `${names[i].id}-tab`;
+      t.setAttribute('role', 'tab'); t.setAttribute('aria-controls', `${names[i].id}-panel`);
+      setAttr(col, 'id', `${names[i].id}-panel`); setAttr(col, 'role', 'tabpanel'); setAttr(col, 'aria-labelledby', t.id); setAttr(col, 'tabindex', '0');
+      return t;
+    });
+    const pick = (k, focus) => {
+      tabs.forEach((t, i) => { t.setAttribute('aria-selected', String(i === k)); t.tabIndex = i === k ? 0 : -1; });
+      cols.forEach((c, i) => show(c, i === k));
+      if (focus) tabs[k].focus();
+    };
+    tabs.forEach((t, i) => {
+      on(t, 'click', () => pick(i, false));
+      on(t, 'keydown', (e) => {
+        const to = e.key === 'ArrowRight' ? (i + 1) % tabs.length : e.key === 'ArrowLeft' ? (i - 1 + tabs.length) % tabs.length : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -1;
+        if (to >= 0) { e.preventDefault(); pick(to, true); }
+      });
+    });
+    list.append(...tabs); box.prepend(list); madeHere.push(list);
+    addClass(box, 'is-live');
+    pick(0, false);
+  }
+
+  // Today: marked in a timetable and in a table of opening hours.
+  {
+    const dow = now().getDay();
+    for (const day of root.querySelectorAll(`[data-tt] .cb-tt-day[data-day="${DAY_KEYS[dow]}"]`)) {
+      addClass(day, 'is-today');
+      const name = day.querySelector('.cb-tt-dayname');
+      if (name) { const chip = make('span', 'cb-tt-now', 'Today'); name.append(chip); madeHere.push(chip); }
+    }
+    for (const row of root.querySelectorAll('[data-hours] tr')) {
+      if (!dayInLabel((row.querySelector('th') || row).textContent, dow)) continue;
+      addClass(row, 'is-today');
+      const cell = row.querySelector('th') || row.querySelector('td');
+      if (cell) { const mark = make('span', 'cb-sr', ' (today)'); cell.append(mark); madeHere.push(mark); }
+    }
   }
 
   // The boot flag (normally set by the page itself) says the bar and list can be shown in full.

@@ -518,7 +518,7 @@ test('the new openings after review: credits outside round frames, the photo\'s 
 
 test('movement that follows the scroll and the pointer: fixed choices, carried as attributes, never in the editor', () => {
   assert.deepEqual(Object.keys(MOTION.follow.options), ['none', 'bar', 'line']);
-  assert.deepEqual(Object.keys(MOTION.pointer.options), ['none', 'light', 'dot', 'label']);
+  assert.deepEqual(Object.keys(MOTION.pointer.options), ['none', 'light', 'dot', 'label', 'lean']);
   assert.ok(MOTION.pictures.options.reveal);
   assert.deepEqual(cleanMotion({ follow: 'line', pointer: 'dot', pictures: 'reveal' }), { pictures: 'reveal', follow: 'line', pointer: 'dot' });
   assert.equal(cleanMotion({ follow: 'sideways', pointer: '<b>' }), null, 'anything else is dropped');

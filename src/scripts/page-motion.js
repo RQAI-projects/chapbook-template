@@ -11,11 +11,13 @@ const TARGETS = [
   '.cb-poster-foot', '.cb-giant-foot', '.cb-mq', '.cb-film', '.cb-orbit', '.cb-collage', '.cb-arch', '.cb-stage', '.cb-svc > *', '.cb-team > *', '.cb-reviews > *',
   '.cb-gallery > *', '.cb-fact', '.cb-faq-item', '.cb-post', '.cb-creds > li', '.cb-form', '.cb-booking-cal', '.cb-booking-card', '.cb-video', '.cb-interactive',
   '.cb-contact-card', '.cb-cta-card', '.cb-cta-split > *', '.cb-notice-text', '.cb-more', '.cb-map', '.cb-socials', '.cb-step', '.cb-show-item', '.cb-credits', '.cb-small', '.cb-head-row > a', '.cb-bar-wrap', '.cb-order-items > *', '.cb-order-foot',
+  // Signature sections (release 7).
+  '.cb-bs', '.cb-pl > *', '.cb-sp > *', '.cb-mb-col', '.cb-mb-tablist', '.cb-tl > *', '.cb-cmp-item', '.cb-tt-day', '.cb-find > *', '.cb-cs-top > *', '.cb-cs-part', '.cb-cs-more > *', '.cb-sc-item', '.cb-rv-drift', '.cb-gal-side .cb-hs-track > *',
 ].join(',');
 // Layouts that bring themselves in; the scroll effect leaves them alone.
 const OWN_ENTRANCE = '.cb-bento, .cb-curtain, .cb-open, .cb-hero-bg, .cb-backdrop, .cbm-bd, .cb-mask-thumb, .cb-plates-bg, .cb-plates-wipe';
-const PICTURES = '.cb-pic-frame, .cb-figure, .cb-svc-pic, .cb-order-pic, .cb-portrait, .cb-show-pic, .cb-gallery > figure, .cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-arch-pic):not(.cb-curtain-pic):not(.cb-lens-pic):not(.cb-bw-pic):not(.cb-shatter)';
-const KEEPS_MOVING = '.cb-car:not(.cb-car-still), .cb-depth, .cb-bw, .cb-lens, .cbm-bd canvas, .cb-mq:not(.cb-mq-still), .cb-film:not(.cb-film-still), .cbm-bd, .cb-orbit, .cb-collage, .cb-arch-badge, .cb-mask-h, .cb-rot, .cb-blob, .cb-inset-bg, .cb-open-bg, .cb-factlist-circles';
+const PICTURES = '.cb-pic-frame, .cb-figure, .cb-svc-pic, .cb-order-pic, .cb-portrait, .cb-show-pic, .cb-gallery > figure, .cb-cs-main, .cb-cs-more > figure, .cb-cmp-one, .cb-sc-pic, .cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-arch-pic):not(.cb-curtain-pic):not(.cb-lens-pic):not(.cb-bw-pic):not(.cb-shatter)';
+const KEEPS_MOVING = '.cb-rv-drift, .cb-car:not(.cb-car-still), .cb-depth, .cb-bw, .cb-lens, .cbm-bd canvas, .cb-mq:not(.cb-mq-still), .cb-film:not(.cb-film-still), .cbm-bd, .cb-orbit, .cb-collage, .cb-arch-badge, .cb-mask-h, .cb-rot, .cb-blob, .cb-inset-bg, .cb-open-bg, .cb-factlist-circles';
 const PAUSE_KEY = 'cbm-paused';
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -156,7 +158,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   }
 
   // ---- things arriving as the reader scrolls -------------------------------------------------
-  const scroll = look('scroll'), unveil = look('pictures') === 'unveil';
+  const scroll = look('scroll'), unveil = ['unveil', 'sheet'].includes(look('pictures'));
   let seen = null;
   if (!reduce && (scroll || unveil) && 'IntersectionObserver' in win) {
     const marked = [];
@@ -198,6 +200,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     seen = new win.IntersectionObserver((entries) => {
       const vh = win.innerHeight || html.clientHeight;
       const arriving = entries.filter((e) => e.isIntersecting && (e.intersectionRatio >= 0.1 || e.intersectionRect.height > vh * 0.2)).sort((a, b) => order.get(a.target) - order.get(b.target));
+      // A wave from corner to corner: what is nearer the top left goes first.
+      if (scroll === 'cascade') arriving.sort((a, b) => (a.boundingClientRect.top + a.boundingClientRect.left * 0.6) - (b.boundingClientRect.top + b.boundingClientRect.left * 0.6));
       arriving.forEach((e, i) => {
         const el = e.target, inHero = hero && hero.contains(el);
         // In the opening, things follow the heading; elsewhere they follow each other.
@@ -510,6 +514,36 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     // button's words over the opening. Decoration only: none of them can be clicked.
     const pointer = look('pointer');
     if (['light', 'dot', 'label'].includes(pointer)) pointerFollower(pointer);
+    // Cards and tiles lean towards the pointer, with a soft light where it is. A mouse or
+    // trackpad only; a finger gets a small press instead (signature.css).
+    if (pointer === 'lean') {
+      for (const el of root.querySelectorAll('.cb-tl-item, .cb-pl-item:not(.is-popular), .cb-bs-cards .cb-bs-opt, .cb-sp-cards .cb-sp-item, .cb-svc-cards > article, .cb-team-grid > article, .cb-reviews-cards .cb-review, .cb-cs-main, .cb-tt-day')) {
+        if (el.closest('.cb-hs.is-live')) continue;
+        const placed = win.getComputedStyle(el).position === 'static';
+        if (placed) el.style.position = 'relative';
+        el.setAttribute('data-lean', '');
+        let at = null;
+        on(el, 'pointermove', (e) => {
+          const waiting = at; at = [e.clientX, e.clientY];
+          if (waiting) return;                      // one update a frame is plenty
+          frame(() => {
+            if (!at) return;
+            const [x, y] = at; at = null;
+            const r = el.getBoundingClientRect();
+            if (!r.width || !r.height) return;
+            const px = clamp((x - r.left) / r.width, 0, 1), py = clamp((y - r.top) / r.height, 0, 1);
+            el.style.setProperty('--lx', `${((0.5 - py) * 7).toFixed(2)}deg`);
+            el.style.setProperty('--ly', `${((px - 0.5) * 9).toFixed(2)}deg`);
+            el.style.setProperty('--gx', `${(px * 100).toFixed(1)}%`);
+            el.style.setProperty('--gy', `${(py * 100).toFixed(1)}%`);
+            el.classList.add('is-lean');
+          });
+        });
+        const rest = () => { at = null; el.classList.remove('is-lean'); el.style.removeProperty('--lx'); el.style.removeProperty('--ly'); };
+        on(el, 'pointerleave', rest);
+        undo.push(() => { rest(); el.removeAttribute('data-lean'); for (const v of ['--gx', '--gy']) el.style.removeProperty(v); if (placed) el.style.removeProperty('position'); });
+      }
+    }
     // Colour appears where the pointer is.
     if (look('pictures') === 'reveal') {
       for (const fig of root.querySelectorAll(PICTURES)) revealColour(fig);
@@ -611,8 +645,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   // Sliders (showcase slider, round photos, reviews one at a time): arrow buttons and a count.
   // People can also swipe or scroll them. The one nearest the middle is the one that is "on".
   if (!editing) {
-    for (const list of root.querySelectorAll('.cb-show-slider, .cb-show-plates, .cb-reviews-one')) {
-      const items = [...list.children].filter((n) => n.matches('.cb-show-item, .cb-review'));
+    for (const list of root.querySelectorAll('.cb-show-slider, .cb-show-plates, .cb-reviews-one, .cb-team-carousel')) {
+      const items = [...list.children].filter((n) => n.matches('.cb-show-item, .cb-review, .cb-team-carousel > article'));
       if (items.length < 2) continue;
       const plates = list.classList.contains('cb-show-plates') ? list.closest('.cb-plates') : null;
       const nav = doc.createElement('div'); nav.className = 'cb-show-nav';
@@ -718,6 +752,119 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     wakers.push(wake);
     wake();
     undo.push(() => { clock.cancelAnimationFrame(frame); frame = 0; bd.classList.remove('cbm-live'); ctx.clearRect(0, 0, w, h); });
+  }
+
+  // ---- strips that the page's own scrolling slides sideways ----------------------------------
+  // A menu board or a row of photos wider than the screen. On a wide screen the strip stays put
+  // while the reader scrolls down, and travels sideways by as much as they scroll; the section is
+  // made that much taller to give it room (--hs-h), and the strip is moved with a transform
+  // (--hs-x). Phones swipe it instead, and a strip taller than the screen is left to be swiped
+  // too. Measured only when the layout changes; placed once a frame at most.
+  const wide = media('(min-width: 761px)');
+  if (!reduce && wide) {
+    const strips = [...root.querySelectorAll('[data-hs]')].map((box) => ({ box, pin: box.querySelector('.cb-hs-pin'), view: box.querySelector('.cb-hs-view'), track: box.querySelector('.cb-hs-track'), room: 0, top: 0, live: false })).filter((s) => s.pin && s.view && s.track);
+    if (strips.length) {
+      const headerH = () => parseFloat(win.getComputedStyle(html).getPropertyValue('--header-h')) || 0;
+      const rest = (s) => { s.live = false; s.box.classList.remove('is-live'); for (const v of ['--hs-h', '--hs-top', '--hs-x', '--hs-p']) s.box.style.removeProperty(v); };
+      let queued = false, asked = false;
+      const place = () => {
+        queued = false;
+        const tops = strips.map((s) => (s.live ? s.box.getBoundingClientRect().top : 0));
+        strips.forEach((s, i) => {
+          if (!s.live) return;
+          const p = clamp((s.top - tops[i]) / s.room, 0, 1);
+          s.box.style.setProperty('--hs-x', `${(p * s.room).toFixed(1)}px`);
+          s.box.style.setProperty('--hs-p', p.toFixed(4));
+        });
+      };
+      const measure = () => {
+        asked = false;
+        const vh = win.innerHeight || html.clientHeight, head = headerH();
+        for (const s of strips) {
+          rest(s);
+          const cs = win.getComputedStyle(s.view);
+          const room = Math.round(s.track.scrollWidth + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) - s.view.clientWidth);
+          if (!(room > 40)) continue;
+          s.view.scrollLeft = 0;
+          s.box.classList.add('is-live');
+          const pinH = s.pin.getBoundingClientRect().height;
+          if (pinH > vh - head - 24) { rest(s); continue; }
+          s.room = room; s.live = true;
+          s.top = Math.round(head + Math.max(16, (vh - head - pinH) / 2));
+          s.box.style.setProperty('--hs-top', `${s.top}px`);
+          s.box.style.setProperty('--hs-h', `${Math.round(pinH + room)}px`);
+        }
+        place();
+      };
+      const ask = () => { if (!queued) { queued = true; frame(place); } };
+      const again = () => { if (!asked) { asked = true; frame(measure); } };
+      on(win, 'scroll', ask, { passive: true }); on(win, 'resize', again, { passive: true }); on(win, 'load', again);
+      doc.fonts?.ready?.then(() => { if (alive) again(); }).catch(() => {});
+      for (const s of strips) {
+        // A photo that arrives late changes how far the strip has to travel.
+        on(s.track, 'load', again, true);
+        // The keyboard: Tab to something off to the side brings it into view, and the arrow keys
+        // move the strip when it has the focus.
+        on(s.track, 'focusin', (e) => {
+          if (!s.live || !e.target?.getBoundingClientRect) return;
+          const t = e.target.getBoundingClientRect(), tr = s.track.getBoundingClientRect(), vw = s.view.clientWidth;
+          if (t.left >= 0 && t.right <= vw) return;
+          const x = clamp(t.left - tr.left - vw * 0.2, 0, s.room);
+          win.scrollTo({ top: (win.scrollY || 0) + s.box.getBoundingClientRect().top - s.top + x, behavior: 'auto' });
+        });
+        on(s.view, 'keydown', (e) => {
+          if (!s.live || e.target !== s.view || (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft')) return;
+          e.preventDefault();
+          win.scrollBy({ top: e.key === 'ArrowRight' ? 260 : -260, behavior: 'smooth' });
+        });
+      }
+      measure();
+      undo.push(() => { for (const s of strips) rest(s); });
+    }
+
+    // ---- pinned scenes: the photo stays, and each new one wipes up over the last --------------
+    // Each scene's photo is given --w, from 0 to 1: how far its scene has come up the screen.
+    // The scene nearest the middle is the one that is "on".
+    const pins = [...root.querySelectorAll('[data-pin]')].map((box) => {
+      const stage = box.querySelector('.cb-sc-stage');
+      return { box, stage, items: [...box.querySelectorAll('.cb-sc-item')], shots: stage ? [...stage.querySelectorAll('img')] : [], count: stage?.querySelector('.cb-sc-count') || null, ticks: stage ? [...stage.querySelectorAll('.cb-sc-ticks i')] : [], on: -1 };
+    }).filter((p) => p.stage && p.items.length > 1 && p.shots.length > 1);
+    if (pins.length) {
+      for (const p of pins) p.box.classList.add('is-live');
+      const two = (n) => String(n).padStart(2, '0');
+      let queued = false;
+      const place = () => {
+        queued = false;
+        const vh = win.innerHeight || html.clientHeight;
+        // Measure everything first, then write, so the browser lays the page out once.
+        const read = pins.map((p) => { const r = p.box.getBoundingClientRect(); return r.bottom < -vh || r.top > vh * 2 ? null : p.items.map((it) => it.getBoundingClientRect().top); });
+        pins.forEach((p, k) => {
+          const tops = read[k];
+          if (!tops) return;
+          const first = Number(p.shots[0].getAttribute('data-i'));
+          for (const img of p.shots) { const i = Number(img.getAttribute('data-i')); img.style.setProperty('--w', (i === first ? 1 : clamp((vh * 0.85 - tops[i]) / (vh * 0.6), 0, 1)).toFixed(3)); }
+          let active = 0;
+          tops.forEach((t, i) => { if (t < vh * 0.56) active = i; });
+          if (active === p.on) return;
+          p.on = active;
+          p.items.forEach((it, i) => it.classList.toggle('is-on', i === active));
+          p.ticks.forEach((t, i) => t.classList.toggle('is-on', i === active));
+          if (p.count) p.count.textContent = `${two(active + 1)} / ${two(p.items.length)}`;
+        });
+      };
+      const ask = () => { if (!queued) { queued = true; frame(place); } };
+      on(win, 'scroll', ask, { passive: true }); on(win, 'resize', ask, { passive: true }); on(win, 'load', ask);
+      place();
+      undo.push(() => {
+        for (const p of pins) {
+          p.box.classList.remove('is-live');
+          p.items.forEach((it, i) => it.classList.toggle('is-on', i === 0));
+          p.ticks.forEach((t) => t.classList.remove('is-on'));
+          for (const img of p.shots) img.style.removeProperty('--w');
+          if (p.count) p.count.textContent = '';
+        }
+      });
+    }
   }
 
   // ---- the Pause button ----------------------------------------------------------------------

@@ -3,7 +3,7 @@
 // Everything a writer types is escaped. Rich text allows only paragraphs, **bold**, *italic*,
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
-import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM } from './schema.mjs';
+import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS } from './schema.mjs';
 import { professionalDetails, telHref, sameText } from '../professional.mjs';
 
 export * from './schema.mjs';
@@ -139,7 +139,10 @@ export function renderPage(rawPage, ctx = {}) {
   // Every page gets one h1: the first opening's heading, or else the first heading on the page.
   // The writer's own email on their profile stands in when Site settings has none.
   if (!biz.email && typeof ctx.fallbackEmail === 'string' && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(ctx.fallbackEmail)) biz.email = ctx.fallbackEmail.slice(0, 254);
-  const C = { ...ctx, page, biz, editable: !!ctx.editable, h1Done: false, turns: turnColours(pageColours(page.look, ctx.base)) };
+  // Today, for dated things (spaces remaining). The website passes nothing, so it is the day the
+  // site was built; a test or a preview can name the day.
+  const today = cleanDate(ctx.today) || localIso();
+  const C = { ...ctx, page, biz, today, editable: !!ctx.editable, h1Done: false, turns: turnColours(pageColours(page.look, ctx.base)) };
   // Every page gets one h1: the first heading that will really appear (an opening first).
   const shows = (b) => {
     if (!b.data.heading) return false;
@@ -162,7 +165,7 @@ export function renderPage(rawPage, ctx = {}) {
 // The page's movement choices as data-m-* attributes; motion.css and page-motion.js read them.
 export function motionAttrs(m) {
   if (!m) return '';
-  return ['scroll', 'heading', 'buttons', 'pictures', 'follow', 'pointer', 'opening', 'pace'].filter((k) => m[k] && Object.hasOwn(MOTION[k].options, m[k])).map((k) => ` data-m-${k}="${m[k]}"`).join('') + (m.count ? ' data-m-count' : '');
+  return ['scroll', 'heading', 'buttons', 'pictures', 'follow', 'pointer', 'opening', 'arrive', 'pace'].filter((k) => m[k] && Object.hasOwn(MOTION[k].options, m[k])).map((k) => ` data-m-${k}="${m[k]}"`).join('') + (m.count ? ' data-m-count' : '');
 }
 // Moving shapes behind a block. Pure decoration: empty elements that the stylesheet arranges and
 // animates in the page's own colours, hidden from screen readers.
@@ -639,6 +642,11 @@ R_.gallery = (C, b) => {
     return `${head}<div class="cb-mq cb-mq-pics" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${pics.length * 6}s"><div class="cb-mq-track">${track}</div></div>${creditsOf(pics)}`;
   }
   const list = LIST(C, b, 'pictures', pics, (p, i, wrap) => wrap(`${tile(p, i)}${p.alt || credit(p) ? `<figcaption>${credit(p)}</figcaption>` : ''}`, 'figure'), 'div', 'cb-gallery');
+  // A row of photos that slides sideways as the page scrolls down, and is swiped on a phone.
+  if (b.variant === 'sideways' && !C.editable && pics.length > 1) {
+    const row = pics.map((p, i) => `<figure>${tile(p, i)}${p.alt ? `<figcaption>${esc(p.alt)}</figcaption>` : ''}</figure>`).join('');
+    return `${head}<div class="cb-hs cb-gal-side" data-hs><div class="cb-hs-pin"><div class="cb-hs-view" tabindex="0" role="region" aria-label="${esc(d.heading || 'Photos')}, scrolls sideways"><div class="cb-hs-track">${row}</div></div><span class="cb-hs-bar" aria-hidden="true"><i></i></span></div></div>${creditsOf(pics)}`;
+  }
   // Photos that start scattered and fly together into the grid as the block scrolls into view.
   // Each photo's starting place is fixed by its position in the list.
   if (b.variant === 'gather' && !C.editable) {
@@ -683,7 +691,7 @@ R_.team = (C, b) => {
   const d = b.data, v = b.variant, items = d.items || [];
   // No photo yet: a tile with the person's initials, so the team still looks finished.
   const face = (p, i) => (p.picture ? P(C, b, `items.${i}.picture`, p.picture) : `<span class="cb-initials"${ED(C, 'data-cb-img', `${b.id}:items.${i}.picture`)} aria-hidden="true">${esc(initials(p.name))}</span>`);
-  const one = (p, i, w) => w(`<figure class="cb-portrait">${face(p, i)}</figure><div class="cb-person">${T(C, b, `items.${i}.name`, p.name, 'h3', 'cb-person-name')}${T(C, b, `items.${i}.role`, p.role, 'p', 'cb-person-role')}${RT(C, b, `items.${i}.bio`, p.bio, 'cb-rich cb-bio')}${p.link ? BTN(C, b, `items.${i}.link`, p.link, 'cb-link') : ''}</div>`);
+  const one = (p, i, w) => w(`<figure class="cb-portrait">${face(p, i)}</figure><div class="cb-person">${T(C, b, `items.${i}.name`, p.name, 'h3', 'cb-person-name')}${T(C, b, `items.${i}.role`, p.role, 'p', 'cb-person-role')}${T(C, b, `items.${i}.quals`, p.quals, 'p', 'cb-person-quals')}${RT(C, b, `items.${i}.bio`, p.bio, 'cb-rich cb-bio')}${p.link ? BTN(C, b, `items.${i}.link`, p.link, 'cb-link') : ''}</div>`);
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${LIST(C, b, 'items', items, one, 'div', `cb-team cb-team-${v}`)}`;
 };
 
@@ -703,7 +711,15 @@ R_.reviews = (C, b) => {
     const sets = Math.ceil(8 / items.length) + 1;
     return `${head}<div class="cb-mq cb-mq-cards" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${items.length * 11}s"><div class="cb-mq-track">${set(false)}${set(true).repeat(sets - 1)}</div></div>${more}`;
   }
-  return `${head}${LIST(C, b, 'items', items, one, 'div', `cb-reviews cb-reviews-${b.variant === 'ticker' ? 'cards' : b.variant}`)}${more}`;
+  // A wall of three columns that drift past each other. Each review is written once; the copies
+  // that make the loop are hidden from screen readers. Fewer than three reviews are plain cards.
+  if (b.variant === 'drift' && !C.editable && items.length > 2) {
+    const cols = [[], [], []];
+    items.forEach((r, i) => cols[i % 3].push([r, i]));
+    const col = (list, k) => { const set = (hidden) => list.map(([r, i]) => one(r, i, (inner, tag, cls) => `<${tag} class="${cls}"${hidden ? ' aria-hidden="true"' : ''}>${hidden ? inner.replace(/<a /g, '<a tabindex="-1" ') : inner}</${tag}>`)).join(''); return `<div class="cb-rv-col" style="--mq-dur:${list.length * 9 + k * 5}s"><div class="cb-rv-run">${set(false)}${set(true)}</div></div>`; };
+    return `${head}<div class="cb-rv-drift">${cols.map(col).join('')}</div>${more}`;
+  }
+  return `${head}${LIST(C, b, 'items', items, one, 'div', `cb-reviews cb-reviews-${['ticker', 'drift'].includes(b.variant) ? 'cards' : b.variant}`)}${more}`;
 };
 
 R_.faq = (C, b) => {
@@ -724,6 +740,18 @@ R_.contact = (C, b) => {
   const head = `${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
   const acts = `${d.business ? socials(C) : ''}${BTNS(C, b, d.buttons)}${map ? `<p class="cb-map">${map}</p>` : ''}`;
   if (!facts && !d.heading && !d.intro && !(d.buttons || []).length && !C.editable) return '';
+  // Opening hours as a table, one line of the hours to a row, so the page's script can mark today.
+  // (While the owner's own hours are being typed in the editor they stay one editable block.)
+  if (b.variant === 'hours' || b.variant === 'map') {
+    const f = bizDetails(C, d, own);
+    const lines = String(f.hours || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    const table = lines.length && !(own && C.editable) ? `<table class="cb-hours-table" data-hours><caption class="cb-sr">Opening hours</caption><tbody>${lines.map((l) => { const m = l.match(/^([^:]{2,40}):\s+(.+)$/) || l.match(/^(\D{2,40}?)\s+(\d.*)$/); return m ? `<tr><th scope="row">${esc(m[1].trim())}</th><td>${esc(m[2].trim())}</td></tr>` : `<tr><td colspan="2">${esc(l)}</td></tr>`; }).join('')}</tbody></table>` : '';
+    const rest = table ? factsList(C, b, { ...d, hours: '' }, { own, cls: 'cb-facts' }).replace(/<div><dt>Opening hours<\/dt><dd>[\s\S]*?<\/dd><\/div>/, '') : facts;
+    if (b.variant === 'hours') return `<div class="cb-find cb-find-hours"><div class="cb-find-words">${head}${rest}${acts}</div>${table ? `<div class="cb-find-table">${table}</div>` : ''}</div>`;
+    // A drawn map: decoration only, in the page's colours. The real map is the link.
+    const streets = Array.from({ length: 7 }, (_, i) => `<i style="--i:${i}"></i>`).join('');
+    return `<div class="cb-find cb-find-map"><div class="cb-find-card">${head}${rest}${table}${acts}</div><div class="cb-find-plan" aria-hidden="true">${streets}<span class="cb-find-pin"></span></div></div>`;
+  }
   if (b.variant === 'split') return `<div class="cb-side"><div class="cb-side-head">${head}${acts}</div>${facts}</div>`;
   if (b.variant === 'card') return `<div class="cb-contact-card">${head}${facts}${acts}</div>`;
   return `${head}${facts}${acts}`;
@@ -793,6 +821,14 @@ R_.credentials = (C, b) => {
 
 R_.facts = (C, b) => {
   const d = b.data;
+  // A band of numbers that rolls past. Written once for readers; the copies are hidden.
+  if (b.variant === 'ticker' && !C.editable && (d.items || []).filter((x) => x.value || x.label).length > 1) {
+    const facts = d.items.filter((x) => x.value || x.label);
+    const width = facts.reduce((n, x) => n + ((x.value || '').length * 30 + (x.label || '').length * 9 + 90), 0);
+    const sets = clamp(Math.ceil(2800 / width) + 1, 2, 30);
+    const set = (hidden) => `<span class="cb-mq-set"${hidden ? ' aria-hidden="true"' : ''}>${facts.map((x) => `<span class="cb-mq-item cb-ft"><span class="cb-ft-value">${esc(x.value || '')}</span><span class="cb-ft-label">${esc(x.label || '')}</span></span>`).join('')}</span>`;
+    return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div><div class="cb-mq cb-mq-facts" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${clamp(Math.round(width / 60), 14, 80)}s"><div class="cb-mq-track">${set(false)}${set(true).repeat(sets - 1)}</div></div>`;
+  }
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div>${LIST(C, b, 'items', d.items || [], (x, i, w) => w(`${T(C, b, `items.${i}.value`, x.value, 'span', 'cb-fact-value')}${T(C, b, `items.${i}.label`, x.label, 'span', 'cb-fact-label')}`, 'div', 'cb-fact'), 'div', `cb-factlist cb-factlist-${b.variant}`)}`;
 };
 
@@ -904,6 +940,247 @@ R_.showcase = (C, b) => {
     return `<div class="cb-plates" style="--plate-c:${first.c};--plate-on:${first.on}"><span class="cb-plates-bg" aria-hidden="true"></span><span class="cb-plates-wipe" aria-hidden="true"></span>${head}${LIST(C, b, 'items', items, plate, 'div', 'cb-show cb-show-plates')}</div>`;
   }
   return `${head}${LIST(C, b, 'items', items, one, 'div', `cb-show cb-show-${b.variant}`)}`;
+};
+
+// ---- Signature sections (website design release 7) ---------------------------------------------
+// Sections made for complete business websites. The rules they all keep: every word is in the
+// page as plain HTML, so it reads with scripts off and for screen readers; anything a visitor can
+// do has a plain link behind it; a script only ever adds (choosing, sliding, marking today).
+
+// Where a Book button goes. The booking link is set once, in the website's business details, and
+// every Book button uses it. With no booking link the button becomes a call, a WhatsApp message
+// or a link to the Contact page: a Book button never goes nowhere.
+// Returns the ways to book, the main one first: [{ href, label, kind, away }].
+export function bookWays(C, { own = null, label = 'Book', whatsapp = '' } = {}) {
+  const biz = C.biz || {}, at = (p) => (C.href ? C.href(p) : p);
+  if (own?.href && own.href !== '@booking') { const h = resolveLink(own.href, C); if (h) return [{ href: h, label, kind: 'book', away: /^https:/.test(h) }]; }
+  if (biz.bookingUrl) return [{ href: at('/appointments/'), label, kind: 'book', away: false }];
+  const out = [];
+  if (biz.phone) out.push({ href: telHref(biz), label: `Call ${biz.phone}`, kind: 'call', away: false });
+  if (whatsapp) out.push({ href: waHref(whatsapp, 'Hello, I would like to book.'), label: 'Message on WhatsApp', kind: 'whatsapp', away: true });
+  if (!out.length) out.push({ href: at('/contact/'), label: 'Get in touch', kind: 'contact', away: false });
+  return out;
+}
+const wayLink = (w, cls = 'cb-btn') => `<a class="${cls}" href="${esc(w.href)}"${w.away ? ' rel="noopener"' : ''}${w.kind === 'whatsapp' ? ' target="_blank"' : ''} data-way="${w.kind}">${esc(w.label)}</a>`;
+// The Cal.com event behind a booking address ("sam/haircut"), when it is one a page can ask
+// Cal.com about: a person's own event. Teams and other addresses give ''.
+export function calEvent(href) {
+  const t = href ? bookingTarget(href) : null;
+  return t && t.kind === 'cal' && /^[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/.test(t.calLink) ? t.calLink : '';
+}
+const HEAD = (C, b, d, max = true) => `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${max ? RT(C, b, 'intro', d.intro, 'cb-rich cb-intro') : ''}</div>`;
+
+// ---- booking strip ----
+const BOOK_HINT = 'Book opens your booking page. Until you add a booking link in Details and booking, visitors see Call and Contact buttons here instead.';
+R_.bookstrip = (C, b) => {
+  const d = b.data, v = b.variant, uid = esc(b.id), items = d.items || [];
+  const label = d.button || 'Book';
+  const ways = bookWays(C, { label, whatsapp: d.whatsapp });
+  const meta = (x, i) => `<span class="cb-bs-meta">${T(C, b, `items.${i}.duration`, x.duration, 'span', 'cb-bs-time')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-bs-price')}</span>`;
+  const note = T(C, b, 'note', d.note, 'p', 'cb-small cb-bs-note');
+  const head = v === 'bar' ? `<div class="cb-bs-words">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>` : HEAD(C, b, d);
+  // Free times read from Cal.com, only when the owner asked for it and the link is a Cal.com one.
+  const cal = d.live ? calEvent(C.biz?.bookingUrl) : '';
+  const live = cal && !C.editable ? `<p class="cb-bs-live" data-cal="${esc(cal)}" role="status" aria-live="polite" hidden></p>` : '';
+  if (C.editable) {
+    const button = T(C, b, 'button', label, 'span', 'cb-btn');
+    const hints = `${C.biz?.bookingUrl ? '' : `<p class="cb-note" data-cb-hint>${BOOK_HINT}</p>`}${d.sticky ? '<p class="cb-note" data-cb-hint>On phones a Book bar stays at the bottom of the screen.</p>' : ''}${d.live ? `<p class="cb-note" data-cb-hint>${calEvent(C.biz?.bookingUrl) ? 'On your website this shows how many times are free today, read from Cal.com.' : 'Free times can only be shown for a Cal.com booking link, set in Details and booking.'}</p>` : ''}`;
+    if (v === 'bar') return `<div class="cb-bs cb-bs-bar">${head}<div class="cb-bs-go">${button}</div></div>${note}${hints}`;
+    const list = LIST(C, b, 'items', items, (x, i, w) => w(`${T(C, b, `items.${i}.name`, x.name, 'span', 'cb-bs-name')}${meta(x, i)}${v === 'cards' ? `<span class="cb-btn cb-btn-small" aria-hidden="true">${esc(label)}</span>` : ''}`, 'div', 'cb-bs-opt'), 'div', 'cb-bs-pick');
+    return `${head}<div class="cb-bs cb-bs-${v}">${list}${v === 'cards' ? '' : `<div class="cb-bs-go">${button}</div>`}</div>${note}${hints}`;
+  }
+  const named = items.map((x, i) => [x, i]).filter(([x]) => x.name);
+  const buttons = ways.map((w, i) => wayLink(w, i ? 'cb-btn cb-btn-2' : 'cb-btn cb-bs-book')).join('');
+  // On phones, a bar that stays at the bottom. The page's script puts it there; without the
+  // script the strip itself is all there is.
+  const sticky = d.sticky ? `<div class="cb-bookbar" data-bookbar role="region" aria-label="${esc(label)}" hidden>${ways.slice(0, 2).map((w, i) => wayLink({ ...w, label: w.kind === 'call' ? 'Call' : w.kind === 'whatsapp' ? 'WhatsApp' : w.label }, i ? 'cb-btn cb-btn-2' : 'cb-btn')).join('')}</div>` : '';
+  if (v === 'bar' || !named.length) return `<div class="cb-bs cb-bs-bar">${head}<div class="cb-bs-go">${buttons}${live}</div></div>${note}${sticky}`;
+  if (v === 'cards') {
+    const cards = named.map(([x, i]) => { const own = bookWays(C, { own: x.link, label, whatsapp: d.whatsapp })[0]; return `<article class="cb-bs-opt"><h3 class="cb-bs-name">${esc(x.name)}</h3><p class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}</p>${wayLink({ ...own, label: own.kind === 'book' ? label : own.label }, 'cb-btn cb-btn-small')}</article>`; }).join('');
+    return `${head}<div class="cb-bs cb-bs-cards"><div class="cb-bs-pick">${cards}</div>${live}</div>${note}${sticky}`;
+  }
+  // One strip: a choice of what to book, then one button. Each choice carries where it goes; the
+  // page's script sends the button there. Without it the button opens the booking page, where
+  // the same choice is offered.
+  const opts = named.map(([x, i], k) => {
+    const own = x.link?.href && x.link.href !== '@booking' ? resolveLink(x.link.href, C) : '';
+    const words = [x.duration, x.price].filter(Boolean).join(', ');
+    return `<label class="cb-bs-opt"><input type="radio" name="bs-${uid}" value="${i}"${k ? '' : ' checked'}${own ? ` data-href="${esc(own)}"` : ''}><span class="cb-bs-name">${esc(x.name)}</span>${words ? `<span class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}</span>` : ''}</label>`;
+  }).join('');
+  return `${head}<div class="cb-bs cb-bs-strip" data-bs><fieldset class="cb-bs-pick"><legend class="cb-sr">Choose what to book</legend>${opts}</fieldset><div class="cb-bs-go">${buttons}${live}</div></div>${note}${sticky}`;
+};
+
+// ---- ways to pay ----
+R_.plans = (C, b) => {
+  const d = b.data, items = d.items || [];
+  const other = bookWays(C, { label: 'Book' })[0];
+  const one = (x, i, w) => {
+    // Its own pay link; a card without one still leads somewhere (the booking page, a call or
+    // the Contact page), so no card ends in a button that does nothing.
+    let action;
+    if (C.editable) action = BTN(C, b, `items.${i}.pay`, { label: x.pay?.label || 'Pay now', href: x.pay?.href || '' }, 'cb-btn cb-pl-pay');
+    else if (x.pay?.href) action = `<a class="cb-btn cb-pl-pay" href="${esc(resolveLink(x.pay.href, C))}" rel="noopener">${esc(x.pay.label || 'Pay now')}</a>`;
+    else action = wayLink({ ...other, label: other.kind === 'contact' ? 'Ask about this' : other.label }, 'cb-btn cb-btn-2 cb-pl-pay');
+    const price = x.price || x.per || C.editable ? `<p class="cb-pl-price">${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-pl-amount')}${T(C, b, `items.${i}.per`, x.per, 'span', 'cb-pl-per')}</p>` : '';
+    return w(`${x.popular ? '<p class="cb-pl-flag">Most popular</p>' : ''}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-pl-name')}${price}${RT(C, b, `items.${i}.includes`, x.includes, 'cb-rich cb-pl-inc')}<div class="cb-pl-foot">${action}${T(C, b, `items.${i}.small`, x.small, 'p', 'cb-small cb-pl-small')}</div>`, 'article', `cb-pl-item${x.popular ? ' is-popular' : ''}`);
+  };
+  const list = LIST(C, b, 'items', items, one, 'div', `cb-pl cb-pl-${b.variant}`);
+  const money = C.editable ? '<p class="cb-note" data-cb-hint>Each card takes its own pay link (Stripe, PayPal, SumUp or Square). The money goes straight to you.</p>' : '';
+  return `${HEAD(C, b, d)}${list}${T(C, b, 'note', d.note, 'p', 'cb-small cb-pl-note')}${money}`;
+};
+
+// ---- spaces remaining ----
+const MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DAY3 = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// "2026-12-05" as its parts: { dow: 'Sat', day: 5, mon: 'Dec', year: 2026 }.
+export function dateParts(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  if (!m) return null;
+  const dt = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return { dow: DAY3[dt.getUTCDay()], day: dt.getUTCDate(), mon: MON3[dt.getUTCMonth()], year: dt.getUTCFullYear() };
+}
+// What a number of spaces is called: "6 spaces left", "Last 2", "Last space", "Full".
+export const spacesWords = (left) => (left == null ? '' : left <= 0 ? 'Full' : left === 1 ? 'Last space' : left === 2 ? 'Last 2' : `${left} spaces left`);
+const localIso = (now = new Date()) => `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+R_.spaces = (C, b) => {
+  const d = b.data, v = b.variant, mode = choiceValue('spaces', d, 'past');
+  const today = C.today;
+  const all = (d.items || []).map((x, i) => ({ x, i, past: !!x.date && x.date < today }));
+  // A date that had already passed when the website was published is not drawn at all, or is
+  // drawn as Finished. One that passes afterwards is dealt with by the page's script.
+  const rows = C.editable ? all : all.filter((r) => (r.x.name || r.x.date) && !(r.past && mode === 'hide'));
+  if (!rows.length && !C.editable && !d.heading && !d.intro) return '';
+  const site = bookWays(C, { label: 'Book' })[0];
+  const one = ({ x, i, past }, w) => {
+    const dp = dateParts(x.date);
+    const when = dp
+      ? `<time class="cb-sp-date" datetime="${esc(x.date)}"><span class="cb-sp-dow">${dp.dow}</span><span class="cb-sp-day">${dp.day}</span><span class="cb-sp-mon">${dp.mon}${dp.year !== Number(today.slice(0, 4)) ? ` ${dp.year}` : ''}</span></time>`
+      : C.editable ? '<span class="cb-sp-date cb-sp-nodate" data-cb-hint>No date yet</span>' : '';
+    const full = x.left === 0, words = past ? 'Finished' : spacesWords(x.left);
+    // The number is only shown once the page's script has checked the date against today, so a
+    // page left open, or one read with scripts off, never shows spaces for a day that has gone.
+    const gate = !C.editable && !past && x.date ? ' hidden' : '';
+    const taken = x.capacity && x.left != null ? clamp(1 - x.left / x.capacity, 0, 1) : null;
+    const state = words || (follow && !past) ? `<p class="cb-sp-left${full ? ' is-full' : x.left != null && x.left <= 2 ? ' is-last' : ''}"${gate}>${esc(words)}</p>${taken != null && !past ? `<span class="cb-sp-meter" aria-hidden="true" style="--f:${taken.toFixed(3)}"${gate}><i></i></span>` : ''}` : '';
+    let acts = '';
+    if (!past) {
+      if (full) acts = x.waitlist ? BTN(C, b, `items.${i}.waitlist`, { label: x.waitlist.label || 'Join the waiting list', href: x.waitlist.href }, 'cb-btn cb-btn-2 cb-btn-small') : '';
+      else {
+        const book = x.link ? BTN(C, b, `items.${i}.link`, { label: x.link.label || 'Book', href: x.link.href }, 'cb-btn cb-btn-small') : C.editable ? '' : wayLink(site, 'cb-btn cb-btn-small');
+        acts = `${book}${x.pay ? BTN(C, b, `items.${i}.pay`, { label: x.pay.label || 'Pay now', href: x.pay.href }, 'cb-btn cb-btn-2 cb-btn-small') : ''}`;
+      }
+    }
+    const meta = `${T(C, b, `items.${i}.time`, x.time, 'span', 'cb-sp-time')}${T(C, b, `items.${i}.detail`, x.detail, 'span', 'cb-sp-detail')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-sp-price')}`;
+    const body = `<div class="cb-sp-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sp-name')}${meta ? `<p class="cb-sp-meta">${meta}</p>` : ''}</div>`;
+    // A row can follow a Cal.com event with seats: the page's script then asks Cal.com for the
+    // seats left on that day and shows them, naming Cal.com. The number set by hand stays as
+    // what shows until the answer arrives, and if it never does.
+    const follow = x.date ? calEvent(/^https:\/\//i.test(x.cal || '') ? x.cal : x.cal ? `https://${x.cal}` : '') : '';
+    return w(`${when}${body}<div class="cb-sp-state">${state}</div>${acts ? `<p class="cb-sp-acts">${acts}</p>` : ''}`, 'li', `cb-sp-item${past ? ' is-past' : ''}${full ? ' is-full' : ''}`)
+      .replace(/^<li /, `<li${x.date ? ` data-date="${esc(x.date)}"` : ''}${follow && !C.editable ? ` data-cal="${esc(follow)}"` : ''} `);
+  };
+  // (While editing, every date is listed, so each row's place in the list is its own.)
+  const list = LIST(C, b, 'items', rows, (r, _k, w) => one(r, w), 'ul', `cb-sp cb-sp-${v}`)
+    .replace(/^<ul /, `<ul data-past="${mode}" `);
+  const tp = dateParts(today);
+  // Says where the numbers come from and how fresh they are: the business sets them by hand.
+  const asOf = rows.some((r) => r.x.left != null && !r.past) ? `<p class="cb-small cb-sp-asof">Spaces as last updated on ${tp.day} ${tp.mon} ${tp.year}. Booking confirms your place.</p>` : '';
+  const none = C.editable ? '' : `<p class="cb-sp-none"${rows.length ? ' hidden' : ''}>No dates at the moment.</p>`;
+  const hint = C.editable ? '<p class="cb-note" data-cb-hint>Set the spaces left with the plus and minus buttons, then publish. A date that has passed takes itself off your website. A date can follow a Cal.com event with seats instead: your website then shows its seats left by itself.</p>' : '';
+  return `${HEAD(C, b, d)}${list}${none}${asOf}${T(C, b, 'note', d.note, 'p', 'cb-small cb-sp-note')}${hint}`;
+};
+
+// ---- menu board ----
+// Lines in groups: a line that names a group starts it, and the lines after it belong to it.
+export function menuGroups(items = []) {
+  const groups = [];
+  items.forEach((x, i) => { if (x.group || !groups.length) groups.push({ name: x.group || '', rows: [] }); groups[groups.length - 1].rows.push([x, i]); });
+  return groups;
+}
+R_.menuboard = (C, b) => {
+  const d = b.data, v = b.variant, uid = esc(b.id);
+  const groups = menuGroups(d.items || []);
+  const row = ([x, i], first) => `<li class="cb-mb-row"${ED(C, 'data-cb-item', `${b.id}:items.${i}`)}>${C.editable && !first ? T(C, b, `items.${i}.group`, x.group, 'p', 'cb-mb-newgroup') : ''}<div class="cb-mb-line">${T(C, b, `items.${i}.name`, x.name, 'span', 'cb-mb-name')}${T(C, b, `items.${i}.tag`, x.tag, 'span', 'cb-mb-tag')}<i aria-hidden="true"></i>${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-mb-price')}</div>${T(C, b, `items.${i}.description`, x.description, 'p', 'cb-mb-desc')}</li>`;
+  const cols = groups.map((g, k) => {
+    const [x0, i0] = g.rows[0];
+    const title = C.editable ? T(C, b, `items.${i0}.group`, x0.group, 'h3', 'cb-mb-group') : g.name ? `<h3 class="cb-mb-group" id="mb-${uid}-${k}">${esc(g.name)}</h3>` : '';
+    return `<section class="cb-mb-col"${!C.editable && g.name ? ` aria-labelledby="mb-${uid}-${k}"` : ''} data-group="${k}">${title}<ul class="cb-mb-rows">${g.rows.map((r, n) => row(r, n === 0)).join('')}</ul></section>`;
+  }).join('');
+  if (!cols && !C.editable) return '';
+  const note = T(C, b, 'note', d.note, 'p', 'cb-small cb-mb-note');
+  const track = `<div class="cb-mb-track"${ED(C, 'data-cb-list', `${b.id}:items`)}>${cols}</div>`;
+  // The board slides sideways as the page scrolls (a pointer or a wide screen), and is swiped on
+  // a phone. It can be reached and scrolled with the keyboard too.
+  if (v === 'slide' && !C.editable) return `${HEAD(C, b, d)}<div class="cb-hs cb-mb cb-mb-slide" data-hs><div class="cb-hs-pin"><div class="cb-hs-view" tabindex="0" role="region" aria-label="${esc(d.heading || 'Menu')}, scrolls sideways"><div class="cb-hs-track cb-mb-track">${cols}</div></div><span class="cb-hs-bar" aria-hidden="true"><i></i></span></div></div>${note}`;
+  if (v === 'tabs' && !C.editable && groups.length > 1 && groups.every((g) => g.name)) return `${HEAD(C, b, d)}<div class="cb-mb cb-mb-tabs" data-tabs>${track}</div>${note}`;
+  return `${HEAD(C, b, d)}<div class="cb-mb cb-mb-${v === 'slide' ? 'slide cb-mb-still' : v === 'tabs' ? 'columns' : v}">${track}</div>${note}`;
+};
+
+// ---- tiles ----
+R_.tiles = (C, b) => {
+  const d = b.data, items = d.items || [];
+  const one = (x, i, w) => w(`${x.picture || (C.editable && !x.value) ? `<figure class="cb-tl-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}<div class="cb-tl-body">${T(C, b, `items.${i}.value`, x.value, 'p', 'cb-tl-value')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-tl-name')}${T(C, b, `items.${i}.text`, x.text, 'p', 'cb-tl-text')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}</div>`, 'article', `cb-tl-item${x.picture ? ' has-pic' : ''}${x.value ? ' has-value' : ''}`);
+  return `${HEAD(C, b, d)}${LIST(C, b, 'items', items, one, 'div', `cb-tl cb-tl-${b.variant}`)}`;
+};
+
+// ---- before and after ----
+R_.compare = (C, b) => {
+  const d = b.data, v = b.variant, items = d.items || [];
+  const one = (x, i, w) => {
+    const la = x.beforeLabel || 'Before', lb = x.afterLabel || 'After';
+    const cap = `${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-cmp-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-cmp-desc')}`;
+    const tagA = C.editable ? T(C, b, `items.${i}.beforeLabel`, x.beforeLabel, 'span', 'cb-cmp-tag') : `<span class="cb-cmp-tag">${esc(la)}</span>`;
+    const tagB = C.editable ? T(C, b, `items.${i}.afterLabel`, x.afterLabel, 'span', 'cb-cmp-tag') : `<span class="cb-cmp-tag">${esc(lb)}</span>`;
+    const side = `<div class="cb-cmp-pair"><figure class="cb-cmp-one">${P(C, b, `items.${i}.before`, x.before)}${tagA}</figure><figure class="cb-cmp-one">${P(C, b, `items.${i}.after`, x.after)}${tagB}</figure></div>`;
+    // Both photos are needed for a slider. The handle is a real range control, so it works with
+    // a finger, a mouse and the arrow keys; until the page's script starts, and without it, the
+    // two photos sit side by side.
+    if (v !== 'slider' || C.editable || !x.before || !x.after) {
+      if (!C.editable && !x.before && !x.after) return cap ? w(`<div class="cb-cmp-cap">${cap}</div>`, 'article', 'cb-cmp-item') : '';
+      return w(`${side}<div class="cb-cmp-cap">${cap}</div>`, 'article', 'cb-cmp-item');
+    }
+    const slider = `<div class="cb-cmp-stage" data-cmp style="--pos:50%"><img class="cb-cmp-b" src="${esc(imgSrc(C, x.after.src))}" alt="${esc(x.after.alt || lb)}" loading="lazy" decoding="async"><div class="cb-cmp-a"><img src="${esc(imgSrc(C, x.before.src))}" alt="${esc(x.before.alt || la)}" loading="lazy" decoding="async"></div><span class="cb-cmp-tag cb-cmp-tag-a">${esc(la)}</span><span class="cb-cmp-tag cb-cmp-tag-b">${esc(lb)}</span><span class="cb-cmp-handle" aria-hidden="true"></span><input class="cb-cmp-range" type="range" min="0" max="100" value="50" step="1" aria-label="${esc(`${x.name ? `${x.name}: ` : ''}how much of the ${la.toLowerCase()} photo shows`)}" hidden></div>`;
+    return w(`${slider}${creditsOf([x.before, x.after])}<div class="cb-cmp-cap">${cap}</div>`, 'article', 'cb-cmp-item');
+  };
+  const list = LIST(C, b, 'items', items, one, 'div', `cb-cmp cb-cmp-${v}`);
+  return `${HEAD(C, b, d)}${list}`;
+};
+
+// ---- timetable ----
+const DAY_NAMES = { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday' };
+R_.timetable = (C, b) => {
+  const d = b.data, items = d.items || [];
+  const byDay = WEEK_DAYS.map((day) => [day, items.map((x, i) => [x, i]).filter(([x]) => (x.day || 'mon') === day)]).filter(([, list]) => list.length);
+  if (!byDay.length && !C.editable) return '';
+  const session = ([x, i]) => `<li class="cb-tt-item"${ED(C, 'data-cb-item', `${b.id}:items.${i}`)}>${T(C, b, `items.${i}.time`, x.time, 'span', 'cb-tt-time')}<div class="cb-tt-body">${T(C, b, `items.${i}.name`, x.name, 'p', 'cb-tt-name')}${T(C, b, `items.${i}.detail`, x.detail, 'p', 'cb-tt-detail')}</div>${T(C, b, `items.${i}.level`, x.level, 'span', 'cb-tt-level')}${x.link ? BTN(C, b, `items.${i}.link`, { label: x.link.label || 'Book', href: x.link.href }, 'cb-link cb-tt-book') : ''}</li>`;
+  const cols = byDay.map(([day, list]) => `<section class="cb-tt-day" data-day="${day}"><h3 class="cb-tt-dayname">${DAY_NAMES[day]}</h3><ul class="cb-tt-list">${list.map(session).join('')}</ul></section>`).join('');
+  const hint = C.editable ? '<p class="cb-note" data-cb-hint>Choose a session to change its day. On your website, today is marked.</p>' : '';
+  return `${HEAD(C, b, d)}<div class="cb-tt cb-tt-${b.variant}" data-tt style="--n:${Math.max(byDay.length, 1)}"${ED(C, 'data-cb-list', `${b.id}:items`)}>${cols}</div>${T(C, b, 'note', d.note, 'p', 'cb-small cb-tt-note')}${hint}`;
+};
+
+// ---- case study ----
+R_.casestudy = (C, b) => {
+  const d = b.data, v = b.variant;
+  const facts = LIST(C, b, 'items', d.items || [], (x, i, w) => w(`<dt>${T(C, b, `items.${i}.label`, x.label, 'span')}</dt><dd>${T(C, b, `items.${i}.value`, x.value, 'span')}</dd>`, 'div', 'cb-cs-fact'), 'dl', 'cb-cs-facts');
+  const chapter = (key, title, n) => (d[key] || C.editable ? `<section class="cb-cs-part"><p class="cb-cs-n" aria-hidden="true">${String(n).padStart(2, '0')}</p><h3 class="cb-cs-title">${title}</h3>${RT(C, b, key, d[key])}</section>` : '');
+  const chapters = `${chapter('brief', 'The brief', 1)}${chapter('work', 'What we did', 2)}${chapter('result', 'The result', 3)}`;
+  const more = LIST(C, b, 'pictures', d.pictures || [], (p, i, w) => w(P(C, b, `pictures.${i}`, p, '', { credits: false }), 'figure'), 'div', 'cb-cs-more');
+  const main = d.picture || C.editable ? `<figure class="cb-cs-main">${P(C, b, 'picture', d.picture, '', { credits: false })}</figure>` : '';
+  const words = `<div class="cb-cs-words">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-lead')}${facts}${BTNS(C, b, d.buttons)}</div>`;
+  if (!main && !d.heading && !d.intro && !chapters && !C.editable) return '';
+  return `<div class="cb-cs cb-cs-${v}"><div class="cb-cs-top${main ? '' : ' cb-solo'}">${v === 'chapters' ? `${words}${main}` : `${main}${words}`}</div>${chapters ? `<div class="cb-cs-parts">${chapters}</div>` : ''}${more}${creditsOf([d.picture, ...(d.pictures || [])])}</div>`;
+};
+
+// ---- pinned scenes ----
+R_.scenes = (C, b) => {
+  const d = b.data, v = b.variant, items = d.items || [];
+  const one = (x, i, w) => w(`${x.picture || C.editable ? `<figure class="cb-sc-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}<div class="cb-sc-body">${T(C, b, `items.${i}.tag`, x.tag, 'p', 'cb-sc-tag')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sc-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-sc-desc')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}</div>`, 'article', `cb-sc-item${i ? '' : ' is-on'}`);
+  const list = LIST(C, b, 'items', items, one, 'div', 'cb-sc-list');
+  // The stage that stays put holds copies of the photos, hidden from screen readers; each scene
+  // keeps its own photo, which is what shows on phones, with scripts off and for less movement.
+  const shots = C.editable ? [] : items.map((x, i) => [x, i]).filter(([x]) => x.picture);
+  const stage = shots.length > 1 ? `<div class="cb-sc-stage" aria-hidden="true">${shots.map(([x, i], k) => `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, x.picture.src))}" alt="" loading="lazy" decoding="async"${focusPos(x.picture) ? ` style="object-position:${focusPos(x.picture)}"` : ''}>`).join('')}<span class="cb-sc-count"></span><span class="cb-sc-ticks">${items.map(() => '<i></i>').join('')}</span></div>` : '';
+  return `${HEAD(C, b, d)}<div class="cb-sc cb-sc-${v}${stage ? ' has-stage' : ''}"${stage ? ` data-pin style="--n:${items.length}"` : ''}>${stage}${list}</div>`;
 };
 
 R_.spacer = (C, b) => (b.variant === 'ornament' ? '<p class="cb-ornament" aria-hidden="true"><span></span><span></span><span></span></p>' : b.variant === 'line' ? '<hr>' : '');
