@@ -656,6 +656,20 @@ export function initPageActions(doc = document, win = window, { open, preview = 
     pick(0, false);
   }
 
+  // Menu index: the group being read is marked in the index beside the list (and the line under
+  // the index fills to it). Without this the index is plain links to each group.
+  for (const box of root.querySelectorAll('[data-mbi]')) {
+    const links = [...box.querySelectorAll('.cb-mbi-nav a')], cols = [...box.querySelectorAll('.cb-mbi-list .cb-mb-col')];
+    if (links.length < 2 || cols.length !== links.length || !('IntersectionObserver' in win)) continue;
+    const mark = (k) => { links.forEach((a, i) => setAttr(a, 'aria-current', i === k ? 'true' : null)); keep(box, 'style'); box.style.setProperty('--k', String(k + 1)); };
+    const io = new win.IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) mark(cols.indexOf(e.target));
+    }, { rootMargin: '-35% 0px -60% 0px' });
+    cols.forEach((c) => io.observe(c));
+    undo.push(() => io.disconnect());
+    mark(0);
+  }
+
   // Today: marked in a timetable and in a table of opening hours.
   {
     const dow = now().getDay();

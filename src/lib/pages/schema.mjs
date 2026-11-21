@@ -196,6 +196,7 @@ export const BLOCK_TYPES = {
       backword: 'Photo floating over a giant word (3D)', lens: 'Round window with a magnifying glass',
       // Signature openings (release 7).
       reveal: 'Edge to edge photo that opens like a curtain', statement: 'One large statement, nothing else',
+      pinned: 'Photo that stays put while the story scrolls beside it',
     },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, rotate: { ...L(160, 'Changing words', 'e.g. brands, websites, films'), panel: true, hint: 'A few words with commas between them. They take turns at the end of the heading.' }, word: L(12, 'Big word', 'e.g. Fresh'), intro: R(1200, 'Introduction'), picture: PIC(), pictures: { kind: 'pictures', max: 6, label: 'More photos' },
@@ -207,6 +208,8 @@ export const BLOCK_TYPES = {
       barButton: L(40, 'Booking bar button', 'Check availability'), barPeople: { kind: 'bool', label: 'Ask how many people' },
       barWhatsapp: { ...WA, panel: true, hint: `Only used by a booking bar that sends a WhatsApp message. ${WA_HINT}` },
       mark: { ...L(80, 'Words to mark', 'e.g. time to talk'), panel: true, hint: 'A few words from the heading or the first lines, drawn with a line under them. Leave it empty for none.' },
+      // The longer story under the opening's first screen. Only the "pinned" layout draws it.
+      story: R(4000, 'Story', 'Add your story'),
     },
   },
   text: {
@@ -226,13 +229,15 @@ export const BLOCK_TYPES = {
   },
   services: {
     label: 'Services and prices', hint: 'What you offer, with prices, times and booking links.',
-    variants: { menu: 'Menu with dotted lines', cards: 'Cards', numbered: 'Numbered list', table: 'Price table', board: 'Price board', feature: 'Large with photos', rows: 'Big rows, photo on hover', flip: 'Cards that turn over (3D)', pinned: 'Names set large, the photo beside them stays and changes' },
+    variants: { menu: 'Menu with dotted lines', cards: 'Cards', numbered: 'Numbered list', table: 'Price table', board: 'Price board', feature: 'Large with photos', rows: 'Big rows, photo on hover', flip: 'Cards that turn over (3D)', pinned: 'Names set large, the photo beside them stays and changes', rail: 'Cards that travel sideways as people scroll down' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 40, label: 'Services', add: 'Add a service', item: {
         name: L(100, 'Name', 'Name of the service'), description: R(600, 'Description'), price: L(60, 'Price', 'Price'), duration: L(60, 'Time', 'Time'),
         offer: L(120, 'Offer'), picture: PIC(), link: { kind: 'link', label: 'Booking link' }, pay: { kind: 'link', label: 'Pay link' },
       }, sample: { name: 'New service', description: '', price: '', duration: '' } },
+      // A band of large words that rolls slowly above the cards of the sideways layout.
+      band: { ...L(200, 'Moving words above the cards', 'e.g. Facials, Peels, Skin boosters'), panel: true, hint: 'A few words with commas between them, rolling slowly above the cards that travel sideways. Leave it empty for none.' },
     },
   },
   order: {
@@ -311,7 +316,7 @@ export const BLOCK_TYPES = {
   credentials: {
     label: 'Qualifications', hint: 'Qualifications, memberships, awards or guarantees.',
     variants: { list: 'List', badges: 'Badges', strip: 'One line', row: 'Names set as type, with fine lines between' },
-    fields: { kicker: L(100, 'Short label'), heading: HEAD, items: { kind: 'items', max: 16, label: 'Items', add: 'Add one', item: { text: L(160, 'Text', 'e.g. Fully insured') }, sample: { text: 'New item' } } },
+    fields: { kicker: L(100, 'Short label'), heading: HEAD, items: { kind: 'items', max: 16, label: 'Items', add: 'Add one', item: { text: L(160, 'Text', 'e.g. Fully insured'), link: { kind: 'link', label: 'Link, such as to a public register' } }, sample: { text: 'New item' } } },
   },
   facts: {
     label: 'Key facts', hint: 'A few numbers or short facts, such as “25 years”.',
@@ -395,7 +400,7 @@ export const BLOCK_TYPES = {
   },
   plans: {
     label: 'Ways to pay', hint: 'Cards for paying in full, a deposit, a membership or a package. Each has its own pay link, and the money goes straight to you.',
-    variants: { cards: 'Cards side by side', ladder: 'Steps that rise', rows: 'Rows' },
+    variants: { cards: 'Cards side by side', ladder: 'Steps that rise', rows: 'Rows', fan: 'Cards held like a hand, that spread out as people scroll' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 6, label: 'Ways to pay', add: 'Add a way to pay', item: {
@@ -425,22 +430,22 @@ export const BLOCK_TYPES = {
   },
   menuboard: {
     label: 'Menu board', hint: 'A menu or treatment list in groups, such as Starters, Mains and Puddings.',
-    variants: { slide: 'Board that slides sideways as people scroll', columns: 'Groups side by side', tabs: 'One group at a time' },
+    variants: { slide: 'Board that slides sideways as people scroll', columns: 'Groups side by side', tabs: 'One group at a time', index: 'An index of the groups stays beside the list, the one in view marked' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 60, label: 'Lines', add: 'Add a line', item: {
-        group: L(40, 'Group it starts', 'e.g. Starters'), name: L(100, 'Name', 'Name'), description: L(240, 'Description'), price: L(40, 'Price', 'Price'), tag: L(24, 'Small label', 'e.g. Vegan'),
+        group: L(40, 'Group it starts', 'e.g. Starters'), name: L(100, 'Name', 'Name'), description: L(240, 'Description'), duration: L(40, 'Time', 'e.g. 45 min'), price: L(40, 'Price', 'Price'), tag: L(24, 'Small label', 'e.g. Vegan'),
       }, sample: { name: 'New line', price: '' } },
       note: L(240, 'Small print'),
     },
   },
   tiles: {
     label: 'Tiles', hint: 'A grid of tiles in mixed sizes: photos, a few words, a big number.',
-    variants: { mosaic: 'Mixed sizes', feature: 'One large, the rest small', row: 'One row of tall tiles' },
+    variants: { mosaic: 'Mixed sizes', feature: 'One large, the rest small', row: 'One row of tall tiles', open: 'Tiles that open to show the price and time' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 9, label: 'Tiles', add: 'Add a tile', item: {
-        value: L(16, 'Big number or word', 'e.g. 12'), name: L(60, 'Heading', 'Heading'), text: L(200, 'Words'), picture: PIC(), link: { kind: 'link', label: 'Link' },
+        value: L(16, 'Big number or word', 'e.g. 12'), name: L(60, 'Heading', 'Heading'), text: L(200, 'Words'), duration: L(40, 'Time', 'e.g. 45 min'), price: L(40, 'Price', 'Price'), picture: PIC(), link: { kind: 'link', label: 'Link' },
       }, sample: { name: 'New tile', text: '' } },
     },
   },
@@ -496,14 +501,23 @@ export const BLOCK_TYPES = {
 export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'tiles', 'compare', 'timetable', 'casestudy', 'scenes'];
 // Layouts of older section types that came with the same release. On an older design they would
 // quietly become the type's first layout, so they need the update too.
-export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement'], services: ['pinned'], steps: ['sticky'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel'], reviews: ['drift'], gallery: ['sideways'] };
+export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned'], services: ['pinned', 'rail'], steps: ['sticky'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel'], reviews: ['drift'], gallery: ['sideways'] };
 // Settings of older section types that came with release 7: an older design ignores them.
-export const SIGNATURE_FIELDS = { hero: ['mark'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow'] };
+export const SIGNATURE_FIELDS = { hero: ['mark', 'story'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow'], services: ['band'] };
+// Settings of an entry in a list that came with release 7 (an older design drops them).
+export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'] };
+// A word in a heading set in italic, written *like this*. Release 7 draws it; an older design
+// would show the stars.
+export const HEADING_EM = /(^|[\s(\u201c"'])\*([^*\s](?:[^*]{0,60}?[^*\s])?)\*(?=$|[\s.,;:?)\u201d"'])/g;
+const hasEm = (v) => typeof v === 'string' && v.includes('*') && new RegExp(HEADING_EM.source).test(v);
+const filled = (v) => v !== undefined && v !== '' && v !== false && v !== null;
 // Whether a block needs website design release 7 to be drawn as it is meant.
-export const needsSignature = (b) => !!b && (SIGNATURE_TYPES.includes(b.type) || (SIGNATURE_LAYOUTS[b.type] || []).includes(b.variant) || (SIGNATURE_FIELDS[b.type] || []).some((k) => { const v = b.data?.[k]; return v !== undefined && v !== '' && v !== false && v !== null; }) || (b.data?.children || []).some(needsSignature));
+export const needsSignature = (b) => !!b && (SIGNATURE_TYPES.includes(b.type) || (SIGNATURE_LAYOUTS[b.type] || []).includes(b.variant) || (SIGNATURE_FIELDS[b.type] || []).some((k) => filled(b.data?.[k])) || (SIGNATURE_ITEM_FIELDS[b.type] || []).some((k) => (b.data?.items || []).some((x) => filled(x?.[k]))) || hasEm(b.data?.heading) || (b.data?.children || []).some(needsSignature));
+// A heading as plain words, with the stars of an italic word taken out (for labels and titles).
+export const plainHeading = (v) => String(v ?? '').replace(new RegExp(HEADING_EM.source, 'g'), '$1$2');
 export const WEEK_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 // How many of an opening's "More photos" each layout shows. Layouts not listed show none.
-export const HERO_PHOTO_ROOM = { orbit: 5, collage: 3, filmstrip: 6, bento: 2, blob: 1, carousel: 6, depth: 3 };
+export const HERO_PHOTO_ROOM = { orbit: 5, collage: 3, filmstrip: 6, bento: 2, blob: 1, carousel: 6, depth: 3, statement: 3 };
 export const TYPE_IDS = Object.keys(BLOCK_TYPES);
 // A choice field's value, or its default (`def`) when nothing is stored.
 export const choiceValue = (type, data, key) => { const f = BLOCK_TYPES[type]?.fields?.[key]; const v = data?.[key]; return f?.kind === 'choice' && f.options.includes(v) ? v : f?.def ?? null; };
@@ -605,7 +619,7 @@ export const MOTION = {
   heading: { label: 'Opening heading', options: { none: 'Still', words: 'Word by word', letters: 'Letter by letter', gather: 'Letters fly together', typed: 'Typed out', shimmer: 'Moving colour', rising: 'Line by line, rising from behind a mask' } },
   buttons: { label: 'Buttons', options: { none: 'Plain', lift: 'Lift', fill: 'Colour sweep', arrow: 'Arrow slides along', tile: 'Arrow in a tile', shine: 'Shine', press: 'Press down', glow: 'Glow', magnet: 'Follows the pointer' } },
   pictures: { label: 'Pictures', options: { none: 'Still', drift: 'Drift as you scroll', zoom: 'Slow zoom', tilt: 'Tilt to the pointer', unveil: 'Unveil', reveal: 'Colour appears where the pointer is', depth: 'Move at their own depth as you scroll', sheet: 'A coloured sheet slides off them' } },
-  backdrop: { label: 'Behind the opening', options: { none: 'Nothing', aurora: 'Northern lights', bubbles: 'Bubbles', blobs: 'Soft shapes', waves: 'Waves', orbits: 'Orbits', grid: 'Moving grid', dots: 'Dot field', rays: 'Light rays', shapes: 'Confetti shapes', lines: 'Speed lines', ripples: 'Ripples', petals: 'Falling petals', stars: 'Constellation', spotlight: 'Spotlight', wash: 'Colour wash', grain: 'Film grain', globe: 'Turning globe (3D)', ring: 'Turning ring (3D)', terrain: 'Rolling landscape (3D)' } },
+  backdrop: { label: 'Behind the opening', options: { none: 'Nothing', aurora: 'Northern lights', bubbles: 'Bubbles', blobs: 'Soft shapes', waves: 'Waves', orbits: 'Orbits', grid: 'Moving grid', dots: 'Dot field', rays: 'Light rays', shapes: 'Confetti shapes', lines: 'Speed lines', ripples: 'Ripples', petals: 'Falling petals', stars: 'Constellation', spotlight: 'Spotlight', wash: 'Colour wash', grain: 'Film grain', globe: 'Turning globe (3D)', ring: 'Turning ring (3D)', terrain: 'Rolling landscape (3D)', dawn: 'A still wash from peach to your colour' } },
   follow: { label: 'Follows the scroll', options: { none: 'Nothing', bar: 'A bar across the top that fills', line: 'A line down the side that draws' } },
   pointer: { label: 'Where the pointer goes', options: { none: 'Nothing', light: 'A soft light follows it', dot: 'A dot trails it and grows over buttons and links', label: 'The main button\'s words follow it over the opening', lean: 'Cards and tiles lean towards it' } },
   opening: { label: 'The opening, as people scroll on', options: { none: 'Scrolls away as usual', cover: 'The page slides over it', recede: 'It sinks back and dims' } },
@@ -630,6 +644,7 @@ export const MOTION_PRESETS = {
   hearth: { name: 'Fireside', hint: 'The page lifts in; the heading rises line by line, sections open like a curtain and pictures move at their own depth.', motion: { scroll: 'curtain', heading: 'rising', buttons: 'fill', pictures: 'depth', arrive: 'settle', mark: 'underline', pace: 'measured', count: true } },
   gallery: { name: 'Gallery', hint: 'Tiles arrive in a wave and lean to the pointer; a sheet slides off each picture.', motion: { scroll: 'cascade', heading: 'letters', buttons: 'arrow', pictures: 'sheet', pointer: 'lean', arrive: 'dissolve', mark: 'highlight', pace: 'measured', count: true } },
   showtime: { name: 'Showtime', hint: 'A coloured sheet opens the page; everything arrives in a quick wave.', motion: { scroll: 'cascade', heading: 'words', buttons: 'press', pictures: 'depth', pointer: 'lean', arrive: 'veil', mark: 'underline', pace: 'measured', count: true } },
+  nocturne: { name: 'Nocturne', hint: 'A dark sheet draws off the opening photo; sections wipe in and the heading rises line by line.', motion: { scroll: 'wipe', heading: 'rising', buttons: 'fill', pictures: 'depth', arrive: 'veil', mark: 'underline', pace: 'measured', count: true } },
 };
 export function cleanMotion(v) {
   const d = isObj(v) ? v : {}, out = {};
@@ -651,7 +666,7 @@ export function motionFor(preset, backdrop) {
   return cleanMotion({ ...p.motion, ...(backdrop ? { backdrop } : {}), preset });
 }
 
-const FONT_KEYS = ['classic', 'modern', 'editorial', 'clean', 'friendly', 'grotesk', 'mono'];
+const FONT_KEYS = ['classic', 'modern', 'editorial', 'clean', 'friendly', 'grotesk', 'mono', 'fine', 'noir'];
 const BODY_FONT_KEYS = ['clean', 'reading', 'easy', 'classic', 'grotesk'];
 export const LOOK_COLOURS = ['bg', 'surface', 'ink', 'accent', 'deep'];
 export function cleanLook(v) {

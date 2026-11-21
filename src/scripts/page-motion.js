@@ -14,11 +14,13 @@ const TARGETS = [
   // Signature sections (release 7).
   '.cb-bs', '.cb-pl > *', '.cb-sp > *', '.cb-mb-col', '.cb-mb-tablist', '.cb-tl > *', '.cb-cmp-item', '.cb-tt-day', '.cb-find > *', '.cb-cs-top > *', '.cb-cs-part', '.cb-cs-more > *', '.cb-sc-item', '.cb-rv-drift', '.cb-gal-side .cb-hs-track > *',
   '.cb-pin-item', '.cb-stk-rail', '.cb-person-book',
+  // Release 7, aesthetics batch.
+  '.cb-rail-track > *', '.cb-mbi-nav', '.cb-float > *',
 ].join(',');
 // Layouts that bring themselves in; the scroll effect leaves them alone.
 const OWN_ENTRANCE = '.cb-bento, .cb-curtain, .cb-open, .cb-hero-bg, .cb-backdrop, .cbm-bd, .cb-mask-thumb, .cb-plates-bg, .cb-plates-wipe, .cb-reveal-pic, .cb-pin-stage';
 const PICTURES = '.cb-pic-frame, .cb-figure, .cb-svc-pic, .cb-order-pic, .cb-portrait, .cb-show-pic, .cb-gallery > figure, .cb-cs-main, .cb-cs-more > figure, .cb-cmp-one, .cb-sc-pic, .cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-arch-pic):not(.cb-curtain-pic):not(.cb-lens-pic):not(.cb-bw-pic):not(.cb-shatter):not(.cb-reveal-pic)';
-const KEEPS_MOVING = '.cb-rv-drift, .cb-car:not(.cb-car-still), .cb-depth, .cb-bw, .cb-lens, .cbm-bd canvas, .cb-mq:not(.cb-mq-still), .cb-film:not(.cb-film-still), .cbm-bd, .cb-orbit, .cb-collage, .cb-arch-badge, .cb-mask-h, .cb-rot, .cb-blob, .cb-inset-bg, .cb-open-bg, .cb-factlist-circles';
+const KEEPS_MOVING = '.cb-rv-drift, .cb-car:not(.cb-car-still), .cb-depth, .cb-bw, .cb-lens, .cbm-bd canvas, .cb-mq:not(.cb-mq-still), .cb-film:not(.cb-film-still), .cbm-bd:not(.cbm-bd-dawn), .cb-orbit, .cb-collage, .cb-arch-badge, .cb-mask-h, .cb-rot, .cb-blob, .cb-inset-bg, .cb-open-bg, .cb-factlist-circles';
 const PAUSE_KEY = 'cbm-paused';
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -557,7 +559,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     // Cards and tiles lean towards the pointer, with a soft light where it is. A mouse or
     // trackpad only; a finger gets a small press instead (signature.css).
     if (pointer === 'lean') {
-      for (const el of root.querySelectorAll('.cb-tl-item, .cb-pl-item:not(.is-popular), .cb-bs-cards .cb-bs-opt, .cb-sp-cards .cb-sp-item, .cb-svc-cards > article, .cb-team-grid > article, .cb-reviews-cards .cb-review, .cb-cs-main, .cb-tt-day')) {
+      for (const el of root.querySelectorAll('.cb-tl-item, .cb-pl-item:not(.is-popular), .cb-pl-fan > .cb-pl-item.is-popular, .cb-bs-cards .cb-bs-opt, .cb-sp-cards .cb-sp-item, .cb-svc-cards > article, .cb-team-grid > article, .cb-reviews-cards .cb-review, .cb-cs-main, .cb-tt-day')) {
         if (el.closest('.cb-hs.is-live')) continue;
         const placed = win.getComputedStyle(el).position === 'static';
         if (placed) el.style.position = 'relative';

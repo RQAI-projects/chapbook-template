@@ -3,7 +3,7 @@
 // Everything a writer types is escaped. Rich text allows only paragraphs, **bold**, *italic*,
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
-import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS } from './schema.mjs';
+import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading } from './schema.mjs';
 import { professionalDetails, telHref, sameText } from '../professional.mjs';
 
 export * from './schema.mjs';
@@ -43,6 +43,9 @@ export const PAGE_FONTS = {
   grotesk: { label: 'Geometric sans', css: "'Space Grotesk Variable','Space Grotesk',system-ui,sans-serif" },
   friendly: { label: 'Friendly rounded', css: "'Fredoka','Atkinson Hyperlegible',system-ui,sans-serif" },
   mono: { label: 'Typewriter', css: "ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace" },
+  // Release 7: the warm serif set light (a word in italic stands out), and set heavy and italic.
+  fine: { label: 'Light serif', css: "'Fraunces',Georgia,serif" },
+  noir: { label: 'Heavy italic serif', css: "'Fraunces',Georgia,serif" },
 };
 
 // Typefaces for running text: all easy to read at length, all already loaded by every site.
@@ -169,7 +172,7 @@ export function motionAttrs(m) {
 }
 // Moving shapes behind a block. Pure decoration: empty elements that the stylesheet arranges and
 // animates in the page's own colours, hidden from screen readers.
-const BACKDROP_PARTS = { globe: 0, ring: 0, terrain: 0, aurora: 4, bubbles: 12, blobs: 3, waves: 3, orbits: 4, grid: 2, dots: 2, rays: 2, shapes: 12, lines: 9, ripples: 5, petals: 14, stars: 6, spotlight: 2, wash: 1, grain: 1 };
+const BACKDROP_PARTS = { dawn: 1, globe: 0, ring: 0, terrain: 0, aurora: 4, bubbles: 12, blobs: 3, waves: 3, orbits: 4, grid: 2, dots: 2, rays: 2, shapes: 12, lines: 9, ripples: 5, petals: 14, stars: 6, spotlight: 2, wash: 1, grain: 1 };
 export function backdropHtml(kind, cls = '') {
   if (!Object.hasOwn(BACKDROP_PARTS, kind)) return '';
   return `<div class="cbm-bd cbm-bd-${kind}${cls}" aria-hidden="true">${['stars', 'globe', 'ring', 'terrain'].includes(kind) ? '<canvas></canvas>' : ''}${'<i></i>'.repeat(BACKDROP_PARTS[kind])}</div>`;
@@ -253,7 +256,13 @@ function LIST(C, b, key, items, each, tag = 'div', cls = '') {
 const K = (C, b, d) => (!C.editable && sameText(d.kicker, d.heading) ? '' : T(C, b, 'kicker', d.kicker, 'p', 'cb-kicker'));
 const hTag = (C, b, tag = 'h2') => { if (b.id === C.h1Id && !C.h1Done) { C.h1Done = true; return 'h1'; } return tag; };
 function H(C, b, d, tag = 'h2', cls = 'cb-h', attrs = '') {
-  return withMark(C, d, T(C, b, 'heading', d.heading, hTag(C, b, tag), cls, attrs));
+  return withMark(C, d, emHeading(C, T(C, b, 'heading', d.heading, hTag(C, b, tag), cls, attrs)));
+}
+// A word in a heading written *like this* is set in italic on the published page. The editor
+// keeps the stars, so the heading can still be typed into as it is.
+function emHeading(C, html) {
+  if (C.editable || !html.includes('*')) return html;
+  return html.split(/(<[^>]*>)/).map((part) => (part.startsWith('<') ? part : part.replace(new RegExp(HEADING_EM.source, 'g'), '$1<em>$2</em>'))).join('');
 }
 // "Words to mark": on the published page the first place those words appear (in the heading, or
 // else in the words under it) is wrapped in <mark>, which the stylesheet underlines or highlights
@@ -382,6 +391,12 @@ R_.hero = (C, b) => {
   const player = d.video && !fileBehind && v === 'photo-behind' ? `<div class="cb-hero-player">${heroVideo(C, b, d, false)}</div>` : '';
   const toggle = fileBehind && (v === 'photo-behind' || v === 'inset' || v === 'open') && !C.editable ? '<button type="button" class="cb-video-toggle" aria-label="Pause the video">Pause</button>' : '';
   if (v === 'split') return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div>${pic()}</div>`;
+  // Words and a photo side by side; on a wide screen the photo stays put while the story under the
+  // first screen scrolls past it (S1). Phones and "reduce motion" get the plain split.
+  if (v === 'pinned') {
+    const fig = media ? `<figure class="cb-hero-pic cb-pinhero-pic">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>` : '';
+    return `<div class="cb-pinhero${fig ? '' : ' cb-solo'}">${fig}<div class="cb-pinhero-words"><div class="cb-pinhero-first">${words}${details}</div>${RT(C, b, 'story', d.story, 'cb-rich cb-pinhero-story')}${d.picture ? creditsOf([d.picture]) : ''}</div></div>`;
+  }
   if (v === 'centred') return `<div class="cb-hero-words">${words}${details}</div>${media ? pic() : ''}`;
   if (v === 'photo-behind') {
     const bg = fileBehind || !d.video ? pic('cb-hero-bg') : `<figure class="cb-hero-bg">${P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`;
@@ -532,7 +547,15 @@ R_.hero = (C, b) => {
   // Large words, then a photo from edge to edge that opens out like a curtain as the page opens.
   if (v === 'reveal') return `<div class="cb-reveal"><div class="cb-hero-words cb-reveal-words">${words}${details}</div>${media ? `<figure class="cb-hero-pic cb-reveal-pic"><span class="cb-reveal-in">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</span></figure>${creditsOf([d.picture])}` : ''}${toggle}</div>`;
   // One statement that fills the first screen. No photo, by design.
-  if (v === 'statement') return `<div class="cb-statement">${words}${details}</div>`;
+  if (v === 'statement') {
+    // Up to three photos in rounded frames float beside the statement, each at its own depth as
+    // the page scrolls (M5). Without photos it is the statement alone, as before.
+    const shots = [d.picture, ...shownMore(b, d)].filter(Boolean);
+    if (C.editable && (d.picture || (d.pictures || []).length)) return `<div class="cb-statement-wrap has-float"><div class="cb-statement">${words}${details}</div><div class="cb-float cb-float-edit"><figure class="cb-float-pic">${P(C, b, 'picture', d.picture, '', { credits: false })}</figure>${morePics(C, b, d, 'cb-float-more', 'cb-float-pic')}</div></div>`;
+    if (C.editable || !shots.length) return `<div class="cb-statement">${words}${details}</div>`;
+    const figs = shots.map((p, k) => `<figure class="cb-float-pic">${P(C, b, k ? `pictures.${k - 1}` : 'picture', p, '', { eager: !k, credits: false })}</figure>`).join('');
+    return `<div class="cb-statement-wrap has-float"><div class="cb-statement">${words}${details}</div><div class="cb-float">${figs}</div></div>${creditsOf(shots)}`;
+  }
   return `<div class="cb-hero-words">${words}${details}</div>`; // minimal
 };
 
@@ -668,7 +691,7 @@ R_.gallery = (C, b) => {
   // A row of photos that slides sideways as the page scrolls down, and is swiped on a phone.
   if (b.variant === 'sideways' && !C.editable && pics.length > 1) {
     const row = pics.map((p, i) => `<figure>${tile(p, i)}${p.alt ? `<figcaption>${esc(p.alt)}</figcaption>` : ''}</figure>`).join('');
-    return `${head}<div class="cb-hs cb-gal-side" data-hs><div class="cb-hs-pin"><div class="cb-hs-view" tabindex="0" role="region" aria-label="${esc(d.heading || 'Photos')}, scrolls sideways"><div class="cb-hs-track">${row}</div></div><span class="cb-hs-bar" aria-hidden="true"><i></i></span></div></div>${creditsOf(pics)}`;
+    return `${head}<div class="cb-hs cb-gal-side" data-hs><div class="cb-hs-pin"><div class="cb-hs-view" tabindex="0" role="region" aria-label="${esc(plainHeading(d.heading) || 'Photos')}, scrolls sideways"><div class="cb-hs-track">${row}</div></div><span class="cb-hs-bar" aria-hidden="true"><i></i></span></div></div>${creditsOf(pics)}`;
   }
   // Photos that start scattered and fly together into the grid as the block scrolls into view.
   // Each photo's starting place is fixed by its position in the list.
@@ -707,6 +730,7 @@ R_.services = (C, b) => {
   }, 'div', 'cb-svc cb-svc-flip');
   else if (v === 'board') list = LIST(C, b, 'items', items, (s, i, w) => w(`<div class="cb-menu-line">${name(s, i)}<i aria-hidden="true"></i>${price(s, i)}</div>${desc(s, i)}${time(s, i)}${offer(s, i)}${serviceLinks(C, b, i, s)}`), 'div', 'cb-svc cb-svc-board');
   else if (v === 'pinned') return pinnedList(C, b, d, items, { name, desc, price, time, offer });
+  else if (v === 'rail') return railList(C, b, d, items, { name, desc, price, time, offer });
   else list = LIST(C, b, 'items', items, (s, i, w) => w(`${s.picture || C.editable ? `<figure class="cb-svc-pic">${P(C, b, `items.${i}.picture`, s.picture)}</figure>` : ''}<div class="cb-feature-body">${name(s, i)}${desc(s, i)}<p class="cb-meta">${time(s, i)}${price(s, i)}</p>${offer(s, i)}${serviceLinks(C, b, i, s)}</div>`, 'article', s.picture || C.editable ? '' : 'cb-solo'), 'div', 'cb-svc cb-svc-feature');
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${list}`;
 };
@@ -721,6 +745,25 @@ function pinnedList(C, b, d, items, f) {
   const stage = shots.length > 1 ? `<div class="cb-pin-stage" aria-hidden="true">${shots.map(([s, i], k) => `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, s.picture.src))}" alt="" loading="lazy" decoding="async"${focusPos(s.picture) ? ` style="object-position:${focusPos(s.picture)}"` : ''}>`).join('')}</div>` : '';
   const list = LIST(C, b, 'items', items, one, 'ol', 'cb-pin-list');
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div><div class="cb-pin${stage ? ' has-stage' : ''}"${stage ? ' data-pinlist' : ''}>${list}${stage}</div>${creditsOf(items.map((s) => s.picture).filter(Boolean))}`;
+}
+
+// Cards that travel sideways as the page scrolls down (S5 with M4): on a wide screen the row stays
+// put and slides by as much as the reader scrolls, under a band of large words that rolls slowly
+// on its own (M6). Phones swipe the row, one card at a time. The band only repeats the cards'
+// names, so it is hidden from screen readers; with "reduce motion" it is left out.
+const railWords = (d) => String(d.band || '').split(/[,;|]/).map((w) => w.trim()).filter(Boolean).slice(0, 12);
+function railList(C, b, d, items, f) {
+  const two = (n) => String(n).padStart(2, '0');
+  const card = (s, i, w) => w(`${s.picture || C.editable ? `<figure class="cb-rail-pic">${P(C, b, `items.${i}.picture`, s.picture, '', { credits: false })}</figure>` : ''}<div class="cb-rail-body"><p class="cb-rail-n" aria-hidden="true">${two(i + 1)}</p>${f.name(s, i)}<p class="cb-rail-meta">${f.time(s, i)}${f.price(s, i)}</p>${f.desc(s, i)}${f.offer(s, i)}${serviceLinks(C, b, i, s)}</div>`, 'article', `cb-rail-card${s.picture || C.editable ? '' : ' cb-solo'}`);
+  const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
+  const words = railWords(d);
+  if (C.editable) return `${head}${words.length ? `<p class="cb-note" data-cb-hint>Moving words above the cards: ${esc(words.join(', '))}</p>` : ''}${LIST(C, b, 'items', items, card, 'div', 'cb-rail cb-rail-still')}`;
+  if (!items.length) return head;
+  const setW = words.join('').length * 44 + words.length * 116;
+  const sets = clamp(Math.ceil(2800 / Math.max(setW, 1)) + 1, 2, 40), dur = clamp(Math.round(setW / 38), 40, 60);
+  const band = words.length ? `<div class="cb-rail-band" aria-hidden="true"><div class="cb-mq" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${dur}s"><div class="cb-mq-track">${`<span class="cb-mq-set">${words.map((t) => `<span class="cb-mq-item">${esc(t)}</span>`).join('')}</span>`.repeat(sets)}</div></div></div>` : '';
+  const cards = items.map((s, i) => card(s, i, (inner, tag, cls) => `<${tag} class="${cls}">${inner}</${tag}>`)).join('');
+  return `${head}<div class="cb-hs cb-rail" data-hs><div class="cb-hs-pin">${band}<div class="cb-hs-view" tabindex="0" role="region" aria-label="${esc(plainHeading(d.heading) || 'Treatments')}, scrolls sideways"><div class="cb-hs-track cb-rail-track">${cards}</div></div><span class="cb-hs-bar" aria-hidden="true"><i></i></span></div></div>${creditsOf(items.map((s) => s.picture).filter(Boolean))}`;
 }
 
 // The words on a person's own Book button: "Book with Hannah", "Book with Dr Osei".
@@ -872,7 +915,8 @@ R_.posts = (C, b) => {
 
 R_.credentials = (C, b) => {
   const d = b.data;
-  return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div>${LIST(C, b, 'items', d.items || [], (x, i, w) => w(T(C, b, `items.${i}.text`, x.text, 'span'), 'li'), 'ul', `cb-creds cb-creds-${b.variant}`)}`;
+  // An entry may link out, such as to the public register where a registration can be checked.
+  return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div>${LIST(C, b, 'items', d.items || [], (x, i, w) => w(`${T(C, b, `items.${i}.text`, x.text, 'span')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link cb-creds-link') : ''}`, 'li'), 'ul', `cb-creds cb-creds-${b.variant}`)}`;
 };
 
 R_.facts = (C, b) => {
@@ -1091,7 +1135,15 @@ R_.plans = (C, b) => {
     const price = x.price || x.per || C.editable ? `<p class="cb-pl-price">${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-pl-amount')}${T(C, b, `items.${i}.per`, x.per, 'span', 'cb-pl-per')}</p>` : '';
     return w(`${x.popular ? '<p class="cb-pl-flag">Most popular</p>' : ''}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-pl-name')}${price}${RT(C, b, `items.${i}.includes`, x.includes, 'cb-rich cb-pl-inc')}<div class="cb-pl-foot">${action}${T(C, b, `items.${i}.small`, x.small, 'p', 'cb-small cb-pl-small')}</div>`, 'article', `cb-pl-item${x.popular ? ' is-popular' : ''}`);
   };
-  const list = LIST(C, b, 'items', items, one, 'div', `cb-pl cb-pl-${b.variant}`);
+  let list = LIST(C, b, 'items', items, one, 'div', `cb-pl cb-pl-${b.variant}`);
+  // Cards held like a hand: on a wide screen they start fanned together and spread into a row as
+  // the section comes into view (the page's script sets --p; the stylesheet does the rest).
+  if (b.variant === 'fan' && !C.editable && items.length > 1) {
+    const mid = (items.length - 1) / 2;
+    let k = -1;
+    list = list.replace(/^<div class="cb-pl cb-pl-fan"/, `<div class="cb-pl cb-pl-fan" data-scroll="enter" style="--n:${items.length}"`)
+      .replace(/<article class="cb-pl-item/g, () => { k++; return `<article style="--fi:${(k - mid).toFixed(2)};--fa:${Math.abs(k - mid).toFixed(2)}" class="cb-pl-item`; });
+  }
   const money = C.editable ? '<p class="cb-note" data-cb-hint>Each card takes its own pay link (Stripe, PayPal, SumUp or Square). The money goes straight to you.</p>' : '';
   return `${HEAD(C, b, d)}${list}${T(C, b, 'note', d.note, 'p', 'cb-small cb-pl-note')}${money}`;
 };
@@ -1167,7 +1219,7 @@ export function menuGroups(items = []) {
 R_.menuboard = (C, b) => {
   const d = b.data, v = b.variant, uid = esc(b.id);
   const groups = menuGroups(d.items || []);
-  const row = ([x, i], first) => `<li class="cb-mb-row"${ED(C, 'data-cb-item', `${b.id}:items.${i}`)}>${C.editable && !first ? T(C, b, `items.${i}.group`, x.group, 'p', 'cb-mb-newgroup') : ''}<div class="cb-mb-line">${T(C, b, `items.${i}.name`, x.name, 'span', 'cb-mb-name')}${T(C, b, `items.${i}.tag`, x.tag, 'span', 'cb-mb-tag')}<i aria-hidden="true"></i>${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-mb-price')}</div>${T(C, b, `items.${i}.description`, x.description, 'p', 'cb-mb-desc')}</li>`;
+  const row = ([x, i], first) => `<li class="cb-mb-row"${ED(C, 'data-cb-item', `${b.id}:items.${i}`)}>${C.editable && !first ? T(C, b, `items.${i}.group`, x.group, 'p', 'cb-mb-newgroup') : ''}<div class="cb-mb-line">${T(C, b, `items.${i}.name`, x.name, 'span', 'cb-mb-name')}${T(C, b, `items.${i}.tag`, x.tag, 'span', 'cb-mb-tag')}<i aria-hidden="true"></i>${T(C, b, `items.${i}.duration`, x.duration, 'span', 'cb-mb-time')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-mb-price')}</div>${T(C, b, `items.${i}.description`, x.description, 'p', 'cb-mb-desc')}</li>`;
   const cols = groups.map((g, k) => {
     const [x0, i0] = g.rows[0];
     const title = C.editable ? T(C, b, `items.${i0}.group`, x0.group, 'h3', 'cb-mb-group') : g.name ? `<h3 class="cb-mb-group" id="mb-${uid}-${k}">${esc(g.name)}</h3>` : '';
@@ -1178,15 +1230,34 @@ R_.menuboard = (C, b) => {
   const track = `<div class="cb-mb-track"${ED(C, 'data-cb-list', `${b.id}:items`)}>${cols}</div>`;
   // The board slides sideways as the page scrolls (a pointer or a wide screen), and is swiped on
   // a phone. It can be reached and scrolled with the keyboard too.
-  if (v === 'slide' && !C.editable) return `${HEAD(C, b, d)}<div class="cb-hs cb-mb cb-mb-slide" data-hs><div class="cb-hs-pin"><div class="cb-hs-view" tabindex="0" role="region" aria-label="${esc(d.heading || 'Menu')}, scrolls sideways"><div class="cb-hs-track cb-mb-track">${cols}</div></div><span class="cb-hs-bar" aria-hidden="true"><i></i></span></div></div>${note}`;
+  if (v === 'slide' && !C.editable) return `${HEAD(C, b, d)}<div class="cb-hs cb-mb cb-mb-slide" data-hs><div class="cb-hs-pin"><div class="cb-hs-view" tabindex="0" role="region" aria-label="${esc(plainHeading(d.heading) || 'Menu')}, scrolls sideways"><div class="cb-hs-track cb-mb-track">${cols}</div></div><span class="cb-hs-bar" aria-hidden="true"><i></i></span></div></div>${note}`;
   if (v === 'tabs' && !C.editable && groups.length > 1 && groups.every((g) => g.name)) return `${HEAD(C, b, d)}<div class="cb-mb cb-mb-tabs" data-tabs>${track}</div>${note}`;
-  return `${HEAD(C, b, d)}<div class="cb-mb cb-mb-${v === 'slide' ? 'slide cb-mb-still' : v === 'tabs' ? 'columns' : v}">${track}</div>${note}`;
+  // An index of the groups stays beside the list on a wide screen, the group being read marked (the
+  // page's script does the marking; the index is plain links to each group without it). A line
+  // with a description opens to show it (M17).
+  if (v === 'index' && !C.editable && groups.length > 1 && groups.every((g) => g.name)) {
+    const line = (x) => `<span class="cb-mb-name">${esc(x.name || '')}</span>${x.tag ? `<span class="cb-mb-tag">${esc(x.tag)}</span>` : ''}<i aria-hidden="true"></i>${x.duration ? `<span class="cb-mb-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-mb-price">${esc(x.price)}</span>` : ''}`;
+    const rows = (g) => g.rows.map(([x]) => (x.description ? `<li class="cb-mb-row cb-mbi-row"><details><summary class="cb-mb-line">${line(x)}</summary><p class="cb-mb-desc">${esc(x.description)}</p></details></li>` : `<li class="cb-mb-row"><div class="cb-mb-line">${line(x)}</div></li>`)).join('');
+    const list = groups.map((g, k) => `<section class="cb-mb-col" aria-labelledby="mb-${uid}-${k}" data-group="${k}"><h3 class="cb-mb-group" id="mb-${uid}-${k}">${esc(g.name)}</h3><ul class="cb-mb-rows">${rows(g)}</ul></section>`).join('');
+    const nav = groups.map((g, k) => `<li><a href="#mb-${uid}-${k}"${k ? '' : ' aria-current="true"'}><span class="cb-mbi-name">${esc(g.name)}</span><span class="cb-mbi-count" aria-hidden="true">${String(g.rows.length).padStart(2, '0')}</span></a></li>`).join('');
+    return `${HEAD(C, b, d)}<div class="cb-mbi" data-mbi style="--n:${groups.length}"><nav class="cb-mbi-nav" aria-label="${esc(plainHeading(d.heading) || 'Menu')}: groups"><ol>${nav}</ol><span class="cb-mbi-bar" aria-hidden="true"><i></i></span></nav><div class="cb-mbi-list">${list}</div></div>${note}`;
+  }
+  return `${HEAD(C, b, d)}<div class="cb-mb cb-mb-${v === 'slide' ? 'slide cb-mb-still' : ['tabs', 'index'].includes(v) ? 'columns' : v}">${track}</div>${note}`;
 };
 
 // ---- tiles ----
 R_.tiles = (C, b) => {
-  const d = b.data, items = d.items || [];
-  const one = (x, i, w) => w(`${x.picture || (C.editable && !x.value) ? `<figure class="cb-tl-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}<div class="cb-tl-body">${T(C, b, `items.${i}.value`, x.value, 'p', 'cb-tl-value')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-tl-name')}${T(C, b, `items.${i}.text`, x.text, 'p', 'cb-tl-text')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}</div>`, 'article', `cb-tl-item${x.picture ? ' has-pic' : ''}${x.value ? ' has-value' : ''}`);
+  const d = b.data, items = d.items || [], open = b.variant === 'open';
+  const meta = (x, i) => (x.duration || x.price || (C.editable && open) ? `<p class="cb-tl-meta">${T(C, b, `items.${i}.duration`, x.duration, 'span', 'cb-tl-time')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-tl-price')}</p>` : '');
+  const more = (x, i) => `${meta(x, i)}${T(C, b, `items.${i}.text`, x.text, 'p', 'cb-tl-text')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}`;
+  // Tiles that open (S4 with M13): a photo tile shows its name; pointed at or focused, a panel
+  // slides up with the price, the time and the words. On a touch screen, with "reduce motion"
+  // and in the editor the panel simply stays open.
+  const one = (x, i, w) => {
+    const panel = open && x.picture;
+    const html = w(`${x.picture || (C.editable && !x.value) ? `<figure class="cb-tl-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}<div class="cb-tl-body">${T(C, b, `items.${i}.value`, x.value, 'p', 'cb-tl-value')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-tl-name')}${panel ? '' : more(x, i)}</div>${panel ? `<div class="cb-tl-panel">${more(x, i)}</div>` : ''}`, 'article', `cb-tl-item${x.picture ? ' has-pic' : ''}${x.value ? ' has-value' : ''}${panel ? ' has-panel' : ''}`);
+    return panel && !x.link && !C.editable ? html.replace(/^<article/, '<article tabindex="0"') : html;
+  };
   return `${HEAD(C, b, d)}${LIST(C, b, 'items', items, one, 'div', `cb-tl cb-tl-${b.variant}`)}`;
 };
 
@@ -1262,7 +1333,7 @@ function renderBlock(b, C) {
   // The chosen backdrop moves behind the page's opening, and more quietly behind a coloured call to action.
   let moving = '';
   if (C.backdrop && b.id === C.heroId && !['photo-behind', 'inset', 'open'].includes(frame) && s.bg !== 'picture') moving = backdropHtml(C.backdrop);
-  else if (C.backdrop && b.type === 'cta' && ['accent', 'dark'].includes(s.bg)) moving = backdropHtml(C.backdrop, ' cbm-bd-echo');
+  else if (C.backdrop && C.backdrop !== 'dawn' && b.type === 'cta' && ['accent', 'dark'].includes(s.bg)) moving = backdropHtml(C.backdrop, ' cbm-bd-echo');
   return `<section class="${cls}"${ED(C, 'data-cb-block', b.id)}>${backdrop}${moving}<div class="cb-in">${inner}</div></section>`;
 }
 export { renderBlock as _renderBlock };
