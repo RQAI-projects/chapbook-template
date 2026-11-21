@@ -5,6 +5,7 @@ import siteConfig from './src/data/site.json';
 import themeRegistry from './src/data/themes.json';
 import { fileURLToPath } from 'node:url';
 import { homeFileFor } from './src/lib/blog-homes.mjs';
+import pageCss from './src/lib/page-css.mjs';
 
 // A website wears one look (site.json defaultTheme), and every look's rules are scoped to its own
 // [data-blog-theme], so the other looks' stylesheets can never apply. themes.css lists all of
@@ -38,6 +39,9 @@ function oneHome() {
 
 export default defineConfig({
   vite: { plugins: [oneLook(), oneHome()] },
+  // After the build, each block page keeps only the styles it can use, in its own head
+  // (src/lib/page-css.mjs); blog pages are left exactly as built.
+  integrations: [pageCss()],
   site: siteConfig.url,
   // Serve at a GitHub Pages project sub-path when BASE_PATH is set
   // (e.g. BASE_PATH=/repo/). Unset → '/' → the owner's root-domain site,
