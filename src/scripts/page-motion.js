@@ -207,6 +207,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
       if (unveil) {
         for (const el of block.querySelectorAll(PICTURES)) {
           if (el.closest(OWN_ENTRANCE) || el.getAttribute('data-m') === 'pic' || !el.querySelector('img, video')) continue;
+          // A photo the first screen shows is never covered by a sheet waiting for this script.
+          if (measured && bi < 2) { const r = el.getBoundingClientRect(); if (r.top < vh0 && r.bottom > 0) continue; }
           el.setAttribute('data-mp', '');
           if (!el.hasAttribute('data-m')) marked.push(el);
         }
