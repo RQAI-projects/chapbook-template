@@ -792,7 +792,7 @@ R_.contact = (C, b) => {
   // "Open now, closes at 6pm": worked out on the visitor's device from the opening hours, so it
   // is right whenever the page is read. Without the script it is simply not there.
   const hoursText = bizDetails(C, d, own).hours || '';
-  const openNow = !d.openNow || !hoursText ? '' : C.editable ? '<p class="cb-note" data-cb-hint>On your website a line here says whether you are open now, worked out from your opening hours.</p>' : `<p class="cb-opennow" data-open="${esc(hoursText.split('\n').map((l) => l.trim()).filter(Boolean).join('|'))}" hidden></p>`;
+  const openNow = !d.openNow ? '' : C.editable ? `<p class="cb-note" data-cb-hint>${hoursText ? 'On your website a line here says whether you are open now, worked out from your opening hours.' : 'On your website a line here will say whether you are open now, once your opening hours are added.'}</p>` : !hoursText ? '' : `<p class="cb-opennow" data-open="${esc(hoursText.split('\n').map((l) => l.trim()).filter(Boolean).join('|'))}" hidden></p>`;
   const head = `${K(C, b, d)}${H(C, b, d)}${openNow}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
   const acts = `${d.business ? socials(C) : ''}${BTNS(C, b, d.buttons)}${map ? `<p class="cb-map">${map}</p>` : ''}`;
   if (!facts && !d.heading && !d.intro && !(d.buttons || []).length && !C.editable) return '';

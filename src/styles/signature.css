@@ -178,7 +178,8 @@
 .cb-tl-value{margin:0;font-family:var(--cb-head);font-size:clamp(2.5rem,5vw,4.2rem);font-weight:600;letter-spacing:-.04em;line-height:.95;color:var(--cb-accent-text,var(--accent))}
 .cb-tl-text{margin:0;font-size:.95rem;line-height:1.45;color:var(--ink-dim)}
 .cb-tl-pic img,.cb-tl-pic .cb-pic-empty{width:100%;aspect-ratio:auto;height:100%;min-height:7rem;object-fit:cover;border-radius:0}
-.cb-tl-item.has-pic{color:#fff;--ink:#fff;--ink-dim:rgba(255,255,255,.9);--cb-accent-text:#fff;background:#16181d;min-height:13rem}
+/* (Outranks the soft panel colours a tinted section gives every tile.) */
+.cbp .cb .cb-tl-item.has-pic{color:#fff;--ink:#fff;--ink-dim:rgba(255,255,255,.92);--cb-accent-text:#fff;background:#16181d;min-height:13rem}
 .cb-tl-item.has-pic .cb-tl-pic{position:absolute;inset:0;z-index:-1}
 .cb-tl-item.has-pic .cb-tl-pic::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 28%,rgba(0,0,0,.42) 55%,rgba(0,0,0,.82))}
 .cb-tl-item.has-pic .cb-tl-body{text-shadow:0 1px 14px rgba(0,0,0,.45)}
@@ -480,6 +481,7 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
   html.cbm-js .cbm:not([data-m-edit]) .cb-reveal-pic{animation:cbs-reveal-frame 1.4s cubic-bezier(.22,1,.36,1) .15s both}
   html.cbm-js .cbm:not([data-m-edit]) .cb-reveal-in{animation:cbs-reveal-in 1.4s cubic-bezier(.22,1,.36,1) .15s both}
   /* ---- Marked words drawn left to right (M16: 700ms) --------------------------------------- */
+  html.cbm-js .cbp mark.cb-mark.cbm-mk-wait{text-decoration-color:transparent;background:none}
   html.cbm-js .cbp mark.cb-mark.cbm-mk{text-decoration:none;background:none;position:relative;z-index:0}
   html.cbm-js .cbp mark.cb-mark.cbm-mk::after{content:"";position:absolute;left:0;right:0;bottom:.02em;height:max(2px,.07em);z-index:-1;background:var(--cb-accent-text,var(--accent));transform:scaleX(0);transform-origin:0 50%;transition:transform .7s cubic-bezier(.22,1,.36,1)}
   html.cbm-js .cbp[data-m-mark=highlight] mark.cb-mark.cbm-mk::after{bottom:.08em;height:.42em;background:color-mix(in srgb,var(--accent) 24%,transparent)}
@@ -545,7 +547,7 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
 /* ---- Pinned list (M3) and sticky steps (M10): a wide screen, the script, movement allowed --- */
 @media screen and (prefers-reduced-motion:no-preference) and (min-width:761px){
   html.cbm-js .cb-pin.is-live{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(2rem,5vw,5rem);align-items:start}
-  html.cbm-js .cb-pin.is-live .cb-pin-stage{display:block;position:sticky;order:2;top:calc(var(--header-h,0px) + max(1.5rem,(100vh - var(--header-h,0px) - min(72vh,42rem)) / 2));height:min(72vh,42rem);overflow:hidden;border-radius:calc(var(--cb-r-img) + .4rem);background:var(--cb-surface)}
+  html.cbm-js .cb-pin.is-live .cb-pin-stage{display:block;position:sticky;order:2;top:calc(var(--header-h,0px) + max(1.5rem,(100vh - var(--header-h,0px) - min(78vh,48rem)) / 2));height:min(78vh,48rem);overflow:hidden;border-radius:calc(var(--cb-r-img) + .4rem);background:var(--cb-surface)}
   html.cbm-js .cb-pin.is-live .cb-pin-stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s cubic-bezier(.65,0,.35,1)}
   html.cbm-js .cb-pin.is-live .cb-pin-stage img.is-on{opacity:1}
   html.cbm-js .cb-pin.is-live .cb-pin-pic{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%)}

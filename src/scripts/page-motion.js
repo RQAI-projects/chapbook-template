@@ -386,21 +386,31 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   }
 
   // ---- marked words: a line (or a highlight) draws itself under them as they come into view -----
-  // Only words on one line are drawn this way; words that wrap keep the plain underline, which
-  // follows them from line to line. They are marked whatever happens, so nothing is lost.
+  // Whether the words sit on one line is only known once the page's fonts are in, so it is
+  // judged as they arrive: words on one line are drawn in; words that wrap keep the plain
+  // underline, which follows them from line to line. Until then the line waits, unseen.
   if (!reduce && look('mark') && 'IntersectionObserver' in win) {
-    const marks = [...root.querySelectorAll('mark.cb-mark')].filter((m) => m.getClientRects().length === 1);
+    const marks = [...root.querySelectorAll('mark.cb-mark')];
     if (marks.length) {
+      const oneLine = (m) => m.getClientRects().length === 1;
       const io = new win.IntersectionObserver((entries) => {
         for (const e of entries) {
           if (!e.isIntersecting) continue;
-          io.unobserve(e.target);
+          const m = e.target;
+          io.unobserve(m);
           // In the opening it waits for the heading to arrive first.
-          later(() => e.target.classList.add('is-on'), hero && hero.contains(e.target) ? 900 : 250);
+          later(() => {
+            m.classList.remove('cbm-mk-wait');
+            if (!oneLine(m)) return;
+            m.classList.add('cbm-mk');
+            frame(() => frame(() => m.classList.add('is-on')));
+          }, hero && hero.contains(m) ? 900 : 250);
         }
       }, { threshold: 1 });
-      for (const m of marks) { m.classList.add('cbm-mk'); io.observe(m); }
-      undo.push(() => { io.disconnect(); for (const m of marks) m.classList.remove('cbm-mk', 'is-on'); });
+      for (const m of marks) { m.classList.add('cbm-mk-wait'); io.observe(m); }
+      // A narrower window can wrap words that were drawn on one line: they keep the plain underline.
+      on(win, 'resize', () => { for (const m of marks) if (m.classList.contains('cbm-mk') && !oneLine(m)) m.classList.remove('cbm-mk', 'is-on'); }, { passive: true });
+      undo.push(() => { io.disconnect(); for (const m of marks) m.classList.remove('cbm-mk', 'is-on', 'cbm-mk-wait'); });
     }
   }
 
