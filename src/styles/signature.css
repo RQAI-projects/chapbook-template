@@ -79,6 +79,7 @@
 .cb-pl-foot{margin-top:auto;display:grid;gap:.6rem;padding-top:.4rem}
 .cb-pl-foot .cb-btn{width:100%;min-height:3rem}
 .cb-pl-small{margin:0}
+.cb-pl-ask{margin:0;font-weight:600}
 .cb-pl-note{margin:1.2rem 0 0}
 @media (min-width:761px){
   /* Steps that rise: each card stands a little taller than the one before. */

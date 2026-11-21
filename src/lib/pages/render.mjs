@@ -1237,6 +1237,8 @@ R_.plans = (C, b) => {
     let action;
     if (C.editable) action = BTN(C, b, `items.${i}.pay`, { label: x.pay?.label || 'Pay now', href: x.pay?.href || '' }, 'cb-btn cb-pl-pay');
     else if (x.pay?.href) action = `<a class="cb-btn cb-pl-pay" href="${esc(resolveLink(x.pay.href, C))}" rel="noopener">${esc(x.pay.label || 'Pay now')}</a>`;
+    else if (d.unpaid === 'ask') action = '<p class="cb-pl-ask">Ask at reception</p>';
+    else if (d.unpaid === 'none') action = '';
     else action = wayLink({ ...other, label: other.kind === 'contact' ? 'Ask about this' : other.label }, 'cb-btn cb-btn-2 cb-pl-pay');
     const price = x.price || x.per || C.editable ? `<p class="cb-pl-price">${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-pl-amount')}${T(C, b, `items.${i}.per`, x.per, 'span', 'cb-pl-per')}</p>` : '';
     return w(`${x.popular ? '<p class="cb-pl-flag">Most popular</p>' : ''}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-pl-name')}${price}${RT(C, b, `items.${i}.includes`, x.includes, 'cb-rich cb-pl-inc')}<div class="cb-pl-foot">${action}${T(C, b, `items.${i}.small`, x.small, 'p', 'cb-small cb-pl-small')}</div>`, 'article', `cb-pl-item${x.popular ? ' is-popular' : ''}`);

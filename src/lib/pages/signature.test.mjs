@@ -127,6 +127,23 @@ test('ways to pay: one most popular card, and a card with no pay link still lead
   assert.equal((html.match(/Most popular/g) || []).length, 1);
   assert.match(html, /href="https:\/\/buy\.stripe\.com\/test"[^>]*>Pay deposit</);
   assert.match(html, /cb-btn cb-btn-2 cb-pl-pay" href="\/appointments\/"/);
+  // Where Book reads oddly (a GP's "How to pay"), a card without a pay link can say to ask at
+  // reception, or show nothing; a card with its own pay link keeps it either way.
+  for (const [unpaid, foot] of [['ask', '<p class="cb-pl-ask">Ask at reception</p>'], ['none', '']]) {
+    const q = normalisePage(page([{ type: 'plans', variant: 'rows', data: { ...DATA.plans, unpaid } }]));
+    assert.equal(q.blocks[0].data.unpaid, unpaid);
+    const out = renderPage(q, { site: SITE });
+    assert.match(out, /href="https:\/\/buy\.stripe\.com\/test"[^>]*>Pay deposit</);
+    assert.ok(!out.includes('href="/appointments/"'), `${unpaid}: no Book button`);
+    assert.equal((out.match(/<div class="cb-pl-foot">/g) || []).length, 3);
+    if (foot) assert.equal(out.split(foot).length - 1, 2);
+    // In the editor every card still has its pay link to fill in.
+    assert.equal((renderPage(q, { site: SITE, editable: true }).match(/cb-pl-pay/g) || []).length, 3);
+  }
+  // Any other value is not kept, so the card leads to Book, a call or Contact as before.
+  const odd = normalisePage(page([{ type: 'plans', variant: 'rows', data: { ...DATA.plans, unpaid: 'shout' } }]));
+  assert.ok(!['shout'].includes(odd.blocks[0].data.unpaid));
+  assert.match(renderPage(odd, { site: SITE }), /cb-btn cb-btn-2 cb-pl-pay" href="\/appointments\/"/);
 });
 
 test('the release 7 layouts and settings are recognised, so an older design is asked to update', () => {

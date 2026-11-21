@@ -441,6 +441,10 @@ export const BLOCK_TYPES = {
         pay: { kind: 'link', label: 'Pay link' }, popular: { kind: 'bool', label: 'Most popular' },
       }, sample: { name: 'New way to pay', price: '', includes: '' } },
       note: L(240, 'Small print'),
+      // A card with no pay link yet still leads somewhere by itself (the booking page, a call or
+      // Contact). Where that reads oddly (a GP's "How to pay"), it can say to ask at reception, or
+      // show nothing, until a pay link is added.
+      unpaid: { kind: 'choice', options: ['book', 'ask', 'none'], def: 'book', labels: { book: 'Book, call or get in touch', ask: 'Says "Ask at reception"', none: 'No button' }, label: 'Cards without a pay link' },
     },
   },
   spaces: {
