@@ -387,6 +387,10 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
 .cb-step-go{margin:1rem 0 0}
 .cb-step-go .cb-btn{min-height:2.75rem}
 
+/* ---- Team: a person with no photo yet gets their initials on a soft glow of the page's colour,
+   set large in the heading typeface, so the section still looks finished ----------------------- */
+.cbp .cb-initials{background:radial-gradient(120% 95% at 18% 8%,color-mix(in srgb,var(--accent) 20%,var(--cb-surface)),var(--cb-surface) 72%);font-size:clamp(2.6rem,6vw,4.4rem);letter-spacing:-.03em;border-color:color-mix(in srgb,var(--accent) 22%,transparent)}
+.cbp .cb-team-single>article:first-child .cb-initials{font-size:clamp(3.4rem,8vw,6rem)}
 /* ---- Team: each person's own Book button (S9) -------------------------------------------- */
 .cb-person-book{margin:1rem 0 0}
 .cb-person-book .cb-btn{min-height:2.75rem}
@@ -690,6 +694,13 @@ html:not(.cbm-js) .cb-rail-band{display:none}
 .cb-tl-meta{display:flex;flex-wrap:wrap;gap:.1rem .8rem;margin:0;font-size:.92rem;font-weight:650;font-variant-numeric:tabular-nums}
 .cb-tl-meta .cb-tl-time{color:var(--ink-dim);font-weight:500}
 .cbp .cb .cb-tl-open .cb-tl-item.has-panel{justify-content:space-between;min-height:15rem}
+/* On a phone, one tile to a row, tall enough that the photo shows above its open panel. */
+@media (max-width:760px){
+  .cb-tl-open{grid-template-columns:minmax(0,1fr)}
+  .cbp .cb-tl.cb-tl-open>:nth-child(n){grid-column:auto}
+  .cbp .cb .cb-tl-open .cb-tl-item.has-panel{min-height:19rem}
+  .cbp .cb .cb-tl-open .cb-tl-item.has-value:not(.has-pic){min-height:0}
+}
 /* Its own pattern on a wide screen: the first tile large, the second wide, the rest one cell each,
    and the last row always filled (the last one or two tiles widen to fit). */
 @media (min-width:761px){
