@@ -1,4 +1,21 @@
 // Public site details. Empty fields stay absent; no invented credentials or availability.
+// For search engines (business-schema.mjs): the kinds of business a website may name for itself, and
+// schema.org's medical specialties.
+export const SCHEMA_TYPES = [
+  'LocalBusiness', 'MedicalClinic', 'MedicalBusiness', 'Physician', 'Dentist', 'Optician', 'Physiotherapy',
+  'HealthAndBeautyBusiness', 'BeautySalon', 'DaySpa', 'HairSalon', 'NailSalon', 'ExerciseGym',
+  'Restaurant', 'CafeOrCoffeeShop', 'Bakery', 'Store', 'Florist', 'ProfessionalService', 'LegalService',
+  'AccountingService', 'FinancialService', 'HomeAndConstructionBusiness', 'Electrician', 'Plumber',
+];
+export const MEDICAL_SPECIALTIES = [
+  'Anesthesia', 'Cardiovascular', 'CommunityHealth', 'Dentistry', 'Dermatology', 'DietNutrition', 'Emergency',
+  'Endocrine', 'Gastroenterologic', 'Genetic', 'Geriatric', 'Gynecologic', 'Hematologic', 'Infectious',
+  'LaboratoryScience', 'Midwifery', 'Musculoskeletal', 'Neurologic', 'Nursing', 'Obstetric', 'Oncologic',
+  'Optometric', 'Otolaryngologic', 'Pathology', 'Pediatric', 'PharmacySpecialty', 'Physiotherapy',
+  'PlasticSurgery', 'Podiatric', 'PrimaryCare', 'Psychiatric', 'PublicHealth', 'Pulmonary', 'Radiography',
+  'Renal', 'RespiratoryTherapy', 'Rheumatologic', 'SpeechPathology', 'Surgical', 'Toxicologic', 'Urologic',
+];
+
 export const EMAIL_RE=/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 export const PHONE_RE=/^[+\d ()-]{5,60}$/;
 export const PROMO_RE=/^[A-Za-z0-9_-]{1,40}$/;
@@ -87,6 +104,10 @@ export function professionalDetails(value={},{allowDataImages=false}={}){
     cqcId:/^1-\d{6,12}$/.test(text(p.cqcId,20))?text(p.cqcId,20):'',
     cqcRating:CQC_RATING_KEYS.includes(p.cqcRating)?p.cqcRating:'',
     cqcDate:isoDay(p.cqcDate),
+    // For search engines (src/lib/business-schema.mjs): a more exact kind of business than the
+    // look's, and a medical business's specialties, each from schema.org's own lists.
+    schemaType:SCHEMA_TYPES.includes(p.schemaType)?p.schemaType:'',
+    specialty:(Array.isArray(p.specialty)?p.specialty:[p.specialty]).filter(s=>MEDICAL_SPECIALTIES.includes(s)).slice(0,4),
   };
 }
 export function contactHref(p){return p.bookingUrl || (p.email?'mailto:'+encodeURIComponent(p.email):p.phone?'tel:'+p.phone.replace(/[^+\d]/g,''):'');}

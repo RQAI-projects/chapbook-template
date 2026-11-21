@@ -13,6 +13,7 @@ import '../styles/blocks.css';
 import '../styles/motion.css';
 import '../styles/signature.css';
 import profile from '../data/profile.json';
+import { faqJsonLd, jsonLdText } from '../lib/business-schema.mjs';
 const { page, title, description } = Astro.props;
 // The starter's example form address and an empty one both mean there is no form.
 const endpoint = formAddress((site as any).contact?.endpoint);
@@ -54,6 +55,8 @@ const fontPreloads = [...new Set([headingFile, BODY_FILES[look.bodyFont] || ''].
 // An About page whose blocks are all still empty would publish with nothing on it. It says one
 // plain line instead and points to the Contact page. Nothing about the business is made up.
 const blankAbout = page.slug === 'about' && !html.includes('<section');
+// A page with questions and answers says so to search engines too.
+const faqLd = faqJsonLd(blocks);
 ---
 <Base title={title ?? page.title} description={description ?? (page.description || undefined)}>
   {/* Everything for the head in one place: several expressions naming the same slot keep only one. */}
@@ -64,6 +67,7 @@ const blankAbout = page.slug === 'about' && !html.includes('<section');
     {fontPreloads.map((href) => <link rel="preload" as="font" type="font/woff2" href={href} crossorigin />)}
   </Fragment>
   <slot />
+  {faqLd && <script type="application/ld+json" set:html={jsonLdText(faqLd)} />}
   {/* Tell the stylesheet a script is on its way. Until it says so nothing on the page moves by
       itself (there would be no Pause button), and things that will arrive on scroll don't flash
       first. If the script never starts, the page goes back to plain and still within 3s. */}

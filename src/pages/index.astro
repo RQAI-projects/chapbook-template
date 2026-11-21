@@ -4,7 +4,8 @@ import topics from '../data/topics.json';
 import profile from '../data/profile.json';
 import {postCover} from '../lib/post-cover.mjs';
 import { site, siteSummary } from '../lib/site';
-import { safeBookingUrl, homeTitle } from '../lib/professional.mjs';
+import { safeBookingUrl, homeTitle, professionalDetails } from '../lib/professional.mjs';
+import { businessJsonLd, jsonLdText } from '../lib/business-schema.mjs';
 import { withBase } from '../lib/withBase';
 import { getCollection } from 'astro:content';
 import type { HomeProps, HomePost, HomeConstellation } from '../lib/home';
@@ -85,7 +86,7 @@ const homeProps: HomeProps = {
 
 // --- SEO/AEO: WebSite + Person JSON-LD for the home page ---
 const cleanSocials = Object.values(site.socials).filter((u) => typeof u === 'string' && /^https:\/\//.test(u));
-const jsonLd = {
+const blogJsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
     {
@@ -104,19 +105,29 @@ const jsonLd = {
       jobTitle: profile.role === 'What you do' ? undefined : (profile.role || undefined),
       url: `${site.url}/`,
       description: profile.tagline === 'A short line about you and this blog.' ? (siteSummary || undefined) : profile.tagline,
-      worksFor: { '@type': 'Organisation', name: profile.trust },
+      worksFor: { '@type': 'Organization', name: profile.trust },
       ...(cleanSocials.length ? { sameAs: cleanSocials } : {}),
     },
   ],
 };
+// A business website says what kind of business it is, where, when it is open and how to reach
+// it, from its own details (src/lib/business-schema.mjs); a blog or personal website keeps the
+// WebSite and Person above.
+const openingPic = homeBlocks?.blocks?.find((b: any) => b.type === 'hero')?.data?.picture?.src;
+const businessLd = businessJsonLd({
+  site, professional: professionalDetails(site.professional), url: new URL(withBase('/'), Astro.site).href.replace(/\/$/, ''),
+  image: typeof openingPic === 'string' && /^\/site-images\//.test(openingPic) ? new URL(withBase(openingPic), Astro.site).href : '',
+  description: homeBlocks?.description || siteSummary || '',
+});
+const jsonLd = businessLd || blogJsonLd;
 ---
 {homeBlocks ? (
   <BlockPage page={homeBlocks} title={homeTitle(site)} description={homeBlocks.description || undefined}>
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g,'\\u003c')} />
+    <script type="application/ld+json" set:html={jsonLdText(jsonLd)} />
   </BlockPage>
 ) : (
 <Base title={site.masthead} progress>
-  <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g,'\\u003c')} />
+  <script type="application/ld+json" set:html={jsonLdText(jsonLd)} />
   <Home {...homeProps} />
 </Base>
 )}
