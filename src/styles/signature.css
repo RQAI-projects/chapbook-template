@@ -679,6 +679,8 @@ html:not(.cbm-js) .cb-rail-band{display:none}
 }
 
 /* ---- Ways to pay held like a hand (S12): they spread into a row as the section arrives ---- */
+/* Each card is solid, so cards held over each other never show through. */
+.cb-pl-fan>.cb-pl-item:not(.is-popular){background:var(--bg-0,#fff)}
 @media (min-width:761px){
   .cb-pl-fan{grid-template-columns:repeat(var(--n,3),minmax(0,1fr))}
   .cb-pl-fan>.cb-pl-item.is-popular{z-index:2}
