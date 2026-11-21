@@ -176,7 +176,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   let seen = null;
   if (!reduce && (scroll || unveil) && 'IntersectionObserver' in win) {
     const marked = [];
-    blocks.forEach((block) => {
+    const vh0 = win.innerHeight || html.clientHeight;
+    blocks.forEach((block, bi) => {
       const isHero = block === hero;
       const blockBox = block.getBoundingClientRect();
       const mid = blockBox.left + blockBox.width / 2;
@@ -188,7 +189,10 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
           if (el === splitHeading || el.matches('.pe-add-cell, .pe-add, .cb-add-btn')) continue;
           // With the measured pace, the words on the opening's first screen are simply there (the
           // heading has its own movement): they are what a phone paints first.
-          if (isHero && measured && el.closest('.cb-hero-words, .cb-statement, .cb-pinhero-first, .cb-reveal-words, .cb-hero-grid')) continue;
+          if (isHero && measured && el.closest('.cb-hero-words, .cb-statement, .cb-pinhero-first, .cb-reveal-words, .cb-hero-grid, .cb-act')) continue;
+          // And what the first two sections show on the first screen is simply there too: hiding
+          // it until this script has run would hold back the largest thing a phone paints.
+          if (measured && bi < 2) { const r = el.getBoundingClientRect(); if (r.top < vh0 && r.bottom > 0) continue; }
           const pic = isHero && el.matches('.cb-hero-pic, .cb-orbit, .cb-collage, .cb-arch, .cb-stage, .cb-film');
           if (pic && unveil && el.matches(PICTURES)) continue;   // unveiled below instead
           el.setAttribute('data-m', pic ? 'pic' : '');
