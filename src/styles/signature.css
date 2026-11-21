@@ -735,6 +735,9 @@ html:not(.cbm-js) .cb-rail-band{display:none}
 .cbp .cb-float-pic :is(img,.cb-pic-empty){display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:clamp(1rem,2vw,1.6rem);box-shadow:0 28px 60px -34px color-mix(in srgb,var(--ink) 60%,transparent)}
 .cb-float>.cb-float-pic:nth-child(2){margin-top:1.8rem}
 .cb-float-more{display:contents}
+/* On a phone the photos come first: when the web fonts arrive and the words change height, nothing
+   visible below them moves (no layout shift). */
+@media (max-width:760px){.cb-statement-wrap.has-float .cb-float{order:-1}}
 @media (min-width:761px){
   .cb-statement-wrap.has-float{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:center;min-height:min(80vh,54rem)}
   .cbp .cb-statement-wrap.has-float .cb-hero-h{font-size:clamp(2.8rem,6.6vw,7.2rem);max-width:12ch}
