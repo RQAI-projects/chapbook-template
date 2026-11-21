@@ -3,7 +3,7 @@
 // Everything a writer types is escaped. Rich text allows only paragraphs, **bold**, *italic*,
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
-import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading } from './schema.mjs';
+import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading, REGULATORS, CQC_ID, CQC_RATINGS } from './schema.mjs';
 import { professionalDetails, telHref, sameText } from '../professional.mjs';
 
 export * from './schema.mjs';
@@ -46,6 +46,8 @@ export const PAGE_FONTS = {
   // Release 7: the warm serif set light (a word in italic stands out), and set heavy and italic.
   fine: { label: 'Light serif', css: "'Fraunces',Georgia,serif" },
   noir: { label: 'Heavy italic serif', css: "'Fraunces',Georgia,serif" },
+  // Release 7, doctor clinics: a clean sans set tight, with one warm serif italic phrase.
+  mixed: { label: 'Clean sans, one warm italic phrase', css: "'Inter Variable','Inter',system-ui,sans-serif" },
 };
 
 // Typefaces for running text: all easy to read at length, all already loaded by every site.
@@ -296,6 +298,17 @@ function bizDetails(C, d, own = false) {
   if (own) return { address: d.address || '', hours: d.hours || '', phone: d.phone || '', email: d.email || '' };
   return { address: biz.location, hours: biz.hours, phone: biz.phone, email: biz.email };
 }
+// "Open now, closes at 6pm": worked out on the visitor's device from the opening hours, in the
+// business's own time zone, so it is right whenever and wherever the page is read. Without the
+// script it is simply not there. The editor shows what it will do.
+function openLine(C, hoursText, cls = 'cb-opennow') {
+  if (C.editable) return `<p class="cb-note" data-cb-hint>${hoursText ? 'On your website a line here says whether you are open now, worked out from your opening hours.' : 'On your website a line here will say whether you are open now, once your opening hours are added in Details and booking.'}</p>`;
+  if (!hoursText) return '';
+  return `<p class="${cls}" data-open="${esc(String(hoursText).split('\n').map((l) => l.trim()).filter(Boolean).join('|'))}" data-tz="${esc(C.biz.timeZone || 'Europe/London')}" hidden></p>`;
+}
+// What to do when the business is closed (NHS 111 and 999 for a doctor), set apart as a note.
+const closedNote = (C, b, d) => (d.closed || C.editable ? RT(C, b, 'closed', d.closed, 'cb-rich cb-closed') : '');
+
 // The facts list used by contact blocks and the hero's details panel.
 function factsList(C, b, d, { own = false, cls = 'cb-facts', skip = '' } = {}) {
   const f = bizDetails(C, d, own);
@@ -371,6 +384,35 @@ const heroBare = (C, b) => !C.editable && b.type === 'hero' && !b.data.picture &
 // The class name an opening is drawn with.
 const heroFrame = (C, b) => (b.type === 'hero' && PHOTO_FRAMED.includes(b.variant) && heroBare(C, b) ? 'words' : b.variant);
 
+// The quick actions opening (doctor clinics): the words, a photo, and over it a panel of up to
+// four large actions (Book, Register, Call, Repeat prescription) sitting on a card that says
+// whether the business is open now, with today's hours and what to do when closed. Each action is
+// an ordinary link: a Call with no phone number set, or any action with nowhere to go, is left
+// out, so no button is ever dead. On a phone the card and the actions come straight under the
+// heading, before the photo, so the first screen answers: is it open, how do I book, how do I call.
+function heroActions(C, b, d, { head, intro, btns, media }) {
+  const list = d.actions || [];
+  const item = (x, i) => {
+    const href = x.link?.href ? resolveLink(x.link.href, C) : '';
+    const label = x.link?.label || '';
+    const tel = x.link?.href === '@phone';
+    const detail = x.detail || (tel && C.biz.phone ? C.biz.phone : '');
+    if (C.editable) return `<li class="cb-act-li"${ED(C, 'data-cb-item', `${b.id}:actions.${i}`)}><a class="cb-act-item" href="${esc(href || '#')}"${ED(C, 'data-cb-link', `${b.id}:actions.${i}.link`)}${!href || !label ? ' data-cb-incomplete' : ''}><span class="cb-act-label">${esc(label || 'Action')}</span>${T(C, b, `actions.${i}.detail`, x.detail, 'span', 'cb-act-detail')}<i class="cb-act-go" aria-hidden="true"></i></a></li>`;
+    if (!href || !label) return '';
+    const away = /^https:/.test(href);
+    return `<li class="cb-act-li"><a class="cb-act-item${tel ? ' is-call' : ''}" href="${esc(href)}"${away ? ' rel="noopener"' : ''}><span class="cb-act-label">${esc(label)}</span>${detail ? `<span class="cb-act-detail">${esc(detail)}</span>` : ''}<i class="cb-act-go" aria-hidden="true"></i></a></li>`;
+  };
+  const items = list.map(item).join('');
+  const acts = items || C.editable ? `<ul class="cb-act-list"${ED(C, 'data-cb-list', `${b.id}:actions`)}>${items}</ul>` : '';
+  const hours = C.biz.hours || '';
+  const today = hours ? `<p class="cb-act-hours">${plain(hours)}</p>` : (C.editable ? '<p class="cb-note" data-cb-hint>Your opening hours from Details and booking appear here.</p>' : '');
+  const now = d.openNow ? openLine(C, hours, 'cb-opennow cb-act-now') : '';
+  const card = now || today || d.closed || C.editable ? `<div class="cb-act-card">${now}${today}${closedNote(C, b, d)}</div>` : '';
+  const fig = media ? `<figure class="cb-hero-pic cb-act-pic">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>` : '';
+  const panel = card || acts ? `<div class="cb-act-panel">${card}${acts}</div>` : '';
+  return `<div class="cb-act${fig ? '' : ' cb-solo'}"><div class="cb-act-words">${head}${intro}${btns}</div>${panel}${fig}</div>${d.picture ? creditsOf([d.picture]) : ''}`;
+}
+
 R_.hero = (C, b) => {
   let d = b.data;
   const v = b.variant, bare = heroBare(C, b);
@@ -386,8 +428,10 @@ R_.hero = (C, b) => {
   const ownHeading = v === 'marquee' || v === 'mask' || v === 'wordmark' || v === 'open';
   const head = ownHeading ? '' : `${K(C, b, d)}${heroHeading(C, b, d)}`;
   const intro = withMark(C, d, RT(C, b, 'intro', d.intro, 'cb-rich cb-lead'));
-  // The booking bar, when there is one, always sits under the buttons, whatever the layout.
-  const btns = `${BTNS(C, b, d.buttons)}${heroBar(C, b, d)}`;
+  // The booking bar, when there is one, always sits under the buttons, whatever the layout, and
+  // then whether the business is open now.
+  const nowLine = d.openNow && v !== 'actions' ? openLine(C, C.biz.hours, 'cb-opennow cb-hero-now') : '';
+  const btns = `${BTNS(C, b, d.buttons)}${heroBar(C, b, d)}${nowLine}`;
   const words = `${head}${intro}${btns}`;
   const details = d.details ? factsList(C, b, d, { cls: 'cb-facts cb-hero-facts' }) : '';
   const pic = (cls = 'cb-hero-pic') => (v === 'minimal' ? '' : `<figure class="${cls}">${d.video ? heroVideo(C, b, d, cls.includes('cb-hero-bg')) : P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`);
@@ -399,6 +443,7 @@ R_.hero = (C, b) => {
   const player = d.video && !fileBehind && v === 'photo-behind' ? `<div class="cb-hero-player">${heroVideo(C, b, d, false)}</div>` : '';
   const toggle = fileBehind && (v === 'photo-behind' || v === 'inset' || v === 'open') && !C.editable ? '<button type="button" class="cb-video-toggle" aria-label="Pause the video">Pause</button>' : '';
   if (v === 'split') return `<div class="cb-hero-grid"><div class="cb-hero-words">${words}${details}</div>${pic()}</div>`;
+  if (v === 'actions') return heroActions(C, b, d, { head, intro, btns, media });
   // Words and a photo side by side; on a wide screen the photo stays put while the story under the
   // first screen scrolls past it (S1). Phones and "reduce motion" get the plain split.
   if (v === 'pinned') {
@@ -762,7 +807,14 @@ function pinnedList(C, b, d, items, f) {
 const railWords = (d) => String(d.band || '').split(/[,;|]/).map((w) => w.trim()).filter(Boolean).slice(0, 12);
 function railList(C, b, d, items, f) {
   const two = (n) => String(n).padStart(2, '0');
-  const card = (s, i, w) => w(`${s.picture || C.editable ? `<figure class="cb-rail-pic">${P(C, b, `items.${i}.picture`, s.picture, '', { credits: false })}</figure>` : ''}<div class="cb-rail-body"><p class="cb-rail-n" aria-hidden="true">${two(i + 1)}</p>${f.name(s, i)}<p class="cb-rail-meta">${f.time(s, i)}${f.price(s, i)}</p>${f.desc(s, i)}${f.offer(s, i)}${serviceLinks(C, b, i, s)}</div>`, 'article', `cb-rail-card${s.picture || C.editable ? '' : ' cb-solo'}`);
+  // A card with who you will see and the usual wait (a speciality) sets those out as a short
+  // table with the fee, instead of the time and price line.
+  const facts = (s, i) => {
+    if (!(s.who || s.wait) && !(C.editable && items.some((x) => x.who || x.wait))) return `<p class="cb-rail-meta">${f.time(s, i)}${f.price(s, i)}</p>`;
+    const row = (k, label, v) => (v || C.editable ? `<div><dt>${label}</dt><dd>${T(C, b, `items.${i}.${k}`, v, 'span')}</dd></div>` : '');
+    return `<dl class="cb-rail-facts">${row('who', 'With', s.who)}${row('wait', 'Usual wait', s.wait)}${row('price', 'Fee', s.price)}</dl>`;
+  };
+  const card = (s, i, w) => w(`${s.picture || C.editable ? `<figure class="cb-rail-pic">${P(C, b, `items.${i}.picture`, s.picture, '', { credits: false })}</figure>` : ''}<div class="cb-rail-body"><p class="cb-rail-n" aria-hidden="true">${two(i + 1)}</p>${f.name(s, i)}${facts(s, i)}${f.desc(s, i)}${f.offer(s, i)}${serviceLinks(C, b, i, s)}</div>`, 'article', `cb-rail-card${s.picture || C.editable ? '' : ' cb-solo'}${s.who || s.wait ? ' has-facts' : ''}`);
   const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
   const words = railWords(d);
   if (C.editable) return `${head}${words.length ? `<p class="cb-note" data-cb-hint>Moving words above the cards: ${esc(words.join(', '))}</p>` : ''}${LIST(C, b, 'items', items, card, 'div', 'cb-rail cb-rail-still')}`;
@@ -795,7 +847,14 @@ R_.team = (C, b) => {
     return `<p class="cb-person-book">${wayLink(way.kind === 'book' ? way : { ...way, label: way.kind === 'contact' ? `Ask about ${(String(p.name || '').trim().split(/\s+/)[0]) || 'an appointment'}` : way.label }, 'cb-btn cb-btn-small')}</p>`;
   };
   const one = (p, i, w) => w(`<figure class="cb-portrait">${face(p, i)}</figure><div class="cb-person">${T(C, b, `items.${i}.name`, p.name, 'h3', 'cb-person-name')}${T(C, b, `items.${i}.role`, p.role, 'p', 'cb-person-role')}${T(C, b, `items.${i}.quals`, p.quals, 'p', 'cb-person-quals')}${RT(C, b, `items.${i}.bio`, p.bio, 'cb-rich cb-bio')}${p.link ? BTN(C, b, `items.${i}.link`, p.link, 'cb-link') : ''}${book(p, i)}</div>`);
-  return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>${LIST(C, b, 'items', items, one, 'div', `cb-team cb-team-${v}`)}`;
+  const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
+  // The team as cards that travel sideways as the page scrolls down (S9 as M4), the same strip as
+  // the services rail: phones swipe it, and the editor shows the plain grid.
+  if (v === 'rail' && !C.editable && items.length > 1) {
+    const cards = items.map((p, i) => one(p, i, (inner) => `<article class="cb-team-card">${inner}</article>`)).join('');
+    return `${head}<div class="cb-hs cb-team-rail" data-hs><div class="cb-hs-pin"><div class="cb-hs-view" tabindex="0" role="region" aria-label="${esc(plainHeading(d.heading) || 'Our team')}, scrolls sideways"><div class="cb-hs-track cb-team cb-team-railtrack">${cards}</div></div><span class="cb-hs-bar" aria-hidden="true"><i></i></span></div></div>`;
+  }
+  return `${head}${LIST(C, b, 'items', items, one, 'div', `cb-team cb-team-${v === 'rail' ? 'grid cb-team-railgrid' : v}`)}`;
 };
 
 // A row whose photo appears only when it is pointed at can be reached with the Tab key too, so
@@ -843,9 +902,9 @@ R_.contact = (C, b) => {
   // "Open now, closes at 6pm": worked out on the visitor's device from the opening hours, so it
   // is right whenever the page is read. Without the script it is simply not there.
   const hoursText = bizDetails(C, d, own).hours || '';
-  const openNow = !d.openNow ? '' : C.editable ? `<p class="cb-note" data-cb-hint>${hoursText ? 'On your website a line here says whether you are open now, worked out from your opening hours.' : 'On your website a line here will say whether you are open now, once your opening hours are added.'}</p>` : !hoursText ? '' : `<p class="cb-opennow" data-open="${esc(hoursText.split('\n').map((l) => l.trim()).filter(Boolean).join('|'))}" hidden></p>`;
+  const openNow = d.openNow ? openLine(C, hoursText) : '';
   const head = `${K(C, b, d)}${H(C, b, d)}${openNow}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
-  const acts = `${d.business ? socials(C) : ''}${BTNS(C, b, d.buttons)}${map ? `<p class="cb-map">${map}</p>` : ''}`;
+  const acts = `${closedNote(C, b, d)}${d.business ? socials(C) : ''}${BTNS(C, b, d.buttons)}${map ? `<p class="cb-map">${map}</p>` : ''}`;
   if (!facts && !d.heading && !d.intro && !(d.buttons || []).length && !C.editable) return '';
   // Opening hours as a table, one line of the hours to a row, so the page's script can mark today.
   // (While the owner's own hours are being typed in the editor they stay one editable block.)
@@ -919,6 +978,45 @@ R_.posts = (C, b) => {
     ? posts.map((p, i) => `<a class="cb-post${i === 0 && b.variant === 'feature' ? ' cb-post-lead' : ''}" href="${esc(p.href)}">${b.variant !== 'list' && postPicture(p) ? `<img src="${esc(postPicture(p))}" alt="" loading="lazy">` : ''}<span class="cb-post-date">${esc(p.dateLabel || '')}</span><h3>${esc(p.title)}</h3>${p.description && b.variant !== 'list' ? `<p>${esc(p.description)}</p>` : ''}</a>`).join('')
     : `<p class="cb-note" data-cb-hint>Your newest posts appear here.</p>`;
   return `<div class="cb-head cb-head-row">${H(C, b, d)}${more}</div><div class="cb-posts cb-posts-${b.variant}">${list}</div>`;
+};
+
+// ---- regulator and registration ----
+// The CQC rating from Details and booking: the rating, the day it was given and a link to the
+// report on CQC's website. Nothing is shown that the business has not set; the editor says what
+// to add. CQC's own widget, when chosen and a location ID is set, is drawn by page-actions.js on
+// the published website into a holder beside the line (never in the editor's preview).
+const CQC_HOME = 'https://www.cqc.org.uk/';
+const cqcPage = (id) => (CQC_ID.test(id || '') ? `https://www.cqc.org.uk/location/${id}` : '');
+const longDay = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); if (!m) return ''; const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])); return `${d.getUTCDate()} ${['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][d.getUTCMonth()]} ${d.getUTCFullYear()}`; };
+function cqcRating(C, b, d) {
+  const biz = C.biz, rating = CQC_RATINGS[biz.cqcRating] || '', page = cqcPage(biz.cqcId);
+  if (!rating && !page) return C.editable ? '<div class="cb-reg-cqc cb-reg-empty"><p class="cb-reg-label">Care Quality Commission</p><p class="cb-note" data-cb-hint>Add your CQC location ID, your latest overall rating and its date in Details and booking. Providers in England must show their rating on their website.</p></div>' : '';
+  const when = longDay(biz.cqcDate);
+  const word = rating ? `<p class="cb-reg-rating"><span class="cb-reg-small">Overall rating</span> <strong class="cb-reg-word cb-reg-${esc(biz.cqcRating)}">${esc(rating)}</strong></p>${when ? `<p class="cb-reg-date">Rated ${esc(when)}</p>` : ''}` : '';
+  const link = `<a class="cb-link cb-reg-report" href="${esc(page || CQC_HOME)}" rel="noopener">${rating ? 'Read the CQC report' : 'See our CQC rating and report'}</a>`;
+  const widget = d.widget && page && !C.editable ? `<div class="cb-reg-widget" data-cqc="${esc(biz.cqcId)}"></div>` : '';
+  if (C.editable && d.widget && page) return `<div class="cb-reg-cqc"><p class="cb-reg-label">Care Quality Commission</p>${word}${link}<p class="cb-note" data-cb-hint>CQC’s own rating widget appears here on your published website.</p></div>`;
+  return `<div class="cb-reg-cqc${widget ? ' has-widget' : ''}"><p class="cb-reg-label">Care Quality Commission</p><div class="cb-reg-line">${word}${link}</div>${widget}</div>`;
+}
+R_.regulator = (C, b) => {
+  const d = b.data, items = d.items || [];
+  const cqc = cqcRating(C, b, d);
+  if (b.variant === 'line') {
+    if (!cqc) return '';
+    return `<div class="cb-reg cb-reg-oneline">${d.heading || C.editable ? `<p class="cb-reg-title"${ED(C, 'data-cb', `${b.id}:heading`)}>${esc(plainHeading(d.heading) || '')}</p>` : ''}${cqc}</div>`;
+  }
+  // Each person with their register and number; under the list, one link to each register used,
+  // where anyone can check those numbers.
+  const one = (x, i, w) => {
+    const reg = REGULATORS[x.body] || REGULATORS.gmc;
+    const num = x.number || C.editable ? `<span class="cb-reg-num"><span class="cb-reg-body">${esc(reg.short)}</span> ${T(C, b, `items.${i}.number`, x.number, 'span')}</span>` : '';
+    return w(`${T(C, b, `items.${i}.name`, x.name, 'span', 'cb-reg-name')}${num}`, 'li', 'cb-reg-person');
+  };
+  const people = LIST(C, b, 'items', items, one, 'ul', 'cb-reg-list');
+  const bodies = [...new Set(items.map((x) => (REGULATORS[x.body] ? x.body : 'gmc')))];
+  const checks = bodies.length ? `<p class="cb-reg-checks">${bodies.map((k) => `<a class="cb-link cb-reg-check" href="${esc(REGULATORS[k].href)}" rel="noopener"${C.editable ? ' tabindex="-1"' : ''}>Check the ${esc(REGULATORS[k].name)} register</a>`).join('')}</p>` : '';
+  if (!cqc && !people && !C.editable) return '';
+  return `<div class="cb-reg${cqc ? '' : ' cb-reg-nocqc'}"><div class="cb-reg-side">${HEAD(C, b, d)}${cqc}</div><div class="cb-reg-people">${people}${checks}</div></div>${T(C, b, 'note', d.note, 'p', 'cb-small')}`;
 };
 
 R_.credentials = (C, b) => {

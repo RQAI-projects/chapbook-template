@@ -186,6 +186,20 @@ export const STYLE_LABELS = {
 // Types that can sit inside a columns block.
 export const COLUMN_TYPES = ['text', 'image', 'cta', 'contact', 'credentials', 'facts', 'reviews', 'form', 'booking', 'video'];
 
+// The public registers a professional's registration can be checked on (UK). `site` is where the
+// register is searched; the number shown beside it is the person's own.
+export const REGULATORS = {
+  gmc: { short: 'GMC', name: 'General Medical Council', href: 'https://www.gmc-uk.org/registration-and-licensing/the-medical-register' },
+  nmc: { short: 'NMC PIN', name: 'Nursing and Midwifery Council', href: 'https://www.nmc.org.uk/registration/search-the-register/' },
+  gdc: { short: 'GDC', name: 'General Dental Council', href: 'https://olr.gdc-uk.org/searchregister' },
+  hcpc: { short: 'HCPC', name: 'Health and Care Professions Council', href: 'https://www.hcpc-uk.org/check-the-register/' },
+  gphc: { short: 'GPhC', name: 'General Pharmaceutical Council', href: 'https://www.pharmacyregulation.org/registers' },
+};
+export const REGULATOR_IDS = Object.keys(REGULATORS);
+// A CQC location ID, as CQC writes it: 1-101641587.
+export const CQC_ID = /^1-\d{6,12}$/;
+export const CQC_RATINGS = { outstanding: 'Outstanding', good: 'Good', 'requires-improvement': 'Requires improvement', inadequate: 'Inadequate' };
+
 export const BLOCK_TYPES = {
   hero: {
     label: 'Opening', hint: 'The first thing people see: a heading, a line or two, buttons and a picture.',
@@ -201,6 +215,8 @@ export const BLOCK_TYPES = {
       // Signature openings (release 7).
       reveal: 'Edge to edge photo that opens like a curtain', statement: 'One large statement, nothing else',
       pinned: 'Photo that stays put while the story scrolls beside it',
+      // Release 7, doctor clinics: the first screen answers is it open, how do I book, how do I call.
+      actions: 'Words and a photo, with large quick actions over an Open now card',
     },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, rotate: { ...L(160, 'Changing words', 'e.g. brands, websites, films'), panel: true, hint: 'A few words with commas between them. They take turns at the end of the heading.' }, word: L(12, 'Big word', 'e.g. Fresh'), intro: R(1200, 'Introduction'), picture: PIC(), pictures: { kind: 'pictures', max: 6, label: 'More photos' },
@@ -214,6 +230,13 @@ export const BLOCK_TYPES = {
       mark: { ...L(80, 'Words to mark', 'e.g. time to talk'), panel: true, hint: 'A few words from the heading or the first lines, drawn with a line under them. Leave it empty for none.' },
       // The longer story under the opening's first screen. Only the "pinned" layout draws it.
       story: R(4000, 'Story', 'Add your story'),
+      // Quick actions (the "actions" layout): up to four large buttons, each a link with a short
+      // line under it ("Online, at any time"). A Call action with no phone number set is left out.
+      actions: { kind: 'items', max: 4, label: 'Quick actions', add: 'Add an action', item: { link: { kind: 'link', label: 'Action' }, detail: L(60, 'Line under it', 'e.g. Online, at any time') }, sample: { link: { label: 'Book an appointment', href: '@booking' }, detail: '' } },
+      // "Open now, closes at 6pm", worked out from the opening hours in Details and booking.
+      openNow: { kind: 'bool', label: 'Say whether you are open now' },
+      // What to do when closed (for a doctor: NHS 111, and 999 in an emergency).
+      closed: R(400, 'When you are closed', 'e.g. When we are closed, call NHS 111. In an emergency, call 999.'),
     },
   },
   text: {
@@ -239,6 +262,8 @@ export const BLOCK_TYPES = {
       items: { kind: 'items', max: 40, label: 'Services', add: 'Add a service', item: {
         name: L(100, 'Name', 'Name of the service'), description: R(600, 'Description'), price: L(60, 'Price', 'Price'), duration: L(60, 'Time', 'Time'),
         offer: L(120, 'Offer'), picture: PIC(), link: { kind: 'link', label: 'Booking link' }, pay: { kind: 'link', label: 'Pay link' },
+        // Shown on the sideways cards (a speciality's consultant and usual wait).
+        who: L(80, 'Who you will see', 'e.g. Dr Amelia Hart'), wait: L(40, 'Usual wait', 'e.g. 5 days'),
       }, sample: { name: 'New service', description: '', price: '', duration: '' } },
       // A band of large words that rolls slowly above the cards of the sideways layout.
       band: { ...L(200, 'Moving words above the cards', 'e.g. Facials, Peels, Skin boosters'), panel: true, hint: 'A few words with commas between them, rolling slowly above the cards that travel sideways. Leave it empty for none.' },
@@ -260,7 +285,7 @@ export const BLOCK_TYPES = {
   },
   team: {
     label: 'Team', hint: 'The people behind the business, with photos and short bios.',
-    variants: { grid: 'Grid', rows: 'Rows', single: 'One person, large', circles: 'Round photos', carousel: 'Carousel that slides sideways' },
+    variants: { grid: 'Grid', rows: 'Rows', single: 'One person, large', circles: 'Round photos', carousel: 'Carousel that slides sideways', rail: 'Cards that travel sideways as people scroll down' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 24, label: 'People', add: 'Add a person', item: {
@@ -298,8 +323,11 @@ export const BLOCK_TYPES = {
       business: { kind: 'bool', label: 'Use my business details' },
       address: { kind: 'plain', max: 300, label: 'Address', ph: 'Add an address' }, hours: { kind: 'plain', max: 400, label: 'Opening hours', ph: 'Add opening hours' },
       phone: L(60, 'Phone'), email: L(254, 'Email'), map: { kind: 'link', label: 'Map link' }, buttons: BTNS(2),
-      // Worked out on the visitor's device from the opening hours ("Open now, closes at 6pm").
+      // Worked out on the visitor's device from the opening hours ("Open now, closes at 6pm"), in
+      // the business's own time zone.
       openNow: { kind: 'bool', label: 'Say whether you are open now' },
+      // What to do when closed (for a doctor: NHS 111, and 999 in an emergency).
+      closed: R(400, 'When you are closed', 'e.g. When we are closed, call NHS 111. In an emergency, call 999.'),
     },
   },
   cta: {
@@ -494,6 +522,24 @@ export const BLOCK_TYPES = {
       }, sample: { name: 'New scene', description: '' } },
     },
   },
+  // Who regulates the business, as the law and the regulators ask: the CQC rating (England's
+  // providers must show it on their website) from Details and booking, with CQC's own widget when
+  // chosen, and each professional's registration with a link to the public register.
+  regulator: {
+    label: 'Regulator and registration', hint: 'Your CQC rating and the registration of each doctor, nurse or other professional, with links to check them. The rating comes from Details and booking.',
+    variants: { panel: 'Rating beside the registrations', line: 'The rating on one line' },
+    fields: {
+      kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
+      items: { kind: 'items', max: 24, label: 'Registrations', add: 'Add a registration', item: {
+        name: L(100, 'Name', 'e.g. Dr Ruth Penrose'), body: { kind: 'choice', options: REGULATOR_IDS, def: 'gmc', labels: Object.fromEntries(REGULATOR_IDS.map((k) => [k, REGULATORS[k].name])), label: 'Register' },
+        number: L(24, 'Registration number', 'e.g. 1234567'),
+      }, sample: { name: 'New person', body: 'gmc', number: '' } },
+      // CQC's own rating widget, drawn by CQC on the published website from the location ID in
+      // Details and booking. The rating line stays for anyone whose browser does not run it.
+      widget: { kind: 'bool', label: 'Also show CQC’s own rating widget' },
+      note: L(240, 'Small print'),
+    },
+  },
   spacer: {
     label: 'Space', hint: 'Extra space, with or without a line.',
     variants: { space: 'Space', line: 'Line', ornament: 'Ornament' },
@@ -502,14 +548,14 @@ export const BLOCK_TYPES = {
 };
 // The section types that came with website design release 7. A website on an older design
 // cannot draw them, so Chapbook asks it to update first.
-export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'tiles', 'compare', 'timetable', 'casestudy', 'scenes'];
+export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'tiles', 'compare', 'timetable', 'casestudy', 'scenes', 'regulator'];
 // Layouts of older section types that came with the same release. On an older design they would
 // quietly become the type's first layout, so they need the update too.
-export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned'], services: ['pinned', 'rail'], steps: ['sticky'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel'], reviews: ['drift'], gallery: ['sideways'] };
+export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions'], services: ['pinned', 'rail'], steps: ['sticky'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
 // Settings of older section types that came with release 7: an older design ignores them.
-export const SIGNATURE_FIELDS = { hero: ['mark', 'story'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow'], services: ['band'] };
+export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'] };
 // Settings of an entry in a list that came with release 7 (an older design drops them).
-export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'] };
+export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait'] };
 // A word in a heading set in italic, written *like this*. Release 7 draws it; an older design
 // would show the stars.
 export const HEADING_EM = /(^|[\s(\u201c"'])\*([^*\s](?:[^*]{0,60}?[^*\s])?)\*(?=$|[\s.,;:?)\u201d"'])/g;
@@ -519,7 +565,7 @@ const filled = (v) => v !== undefined && v !== '' && v !== false && v !== null;
 export const needsSignature = (b) => !!b && (SIGNATURE_TYPES.includes(b.type) || (SIGNATURE_LAYOUTS[b.type] || []).includes(b.variant) || (SIGNATURE_FIELDS[b.type] || []).some((k) => filled(b.data?.[k])) || (SIGNATURE_ITEM_FIELDS[b.type] || []).some((k) => (b.data?.items || []).some((x) => filled(x?.[k]))) || hasEm(b.data?.heading) || (b.data?.children || []).some(needsSignature));
 // A page's own look can need release 7 too: the two new heading typefaces and the still wash
 // (an older design would quietly fall back to its own font and no wash).
-export const SIGNATURE_LOOK = { font: ['fine', 'noir'], backdrop: ['dawn'] };
+export const SIGNATURE_LOOK = { font: ['fine', 'noir', 'mixed'], backdrop: ['dawn'] };
 export const lookNeedsSignature = (look) => !!look && (SIGNATURE_LOOK.font.includes(look.font) || SIGNATURE_LOOK.backdrop.includes(look.motion?.backdrop));
 // A heading as plain words, with the stars of an italic word taken out (for labels and titles).
 export const plainHeading = (v) => String(v ?? '').replace(new RegExp(HEADING_EM.source, 'g'), '$1$2');
@@ -674,7 +720,7 @@ export function motionFor(preset, backdrop) {
   return cleanMotion({ ...p.motion, ...(backdrop ? { backdrop } : {}), preset });
 }
 
-const FONT_KEYS = ['classic', 'modern', 'editorial', 'clean', 'friendly', 'grotesk', 'mono', 'fine', 'noir'];
+const FONT_KEYS = ['classic', 'modern', 'editorial', 'clean', 'friendly', 'grotesk', 'mono', 'fine', 'noir', 'mixed'];
 const BODY_FONT_KEYS = ['clean', 'reading', 'easy', 'classic', 'grotesk'];
 export const LOOK_COLOURS = ['bg', 'surface', 'ink', 'accent', 'deep'];
 export function cleanLook(v) {

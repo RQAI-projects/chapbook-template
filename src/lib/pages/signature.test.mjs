@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import { renderPage, normalisePage, variantsOf, SIGNATURE_TYPES, SIGNATURE_LAYOUTS, needsSignature, cleanDate, bookWays, bookWith, spacesWords, MOTION, MOTION_PRESETS, motionFor, pageColours, contrast } from './render.mjs';
 import { spacesText, dayInLabel, calSlotsUrl, addDays, freeTimesText, seatsOn, hoursSpans, hoursOn, openState, timeText } from '../../scripts/page-actions.js';
 
-const pro = { phone: '01632 960 123', email: 'hello@example.com', location: '3 Church Lane\nWimborne', hours: 'Monday to Friday, 9am to 6pm\nSaturday, 10am to 2pm\nSunday, closed', bookingUrl: 'https://cal.com/rick/get-rick-rolled' };
+const pro = { phone: '01632 960 123', email: 'hello@example.com', location: '3 Church Lane\nWimborne', hours: 'Monday to Friday, 9am to 6pm\nSaturday, 10am to 2pm\nSunday, closed', bookingUrl: 'https://cal.com/rick/get-rick-rolled', cqcId: '1-101641587', cqcRating: 'good', cqcDate: '2025-09-18' };
 const SITE = { name: 'Sorrel House', professional: pro };
 const NO_BOOKING = { name: 'Sorrel House', professional: { ...pro, bookingUrl: '' } };
 const NOTHING = { name: 'Sorrel House', professional: {} };
@@ -25,6 +25,7 @@ const DATA = {
   timetable: { heading: 'Week', items: [{ day: 'mon', time: '9am', name: 'Consultations' }, { day: 'thu', time: '6pm', name: 'Late', link: { label: '', href: '@booking' } }] },
   casestudy: { heading: 'A case', intro: 'Words.', picture: pic('d'), items: [{ label: 'Time', value: 'Six weeks' }], brief: 'Brief.', work: 'Work.', result: 'Result.' },
   scenes: { heading: 'Scenes', items: [{ name: 'One', picture: pic('e') }, { name: 'Two', picture: pic('f') }] },
+  regulator: { heading: 'Who looks after you', items: [{ name: 'Dr Ruth Penrose', body: 'gmc', number: '1234567' }, { name: 'Jo Pascoe', body: 'nmc', number: '12A3456B' }], widget: true },
 };
 const EXTRA = [
   ['hero', 'reveal', { kicker: 'Skin', heading: 'Skin care with time to talk', mark: 'time to talk', intro: 'Hello.', picture: pic('g'), buttons: [{ label: 'Book', href: '@booking' }] }],
@@ -36,6 +37,11 @@ const EXTRA = [
   ['contact', 'map', { heading: 'Find us', business: true, openNow: true }],
   ['contact', 'hours', { heading: 'Hours', business: true, openNow: true }],
   ['team', 'grid', { heading: 'Team', bookEach: true, items: [{ name: 'Dr Amara Osei', quals: 'MRCGP' }, { name: 'Hannah Reed', book: { label: '', href: 'https://cal.com/rick/hannah' } }] }],
+  // The doctor clinic batch.
+  ['hero', 'actions', { kicker: 'GP practice', heading: 'Good care close to home', intro: 'Hello.', picture: pic('j'), openNow: true, closed: 'When we are closed, call **NHS 111**. In an emergency, call **999**.', actions: [{ link: { label: 'Book an appointment', href: '@booking' }, detail: 'Online' }, { link: { label: 'Register', href: '/new-patients/' } }, { link: { label: 'Call the surgery', href: '@phone' } }, { link: { label: 'Repeat prescription', href: 'https://www.nhs.uk/nhs-app/' } }] }],
+  ['team', 'rail', { heading: 'Our doctors', bookEach: true, items: [{ name: 'Dr Ruth Penrose', quals: 'GMC 1234567' }, { name: 'Dr Samuel Okoye' }, { name: 'Dr Priya Nair' }] }],
+  ['services', 'rail', { heading: 'Specialities', items: [{ name: 'Dermatology', who: 'Dr Amelia Hart', wait: '5 days', price: 'from £220', picture: pic('k'), link: { label: 'Book', href: '@booking' } }, { name: 'Cardiology', who: 'Dr Rohan Mehta', wait: '7 days', price: 'from £250' }] }],
+  ['contact', 'hours', { heading: 'When we are open', business: true, openNow: true, closed: 'When we are closed, call NHS 111.' }],
 ];
 const allBlocks = () => [
   ...SIGNATURE_TYPES.flatMap((type) => variantsOf(type).map((variant) => ({ type, variant, data: JSON.parse(JSON.stringify(DATA[type])) }))),
@@ -59,7 +65,8 @@ test('every signature section and layout is drawn in the editor and on the websi
 test('every list entry can be changed in the editor: words, and the list itself', () => {
   for (const b of allBlocks()) {
     // (The slim bar is only a Book button: its list waits for the strip or the cards.)
-    if (!b.data.items || (b.type === 'bookstrip' && b.variant === 'bar')) continue;
+    // (So is the rating on one line: its registrations wait for the panel.)
+    if (!b.data.items || (b.type === 'bookstrip' && b.variant === 'bar') || (b.type === 'regulator' && b.variant === 'line')) continue;
     const ed = renderPage(page([{ id: 'b1', ...b }]), { site: SITE, today: TODAY, editable: true });
     assert.ok(ed.includes('data-cb-list="b1:items"'), `${b.type}/${b.variant}: the list cannot take a new entry`);
     for (let i = 0; i < b.data.items.length; i++) assert.ok(ed.includes(`data-cb-item="b1:items.${i}"`), `${b.type}/${b.variant}: entry ${i} cannot be moved or removed`);
@@ -162,7 +169,7 @@ test('pinned list and sticky steps: copies for the movement are hidden from scre
 
 test('open now: the line is filled in from the opening hours on the visitor’s own device', () => {
   const html = renderPage(page([{ type: 'contact', variant: 'map', data: EXTRA[6][2] }]), { site: SITE });
-  assert.match(html, /<p class="cb-opennow" data-open="Monday to Friday, 9am to 6pm\|Saturday, 10am to 2pm\|Sunday, closed" hidden><\/p>/);
+  assert.match(html, /<p class="cb-opennow" data-open="Monday to Friday, 9am to 6pm\|Saturday, 10am to 2pm\|Sunday, closed" data-tz="Europe\/London" hidden><\/p>/);
   assert.match(html, /<th scope="row">Monday to Friday<\/th><td>9am to 6pm<\/td>/);
   assert.match(html, /<th scope="row">Sunday<\/th><td>closed<\/td>/);
   assert.ok(!renderPage(page([{ type: 'contact', variant: 'map', data: EXTRA[6][2] }]), { site: NOTHING }).includes('cb-opennow'), 'no hours, no line');

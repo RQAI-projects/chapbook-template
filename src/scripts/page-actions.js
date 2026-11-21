@@ -106,8 +106,21 @@ export function timeText(m) {
 // What a place's opening hours mean right now: { open, text }, or null when they cannot be read.
 // "Open now, closes at 6pm" · "Closed now, opens at 2pm" · "Closed now, opens tomorrow at 9am" ·
 // "Closed now, opens Monday at 9am".
-export function openState(lines, now = new Date()) {
-  const dow = now.getDay(), mins = now.getHours() * 60 + now.getMinutes();
+// The day of the week (0 is Sunday) and minutes after midnight at a moment, in a time zone (the
+// business's own, so a visitor abroad sees the practice's hours as they are). Without a zone, or
+// one the browser does not know, the device's own clock.
+const WEEKDAY = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+export function clockIn(now = new Date(), timeZone = '') {
+  if (timeZone) {
+    try {
+      const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(now).map((x) => [x.type, x.value]));
+      if (parts.weekday in WEEKDAY) return { dow: WEEKDAY[parts.weekday], mins: (+parts.hour % 24) * 60 + +parts.minute };
+    } catch { /* an unknown zone: the device's clock */ }
+  }
+  return { dow: now.getDay(), mins: now.getHours() * 60 + now.getMinutes() };
+}
+export function openState(lines, now = new Date(), timeZone = '') {
+  const { dow, mins } = clockIn(now, timeZone);
   const today = hoursOn(lines, dow);
   if (today === null && [0, 1, 2, 3, 4, 5, 6].every((d) => hoursOn(lines, d) === null)) return null;
   const span = (today || []).find(([a, b]) => mins >= a && mins < b);
@@ -120,6 +133,11 @@ export function openState(lines, now = new Date()) {
   }
   return null;
 }
+
+// CQC's official rating widget for a location: CQC's own script, which draws the rating where it
+// sits. Only a location ID as CQC writes it (1-101641587) is ever put in the address.
+export const CQC_LOCATION = /^1-\d{6,12}$/;
+export const cqcWidgetUrl = (id) => (CQC_LOCATION.test(id) ? `https://www.cqc.org.uk/sites/all/modules/custom/cqc_widget/widget.js?data-id=${id}&data-host=https://www.cqc.org.uk&type=location` : '');
 
 // The address a page asks Cal.com for free times: a person's own event, between two days.
 // No key is needed for this (Cal.com's own documentation says so); it only reads.
@@ -538,9 +556,29 @@ export function initPageActions(doc = document, win = window, { open, preview = 
   // Open now: the line under a "find us" heading says whether the place is open as the page is
   // read, from the opening hours written on it. Hours it cannot read leave the line out.
   for (const line of root.querySelectorAll('.cb-opennow[data-open]')) {
-    const st = openState(String(line.getAttribute('data-open') || '').split('|'), now());
+    const st = openState(String(line.getAttribute('data-open') || '').split('|'), now(), line.getAttribute('data-tz') || '');
     if (!st) continue;
     setText(line, st.text); addClass(line, st.open ? 'is-open' : 'is-closed'); show(line, true);
+  }
+
+  // CQC's own rating widget, where the business chose it and set its location ID: CQC's script is
+  // added into the holder beside the rating line (it draws itself where its script sits). Never in
+  // a preview, whose frame runs no outside scripts. Once CQC has drawn the widget, the plain line
+  // above it steps back; until then, and without scripts, the line is the rating.
+  if (!preview) for (const holder of root.querySelectorAll('.cb-reg-widget[data-cqc]')) {
+    const id = String(holder.getAttribute('data-cqc') || '');
+    if (!CQC_LOCATION.test(id) || holder.querySelector('script')) continue;
+    const tag = doc.createElement('script');
+    tag.src = cqcWidgetUrl(id);
+    tag.async = true;
+    holder.append(tag); madeHere.push(tag);
+    const box = holder.closest('.cb-reg-cqc');
+    if ('MutationObserver' in win && box) {
+      const mo = new win.MutationObserver(() => { if (holder.querySelector('.cqc-widget .cqc-container')) { addClass(box, 'is-drawn'); mo.disconnect(); } });
+      mo.observe(holder, { childList: true, subtree: true });
+      undo.push(() => mo.disconnect());
+    }
+    undo.push(() => { for (const n of [...holder.children]) n.remove(); });
   }
 
   // Spaces remaining: a date that has passed takes itself off (or says Finished), and only then

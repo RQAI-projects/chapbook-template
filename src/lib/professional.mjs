@@ -54,6 +54,18 @@ export function safeImage(value,allowData=false){
  if(/^data:/i.test(src))return allowData&&/^data:image\/(?:png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/.test(src)?{src,alt}:null;
  try{const u=new URL(src);return u.protocol==='https:'&&!u.username&&!u.password?{src:u.href,alt}:null;}catch{return null;}
 }
+// The business's own time zone, which "Open now" is worked out in (a visitor abroad still sees
+// the practice's hours as they are). An IANA name the browser knows; Europe/London otherwise.
+export const DEFAULT_TIME_ZONE='Europe/London';
+export function cleanTimeZone(v){
+ const z=text(v,60);
+ if(!/^[A-Za-z]+(?:\/[A-Za-z0-9_+-]+){1,2}$/.test(z))return DEFAULT_TIME_ZONE;
+ try{new Intl.DateTimeFormat('en-GB',{timeZone:z});return z;}catch{return DEFAULT_TIME_ZONE;}
+}
+// The CQC's location ID (1-101641587), the latest overall rating and the day it was given. Only
+// what the business has set; never a sample rating.
+const CQC_RATING_KEYS=['outstanding','good','requires-improvement','inadequate'];
+const isoDay=(v)=>{const s=text(v,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return '';const d=new Date(s+'T00:00:00Z');return !isNaN(d)&&d.toISOString().slice(0,10)===s?s:'';};
 export function professionalDetails(value={},{allowDataImages=false}={}){
   const pic=v=>safeImage(v,allowDataImages);
   const p=value&&typeof value==='object'?value:{};
@@ -71,6 +83,10 @@ export function professionalDetails(value={},{allowDataImages=false}={}){
     heroImage:pic(p.heroImage),
     gallery:(Array.isArray(p.gallery)?p.gallery:[]).map(pic).filter(Boolean).slice(0,12),
     credentials:(Array.isArray(p.credentials)?p.credentials:[]).map(v=>text(v,160)).filter(Boolean).slice(0,8),
+    timeZone:cleanTimeZone(p.timeZone),
+    cqcId:/^1-\d{6,12}$/.test(text(p.cqcId,20))?text(p.cqcId,20):'',
+    cqcRating:CQC_RATING_KEYS.includes(p.cqcRating)?p.cqcRating:'',
+    cqcDate:isoDay(p.cqcDate),
   };
 }
 export function contactHref(p){return p.bookingUrl || (p.email?'mailto:'+encodeURIComponent(p.email):p.phone?'tel:'+p.phone.replace(/[^+\d]/g,''):'');}
