@@ -416,6 +416,7 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
 @keyframes cbs-up{to{transform:translate3d(0,-50%,0)}}
 @keyframes cbs-arrive-fade{from{opacity:0}to{opacity:1}}
 @keyframes cbs-arrive-lift{from{opacity:0;transform:translate3d(0,26px,0)}to{opacity:1;transform:none}}
+@keyframes cbs-arrive-rise{from{transform:translate3d(0,8px,0)}to{transform:none}}
 @keyframes cbs-veil{from{transform:scaleY(1)}to{transform:scaleY(0)}}
 @keyframes cbs-depth-a{from{transform:translate3d(0,40px,0)}to{transform:translate3d(0,-40px,0)}}
 @keyframes cbs-depth-b{from{transform:translate3d(0,-8px,0)}to{transform:translate3d(0,8px,0)}}
@@ -427,8 +428,11 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
 
 @media screen and (prefers-reduced-motion:no-preference){
   /* ---- As the page opens (and after each change of page inside the website) -------------- */
-  html.cbm-js .cbm[data-m-arrive=dissolve]:not([data-m-edit])>.cb:nth-child(-n+3){animation:cbs-arrive-fade .7s var(--m-ease) both}
-  html.cbm-js .cbm[data-m-arrive=settle]:not([data-m-edit])>.cb:nth-child(-n+3){animation:cbs-arrive-lift .8s var(--m-ease) both}
+  /* The opening itself is never faded in: its photo is what a phone paints first (the page's
+     largest picture), so it only lifts, by transform, and is there from the first frame. */
+  html.cbm-js .cbm[data-m-arrive=dissolve]:not([data-m-edit])>.cb:nth-child(-n+3):not(.cb-opening){animation:cbs-arrive-fade .7s var(--m-ease) both}
+  html.cbm-js .cbm[data-m-arrive=settle]:not([data-m-edit])>.cb:nth-child(-n+3):not(.cb-opening){animation:cbs-arrive-lift .8s var(--m-ease) both}
+  html.cbm-js .cbm[data-m-arrive=settle]:not([data-m-edit])>.cb.cb-opening{animation:cbs-arrive-rise .8s var(--m-ease) both}
   html.cbm-js .cbm[data-m-arrive=settle]:not([data-m-edit])>.cb:nth-child(2){animation-delay:.08s}
   html.cbm-js .cbm[data-m-arrive=settle]:not([data-m-edit])>.cb:nth-child(3){animation-delay:.16s}
   html.cbm-js .cbm[data-m-arrive=veil]:not([data-m-edit])::before{content:"";position:fixed;inset:0;z-index:90;background:var(--accent);transform-origin:50% 0;pointer-events:none;animation:cbs-veil .75s cubic-bezier(.7,0,.2,1) .05s both}
