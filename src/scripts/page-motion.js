@@ -122,7 +122,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
       const frag = doc.createDocumentFragment();
       let k = 0;
       const span = (cls, text) => { const s = doc.createElement('span'); s.className = cls; if (text !== undefined) s.textContent = text; return s; };
-      const letters = headingStyle !== 'words';
+      // Word by word and line by line both move whole words; the rest move letters.
+      const letters = !['words', 'rising'].includes(headingStyle);
       const holder = letters ? span('cbm-hold') : frag;
       if (letters) { holder.setAttribute('aria-hidden', 'true'); frag.append(holder); }
       for (const node of [...h.childNodes]) {

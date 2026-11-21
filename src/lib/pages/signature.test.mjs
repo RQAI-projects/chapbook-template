@@ -211,6 +211,10 @@ test('movement: the new choices are fixed lists, the plan’s timings, and nothi
     if (!inMotion && /animation:(?!none)[^;]*\d/.test(t)) outside.push(t.trim().slice(0, 80));
   }
   assert.deepEqual(outside, [], 'an animation outside the reduced-motion guard');
+  // Lines rise as whole words (never split into letters, which would also need a stand-in label).
+  const motion = readFileSync(new URL('../../scripts/page-motion.js', import.meta.url), 'utf8');
+  assert.match(motion, /const letters = !\['words', 'rising'\]\.includes\(headingStyle\)/);
+  assert.match(motion, /if \(headingStyle === 'rising'\) \{[\s\S]{0,200}offsetTop/);
   // The plan's numbers.
   assert.match(css, /cbs-reveal-frame 1\.4s cubic-bezier\(\.22,1,\.36,1\)/);
   assert.match(css, /@keyframes cbs-reveal-frame\{from\{transform:scale\(\.76\)\}/);
