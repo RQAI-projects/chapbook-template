@@ -111,8 +111,9 @@ const plain = (s) => String(s || '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').rep
 export function faqJsonLd(blocks = []) {
   const items = [];
   for (const b of blocks || []) {
-    if (b?.type !== 'faq') continue;
-    for (const it of b.data?.items || []) {
+    // A questions-first opening's questions are questions too (release 7).
+    const list = b?.type === 'faq' ? b.data?.items : b?.type === 'hero' && b.variant === 'questions' ? b.data?.questions : null;
+    for (const it of list || []) {
       const q = plain(it?.question), a = plain(it?.answer);
       if (q && a) items.push({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } });
     }

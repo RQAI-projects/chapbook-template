@@ -233,6 +233,10 @@ export const BLOCK_TYPES = {
       // Release 7, consultant doctors (skin): three tall windows onto one photo, at different
       // heights, with the details as a ledger along the foot.
       triptych: 'Three tall windows onto one photo, the details along the foot',
+      // Release 7, consultant doctors (men's health): plain questions in the first screen, each
+      // opening softly; and (brain and nerves) simple branching lines drawn slowly behind the words.
+      questions: 'Questions first, each opening softly',
+      branches: 'Branching lines drawn slowly behind the words',
     },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, rotate: { ...L(160, 'Changing words', 'e.g. brands, websites, films'), panel: true, hint: 'A few words with commas between them. They take turns at the end of the heading.' }, word: L(12, 'Big word', 'e.g. Fresh'), intro: R(1200, 'Introduction'), picture: PIC(), pictures: { kind: 'pictures', max: 6, label: 'More photos' },
@@ -261,6 +265,8 @@ export const BLOCK_TYPES = {
       trace: { kind: 'choice', options: ['none', 'heart', 'wave'], def: 'none', labels: { none: 'No line', heart: 'A calm heart trace', wave: 'A sound wave' }, label: 'Line drawn under the heading', panel: true },
       // A short line under the buttons that goes to the page's If you need help now card, so a
       // phone's first screen says where help is (release 7). Still, and shown only with that card.
+      // The questions of the "questions first" layout, each with its answer.
+      questions: { kind: 'items', max: 6, label: 'Questions', add: 'Add a question', item: { question: L(160, 'Question', 'e.g. Is this worth checking?'), answer: R(800, 'Answer') }, sample: { question: 'New question', answer: '' } },
       help: { ...L(120, 'Help line', 'e.g. Need help now? Numbers to call, day or night'), panel: true, hint: 'A short line under the buttons that takes people to the If you need help now card on this page. It is shown only when the page has that card, and it never moves.' },
       frame: { kind: 'choice', options: ['arch', 'circle', 'square'], def: 'arch', labels: { arch: 'Arch', circle: 'Circle', square: 'Square' }, label: 'Portrait frame' },
     },
@@ -383,7 +389,9 @@ export const BLOCK_TYPES = {
     variants: { row: 'In a row', large: 'Large', ruled: 'With lines', tiles: 'Tiles', circles: 'Coloured circles', ticker: 'Rolling band of numbers', band: 'Big numbers in a band, with fine lines between' },
     fields: { kicker: L(100, 'Short label'), heading: HEAD, items: { kind: 'items', max: 6, label: 'Facts', add: 'Add a fact', item: { value: L(24, 'Number or word', 'e.g. 25'), label: L(80, 'What it means', 'e.g. years in business') }, sample: { value: '10', label: 'New fact' } },
       // Once a number has counted up, it beats once, like a pulse.
-      beat: { kind: 'bool', label: 'Numbers beat once after counting up' } },
+      beat: { kind: 'bool', label: 'Numbers beat once after counting up' },
+      // A gentle wave line drawn once through the band as it comes into view (release 7).
+      wave: { kind: 'bool', label: 'A gentle wave drawn through the band' } },
   },
   notice: {
     label: 'Announcement', hint: 'A short notice, such as a holiday closure or an offer.',
@@ -565,6 +573,8 @@ export const BLOCK_TYPES = {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 6, label: 'Scenes', add: 'Add a scene', item: {
         tag: L(40, 'Small label'), name: L(100, 'Heading', 'Heading'), description: R(500, 'Words'), picture: PIC(), link: { kind: 'link', label: 'Link' },
+        // A simple line drawing of a hand in place of a photo (release 7, hand and wrist).
+        drawing: { kind: 'choice', options: ['none', 'hand-fingers', 'hand-wrist', 'hand-thumb', 'hand-palm'], def: 'none', labels: { none: 'No drawing (a photo)', 'hand-fingers': 'A hand, the fingers marked', 'hand-wrist': 'A hand, the wrist marked', 'hand-thumb': 'A hand, the base of the thumb marked', 'hand-palm': 'A hand, the palm marked' }, label: 'A line drawing instead of a photo' },
       }, sample: { name: 'New scene', description: '' } },
     },
   },
@@ -597,11 +607,11 @@ export const BLOCK_TYPES = {
 export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'tiles', 'compare', 'timetable', 'casestudy', 'scenes', 'regulator'];
 // Layouts of older section types that came with the same release. On an older design they would
 // quietly become the type's first layout, so they need the update too.
-export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture', 'dawn', 'triptych'], services: ['pinned', 'rail'], steps: ['sticky', 'timeline'], notice: ['help'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
+export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture', 'dawn', 'triptych', 'questions', 'branches'], services: ['pinned', 'rail'], steps: ['sticky', 'timeline'], notice: ['help'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
 // Settings of older section types that came with release 7: an older design ignores them.
-export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace', 'help'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat'], tiles: ['bounce'] };
+export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace', 'help', 'questions'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat', 'wave'], tiles: ['bounce'] };
 // Settings of an entry in a list that came with release 7 (an older design drops them).
-export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'], steps: ['when'], tiles: ['shape'] };
+export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'], steps: ['when'], tiles: ['shape'], scenes: ['drawing'] };
 // A word in a heading set in italic, written *like this*. Release 7 draws it; an older design
 // would show the stars.
 export const HEADING_EM = /(^|[\s(\u201c"'])\*([^*\s](?:[^*]{0,60}?[^*\s])?)\*(?=$|[\s.,;:?)\u201d"'])/g;

@@ -892,7 +892,7 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     // The scene nearest the middle is the one that is "on".
     const pins = [...root.querySelectorAll('[data-pin]')].map((box) => {
       const stage = box.querySelector('.cb-sc-stage');
-      return { box, stage, items: [...box.querySelectorAll('.cb-sc-item')], shots: stage ? [...stage.querySelectorAll('img')] : [], count: stage?.querySelector('.cb-sc-count') || null, ticks: stage ? [...stage.querySelectorAll('.cb-sc-ticks i')] : [], on: -1 };
+      return { box, stage, items: [...box.querySelectorAll('.cb-sc-item')], shots: stage ? [...stage.querySelectorAll('img, .cb-sc-art')] : [], count: stage?.querySelector('.cb-sc-count') || null, ticks: stage ? [...stage.querySelectorAll('.cb-sc-ticks i')] : [], on: -1 };
     }).filter((p) => p.stage && p.items.length > 1 && p.shots.length > 1);
     if (pins.length) {
       for (const p of pins) p.box.classList.add('is-live');
@@ -914,6 +914,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
           p.on = active;
           p.items.forEach((it, i) => it.classList.toggle('is-on', i === active));
           p.ticks.forEach((t, i) => t.classList.toggle('is-on', i === active));
+          // A drawing in place of a photo crossfades to the scene in view (hand studies).
+          for (const a of p.shots) if (a.classList.contains('cb-sc-art')) a.classList.toggle('is-on', Number(a.getAttribute('data-i')) === active);
           if (p.count) p.count.textContent = `${two(active + 1)} / ${two(p.items.length)}`;
         });
       };

@@ -653,6 +653,17 @@ R_.hero = (C, b) => {
     const ledger = d.details ? `<div class="cb-tri-ledger">${factsList(C, b, d, { cls: 'cb-facts cb-tri-facts' })}</div>` : '';
     return `<div class="cb-tri"><div class="cb-hero-words cb-tri-words">${words}</div>${pics}</div>${ledger}${d.picture ? creditsOf([d.picture]) : ''}`;
   }
+  // Questions first (release 7, men's health): the words beside a few plain questions, each of
+  // which opens softly when pressed; the first stands open. Search engines read them as questions.
+  if (v === 'questions') {
+    const qs = d.questions || [];
+    const one = (x, i, w) => w(`<details${C.editable || i === 0 ? ' open' : ''}><summary>${T(C, b, `questions.${i}.question`, x.question, 'span', 'cb-q')}</summary>${RT(C, b, `questions.${i}.answer`, x.answer, 'cb-rich cb-a')}</details>`, 'div', 'cb-faq-item');
+    const list = qs.length || C.editable ? `<div class="cb-ask-qs">${LIST(C, b, 'questions', qs, one, 'div', 'cb-faq cb-faq-accordion cb-ask-list')}</div>` : '';
+    return `<div class="cb-ask${list ? '' : ' cb-solo'}"><div class="cb-hero-words cb-ask-words">${words}${details}</div>${list}</div>`;
+  }
+  // Branching lines drawn slowly behind the words (release 7, brain and nerves): the stem first,
+  // then each level of branches, then the dots where they divide. Drawn whole when still.
+  if (v === 'branches') return `<div class="cb-br"><div class="cb-br-art" aria-hidden="true"><span class="cb-br-ghost">${branchSvg()}</span><span class="cb-br-win"><span class="cb-br-in">${branchSvg()}</span></span></div><div class="cb-hero-words cb-br-words">${words}${details}</div></div>`;
   if (v === 'reveal') return `<div class="cb-reveal"><div class="cb-hero-words cb-reveal-words">${words}${details}</div>${media ? `<figure class="cb-hero-pic cb-reveal-pic"><span class="cb-reveal-in">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</span></figure>${creditsOf([d.picture])}` : ''}${toggle}</div>`;
   // One statement that fills the first screen. No photo, by design.
   if (v === 'statement') {
@@ -1108,7 +1119,9 @@ R_.facts = (C, b) => {
     const set = (hidden) => `<span class="cb-mq-set"${hidden ? ' aria-hidden="true"' : ''}>${facts.map((x) => `<span class="cb-mq-item cb-ft"><span class="cb-ft-value">${esc(x.value || '')}</span><span class="cb-ft-label">${esc(x.label || '')}</span></span>`).join('')}</span>`;
     return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div><div class="cb-mq cb-mq-facts" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${clamp(Math.round(width / 60), 14, 80)}s"><div class="cb-mq-track">${set(false)}${set(true).repeat(sets - 1)}</div></div>`;
   }
-  return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div>${LIST(C, b, 'items', d.items || [], (x, i, w) => w(`${T(C, b, `items.${i}.value`, x.value, 'span', 'cb-fact-value')}${T(C, b, `items.${i}.label`, x.label, 'span', 'cb-fact-label')}`, 'div', 'cb-fact'), 'div', `cb-factlist cb-factlist-${b.variant}${d.beat ? ' cb-beat' : ''}`)}`;
+  // A gentle wave drawn once through the band as it comes into view (release 7, hormones).
+  const wave = d.wave ? `<span class="cb-trace cb-trace-gentle cb-trace-band" aria-hidden="true"${C.editable ? '' : ' data-scroll="enter"'}><span class="cb-trace-ghost">${traceSvg('gentle', 6)}</span><span class="cb-trace-win"><span class="cb-trace-in">${traceSvg('gentle', 6)}</span></span></span>` : '';
+  return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}</div>${wave}${LIST(C, b, 'items', d.items || [], (x, i, w) => w(`${T(C, b, `items.${i}.value`, x.value, 'span', 'cb-fact-value')}${T(C, b, `items.${i}.label`, x.label, 'span', 'cb-fact-label')}`, 'div', 'cb-fact'), 'div', `cb-factlist cb-factlist-${b.variant}${d.beat ? ' cb-beat' : ''}${d.wave ? ' cb-on-wave' : ''}`)}`;
 };
 
 R_.notice = (C, b) => {
@@ -1223,11 +1236,40 @@ R_.steps = (C, b) => {
 };
 // The drawn line: a calm heart trace (one beat a stretch) or a sound wave (one swell a stretch),
 // 100 wide and 40 high for each stretch, drawn with a hairline that never thickens when stretched.
+// Simple line studies of a hand for the pinned scenes (release 7, hand and wrist): an outline only,
+// with light lines at the joints and across the palm, never a photo of a hand and nothing that
+// looks like an injury. Two poses; each study marks one area with a soft ring in the accent.
+// Made with signature/doctors3 (hand2.py) as rounded shapes joined and smoothed.
+const HAND_POSES = {"open":{"outline":"M230.3 476.7L228 450.0L231.9 405.8L233.1 402.7L247.9 376.7L256 340.2L256 299.8L248 265.8L246.9 262.8L257 232.1L267.9 201.6L268.1 197.0L267.2 194.4L265.5 192.2L261.2 189.7L258.8 189.4L256 189.8L253.5 191.0L251.4 192.8L242.6 212.1L227.7 248.2L226.3 249.3L224.5 249.1L223.5 247.1L232.3 160.9L231.6 155.8L230 153.2L227.7 151.1L224.9 149.8L221.9 149.4L218.8 149.8L216 151.1L213.8 153.2L212.2 155.7L199.8 228.8L198.7 230.3L197 230.5L195.4 228.7L185.6 148.2L184 144.5L181.8 141.9L178.6 140.1L174.8 139.4L170.6 140.2L167.5 142.2L165.1 145.2L163.8 149.3L169.3 237.8L169.1 239.3L168.2 240.3L166.4 240.5L165 239.2L151 196.9L140.4 168.0L138.3 165.7L135.7 164.2L132.7 163.4L129.6 163.6L126.7 164.6L124.2 166.4L122.4 168.9L121.4 171.8L121.5 176.5L133.9 221.2L145.4 266.6L137.8 331.5L136.5 332.5L134.9 332.4L130.1 327.9L115.7 311.9L106 298.7L102.2 295.6L99.1 294.5L95.7 294.3L93.2 294.8L90.2 296.3L88.2 297.9L86.2 300.6L84.7 306.2L85.7 310.9L90.3 319.4L103.7 339.8L114 352.6L125.2 364.6L144.7 381.8L157.4 403.6L158.2 406.9L161.9 449.3L160.5 476.6","creases":["M156.1 222.6Q148.2 227.2 139.1 227.6","M148.9 200.6Q141.6 205.2 133.0 205.6","M189.8 210.0Q180.8 213.0 171.4 211.6","M186.9 184.1Q178.5 187.1 169.6 185.7","M223.0 217.7Q213.9 218.7 205.3 215.3","M225.7 193.3Q217.1 194.4 209.1 191.1","M250.1 243.0Q241.9 242.3 235.3 237.4","M256.4 225.1Q248.6 224.5 242.5 219.7","M150 318Q196 306 244 292","M156 340Q198 334 230 312","M196 410Q176 380 176 336"]},"together":{"outline":"M230.3 476.6L228 450.0L231.9 405.7L233 402.7L247.9 376.6L256 340.2L256 299.8L247.9 265.4L244.6 262.5L252.9 197.1L252.3 194.4L250.8 192.0L248.3 189.8L245.4 188.7L242.6 188.6L239.9 189.3L237.5 190.7L235.6 192.8L234.2 196.2L223.6 249.7L223 250.2L221.1 249.8L224.2 162.2L223.7 159.2L222.4 156.4L220.4 154.1L217.7 152.5L214.3 151.8L210.7 152.2L207.9 153.5L205.6 155.6L204 158.2L203.2 161.2L197.6 217.2L196.7 217.7L194 150.9L192.7 147.5L190.2 144.5L187 142.7L183.2 142.0L179.6 142.6L176.2 144.5L173.7 147.5L172.4 150.9L170.1 227.5L169.2 227.1L163.2 171.3L162 167.2L160.1 164.6L157.5 162.6L154.4 161.5L151.1 161.4L148.1 162.2L144.8 164.3L142.6 167.1L141.5 170.1L142.9 206.0L146.4 260.7L138.9 321.1L138 321.1L135 315.8L128.2 302.0L121.4 285.3L118.4 281.6L115.4 279.8L112.4 279.0L109.7 279.0L106.2 279.8L103.2 281.6L101.1 283.9L99.7 286.3L98.9 289.7L99.1 293.3L104.1 310.7L110 326.9L117.1 342.7L125.4 358.1L134.6 372.8L145 386.9L146.4 385.7L147.1 385.9L157.8 404.7L161.9 449.3L160.5 476.6","creases":["M165.3 223.9Q156.6 226.9 147.5 225.4","M162.8 201.6Q154.7 204.4 146.2 202.9","M192.7 212.4Q183.5 214.7 174.2 212.6","M191.9 187.0Q183.3 189.2 174.6 187.0","M218.7 218.7Q209.6 220.3 200.9 217.5","M219.8 194.7Q211.3 196.4 203.1 193.6","M244.2 243.1Q236.0 244.0 228.6 240.5","M246.8 224.2Q239.1 225.2 232.1 221.9","M150 318Q196 306 244 292","M156 340Q198 334 230 312","M196 410Q176 380 176 336"]}};
+export const HAND_STUDIES = {
+  'hand-fingers': { pose: 'open', ring: [208, 268, 24] },
+  'hand-wrist': { pose: 'together', ring: [196, 426, 30] },
+  'hand-thumb': { pose: 'open', ring: [150, 368, 28] },
+  'hand-palm': { pose: 'together', ring: [214, 312, 24] },
+};
+export function handSvg(kind) {
+  const s = HAND_STUDIES[kind];
+  if (!s) return '';
+  const p = HAND_POSES[s.pose], [x, y, r] = s.ring;
+  return `<svg class="cb-hand cb-hand-${kind}" viewBox="64 112 236 384" aria-hidden="true" focusable="false"><path class="cb-hand-crease" d="${p.creases.join('')}"/><path class="cb-hand-line" d="${p.outline}"/><g class="cb-hand-focus"><circle class="cb-hand-halo" cx="${x}" cy="${y}" r="${r}"/><circle class="cb-hand-ring" cx="${x}" cy="${y}" r="${r}"/></g></svg>`;
+}
+// Simple branching lines for an opening (release 7, brain and nerves): a stem on the left that
+// divides again and again as it goes right, like a tree in fog. One path for each level, so they
+// can be drawn one after another; small dots where lines divide.
+const BRANCH_LEVELS = ["M0 310Q125 294 250 310","M250 310Q317 241 412 221M250 310Q323 361 404 396","M412 221Q434 157 489 117M412 221Q480 215 548 213M404 396Q468 396 533 399M404 396Q455 433 473 493","M489 117Q498 74 511 33M489 117Q529 89 571 64M548 213Q593 185 643 167M548 213Q593 227 638 239M533 399Q582 400 621 371M533 399Q579 410 622 431M473 493Q511 516 549 538M473 493Q485 536 500 577","M511 33Q509 4 510 -25M511 33Q530 8 546 -19M571 64Q586 32 611 8M571 64Q604 46 642 46M643 167Q670 142 693 113M643 167Q681 173 716 158M638 239Q669 228 702 235M638 239Q669 257 698 278M621 371Q643 345 674 333M621 371Q653 378 684 372M622 431Q657 427 692 430M622 431Q653 447 673 475M549 538Q579 551 611 547M549 538Q568 562 591 585M500 577Q512 610 539 631M500 577Q498 609 497 641","M510 -25Q500 -44 503 -66M546 -19Q554 -40 566 -60M611 8Q623 -13 634 -34M642 46Q662 24 691 17M642 46Q667 42 692 47M693 113Q699 85 719 64M693 113Q715 100 737 85M716 158Q741 155 764 145M702 235Q726 244 751 240M698 278Q715 295 734 311M674 333Q690 316 700 295M674 333Q693 317 717 316M684 372Q708 370 729 359M684 372Q707 376 728 385M692 430Q715 423 738 417M692 430Q716 443 742 444M673 475Q695 490 721 498M673 475Q681 498 699 513M611 547Q633 544 654 548M591 585Q615 591 632 609M591 585Q606 604 610 628M539 631Q559 642 570 663M497 641Q504 663 509 686M497 641Q492 663 484 684"];
+const BRANCH_NODES = [[412,221,1],[489,117,2],[511,33,3],[546,-19,4],[571,64,3],[611,8,4],[642,46,4],[691,17,5],[692,47,5],[548,213,2],[643,167,3],[693,113,4],[719,64,5],[737,85,5],[716,158,4],[764,145,5],[638,239,3],[702,235,4],[751,240,5],[698,278,4],[734,311,5],[404,396,1],[533,399,2],[621,371,3],[674,333,4],[700,295,5],[717,316,5],[684,372,4],[729,359,5],[728,385,5],[622,431,3],[692,430,4],[738,417,5],[742,444,5],[673,475,4],[721,498,5],[699,513,5],[473,493,2],[549,538,3],[611,547,4],[654,548,5],[591,585,4],[632,609,5],[500,577,3]];
+export function branchSvg() {
+  const lv = BRANCH_LEVELS.map((d, k) => `<path class="cb-br-l cb-br-l${k}" d="${d}"/>`).join('');
+  const dots = BRANCH_NODES.map(([x, y, k]) => `<circle class="cb-br-dot cb-br-d${k}" cx="${x}" cy="${y}" r="${k < 3 ? 5 : k < 5 ? 3.6 : 2.6}"/>`).join('');
+  return `<svg class="cb-br-svg" viewBox="0 0 800 600" preserveAspectRatio="xMinYMid slice" aria-hidden="true" focusable="false">${lv}${dots}</svg>`;
+}
+
 export function traceSvg(kind, n) {
   let path = 'M0 20';
   for (let i = 0; i < n; i++) {
     const x = i * 100, X = (k) => +(x + k).toFixed(2);
-    if (kind === 'heart') path += ` L${X(30)} 20 Q${X(35)} 15 ${X(40)} 20 L${X(47)} 20 L${X(50)} 24 L${X(53)} 4 L${X(57)} 33 L${X(60)} 20 L${X(68)} 20 Q${X(76)} 12 ${X(84)} 20 L${X(100)} 20`;
+    if (kind === 'gentle') path += ` C${X(18)} 6 ${X(32)} 6 ${X(50)} 20 S${X(82)} 34 ${X(100)} 20`;
+    else if (kind === 'heart') path += ` L${X(30)} 20 Q${X(35)} 15 ${X(40)} 20 L${X(47)} 20 L${X(50)} 24 L${X(53)} 4 L${X(57)} 33 L${X(60)} 20 L${X(68)} 20 Q${X(76)} 12 ${X(84)} 20 L${X(100)} 20`;
     else {
       const amps = [2, 5, 9, 14, 17, 14, 9, 5, 2, 1];
       amps.forEach((a, k) => { const w = 10, sx = x + k * w; path += ` Q${X(k * w + w / 4)} ${20 - a} ${X(k * w + w / 2)} 20 Q${X(k * w + (3 * w) / 4)} ${20 + a} ${+(sx + w).toFixed(2)} 20`; });
@@ -1534,12 +1576,16 @@ R_.casestudy = (C, b) => {
 // ---- pinned scenes ----
 R_.scenes = (C, b) => {
   const d = b.data, v = b.variant, items = d.items || [];
-  const one = (x, i, w) => w(`${x.picture || C.editable ? `<figure class="cb-sc-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}<div class="cb-sc-body">${T(C, b, `items.${i}.tag`, x.tag, 'p', 'cb-sc-tag')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sc-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-sc-desc')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}</div>`, 'article', `cb-sc-item${i ? '' : ' is-on'}`);
+  // A scene can show a simple line drawing instead of a photo (release 7, hand studies).
+  const art = (x) => (x.picture ? '' : handSvg(x.drawing));
+  const fig = (x, i) => (art(x) ? `<figure class="cb-sc-pic cb-sc-draw">${art(x)}</figure>` : x.picture || C.editable ? `<figure class="cb-sc-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : '');
+  const one = (x, i, w) => w(`${fig(x, i)}<div class="cb-sc-body">${T(C, b, `items.${i}.tag`, x.tag, 'p', 'cb-sc-tag')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sc-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-sc-desc')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}</div>`, 'article', `cb-sc-item${i ? '' : ' is-on'}`);
   const list = LIST(C, b, 'items', items, one, 'div', 'cb-sc-list');
   // The stage that stays put holds copies of the photos, hidden from screen readers; each scene
   // keeps its own photo, which is what shows on phones, with scripts off and for less movement.
-  const shots = C.editable ? [] : items.map((x, i) => [x, i]).filter(([x]) => x.picture);
-  const stage = shots.length > 1 ? `<div class="cb-sc-stage" aria-hidden="true">${shots.map(([x, i], k) => `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, x.picture.src))}"${srcsetOf(C, x.picture)} alt="" loading="lazy" decoding="async"${focusPos(x.picture) ? ` style="object-position:${focusPos(x.picture)}"` : ''}>`).join('')}<span class="cb-sc-count"></span><span class="cb-sc-ticks">${items.map(() => '<i></i>').join('')}</span></div>` : '';
+  const shots = C.editable ? [] : items.map((x, i) => [x, i]).filter(([x]) => x.picture || art(x));
+  const drawn = shots.some(([x]) => !x.picture);
+  const stage = shots.length > 1 ? `<div class="cb-sc-stage${drawn ? ' is-art' : ''}" aria-hidden="true">${shots.map(([x, i], k) => (x.picture ? `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, x.picture.src))}"${srcsetOf(C, x.picture)} alt="" loading="lazy" decoding="async"${focusPos(x.picture) ? ` style="object-position:${focusPos(x.picture)}"` : ''}>` : `<span class="cb-sc-art${k ? '' : ' is-on'}" data-i="${i}">${art(x)}</span>`)).join('')}<span class="cb-sc-count"></span><span class="cb-sc-ticks">${items.map(() => '<i></i>').join('')}</span></div>` : '';
   return `${HEAD(C, b, d)}<div class="cb-sc cb-sc-${v}${stage ? ' has-stage' : ''}"${stage ? ` data-pin style="--n:${items.length}"` : ''}>${stage}${list}</div>`;
 };
 
