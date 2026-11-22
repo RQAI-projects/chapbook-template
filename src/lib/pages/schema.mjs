@@ -193,15 +193,42 @@ export const STYLE_LABELS = {
 export const COLUMN_TYPES = ['text', 'image', 'cta', 'contact', 'credentials', 'facts', 'reviews', 'form', 'booking', 'video'];
 
 // The public registers a professional's registration can be checked on (UK). `site` is where the
-// register is searched; the number shown beside it is the person's own.
+// register is searched; the number shown beside it is the person's own. These are quick picks:
+// choosing one fills in the governing body's name, its short label and the link to its register,
+// which the business can then change, and anyone outside the UK, or with a different body, types
+// their own (owner, 22 Nov: no country setting). Each link is the body's own register search, or
+// its page on checking the register, checked on 22 Nov 2026.
 export const REGULATORS = {
   gmc: { short: 'GMC', name: 'General Medical Council', href: 'https://www.gmc-uk.org/registration-and-licensing/the-medical-register' },
   nmc: { short: 'NMC PIN', name: 'Nursing and Midwifery Council', href: 'https://www.nmc.org.uk/registration/search-the-register/' },
   gdc: { short: 'GDC', name: 'General Dental Council', href: 'https://olr.gdc-uk.org/searchregister' },
   hcpc: { short: 'HCPC', name: 'Health and Care Professions Council', href: 'https://www.hcpc-uk.org/check-the-register/' },
   gphc: { short: 'GPhC', name: 'General Pharmaceutical Council', href: 'https://www.pharmacyregulation.org/registers' },
+  // Registers for professions the law does not regulate, each accredited by the Professional
+  // Standards Authority: counselling and psychotherapy, and complementary therapies such as sports
+  // massage.
+  bacp: { short: 'BACP', name: 'British Association for Counselling and Psychotherapy', href: 'https://www.bacp.co.uk/search/Register' },
+  ukcp: { short: 'UKCP', name: 'UK Council for Psychotherapy', href: 'https://www.psychotherapy.org.uk/about-ukcp/our-register/' },
+  ncps: { short: 'NCPS', name: 'National Counselling and Psychotherapy Society', href: 'https://ncps.com/find-a-counsellor/search-the-directory' },
+  cnhc: { short: 'CNHC', name: 'Complementary and Natural Healthcare Council', href: 'https://search.cnhcregister.org.uk/' },
 };
 export const REGULATOR_IDS = Object.keys(REGULATORS);
+// A registration's own governing body, typed by the business ('own' in the quick picks).
+export const OWN_REGULATOR = 'own';
+// A register's address: a full https address, nothing else (no page of this site, no email).
+export function cleanRegisterHref(v) {
+  const s = cleanHref(v);
+  return /^https:\/\//.test(s) ? s : '';
+}
+// The governing body a registration is checked with: what the business typed, or else the quick
+// pick it chose. Websites saved before the governing body could be typed have only the pick, so
+// they draw exactly as they did (an unknown pick was always taken as the GMC).
+export function registerOf(x) {
+  const item = x && typeof x === 'object' ? x : {};
+  if (item.bodyName || item.bodyShort || item.bodyHref) return { short: item.bodyShort || '', name: item.bodyName || '', href: cleanRegisterHref(item.bodyHref) };
+  if (item.body === OWN_REGULATOR) return { short: '', name: '', href: '' };
+  return REGULATORS[item.body] || REGULATORS.gmc;
+}
 // A CQC location ID, as CQC writes it: 1-101641587.
 export const CQC_ID = /^1-\d{6,12}$/;
 export const CQC_RATINGS = { outstanding: 'Outstanding', good: 'Good', 'requires-improvement': 'Requires improvement', inadequate: 'Inadequate' };
@@ -582,13 +609,19 @@ export const BLOCK_TYPES = {
   // providers must show it on their website) from Details and booking, with CQC's own widget when
   // chosen, and each professional's registration with a link to the public register.
   regulator: {
-    label: 'Regulator and registration', hint: 'Your CQC rating and the registration of each doctor, nurse or other professional, with links to check them. The rating comes from Details and booking.',
+    label: 'Regulator and registration', hint: 'Your CQC rating and the registration of each professional, with links to check them. Pick a UK register, or type your own governing body. The rating comes from Details and booking.',
     variants: { panel: 'Rating beside the registrations', line: 'The rating on one line' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 24, label: 'Registrations', add: 'Add a registration', item: {
-        name: L(100, 'Name', 'e.g. Dr Ruth Penrose'), body: { kind: 'choice', options: REGULATOR_IDS, def: 'gmc', labels: Object.fromEntries(REGULATOR_IDS.map((k) => [k, REGULATORS[k].name])), label: 'Register' },
+        name: L(100, 'Name', 'e.g. Dr Ruth Penrose'),
+        // A quick pick fills in the three lines below it, which stay editable; typing in them makes
+        // the registration the business's own (`unpicks`).
+        body: { kind: 'choice', options: [...REGULATOR_IDS, OWN_REGULATOR], def: 'gmc', labels: { ...Object.fromEntries(REGULATOR_IDS.map((k) => [k, `${REGULATORS[k].name} (${REGULATORS[k].short.replace(/ PIN$/, '')})`])), [OWN_REGULATOR]: 'My own governing body, typed below' }, label: 'Quick pick of a UK register', hint: 'Outside the UK, or with a different body? Type your own governing body below.', fills: Object.fromEntries(REGULATOR_IDS.map((k) => [k, { bodyName: REGULATORS[k].name, bodyShort: REGULATORS[k].short, bodyHref: REGULATORS[k].href }])) },
         number: L(24, 'Registration number', 'e.g. 1234567'),
+        bodyName: { ...L(120, 'Governing body', 'e.g. Health and Care Professions Council'), panel: true, unpicks: 'body' },
+        bodyShort: { ...L(24, 'Short label beside the number', 'e.g. HCPC'), panel: true, unpicks: 'body' },
+        bodyHref: { kind: 'line', max: 2048, url: true, label: 'Link to its public register search', ph: 'https://', hint: 'A full address starting https://, where anyone can check the number.', panel: true, unpicks: 'body' },
       }, sample: { name: 'New person', body: 'gmc', number: '' } },
       // CQC's own rating widget, drawn by CQC on the published website from the location ID in
       // Details and booking. The rating line stays for anyone whose browser does not run it.
@@ -637,7 +670,7 @@ export const variantsOf = (type) => Object.keys(BLOCK_TYPES[type]?.variants || {
 // ---- normalising ---------------------------------------------------------------------------
 function cleanField(f, v, opts) {
   switch (f.kind) {
-    case 'line': return f.digits ? cleanWhatsapp(v) : cleanLine(v, f.max);
+    case 'line': return f.digits ? cleanWhatsapp(v) : f.url ? cleanRegisterHref(v) : cleanLine(v, f.max);
     case 'rich': case 'plain': return cleanText(v, f.max);
     case 'picture': return cleanPicture(v, opts);
     case 'pictures': return (Array.isArray(v) ? v : []).map((p) => cleanPicture(p, opts)).filter(Boolean).slice(0, f.max);

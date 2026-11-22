@@ -4,7 +4,7 @@
 // professional's registration with a link to the public register).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { renderPage, needsSignature, REGULATORS, CQC_ID, lookNeedsSignature } from './render.mjs';
+import { renderPage, needsSignature, REGULATORS, REGULATOR_IDS, CQC_ID, lookNeedsSignature, normalisePage, registerOf, cleanRegisterHref, BLOCK_TYPES } from './render.mjs';
 import { openState, clockIn, cqcWidgetUrl, CQC_LOCATION } from '../../scripts/page-actions.js';
 import { professionalDetails, cleanTimeZone } from '../professional.mjs';
 
@@ -134,6 +134,53 @@ test('regulator: the business’s own CQC rating, never a sample one, and regist
   assert.match(draw([line], cqc), /cb-reg-oneline/);
   assert.ok(!draw([line], pro).includes('cb-reg'));
   assert.equal(needsSignature(reg), true);
+});
+
+test('regulator: the business types its own governing body, or picks a UK register that fills it in (owner, 22 Nov: no country setting)', () => {
+  // The quick picks: the five UK regulators and the accredited registers the therapy sites need,
+  // each with a full https link to the body's own register search.
+  assert.deepEqual(REGULATOR_IDS, ['gmc', 'nmc', 'gdc', 'hcpc', 'gphc', 'bacp', 'ukcp', 'ncps', 'cnhc']);
+  for (const k of REGULATOR_IDS) assert.match(REGULATORS[k].href, /^https:\/\/[a-z0-9.-]+\//, k);
+  const body = BLOCK_TYPES.regulator.fields.items.item.body;
+  assert.ok(body.options.includes('own'));
+  // Picking one fills in the name, the label and the link, which stay editable lines of their own.
+  assert.deepEqual(body.fills.hcpc, { bodyName: 'Health and Care Professions Council', bodyShort: 'HCPC', bodyHref: 'https://www.hcpc-uk.org/check-the-register/' });
+  for (const k of ['bodyName', 'bodyShort', 'bodyHref']) assert.equal(BLOCK_TYPES.regulator.fields.items.item[k].unpicks, 'body', k);
+  assert.match(body.hint, /Outside the UK, or with a different body/);
+  // Never a country setting.
+  assert.ok(!JSON.stringify(BLOCK_TYPES.regulator).toLowerCase().includes('country'));
+  // An own governing body, anywhere: its name, its label beside the number and its register.
+  const own = { id: 'b1', type: 'regulator', variant: 'panel', data: { heading: 'Registered', items: [
+    { name: 'Dr Priya Shah', body: 'own', bodyName: 'Delhi Medical Council', bodyShort: 'DMC', bodyHref: 'https://www.delhimedicalcouncil.org/', number: '12345' },
+    { name: 'Asha Rao', body: 'own', bodyName: 'Delhi Medical Council', bodyShort: 'DMC', bodyHref: 'https://www.delhimedicalcouncil.org/', number: '67890' },
+    { name: 'Sam Lee', body: 'hcpc', bodyName: 'Health and Care Professions Council', bodyShort: 'HCPC', bodyHref: 'https://www.hcpc-uk.org/check-the-register/', number: 'PH123456' },
+  ] } };
+  const html = draw([own]);
+  assert.match(html, /<span class="cb-reg-name">Dr Priya Shah<\/span><span class="cb-reg-num"><span class="cb-reg-body">DMC<\/span> <span>12345<\/span><\/span>/);
+  assert.match(html, /href="https:\/\/www\.delhimedicalcouncil\.org\/" rel="noopener">Check the Delhi Medical Council register<\/a>/);
+  assert.equal((html.match(/class="cb-link cb-reg-check"/g) || []).length, 2, 'one link to each register used');
+  assert.match(html, /Check the Health and Care Professions Council register/);
+  // A label edited after a pick is the business's own; the pick's link stays.
+  const relabelled = draw([{ ...own, data: { items: [{ name: 'Sam Lee', body: 'hcpc', bodyName: 'Health and Care Professions Council', bodyShort: 'HCPC reg.', bodyHref: 'https://www.hcpc-uk.org/check-the-register/', number: 'PH1' }] } }]);
+  assert.match(relabelled, /<span class="cb-reg-body">HCPC reg\.<\/span>/);
+  // Bad links are refused: only a full https address is kept, so no check link is drawn for it.
+  for (const bad of ['http://example.org/register', 'javascript:alert(1)', '/contact/', 'mailto:a@b.co', '@booking', 'example.org', 'https://user:pw@example.org/']) {
+    assert.equal(cleanRegisterHref(bad), '', bad);
+    const kept = normalisePage({ v: 1, title: 'T', slug: 't', blocks: [{ type: 'regulator', variant: 'panel', data: { items: [{ name: 'A', body: 'own', bodyName: 'A body', bodyHref: bad, number: '1' }] } }] });
+    assert.equal(kept.blocks[0].data.items[0].bodyHref, undefined, bad);
+    assert.ok(!draw(kept.blocks).includes('cb-reg-check'), bad);
+  }
+  assert.equal(cleanRegisterHref('https://www.bacp.co.uk/search/Register'), 'https://www.bacp.co.uk/search/Register');
+  // An own body with no label shows the number alone; with no link, no check line.
+  const bare = draw([{ id: 'b2', type: 'regulator', variant: 'panel', data: { items: [{ name: 'A', body: 'own', bodyName: 'A body', number: '9' }] } }]);
+  assert.match(bare, /<span class="cb-reg-num"><span>9<\/span><\/span>/);
+  assert.ok(!bare.includes('cb-reg-check'));
+  // Websites saved with only the old register codes draw exactly as they did.
+  assert.deepEqual(registerOf({ body: 'nmc' }), REGULATORS.nmc);
+  assert.deepEqual(registerOf({}), REGULATORS.gmc);
+  assert.deepEqual(registerOf({ body: 'own' }), { short: '', name: '', href: '' });
+  const old = draw([{ id: 'b3', type: 'regulator', variant: 'panel', data: { heading: 'Who', items: [{ name: 'Dr A', body: 'gmc', number: '1234567' }, { name: 'Jo', body: 'nmc', number: '12A3456B' }, { name: 'Old', body: 'zzz', number: '1' }] } }]);
+  assert.ok(old.includes('<ul class="cb-reg-list"><li class="cb-reg-person"><span class="cb-reg-name">Dr A</span><span class="cb-reg-num"><span class="cb-reg-body">GMC</span> <span>1234567</span></span></li><li class="cb-reg-person"><span class="cb-reg-name">Jo</span><span class="cb-reg-num"><span class="cb-reg-body">NMC PIN</span> <span>12A3456B</span></span></li><li class="cb-reg-person"><span class="cb-reg-name">Old</span><span class="cb-reg-num"><span class="cb-reg-body">GMC</span> <span>1</span></span></li></ul><p class="cb-reg-checks"><a class="cb-link cb-reg-check" href="https://www.gmc-uk.org/registration-and-licensing/the-medical-register" rel="noopener">Check the General Medical Council register</a><a class="cb-link cb-reg-check" href="https://www.nmc.org.uk/registration/search-the-register/" rel="noopener">Check the Nursing and Midwifery Council register</a></p>'));
 });
 
 test('the clinic typeface: a clean sans with one warm italic phrase', () => {

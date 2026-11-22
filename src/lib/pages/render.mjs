@@ -3,7 +3,7 @@
 // Everything a writer types is escaped. Rich text allows only paragraphs, **bold**, *italic*,
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
-import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading, REGULATORS, CQC_ID, CQC_RATINGS } from './schema.mjs';
+import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading, CQC_ID, CQC_RATINGS, registerOf } from './schema.mjs';
 import { professionalDetails, telHref, sameText } from '../professional.mjs';
 
 export * from './schema.mjs';
@@ -1094,14 +1094,17 @@ R_.regulator = (C, b) => {
   }
   // Each person with their register and number; under the list, one link to each register used,
   // where anyone can check those numbers.
+  // The governing body is the quick pick or the business's own (registerOf), so a register
+  // anywhere can be named; one saved with only a pick draws exactly as before.
   const one = (x, i, w) => {
-    const reg = REGULATORS[x.body] || REGULATORS.gmc;
-    const num = x.number || C.editable ? `<span class="cb-reg-num"><span class="cb-reg-body">${esc(reg.short)}</span> ${T(C, b, `items.${i}.number`, x.number, 'span')}</span>` : '';
+    const reg = registerOf(x);
+    const num = x.number || C.editable ? `<span class="cb-reg-num">${reg.short ? `<span class="cb-reg-body">${esc(reg.short)}</span> ` : ''}${T(C, b, `items.${i}.number`, x.number, 'span')}</span>` : '';
     return w(`${T(C, b, `items.${i}.name`, x.name, 'span', 'cb-reg-name')}${num}`, 'li', 'cb-reg-person');
   };
   const people = LIST(C, b, 'items', items, one, 'ul', 'cb-reg-list');
-  const bodies = [...new Set(items.map((x) => (REGULATORS[x.body] ? x.body : 'gmc')))];
-  const checks = bodies.length ? `<p class="cb-reg-checks">${bodies.map((k) => `<a class="cb-link cb-reg-check" href="${esc(REGULATORS[k].href)}" rel="noopener"${C.editable ? ' tabindex="-1"' : ''}>Check the ${esc(REGULATORS[k].name)} register</a>`).join('')}</p>` : '';
+  // One link to each register used, once, where anyone can check those numbers.
+  const bodies = [...new Map(items.map(registerOf).filter((r) => r.href).map((r) => [`${r.href} ${r.name}`, r])).values()];
+  const checks = bodies.length ? `<p class="cb-reg-checks">${bodies.map((r) => `<a class="cb-link cb-reg-check" href="${esc(r.href)}" rel="noopener"${C.editable ? ' tabindex="-1"' : ''}>${r.name ? `Check the ${esc(r.name)} register` : 'Check the register'}</a>`).join('')}</p>` : '';
   if (!cqc && !people && !C.editable) return '';
   return `<div class="cb-reg${cqc ? '' : ' cb-reg-nocqc'}"><div class="cb-reg-side">${HEAD(C, b, d)}${cqc}</div><div class="cb-reg-people">${people}${checks}</div></div>${T(C, b, 'note', d.note, 'p', 'cb-small')}`;
 };
