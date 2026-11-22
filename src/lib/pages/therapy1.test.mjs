@@ -59,3 +59,15 @@ test('tiles that assemble: they come in from different sides, only with movement
   // Four sides, so neighbouring tiles never arrive from the same one.
   assert.equal((rules.match(/\.cb-tl-assemble>:nth-child\(4n(\+\d)?\)\{--ax:/g) || []).length, 4);
 });
+
+test('a colour-block opening keeps its smaller words at full strength only where the softened mix would not read', () => {
+  const blob = { type: 'hero', variant: 'blob', data: { heading: 'Back to *moving well*', intro: 'Words.' } };
+  const look = (accent) => ({ palette: 'x', colours: { bg: '#f4f6f5', surface: '#dfe8e4', ink: '#13201b', accent, deep: '#13201b' } });
+  // Stride's own green: black words on it reach 4.84:1, softened 4.38:1, so they stay black.
+  assert.match(renderPage(page([blob], look('#1f8a5b')), {}), /--cb-blob-dim:#000000/);
+  // A deeper accent reads softened, so nothing changes; nor on a page without a blob opening.
+  assert.ok(!renderPage(page([blob], look('#13603e')), {}).includes('--cb-blob-dim'));
+  assert.ok(!renderPage(page([{ type: 'hero', variant: 'split', data: { heading: 'A' } }], look('#1f8a5b')), {}).includes('--cb-blob-dim'));
+  const blocks = readFileSync(new URL('../../styles/blocks.css', import.meta.url), 'utf8');
+  assert.match(blocks, /\.cb-hero--blob\.cb-bg-none\{[^}]*--ink-dim:var\(--cb-blob-dim,color-mix\(in srgb,var\(--cb-on-accent\) 86%,var\(--accent\)\)\)/);
+});

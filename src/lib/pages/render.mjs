@@ -95,6 +95,10 @@ export function pageCss(page, base = {}) {
       `--accent:${k.accent}`, `--teal:${k.accent}`, `--cyan:${k.accent}`, `--violet:${k.accent}`, `--accent-text:${k.accentText}`, `--pro-button-ink:${k.onAccent}`, `--badge-ink:${k.ink}`, `--selection-bg:color-mix(in srgb,${k.accent} 30%,transparent)`,
       `color-scheme:${k.dark ? 'dark' : 'light'}`);
   }
+  // A colour-block opening (the blob) softens its smaller words with a little of the accent. Where
+  // that would read under 4.5:1 on the accent (Stride Physiotherapy's own green, so far the only
+  // one), they keep the full text colour. Nothing is set for any other page.
+  if (look.colours && (page.blocks || []).some((b) => b?.type === 'hero' && b.variant === 'blob') && contrast(mix(k.onAccent, k.accent, 0.14), k.accent) < 4.5) v.push(`--cb-blob-dim:${k.onAccent}`);
   if (look.font && PAGE_FONTS[look.font]) v.push(`--cb-heading-font:${PAGE_FONTS[look.font].css}`);
   if (look.bodyFont && PAGE_BODY_FONTS[look.bodyFont]) {
     v.push(`--cb-body-font:${PAGE_BODY_FONTS[look.bodyFont].css}`);

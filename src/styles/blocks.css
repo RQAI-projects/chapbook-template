@@ -497,7 +497,7 @@
 .cb-wm-pic{aspect-ratio:16/10;max-height:26rem;justify-self:end;width:100%}
 
 /* ---- Opening: colour block, photo in a moving shape ------------------------------------- */
-.cb-hero--blob.cb-bg-none{background:var(--accent);color:var(--cb-on-accent);--ink:var(--cb-on-accent);--ink-dim:color-mix(in srgb,var(--cb-on-accent) 86%,var(--accent));--cb-accent-text:var(--cb-on-accent);--line:color-mix(in srgb,var(--cb-on-accent) 25%,transparent);--line-strong:color-mix(in srgb,var(--cb-on-accent) 42%,transparent)}
+.cb-hero--blob.cb-bg-none{background:var(--accent);color:var(--cb-on-accent);--ink:var(--cb-on-accent);--ink-dim:var(--cb-blob-dim,color-mix(in srgb,var(--cb-on-accent) 86%,var(--accent)));--cb-accent-text:var(--cb-on-accent);--line:color-mix(in srgb,var(--cb-on-accent) 25%,transparent);--line-strong:color-mix(in srgb,var(--cb-on-accent) 42%,transparent)}
 .cb-hero--blob.cb-bg-none .cb-btn{background:var(--cb-on-accent);color:var(--accent);border-color:var(--cb-on-accent)}
 .cb-hero--blob.cb-bg-none .cb-btn-2{background:transparent;color:var(--cb-on-accent)}
 .cb-hero--blob.cb-bg-none>.cbm-bd{--bd-a:var(--cb-on-accent);--bd-b:var(--cb-on-accent);--bd-c:var(--cb-on-accent);--bd-ink:var(--cb-on-accent)}
