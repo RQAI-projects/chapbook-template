@@ -993,6 +993,8 @@ html:not(.cbm-js) .cb-rail-band{display:none}
 .cb-ap-in{position:absolute;left:50%;top:50%;width:100vw;height:var(--h);margin:calc(var(--h) * -.38) 0 0 -50vw;transform-origin:50% 38%;transform:scale(calc(1 / var(--ap)))}
 .cbp .cb-ap-in :is(img,video,.cb-pic-empty){display:block;width:100%;height:100%;object-fit:cover;border-radius:0}
 @media (max-width:760px){.cbp .cb-ap-pic{--h:58vh}}
+/* Centred, the words sit above the middle of the circle, so the opening reads as one lens. */
+.cb-al-centre .cb-aperture .cb-reveal-words{margin-inline:auto}
 
 /* A line drawn beside the steps: a calm heart trace or a sound wave, with a faint copy of the
    whole line behind it. The window around the drawn copy slides right while the line inside
