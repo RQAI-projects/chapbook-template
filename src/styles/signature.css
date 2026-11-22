@@ -187,7 +187,7 @@
 .cbp .cb .cb-tl-item h3.cb-tl-name{font-size:clamp(1.15rem,1.8vw,1.45rem);line-height:1.2}
 .cb-tl-item.has-pic .cb-credit{position:absolute;right:.5rem;top:.4rem;color:#fff}
 /* A tile led by a number takes the accent colour, every other one. */
-.cb-tl-item.has-value:not(.has-pic):nth-child(odd){background:var(--accent);color:var(--cb-on-accent);--ink:var(--cb-on-accent);--ink-dim:color-mix(in srgb,var(--cb-on-accent) 86%,var(--accent));--cb-accent-text:var(--cb-on-accent)}
+.cb-tl-item.has-value:not(.has-pic):nth-child(odd){background:var(--accent);color:var(--cb-on-accent);--ink:var(--cb-on-accent);--ink-dim:var(--cb-on-accent);--cb-accent-text:var(--cb-on-accent)}
 .cb-tl>:nth-child(3n+1){grid-column:span 2}
 .cb-tl>:last-child:nth-child(3n+2){grid-column:span 2}
 @media (min-width:761px){
@@ -842,7 +842,7 @@ html:not(.cbm-js) .cb-rail-band{display:none}
 .cbp .cb-act-pic{margin:0;border-radius:calc(var(--cb-r) + .7rem);overflow:hidden;background:var(--cb-surface)}
 .cbp .cb-act-pic :is(img,video,.cb-pic-empty){display:block;width:100%;height:100%;aspect-ratio:4/3;object-fit:cover;border-radius:0}
 .cb-act-panel{position:relative;z-index:1;border-radius:calc(var(--cb-r) + .7rem);overflow:hidden;background:var(--bg-0,#fff);color:var(--cb-page-ink,var(--ink));box-shadow:0 40px 70px -40px color-mix(in srgb,var(--cb-deep) 60%,transparent),0 0 0 1px color-mix(in srgb,var(--cb-page-ink,#16181d) 9%,transparent)}
-.cb-act-card{display:grid;gap:.45rem;padding:clamp(1rem,2vw,1.3rem) clamp(1.1rem,2.2vw,1.5rem);background:var(--cb-deep);color:var(--cb-on-deep)}
+.cb-act-card{display:grid;gap:.45rem;padding:clamp(1rem,2vw,1.3rem) clamp(1.1rem,2.2vw,1.5rem);background:var(--cb-deep);color:var(--cb-on-deep);--cb-accent-text:var(--cb-on-deep)}
 .cb-act-card .cb-opennow{justify-self:start;margin:0;font-size:1.05rem;background:color-mix(in srgb,var(--cb-on-deep) 12%,transparent)}
 .cb-act-card .cb-opennow.is-open::before{background:#4fd08a;box-shadow:0 0 0 .22rem color-mix(in srgb,#4fd08a 30%,transparent)}
 .cb-act-hours{margin:0;font-size:.92rem;line-height:1.5;color:color-mix(in srgb,var(--cb-on-deep) 84%,var(--cb-deep))}
@@ -909,7 +909,7 @@ html:not(.cbm-js) .cb-rail-band{display:none}
 /* ---- Regulator and registration ------------------------------------------------------------- */
 .cb-reg{display:grid;gap:clamp(1.6rem,4vw,3.5rem)}
 @media (min-width:761px){.cb-reg{grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:start}}
-.cb-reg-cqc{margin-top:1.4rem;padding:clamp(1.1rem,2vw,1.5rem);border-radius:calc(var(--cb-r) + .4rem);background:var(--cb-deep);color:var(--cb-on-deep)}
+.cb-reg-cqc{margin-top:1.4rem;padding:clamp(1.1rem,2vw,1.5rem);border-radius:calc(var(--cb-r) + .4rem);background:var(--cb-deep);color:var(--cb-on-deep);--cb-accent-text:var(--cb-on-deep)}
 .cb-reg-label{margin:0 0 .6rem;font-size:.8rem;font-weight:650;letter-spacing:.09em;text-transform:uppercase}
 .cb-reg-rating{margin:0;display:grid;gap:.15rem}
 .cb-reg-small{font-size:.92rem}
@@ -1204,7 +1204,7 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 /* The photo lies behind all three windows at once: as wide and as tall as the whole set. */
 .cb-tri-strip img{position:absolute;top:calc(var(--t) / (1 - var(--t) - var(--b)) * -100%);left:calc(var(--k) * -100% - var(--k) * var(--g));width:calc(300% + 2 * var(--g));max-width:none;height:calc(100% / (1 - var(--t) - var(--b)));object-fit:cover}
 .cb-tri-one img{width:100%;aspect-ratio:4/3;object-fit:cover}
-.cb-tri-ledger{margin-top:clamp(2rem,4.5vw,3.6rem);padding:clamp(1.1rem,2.6vw,1.7rem) clamp(1.2rem,3vw,2.4rem);border-radius:clamp(.4rem,.8vw,.7rem);background:var(--cb-deep);color:var(--cb-on-deep);--ink:var(--cb-on-deep);--ink-dim:var(--cb-on-deep);--line:color-mix(in srgb,var(--cb-on-deep) 24%,transparent)}
+.cb-tri-ledger{margin-top:clamp(2rem,4.5vw,3.6rem);padding:clamp(1.1rem,2.6vw,1.7rem) clamp(1.2rem,3vw,2.4rem);border-radius:clamp(.4rem,.8vw,.7rem);background:var(--cb-deep);color:var(--cb-on-deep);--ink:var(--cb-on-deep);--ink-dim:var(--cb-on-deep);--line:color-mix(in srgb,var(--cb-on-deep) 24%,transparent);--cb-accent-text:var(--cb-on-deep)}
 .cbp .cb-tri-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:1rem clamp(1.4rem,3.5vw,3rem);margin:0}
 .cbp .cb-tri-facts>div{display:block;padding-left:clamp(.9rem,1.6vw,1.2rem);border-left:1px solid var(--line)}
 .cb-tri-facts dt{font-size:.78rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
