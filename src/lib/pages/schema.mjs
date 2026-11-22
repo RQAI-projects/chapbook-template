@@ -303,6 +303,9 @@ export const BLOCK_TYPES = {
       // opening softly; and (brain and nerves) simple branching lines drawn slowly behind the words.
       questions: 'Questions first, each opening softly',
       branches: 'Branching lines drawn slowly behind the words',
+      // Batch 2 (counselling): the words above a wide photo of still water and its reflection,
+      // which settles slowly as the page opens.
+      reflection: 'Still water: the words above a photo and its reflection',
     },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, rotate: { ...L(160, 'Changing words', 'e.g. brands, websites, films'), panel: true, hint: 'A few words with commas between them. They take turns at the end of the heading.' }, word: L(12, 'Big word', 'e.g. Fresh'), intro: R(1200, 'Introduction'), picture: PIC(), pictures: { kind: 'pictures', max: 6, label: 'More photos' },
@@ -504,7 +507,7 @@ export const BLOCK_TYPES = {
   },
   steps: {
     label: 'Steps', hint: 'How it works, in a few numbered steps. The line draws itself as people scroll.',
-    variants: { line: 'Down a line', row: 'Side by side', big: 'Big numbers', sticky: 'A big number that stays while the steps go past', timeline: 'A timeline that fills as you read, each step with its time' },
+    variants: { line: 'Down a line', row: 'Side by side', big: 'Big numbers', sticky: 'A big number that stays while the steps go past', timeline: 'A timeline that fills as you read, each step with its time', route: 'A line drawn down the page as you read, the steps either side of it' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 8, label: 'Steps', add: 'Add a step', item: { when: L(40, 'When', 'e.g. First 10 minutes'), name: L(100, 'Step', 'Name of the step'), description: R(600, 'What happens'), link: { kind: 'link', label: 'Button' } }, sample: { name: 'Next step', description: '' } },
@@ -549,7 +552,7 @@ export const BLOCK_TYPES = {
   },
   plans: {
     label: 'Ways to pay', hint: 'Cards for paying in full, a deposit, a membership or a package. Each has its own pay link, and the money goes straight to you.',
-    variants: { cards: 'Cards side by side', ladder: 'Steps that rise', rows: 'Rows', fan: 'Cards held like a hand, that spread out as people scroll' },
+    variants: { cards: 'Cards side by side', ladder: 'Steps that rise', rows: 'Rows', fan: 'Cards held like a hand, that spread out as people scroll', arches: 'Arched cards, the middle one raised, rising into place' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 6, label: 'Ways to pay', add: 'Add a way to pay', item: {
@@ -565,6 +568,8 @@ export const BLOCK_TYPES = {
       // Contact). Where that reads oddly (a GP's "How to pay"), it can say to ask at reception, or
       // show nothing, until a pay link is added.
       unpaid: { kind: 'choice', options: ['book', 'ask', 'none'], def: 'book', labels: { book: 'Book, call or get in touch', ask: 'Says "Ask at reception"', none: 'No button' }, label: 'Cards without a pay link' },
+      // Steps that rise: each step climbs into place as the section comes into view (batch 2).
+      rise: { kind: 'bool', label: 'Steps climb into place as people scroll' },
     },
   },
   spaces: {
@@ -695,9 +700,9 @@ export const BLOCK_TYPES = {
 export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'tiles', 'compare', 'timetable', 'casestudy', 'scenes', 'regulator'];
 // Layouts of older section types that came with the same release. On an older design they would
 // quietly become the type's first layout, so they need the update too.
-export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture', 'dawn', 'triptych', 'questions', 'branches'], services: ['pinned', 'rail'], steps: ['sticky', 'timeline'], notice: ['help'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
+export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture', 'dawn', 'triptych', 'questions', 'branches', 'reflection'], services: ['pinned', 'rail'], steps: ['sticky', 'timeline', 'route'], plans: ['arches'], notice: ['help'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
 // Settings of older section types that came with release 7: an older design ignores them.
-export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace', 'help', 'questions'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], spaces: ['noCalendar'], steps: ['trace'], facts: ['beat', 'wave'], tiles: ['bounce', 'assemble'] };
+export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace', 'help', 'questions'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], spaces: ['noCalendar'], plans: ['rise'], steps: ['trace'], facts: ['beat', 'wave'], tiles: ['bounce', 'assemble'] };
 // Settings of an entry in a list that came with release 7 (an older design drops them).
 export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'], steps: ['when'], tiles: ['shape'], scenes: ['drawing'], bookstrip: ['paid'], spaces: ['paid'], plans: ['manage'] };
 // A word in a heading set in italic, written *like this*. Release 7 draws it; an older design

@@ -418,7 +418,7 @@ const shownMore = (b, d) => (d.pictures || []).slice(0, HERO_PHOTO_ROOM[b.varian
 // Openings built round a photo. On the published page one with no photo or film is drawn as its
 // words alone, so no room is kept for a picture that was never added. The editor is not touched:
 // it goes on showing the "Add a picture" prompt in the photo's place.
-const PHOTO_LED = ['split', 'photo-behind', 'stacked', 'blob', 'inset', 'open', 'orbit', 'collage', 'arch', 'curtain', 'reveal', 'dawn', 'triptych'];
+const PHOTO_LED = ['split', 'photo-behind', 'stacked', 'blob', 'inset', 'open', 'orbit', 'collage', 'arch', 'curtain', 'reveal', 'dawn', 'triptych', 'reflection'];
 // Of those, the ones whose whole frame is shaped for the photo. Without one they take the plain
 // "words" frame instead of their own.
 const PHOTO_FRAMED = ['photo-behind', 'inset', 'open', 'curtain', 'dawn', 'triptych'];
@@ -688,6 +688,14 @@ R_.hero = (C, b) => {
   }
   // Branching lines drawn slowly behind the words (release 7, brain and nerves): the stem first,
   // then each level of branches, then the dots where they divide. Drawn whole when still.
+  // Still water (batch 2, counselling): the words, then a wide photo of still water with its
+  // reflection under it. The reflection is a mirrored copy, decoration only (hidden from screen
+  // readers); it settles slowly as the page opens, and is simply there with movement turned down.
+  if (v === 'reflection') {
+    const mirror = d.picture && !C.editable ? `<span class="cb-rf-mirror" aria-hidden="true"><img src="${esc(imgSrc(C, d.picture.src))}"${srcsetOf(C, d.picture)} alt="" decoding="async"${focusPos(d.picture) ? ` style="object-position:${focusPos(d.picture)}"` : ''}></span>` : '';
+    const water = media ? `<figure class="cb-hero-pic cb-rf-water">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}${mirror}</figure>` : '';
+    return `<div class="cb-rf${water ? '' : ' cb-solo'}"><div class="cb-hero-words cb-rf-words">${words}${details}</div>${water}</div>${d.picture ? creditsOf([d.picture]) : ''}`;
+  }
   if (v === 'branches') return `<div class="cb-br"><div class="cb-br-art" aria-hidden="true"><span class="cb-br-ghost">${branchSvg()}</span><span class="cb-br-win"><span class="cb-br-in">${branchSvg()}</span></span></div><div class="cb-hero-words cb-br-words">${words}${details}</div></div>`;
   if (v === 'reveal') return `<div class="cb-reveal"><div class="cb-hero-words cb-reveal-words">${words}${details}</div>${media ? `<figure class="cb-hero-pic cb-reveal-pic"><span class="cb-reveal-in">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</span></figure>${creditsOf([d.picture])}` : ''}${toggle}</div>`;
   // One statement that fills the first screen. No photo, by design.
@@ -1266,6 +1274,15 @@ R_.steps = (C, b) => {
     const tl = LIST(C, b, 'items', items, row, 'ol', 'cb-steps cb-steps-timeline');
     return `${head}<div class="cb-tline" style="--n:${n}"${C.editable ? '' : ' data-scroll="read"'}><span class="cb-tline-rail" aria-hidden="true"><i></i></span>${tl}</div>`;
   }
+  // A route (batch 2, consultants): one line drawn down the page as the steps are read, each step
+  // at a numbered point on it, the steps either side of the line on a wide screen. The line and
+  // its points are decoration (each step has its words and number); without movement it is whole.
+  if (b.variant === 'route') {
+    const two = (k) => String(k).padStart(2, '0');
+    const row = (x, i, w) => w(`<span class="cb-route-n" aria-hidden="true">${two(i + 1)}</span><div class="cb-step-body">${T(C, b, `items.${i}.when`, x.when, 'p', 'cb-route-when')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-step-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-step-desc')}${go(x, i)}</div>`, 'li', 'cb-step cb-route-item');
+    const rl = LIST(C, b, 'items', items, row, 'ol', 'cb-steps cb-steps-route');
+    return `${head}<div class="cb-route" style="--n:${Math.max(items.length, 1)}"${C.editable ? '' : ' data-scroll="read"'}><span class="cb-route-line" aria-hidden="true"><i></i></span>${rl}</div>`;
+  }
   // A progress line (therapy batch 1): beside the steps, a line that fills as they are read, with
   // a marker at its end; the big number still changes as each step passes. Decoration, so hidden
   // from screen readers; without movement the line is simply full.
@@ -1447,6 +1464,14 @@ R_.plans = (C, b) => {
   let list = LIST(C, b, 'items', items, one, 'div', `cb-pl cb-pl-${b.variant}`);
   // Cards held like a hand: on a wide screen they start fanned together and spread into a row as
   // the section comes into view (the page's script sets --p; the stylesheet does the rest).
+  // Arched cards (batch 2): each rises into place as the section comes into view, the middle one
+  // standing higher; steps that climb (a ladder with `rise`): each step comes up from lower down,
+  // the tallest from furthest. The page's script sets --p; without it they stand in place.
+  if (((b.variant === 'arches') || (b.variant === 'ladder' && d.rise)) && !C.editable && items.length > 1) {
+    let k = -1;
+    list = list.replace(/^<div class="cb-pl cb-pl-(arches|ladder)"/, (m, v2) => `<div class="cb-pl cb-pl-${v2}${v2 === 'ladder' ? ' cb-pl-rise' : ''}" data-scroll="enter" data-scroll-span="${v2 === 'ladder' ? '0.9' : '0.75'}"`)
+      .replace(/<article class="cb-pl-item/g, () => { k++; return `<article style="--k:${k}" class="cb-pl-item`; });
+  }
   if (b.variant === 'fan' && !C.editable && items.length > 1) {
     const mid = (items.length - 1) / 2;
     let k = -1;
