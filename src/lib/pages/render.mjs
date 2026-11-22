@@ -600,11 +600,11 @@ R_.hero = (C, b) => {
   }
   if (v === 'curtain') return `<div class="cb-curtain"><div class="cb-curtain-words"><div class="cb-hero-words">${words}${details}</div></div>${media ? pic('cb-hero-pic cb-curtain-pic') : ''}</div>`;
   // Large words, then a photo from edge to edge that opens out like a curtain as the page opens.
-  // A photo that opens from a small circle in the middle until it fills the width (the camera's
-  // aperture). Moved by one number the stylesheet animates (--ap): the circle grows by it and the
-  // photo inside shrinks by it, so the photo itself stays still. Without movement, it is simply
-  // the photo.
-  if (v === 'aperture') return `<div class="cb-reveal cb-aperture"><div class="cb-hero-words cb-reveal-words">${words}${details}</div>${media ? `<figure class="cb-hero-pic cb-ap-pic"><span class="cb-ap-ring"><span class="cb-ap-in">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</span></span></figure>${creditsOf([d.picture])}` : ''}${toggle}</div>`;
+  // A photo that opens from a small circle until it fills the width, like a camera's aperture,
+  // as it comes into view (the photo sits under the words, so it opens where it is seen). One
+  // number (--ap, from the scroll) grows the circle and shrinks the photo inside by as much, so
+  // the photo itself stays still. Without movement, it is simply the photo.
+  if (v === 'aperture') return `<div class="cb-reveal cb-aperture"><div class="cb-hero-words cb-reveal-words">${words}${details}</div>${media ? `<figure class="cb-hero-pic cb-ap-pic"${C.editable ? '' : ' data-scroll="enter" data-scroll-span="0.85"'}><span class="cb-ap-ring"><span class="cb-ap-in">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</span></span></figure>${creditsOf([d.picture])}` : ''}${toggle}</div>`;
   // Words beside a portrait. Until the person adds a photo of their own, the portrait is set in
   // type: the letters of their name, large, in a frame (never a made-up face).
   if (v === 'portrait') {

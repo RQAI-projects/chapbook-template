@@ -982,16 +982,17 @@ html:not(.cbm-js) .cb-rail-band{display:none}
 @media (min-width:761px){.cb-prt{grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:clamp(2.5rem,6vw,6rem)}}
 @media (max-width:760px){.cbp .cb-prt-pic{max-width:15rem}.cbp .cb-frame-arch .cb-prt-pic{max-width:13rem}.cb-mono-letters{font-size:clamp(4.5rem,24vw,6.5rem)}}
 
-/* The aperture: a circle in the middle widens until the photo fills the width. One number,
-   --ap, scales the circle up and the photo inside down by the same amount, so the photo itself
-   never moves. Without movement --ap stays 1: the photo, whole. */
+/* The aperture: a circle a little above the middle widens until the photo fills the width, as
+   the photo comes into view (the page's script sets --p). One number, --ap, scales the circle up
+   and the photo inside down by the same amount, so the photo itself never moves. Without
+   movement --ap stays 1: the photo, whole. The circle (--d across) covers the whole frame from
+   its centre at any shape of screen. */
 @property --ap{syntax:'<number>';inherits:true;initial-value:1}
-.cbp .cb-ap-pic{--h:clamp(22rem,74vh,54rem);--d:calc(max(100vw,var(--h)) * 1.42 + 4px);position:relative;width:100vw;margin:0 0 0 calc(50% - 50vw);height:var(--h);overflow:hidden}
-.cb-ap-ring{position:absolute;left:50%;top:50%;width:var(--d);height:var(--d);margin:calc(var(--d) / -2) 0 0 calc(var(--d) / -2);border-radius:50%;overflow:hidden;transform:scale(var(--ap))}
-.cb-ap-in{position:absolute;left:50%;top:50%;width:100vw;height:var(--h);margin:calc(var(--h) / -2) 0 0 -50vw;transform:scale(calc(1 / var(--ap)))}
+.cbp .cb-ap-pic{--h:clamp(22rem,74vh,54rem);--d:calc(max(100vw,var(--h)) * 1.82 + 4px);position:relative;width:100vw;margin:0 0 0 calc(50% - 50vw);height:var(--h);overflow:hidden}
+.cb-ap-ring{position:absolute;left:50%;top:38%;width:var(--d);height:var(--d);margin:calc(var(--d) / -2) 0 0 calc(var(--d) / -2);border-radius:50%;overflow:hidden;transform:scale(var(--ap))}
+.cb-ap-in{position:absolute;left:50%;top:50%;width:100vw;height:var(--h);margin:calc(var(--h) * -.38) 0 0 -50vw;transform-origin:50% 38%;transform:scale(calc(1 / var(--ap)))}
 .cbp .cb-ap-in :is(img,video,.cb-pic-empty){display:block;width:100%;height:100%;object-fit:cover;border-radius:0}
 @media (max-width:760px){.cbp .cb-ap-pic{--h:58vh}}
-@keyframes cbs-aperture{from{--ap:.06}to{--ap:1}}
 
 /* A line drawn beside the steps: a calm heart trace or a sound wave, with a faint copy of the
    whole line behind it. The window around the drawn copy slides right while the line inside
@@ -1023,7 +1024,7 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 .cbp-hf-lyric .cb-pinhero-story li strong{font-style:italic}
 
 @media screen and (prefers-reduced-motion:no-preference){
-  html.cbm-js .cbm:not([data-m-edit]) .cb-ap-pic{animation:cbs-aperture 1.6s cubic-bezier(.65,0,.35,1) .25s both}
+  html.cbm-js .cbm:not([data-m-edit]) .cb-ap-pic.is-live{--ap:calc(.07 + .93 * var(--p,0))}
   html.cbm-js .cbm:not([data-m-edit]) :is(.cb-ap-ring,.cb-ap-in){will-change:transform}
   html.cbm-js .cbm:not([data-m-edit]) .cb-mono-letters{display:inline-block;animation:cbs-act-rise 1.2s cubic-bezier(.22,1,.36,1) .1s both}
   html.cbm-js .cbm:not([data-m-edit]) .cb-trace-top.is-live .cb-trace-win{transform:translate3d(calc((var(--p,0) - 1) * 100%),0,0)}

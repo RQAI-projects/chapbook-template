@@ -277,7 +277,8 @@ test('consultant doctors: a portrait set in type, a photo that opens from a circ
   assert.match(ed, /data-cb-img="p:picture"/); assert.match(ed, /data-cb="p:monogram"/); assert.match(ed, /Add a picture/);
   // The aperture: the photo inside a circle inside the frame, loaded first; the words as ever.
   const ap = renderPage(page([{ type: 'hero', variant: 'aperture', data: { heading: 'See clearly', picture: pic('eye'), buttons: [{ label: 'Book', href: '@booking' }] } }]), { site: SITE });
-  assert.match(ap, /<figure class="cb-hero-pic cb-ap-pic"><span class="cb-ap-ring"><span class="cb-ap-in"><img src="\/site-images\/cbp-eye\.webp"[^>]*fetchpriority="high"/);
+  assert.match(ap, /<figure class="cb-hero-pic cb-ap-pic" data-scroll="enter" data-scroll-span="0\.85"><span class="cb-ap-ring"><span class="cb-ap-in"><img src="\/site-images\/cbp-eye\.webp"[^>]*fetchpriority="high"/);
+  assert.ok(!renderPage(page([{ type: 'hero', variant: 'aperture', data: { heading: 'x', picture: pic('eye') } }]), { site: SITE, editable: true }).includes('data-scroll'), 'still in the editor');
   assert.ok(!renderPage(page([{ type: 'hero', variant: 'aperture', data: { heading: 'See clearly' } }]), { site: SITE }).includes('cb-ap-'));
   // Lines beside steps: one stretch a step, hidden from screen readers, a faint whole copy behind.
   assert.equal((traceSvg('heart', 3).match(/L\d+(\.\d+)? 4 /g) || []).length, 3, 'one beat a step');
@@ -305,7 +306,7 @@ test('consultant doctors: a portrait set in type, a photo that opens from a circ
   // The new movement only runs for visitors who have not asked for less, and moves transforms only.
   const css = readFileSync(new URL('../../styles/signature.css', import.meta.url), 'utf8');
   const batch = css.slice(css.indexOf('Consultant doctors batch'));
-  for (const m of batch.matchAll(/animation:cbs-(aperture|beat|act-rise)|transition:transform \.7s/g)) {
+  for (const m of batch.matchAll(/animation:cbs-(beat|act-rise)|transition:transform \.7s|--ap:calc/g)) {
     const before = batch.slice(0, m.index);
     assert.ok(before.lastIndexOf('@media screen and (prefers-reduced-motion:no-preference)') > before.lastIndexOf('\n}'), `${m[0]} outside the reduce-motion guard`);
   }
