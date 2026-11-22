@@ -178,7 +178,10 @@ export function renderPage(rawPage, ctx = {}) {
   // A page that opens with words only: its first photo is what a phone paints largest, so it is
   // asked for at once instead of waiting until it is scrolled near.
   const first = page.blocks[0];
-  C.eagerLeft = first?.type === 'hero' && (first.data.picture || first.data.video || (first.data.pictures || []).length) ? 0 : 1;
+  // (An opening whose first screen is its words by design, questions first or branching lines
+  // drawn behind the words, keeps the words the largest paint: no photo further down jumps the queue.)
+  const wordsLed = first?.type === 'hero' && ['questions', 'branches'].includes(first.variant);
+  C.eagerLeft = wordsLed || (first?.type === 'hero' && (first.data.picture || first.data.video || (first.data.pictures || []).length)) ? 0 : 1;
   const blocks = page.blocks.map((b) => renderBlock(b, C)).join('');
   return `<style>${pageCss(page, ctx.base)}</style><div class="cbp${m ? ' cbm' : ''}${page.look.font ? ` cbp-font cbp-hf-${page.look.font}` : ''}${page.look.bodyFont ? ' cbp-bodyfont' : ''}" data-page="${esc(page.slug)}"${motionAttrs(m)}${C.editable ? ' data-m-edit' : ''}>${blocks}</div>`;
 }

@@ -72,6 +72,11 @@ test('branching lines behind the words: drawn slowly once, whole and still with 
   assert.match(html, /<div class="cb-br"><div class="cb-br-art" aria-hidden="true"><span class="cb-br-ghost"><svg class="cb-br-svg"/);
   assert.equal((html.match(/<h1/g) || []).length, 1);
   assert.ok(!/<img/.test(html));
+  // The words are the first screen's largest paint: a photo further down waits its turn.
+  const below = draw([{ type: 'hero', variant: 'branches', data: { heading: 'Brain' } }, { type: 'text', variant: 'picture-right', data: { heading: 'Fog', picture: pic('d13-neuro-a', 'Fog') } }]);
+  assert.ok(!below.includes('fetchpriority="high"') && below.includes('loading="lazy"'));
+  const ask = draw([{ type: 'hero', variant: 'questions', data: { heading: 'Is this worth checking?' } }, { type: 'text', variant: 'picture-right', data: { heading: 'Rooms', picture: pic('d12-mens-c', 'Rooms') } }]);
+  assert.ok(!ask.includes('fetchpriority="high"'));
   // The drawing is revealed by a window that slides (transform), inside the reduce motion guard.
   const guard = css.slice(css.indexOf('Branching lines drawn slowly'));
   assert.match(guard, /@media screen and \(prefers-reduced-motion:no-preference\)\{\s*html\.cbm-js \.cbm:not\(\[data-m-edit\]\) \.cb-br-win\{animation:cbs-trace-win 3\.2s/);
