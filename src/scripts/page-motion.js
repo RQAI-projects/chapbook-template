@@ -18,7 +18,8 @@ const TARGETS = [
   '.cb-rail-track > *', '.cb-mbi-nav', '.cb-float > *',
 ].join(',');
 // Layouts that bring themselves in; the scroll effect leaves them alone.
-const OWN_ENTRANCE = '.cb-bento, .cb-curtain, .cb-open, .cb-hero-bg, .cb-backdrop, .cbm-bd, .cb-mask-thumb, .cb-plates-bg, .cb-plates-wipe, .cb-reveal-pic, .cb-pin-stage';
+// `.cb-still`: a section that never moves (If you need help now), for anyone.
+const OWN_ENTRANCE = '.cb-bento, .cb-curtain, .cb-open, .cb-hero-bg, .cb-backdrop, .cbm-bd, .cb-mask-thumb, .cb-plates-bg, .cb-plates-wipe, .cb-reveal-pic, .cb-pin-stage, .cb-still, .cb-dawn';
 const PICTURES = '.cb-pic-frame, .cb-figure, .cb-svc-pic, .cb-order-pic, .cb-portrait, .cb-show-pic, .cb-gallery > figure, .cb-cs-main, .cb-cs-more > figure, .cb-cmp-one, .cb-sc-pic, .cb-hero-pic:not(.cb-hero-bg):not(.cb-stage-pic):not(.cb-arch-pic):not(.cb-curtain-pic):not(.cb-lens-pic):not(.cb-bw-pic):not(.cb-shatter):not(.cb-reveal-pic)';
 const KEEPS_MOVING = '.cb-rv-drift, .cb-car:not(.cb-car-still), .cb-depth, .cb-bw, .cb-lens, .cbm-bd canvas, .cb-mq:not(.cb-mq-still), .cb-film:not(.cb-film-still), .cbm-bd:not(.cbm-bd-dawn), .cb-orbit, .cb-collage, .cb-arch-badge, .cb-mask-h, .cb-rot, .cb-blob, .cb-inset-bg, .cb-open-bg, .cb-factlist-circles';
 const PAUSE_KEY = 'cbm-paused';
@@ -59,7 +60,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   const blocks = [...root.children].filter((n) => n.classList?.contains('cb'));
   // The page's opening: its first Opening block, which need not be the very first block.
   const hero = blocks.find((b) => b.classList.contains('cb-opening')) || null;
-  const pace = { calm: [1050, 110], lively: [600, 55], measured: [800, 75] }[look('pace')] || [750, 70];
+  // The unhurried pace is written as the measured one, with data-m-unhurried: slower.
+  const pace = root.hasAttribute('data-m-unhurried') ? [1300, 140] : { calm: [1050, 110], lively: [600, 55], measured: [800, 75] }[look('pace')] || [750, 70];
   const measured = look('pace') === 'measured';
 
   // ---- the giant name: trimmed to fill the width exactly ------------------------------------
@@ -262,7 +264,13 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
         const next = moving.map((el) => {
           const r = el.getBoundingClientRect();
           if (r.bottom < -vh || r.top > vh * 2) return null;
-          if (el.getAttribute('data-scroll') === 'exit') return clamp((vh * 0.4 - (r.top + r.height / 2)) / (vh * 0.62), 0, 1);
+          const how = el.getAttribute('data-scroll');
+          // Through: how far a tall piece has scrolled past its part that stays put (a night sky
+          // lightening while it holds still). One no taller than the screen lightens as it leaves.
+          if (how === 'through' && r.height > vh * 1.1) return clamp(-r.top / (r.height - vh), 0, 1);
+          if (how === 'exit' || how === 'through') return clamp((vh * 0.4 - (r.top + r.height / 2)) / (vh * 0.62), 0, 1);
+          // Read: how far down a tall piece the reading line (60% down the screen) has reached.
+          if (how === 'read') return clamp((vh * 0.6 - r.top) / Math.max(r.height, 1), 0, 1);
           // Arriving is finished once the piece has come about its own height into view, or the
           // page has no further to scroll: nothing is left half-way.
           if (atEnd && r.top < vh) return 1;

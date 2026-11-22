@@ -50,6 +50,8 @@ export const PAGE_FONTS = {
   mixed: { label: 'Clean sans, one warm italic phrase', css: "'Inter Variable','Inter',system-ui,sans-serif" },
   // Release 7, consultant doctors: the warm serif set light and in italic throughout.
   lyric: { label: 'Light italic serif', css: "'Fraunces',Georgia,serif" },
+  // Release 7, mental health: the reading serif set light, quiet and even.
+  quiet: { label: 'Light reading serif', css: "'Newsreader',Georgia,serif" },
 };
 
 // Typefaces for running text: all easy to read at length, all already loaded by every site.
@@ -182,7 +184,8 @@ export function renderPage(rawPage, ctx = {}) {
 // The page's movement choices as data-m-* attributes; motion.css and page-motion.js read them.
 export function motionAttrs(m) {
   if (!m) return '';
-  return ['scroll', 'heading', 'buttons', 'pictures', 'follow', 'pointer', 'opening', 'arrive', 'mark', 'pace'].filter((k) => m[k] && Object.hasOwn(MOTION[k].options, m[k])).map((k) => ` data-m-${k}="${m[k]}"`).join('') + (m.count ? ' data-m-count' : '');
+  // The unhurried pace is the measured one (nothing on the first screen waits), only slower.
+  return ['scroll', 'heading', 'buttons', 'pictures', 'follow', 'pointer', 'opening', 'arrive', 'mark', 'pace'].filter((k) => m[k] && Object.hasOwn(MOTION[k].options, m[k])).map((k) => (k === 'pace' && m[k] === 'unhurried' ? ' data-m-pace="measured" data-m-unhurried' : ` data-m-${k}="${m[k]}"`)).join('') + (m.count ? ' data-m-count' : '');
 }
 // Moving shapes behind a block. Pure decoration: empty elements that the stylesheet arranges and
 // animates in the page's own colours, hidden from screen readers.
@@ -388,10 +391,10 @@ const shownMore = (b, d) => (d.pictures || []).slice(0, HERO_PHOTO_ROOM[b.varian
 // Openings built round a photo. On the published page one with no photo or film is drawn as its
 // words alone, so no room is kept for a picture that was never added. The editor is not touched:
 // it goes on showing the "Add a picture" prompt in the photo's place.
-const PHOTO_LED = ['split', 'photo-behind', 'stacked', 'blob', 'inset', 'open', 'orbit', 'collage', 'arch', 'curtain', 'reveal'];
+const PHOTO_LED = ['split', 'photo-behind', 'stacked', 'blob', 'inset', 'open', 'orbit', 'collage', 'arch', 'curtain', 'reveal', 'dawn'];
 // Of those, the ones whose whole frame is shaped for the photo. Without one they take the plain
 // "words" frame instead of their own.
-const PHOTO_FRAMED = ['photo-behind', 'inset', 'open', 'curtain'];
+const PHOTO_FRAMED = ['photo-behind', 'inset', 'open', 'curtain', 'dawn'];
 const heroBare = (C, b) => !C.editable && b.type === 'hero' && !b.data.picture && !b.data.video && !shownMore(b, b.data).length;
 // The class name an opening is drawn with.
 const heroFrame = (C, b) => (b.type === 'hero' && PHOTO_FRAMED.includes(b.variant) && heroBare(C, b) ? 'words' : b.variant);
@@ -625,6 +628,14 @@ R_.hero = (C, b) => {
     const letters = String(d.monogram || initials(plainHeading(d.heading))).slice(0, 3);
     const face = d.picture ? P(C, b, 'picture', d.picture, '', { eager: true, credits: false }) : `<span class="cb-mono"${ED(C, 'data-cb-img', `${b.id}:picture`)} aria-hidden="true">${T(C, b, 'monogram', letters, 'span', 'cb-mono-letters')}${C.editable ? '<span class="cb-mono-add">Add a picture</span>' : ''}</span>`;
     return `<div class="cb-prt cb-frame-${frame}"><figure class="cb-prt-pic">${face}</figure><div class="cb-hero-words">${words}${details}</div></div>${d.picture ? creditsOf([d.picture]) : ''}`;
+  }
+  // Night to day (S2 with M5): the night photo, then layers over it that only grow less
+  // see-through as the page scrolls (a dawn sky, a warm glow low down) while the stars fade; the
+  // words drift up a little. On a computer the opening stays put for a while as it lightens; on a
+  // phone it lightens as it scrolls away. Without movement it is simply the night photo.
+  if (v === 'dawn') {
+    const bg = fileBehind || !d.video ? pic('cb-hero-bg cb-dawn-night') : `<figure class="cb-hero-bg cb-dawn-night">${P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`;
+    return `<div class="cb-dawn"${C.editable ? '' : ' data-scroll="through"'}><div class="cb-dawn-stay">${bg}<span class="cb-dawn-stars" aria-hidden="true"></span><span class="cb-dawn-sky" aria-hidden="true"></span><span class="cb-dawn-glow" aria-hidden="true"></span><div class="cb-hero-words cb-dawn-words">${words}${details}</div>${toggle}</div></div>`;
   }
   if (v === 'reveal') return `<div class="cb-reveal"><div class="cb-hero-words cb-reveal-words">${words}${details}</div>${media ? `<figure class="cb-hero-pic cb-reveal-pic"><span class="cb-reveal-in">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</span></figure>${creditsOf([d.picture])}` : ''}${toggle}</div>`;
   // One statement that fills the first screen. No photo, by design.
@@ -1086,6 +1097,14 @@ R_.facts = (C, b) => {
 
 R_.notice = (C, b) => {
   const d = b.data;
+  // If you need help now (release 7): numbers to call, each a link that rings it. It never moves:
+  // it is the one thing on the page that must be there at once, for everyone (see .cb-still).
+  if (b.variant === 'help') {
+    const tel = (n) => `tel:${String(n || '').replace(/[^+\d]/g, '')}`;
+    const one = (x, i, w) => w(`${T(C, b, `items.${i}.name`, x.name, 'p', 'cb-help-name')}${x.number && !C.editable ? `<a class="cb-help-num" href="${esc(tel(x.number))}">${esc(x.number)}</a>` : T(C, b, `items.${i}.number`, x.number, 'p', 'cb-help-num')}${T(C, b, `items.${i}.detail`, x.detail, 'p', 'cb-help-detail')}`, 'li', 'cb-help-item');
+    if (!d.heading && !(d.items || []).length && !C.editable) return '';
+    return `<div class="cb-help">${H(C, b, d, 'h2', 'cb-h cb-help-h')}${RT(C, b, 'intro', d.intro, 'cb-rich cb-help-intro')}${LIST(C, b, 'items', d.items || [], one, 'ul', 'cb-help-list')}</div>`;
+  }
   if (!d.text && !C.editable) return '';
   return `<p class="cb-notice-text">${T(C, b, 'text', d.text, 'span')}${d.link ? ` ${BTN(C, b, 'link', d.link, 'cb-link')}` : ''}</p>`;
 };
@@ -1172,6 +1191,14 @@ R_.steps = (C, b) => {
   const line = (cls, extra = '') => (svg ? `<span class="cb-trace cb-trace-${trace} ${cls}"${extra} aria-hidden="true"><span class="cb-trace-ghost">${svg}</span><span class="cb-trace-win"><span class="cb-trace-in">${svg}</span></span></span>` : '');
   // Sticky steps: one large number stays put beside the steps and changes as each one passes. It
   // is decoration (every step has its own number), so it is hidden from screen readers.
+  // A timeline (S14, release 7): each step with its time beside a line that fills as the page is
+  // read, a dot lighting as the line reaches it. Without movement the line is simply full.
+  if (b.variant === 'timeline') {
+    const n = Math.max(items.length, 1);
+    const row = (x, i, w) => w(`${T(C, b, `items.${i}.when`, x.when, 'p', 'cb-tline-when')}<span class="cb-tline-dot" aria-hidden="true"></span><div class="cb-step-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-step-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-step-desc')}${go(x, i)}</div>`, 'li', 'cb-step cb-tline-item');
+    const tl = LIST(C, b, 'items', items, row, 'ol', 'cb-steps cb-steps-timeline');
+    return `${head}<div class="cb-tline" style="--n:${n}"${C.editable ? '' : ' data-scroll="read"'}><span class="cb-tline-rail" aria-hidden="true"><i></i></span>${tl}</div>`;
+  }
   if (b.variant === 'sticky' && !C.editable && items.length > 1) {
     const n = items.length, two = (k) => String(k).padStart(2, '0');
     return `${head}<div class="cb-stk${svg ? ' has-trace' : ''}" data-stk style="--n:${n}">${line('cb-trace-top', ' data-scroll="enter"')}<div class="cb-stk-rail" aria-hidden="true"><span class="cb-stk-num">${items.map((_, k) => `<span${k ? '' : ' class="is-on"'}>${two(k + 1)}</span>`).join('')}</span><span class="cb-stk-of">of ${two(n)}</span>${svg ? line('cb-stk-trace') : '<span class="cb-stk-bar"><i></i></span>'}</div>${list}</div>`;
@@ -1430,10 +1457,12 @@ R_.tiles = (C, b) => {
   // and in the editor the panel simply stays open.
   const one = (x, i, w) => {
     const panel = open && x.picture;
-    const html = w(`${x.picture || (C.editable && !x.value) ? `<figure class="cb-tl-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}<div class="cb-tl-body">${T(C, b, `items.${i}.value`, x.value, 'p', 'cb-tl-value')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-tl-name')}${panel ? '' : more(x, i)}</div>${panel ? `<div class="cb-tl-panel">${more(x, i)}</div>` : ''}`, 'article', `cb-tl-item${x.picture ? ' has-pic' : ''}${x.value ? ' has-value' : ''}${panel ? ' has-panel' : ''}`);
+    const kind = BLOCK_TYPES.tiles.fields.items.item.shape.options.includes(x.shape) ? x.shape : 'none';
+    const shape = !x.picture && kind !== 'none' ? `<span class="cb-shape cb-shape-${kind}" aria-hidden="true"><i></i></span>` : '';
+    const html = w(`${x.picture || (C.editable && !x.value && !shape) ? `<figure class="cb-tl-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}${shape}<div class="cb-tl-body">${T(C, b, `items.${i}.value`, x.value, 'p', 'cb-tl-value')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-tl-name')}${panel ? '' : more(x, i)}</div>${panel ? `<div class="cb-tl-panel">${more(x, i)}</div>` : ''}`, 'article', `cb-tl-item${x.picture ? ' has-pic' : ''}${x.value ? ' has-value' : ''}${panel ? ' has-panel' : ''}${shape ? ' has-shape' : ''}`);
     return panel && !x.link && !C.editable ? html.replace(/^<article/, '<article tabindex="0"') : html;
   };
-  return `${HEAD(C, b, d)}${LIST(C, b, 'items', items, one, 'div', `cb-tl cb-tl-${b.variant}`)}`;
+  return `${HEAD(C, b, d)}${LIST(C, b, 'items', items, one, 'div', `cb-tl cb-tl-${b.variant}${d.bounce ? ' cb-tl-bounce' : ''}`)}`;
 };
 
 // ---- before and after ----
@@ -1505,7 +1534,7 @@ function renderBlock(b, C) {
   if (!inner && !C.editable) return '';
   const s = b.style;
   const frame = heroFrame(C, b);
-  const cls = `cb${b.id === C.heroId ? ' cb-opening' : ''} cb-t-${b.type} cb-${b.type}--${frame} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${choiceValue('spacer', b.data, 'size')}` : ''}`;
+  const cls = `cb${b.id === C.heroId ? ' cb-opening' : ''} cb-t-${b.type} cb-${b.type}--${frame} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${choiceValue('spacer', b.data, 'size')}` : ''}${b.type === 'notice' && b.variant === 'help' ? ' cb-still' : ''}`;
   const backdrop = s.bg === 'picture' && b.data.backdrop ? `<img class="cb-backdrop" src="${esc(imgSrc(C, b.data.backdrop.src))}"${srcsetOf(C, b.data.backdrop)} alt="" loading="lazy"${ED(C, 'data-cb-img', `${b.id}:backdrop`)}>${credit(b.data.backdrop, 'cb-credit cb-backdrop-credit')}` : '';
   // The chosen backdrop moves behind the page's opening, and more quietly behind a coloured call to action.
   let moving = '';

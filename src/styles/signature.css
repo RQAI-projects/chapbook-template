@@ -1060,3 +1060,101 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
   html.cbm-js .cb-stk.is-live .cb-stk-trace .cb-trace-win{transform:translate3d(calc((var(--k,1) / var(--n,1) - 1) * 100%),0,0);transition:transform .7s cubic-bezier(.65,0,.35,1)}
   html.cbm-js .cb-stk.is-live .cb-stk-trace .cb-trace-in{transform:translate3d(calc((1 - var(--k,1) / var(--n,1)) * 100%),0,0);transition:transform .7s cubic-bezier(.65,0,.35,1)}
 }
+
+/* ======================================================================================== */
+/* Consultant doctors, second batch (release 7): the unhurried pace, a help card that never   */
+/* moves, tiles with friendly shapes that settle with a little bounce, a timeline that fills  */
+/* as it is read, and a night sky that lightens to dawn.                                      */
+/* ======================================================================================== */
+
+/* ---- If you need help now: a card that never moves, for anyone ------------------------- */
+.cb-help{display:grid;gap:clamp(.8rem,2vw,1.2rem);padding:clamp(1.3rem,3.2vw,2.4rem);border:1.5px solid color-mix(in srgb,var(--ink) 26%,transparent);border-radius:calc(var(--cb-r,12px) + 6px);background:color-mix(in srgb,var(--accent) 7%,var(--bg-0))}
+.cbp .cb-help-h{margin:0;font-size:clamp(1.5rem,3vw,2.2rem)}
+.cb-help-intro{max-width:44rem}
+.cb-help-intro p{margin:0}
+.cb-help-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:.4rem clamp(1rem,3vw,2rem)}
+.cb-help-item{display:grid;align-content:start;gap:.1rem;padding-top:.9rem;border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+.cb-help-name{margin:0;font-weight:600}
+.cbp .cb-help-num{display:inline-flex;align-items:center;justify-self:start;min-height:44px;margin:0;font-size:clamp(1.6rem,3.4vw,2.2rem);font-weight:600;letter-spacing:.01em;font-variant-numeric:tabular-nums;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.18em}
+.cb-help-detail{margin:0;color:var(--ink-dim);font-size:.95rem}
+@media screen and (prefers-reduced-motion:no-preference){
+  /* Nothing moves it, fades it or holds it back: it is simply there. */
+  html.cbm-js .cbm .cb-still>.cb-in,html.cbm-js .cbm .cb-still *{opacity:1!important;transform:none!important;filter:none!important;transition:none!important;animation:none!important;-webkit-mask:none!important;mask:none!important}
+}
+
+/* ---- Tiles with a friendly shape drawn on them (no photo) -------------------------------- */
+.cb-shape{position:relative;display:block;width:clamp(3.4rem,5.6vw,4.6rem);height:clamp(3.4rem,5.6vw,4.6rem);margin:0 0 1.1rem}
+.cb-shape::before{content:"";position:absolute;inset:0;background:var(--accent)}
+.cb-shape i{position:absolute;right:-10%;bottom:-8%;width:44%;height:44%;border-radius:50%;background:color-mix(in srgb,var(--accent) 18%,#ffc54d)}
+.cb-shape-circle::before{border-radius:50%}
+.cb-shape-arch::before{border-radius:999px 999px .4rem .4rem}
+.cb-shape-leaf::before{border-radius:0 100% 0 100%}
+.cb-shape-drop::before{inset:8%;border-radius:50% 50% 50% 0;transform:rotate(-45deg)}
+.cb-shape-star::before{clip-path:polygon(50% 0,62% 34%,98% 36%,69% 58%,80% 94%,50% 73%,20% 94%,31% 58%,2% 36%,38% 34%)}
+.cb-shape-wave::before{top:30%;border-radius:999px 999px .5rem .5rem / 160% 160% .5rem .5rem}
+.cb-shape-wave i{right:auto;left:-6%;bottom:auto;top:6%;width:48%;height:48%}
+.cb-tl-item.has-shape{align-content:start}
+@media screen and (prefers-reduced-motion:no-preference){
+  /* They arrive rising and settle with a little overshoot, the shape a moment after. */
+  .cbm.cbm-ready[data-m-scroll] .cb-tl-bounce>[data-m]{transform:translate3d(0,34px,0) scale(.92);transition:opacity .55s ease calc(var(--m-i,0) * 90ms),transform 1s cubic-bezier(.34,1.42,.64,1) calc(var(--m-i,0) * 90ms)}
+  .cbm .cb-tl-bounce .cb-shape{transition:transform .9s cubic-bezier(.34,1.6,.64,1) calc(var(--m-i,0) * 90ms + 180ms)}
+  .cbm.cbm-ready .cb-tl-bounce>[data-m]:not(.is-in) .cb-shape{transform:scale(.35) rotate(-24deg)}
+  .cbm .cb-tl-bounce .cb-tl-item.has-shape:hover .cb-shape{transform:rotate(-8deg) scale(1.06);transition-duration:.45s;transition-delay:0s}
+}
+
+/* ---- A timeline that fills as it is read (S14) ----------------------------------------- */
+.cb-tline{position:relative;--p:1;margin-top:clamp(1.4rem,4vw,2.8rem)}
+.cb-steps-timeline{display:grid;gap:clamp(2rem,5vw,3.4rem)}
+.cb-tline-item{position:relative;display:grid;grid-template-columns:minmax(0,1fr);padding-left:2.7rem}
+.cb-tline-item:nth-child(2){--k:1}.cb-tline-item:nth-child(3){--k:2}.cb-tline-item:nth-child(4){--k:3}.cb-tline-item:nth-child(5){--k:4}.cb-tline-item:nth-child(6){--k:5}.cb-tline-item:nth-child(7){--k:6}.cb-tline-item:nth-child(8){--k:7}
+.cb-tline-rail{position:absolute;left:calc(.75rem - 1px);top:.55rem;bottom:.55rem;width:2px;background:color-mix(in srgb,var(--ink) 16%,transparent)}
+.cb-tline-rail i{position:absolute;inset:0;background:var(--accent);transform-origin:50% 0;transform:scaleY(var(--p,1))}
+.cb-tline-dot{position:absolute;left:calc(.75rem - 9px);top:.3rem;width:18px;height:18px;border-radius:50%;background:var(--bg-0);border:2px solid var(--accent);box-sizing:border-box}
+.cb-tline-dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent);opacity:clamp(0,calc((var(--p,1) * var(--n,1) - var(--k,0)) * 2.5),1)}
+.cbp .cb-tline-when{margin:0 0 .35rem;font-size:.8rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--cb-accent-text,var(--accent))}
+.cb-tline-item .cb-step-name{margin:0 0 .4rem}
+.cb-tline-item .cb-step-desc{max-width:38rem}
+@media (min-width:761px){
+  .cb-tline-item{grid-template-columns:13rem minmax(0,1fr);column-gap:3.6rem;padding-left:0}
+  .cb-tline-rail{left:calc(13rem + 1.8rem - 1px)}
+  .cb-tline-dot{left:calc(13rem + 1.8rem - 9px)}
+  .cbp .cb-tline-when{margin:0;padding-top:.2rem;text-align:right;font-size:.92rem}
+  .cbp .cb-tline-item .cb-step-name{font-size:clamp(1.45rem,2.2vw,1.95rem)}
+}
+@media screen and (prefers-reduced-motion:no-preference){
+  /* Until the page's script says how far it has been read, the line waits at its start. */
+  html.cbm-js .cbm[data-m-scroll] .cb-tline:not(.is-live){--p:0}
+}
+
+/* ---- Night to day (S2 with M5): a night photo that lightens as the page scrolls ------------ */
+.cbp .cb.cb-hero--dawn{padding:0;color:#fff;--ink:#fff;--ink-dim:rgba(255,255,255,.88);--line:rgba(255,255,255,.3);--line-strong:rgba(255,255,255,.5);--cb-accent-text:#fff}
+.cb-hero--dawn>.cb-in{width:100%;max-width:none;padding:0}
+.cb-dawn{position:relative}
+.cb-dawn-stay{position:relative;display:flex;align-items:flex-end;min-height:clamp(32rem,88vh,54rem);overflow:hidden;overflow:clip;isolation:isolate}
+.cb-dawn .cb-dawn-night{z-index:-4}
+.cb-dawn-stars,.cb-dawn-sky,.cb-dawn-glow{position:absolute;pointer-events:none}
+.cb-dawn-stars{inset:0;z-index:-3;opacity:calc(.85 * (1 - var(--p,0)));background-image:radial-gradient(1.5px 1.5px at 8% 14%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 22% 30%,#fff 50%,transparent 52%),radial-gradient(1.6px 1.6px at 37% 9%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 55% 22%,#fff 50%,transparent 52%),radial-gradient(1.3px 1.3px at 68% 12%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 81% 27%,#fff 50%,transparent 52%),radial-gradient(1.5px 1.5px at 92% 8%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 46% 36%,#fff 50%,transparent 52%)}
+.cb-dawn-sky{inset:0;z-index:-3;opacity:calc(var(--p,0) * .8);background:linear-gradient(180deg,#22325f 0%,#46588f 34%,#8e8bb8 62%,#e4b8a6 100%)}
+.cb-dawn-glow{left:-15%;right:-15%;bottom:-38%;height:78%;z-index:-3;opacity:var(--p,0);background:radial-gradient(closest-side,rgba(255,206,164,.9),rgba(255,206,164,0));transform:translate3d(0,calc((1 - var(--p,0)) * 70px),0)}
+.cb-dawn-stay::after{content:"";position:absolute;inset:0;z-index:-2;background:linear-gradient(90deg,rgba(6,10,20,.74) 0%,rgba(6,10,20,.42) 48%,rgba(6,10,20,.06) 100%),linear-gradient(0deg,rgba(6,10,20,.55) 0%,rgba(6,10,20,0) 55%)}
+.cb-dawn-words{position:relative;width:min(var(--cb-max,1240px),calc(100% - 2 * var(--cb-gutter,24px)));margin:0 auto;padding:clamp(6rem,16vh,10rem) 0 clamp(3rem,10vh,6rem);transform:translate3d(0,calc(var(--p,0) * -40px),0)}
+.cbp .cb-dawn-words .cb-hero-h{max-width:13ch;font-size:clamp(2.7rem,7vw,6.6rem);line-height:.98}
+.cb-dawn-words .cb-lead{max-width:36rem}
+.cb-hero--dawn .cb-btn{background:#fff;color:#0d1526;border-color:#fff}
+.cb-hero--dawn .cb-btn-2{background:transparent;color:#fff;border-color:rgba(255,255,255,.7)}
+.cb-hero--dawn .cb-credit{position:absolute;right:var(--cb-gutter,24px);bottom:.6rem;color:rgba(255,255,255,.8)}
+@media screen and (prefers-reduced-motion:no-preference) and (min-width:761px){
+  /* On a computer the opening stays put while it lightens, then the page carries on. */
+  html.cbm-js .cbm .cb-dawn{height:175vh}
+  html.cbm-js .cbm .cb-dawn-stay{position:sticky;top:0;height:100vh;min-height:0}
+}
+
+/* ---- The unhurried pace: slower than anywhere else ---------------------------------------- */
+@media screen and (prefers-reduced-motion:no-preference){
+  .cbp[data-m-unhurried]{--m-dur:1.3s;--m-step:140ms;--m-ease:cubic-bezier(.22,1,.36,1);--m-dist:16px}
+  .cbm[data-m-unhurried][data-m-heading=rising] .cbm-w>span{transition-duration:1.6s;transition-delay:calc(var(--k,0) * 220ms)}
+}
+
+/* ---- The reading serif set light (mental health): quiet, even headings ----------------------- */
+.cbp-hf-quiet :is(.cb-h,.cb h3,.cb-fact-value,.cb-pl-amount,.cb-stk-num,.cb-ft-value,.cb-sp-day,.cb-initials,.cb-mono-letters){font-weight:400;letter-spacing:-.008em}
+.cbp-hf-quiet :is(.cb-h,.cb h3) em{font-weight:400;font-style:italic}

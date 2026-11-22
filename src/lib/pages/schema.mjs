@@ -227,6 +227,9 @@ export const BLOCK_TYPES = {
       // photo is added, and a photo that opens from a small circle in the middle.
       portrait: 'Words beside a portrait (letters until you add a photo)',
       aperture: 'Large words, then a photo that opens from a circle',
+      // Release 7, consultant doctors (sleep): a night photo that lightens to dawn as people
+      // scroll, by layers that only change how see-through they are.
+      dawn: 'A night photo that lightens to dawn as people scroll',
     },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, rotate: { ...L(160, 'Changing words', 'e.g. brands, websites, films'), panel: true, hint: 'A few words with commas between them. They take turns at the end of the heading.' }, word: L(12, 'Big word', 'e.g. Fresh'), intro: R(1200, 'Introduction'), picture: PIC(), pictures: { kind: 'pictures', max: 6, label: 'More photos' },
@@ -378,8 +381,14 @@ export const BLOCK_TYPES = {
   },
   notice: {
     label: 'Announcement', hint: 'A short notice, such as a holiday closure or an offer.',
-    variants: { bar: 'Thin bar', ribbon: 'Ribbon' },
-    fields: { text: L(240, 'Notice', 'Add a short notice'), link: { kind: 'link', label: 'Link' } },
+    variants: { bar: 'Thin bar', ribbon: 'Ribbon', help: 'If you need help now: a card that never moves' },
+    fields: {
+      text: L(240, 'Notice', 'Add a short notice'), link: { kind: 'link', label: 'Link' },
+      // The help card (release 7, mental health): a heading, a line, and the numbers to call,
+      // each one a link that rings it. It is never moved, faded or hidden by any movement.
+      heading: HEAD, intro: R(600, 'Introduction'),
+      items: { kind: 'items', max: 6, label: 'Where to get help', add: 'Add a number', item: { name: L(80, 'Who', 'e.g. Samaritans'), number: L(40, 'Number to call', 'e.g. 116 123'), detail: L(160, 'Line under it', 'e.g. Free, day or night') }, sample: { name: 'New number', number: '', detail: '' } },
+    },
   },
   columns: {
     label: 'Columns', hint: 'Two or three sections side by side. They stack on phones.',
@@ -415,10 +424,10 @@ export const BLOCK_TYPES = {
   },
   steps: {
     label: 'Steps', hint: 'How it works, in a few numbered steps. The line draws itself as people scroll.',
-    variants: { line: 'Down a line', row: 'Side by side', big: 'Big numbers', sticky: 'A big number that stays while the steps go past' },
+    variants: { line: 'Down a line', row: 'Side by side', big: 'Big numbers', sticky: 'A big number that stays while the steps go past', timeline: 'A timeline that fills as you read, each step with its time' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
-      items: { kind: 'items', max: 8, label: 'Steps', add: 'Add a step', item: { name: L(100, 'Step', 'Name of the step'), description: R(600, 'What happens'), link: { kind: 'link', label: 'Button' } }, sample: { name: 'Next step', description: '' } },
+      items: { kind: 'items', max: 8, label: 'Steps', add: 'Add a step', item: { when: L(40, 'When', 'e.g. First 10 minutes'), name: L(100, 'Step', 'Name of the step'), description: R(600, 'What happens'), link: { kind: 'link', label: 'Button' } }, sample: { name: 'Next step', description: '' } },
       // A thin line beside the steps that draws one more stretch as each step passes.
       trace: { kind: 'choice', options: ['none', 'heart', 'wave'], def: 'none', labels: { none: 'No line', heart: 'A calm heart trace', wave: 'A sound wave' }, label: 'Line drawn beside the steps' },
     },
@@ -505,7 +514,11 @@ export const BLOCK_TYPES = {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 9, label: 'Tiles', add: 'Add a tile', item: {
         value: L(16, 'Big number or word', 'e.g. 12'), name: L(60, 'Heading', 'Heading'), text: L(200, 'Words'), duration: L(40, 'Time', 'e.g. 45 min'), price: L(40, 'Price', 'Price'), picture: PIC(), link: { kind: 'link', label: 'Link' },
+        // A friendly shape drawn on a tile without a photo (release 7).
+        shape: { kind: 'choice', options: ['none', 'circle', 'arch', 'leaf', 'star', 'drop', 'wave'], def: 'none', labels: { none: 'No shape', circle: 'A circle', arch: 'An arch', leaf: 'A leaf', star: 'A star', drop: 'A drop', wave: 'A wave' }, label: 'Shape on the tile' },
       }, sample: { name: 'New tile', text: '' } },
+      // The tiles settle into place with a little bounce as they arrive (release 7).
+      bounce: { kind: 'bool', label: 'Tiles settle into place with a little bounce' },
     },
   },
   compare: {
@@ -578,11 +591,11 @@ export const BLOCK_TYPES = {
 export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'tiles', 'compare', 'timetable', 'casestudy', 'scenes', 'regulator'];
 // Layouts of older section types that came with the same release. On an older design they would
 // quietly become the type's first layout, so they need the update too.
-export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture'], services: ['pinned', 'rail'], steps: ['sticky'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
+export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture', 'dawn'], services: ['pinned', 'rail'], steps: ['sticky', 'timeline'], notice: ['help'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
 // Settings of older section types that came with release 7: an older design ignores them.
-export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat'] };
+export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat'], tiles: ['bounce'] };
 // Settings of an entry in a list that came with release 7 (an older design drops them).
-export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'] };
+export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'], steps: ['when'], tiles: ['shape'] };
 // A word in a heading set in italic, written *like this*. Release 7 draws it; an older design
 // would show the stars.
 export const HEADING_EM = /(^|[\s(\u201c"'])\*([^*\s](?:[^*]{0,60}?[^*\s])?)\*(?=$|[\s.,;:?)\u201d"'])/g;
@@ -593,7 +606,7 @@ const filled = (v) => v !== undefined && v !== '' && v !== false && v !== null &
 export const needsSignature = (b) => !!b && (SIGNATURE_TYPES.includes(b.type) || (SIGNATURE_LAYOUTS[b.type] || []).includes(b.variant) || (SIGNATURE_FIELDS[b.type] || []).some((k) => filled(b.data?.[k])) || (SIGNATURE_ITEM_FIELDS[b.type] || []).some((k) => (b.data?.items || []).some((x) => filled(x?.[k]))) || hasEm(b.data?.heading) || (b.data?.children || []).some(needsSignature));
 // A page's own look can need release 7 too: the two new heading typefaces and the still wash
 // (an older design would quietly fall back to its own font and no wash).
-export const SIGNATURE_LOOK = { font: ['fine', 'noir', 'mixed', 'lyric'], backdrop: ['dawn'] };
+export const SIGNATURE_LOOK = { font: ['fine', 'noir', 'mixed', 'lyric', 'quiet'], backdrop: ['dawn'] };
 export const lookNeedsSignature = (look) => !!look && (SIGNATURE_LOOK.font.includes(look.font) || SIGNATURE_LOOK.backdrop.includes(look.motion?.backdrop));
 // A heading as plain words, with the stars of an italic word taken out (for labels and titles).
 export const plainHeading = (v) => String(v ?? '').replace(new RegExp(HEADING_EM.source, 'g'), '$1$2');
@@ -707,7 +720,7 @@ export const MOTION = {
   opening: { label: 'The opening, as people scroll on', options: { none: 'Scrolls away as usual', cover: 'The page slides over it', recede: 'It sinks back and dims' } },
   arrive: { label: 'As the page opens', options: { none: 'It is simply there', dissolve: 'Fades in', settle: 'Lifts into place', veil: 'A sheet in your colour slides away' } },
   mark: { label: 'Marked words', options: { none: 'Plain', underline: 'A line draws itself under them', highlight: 'A soft highlight sweeps across them' } },
-  pace: { label: 'Pace', options: { calm: 'Calm', steady: 'Steady', lively: 'Lively', measured: 'Measured' } },
+  pace: { label: 'Pace', options: { calm: 'Calm', steady: 'Steady', lively: 'Lively', measured: 'Measured', unhurried: 'Unhurried: slow, and still on the first screen' } },
 };
 export const MOTION_KEYS = Object.keys(MOTION);
 // Ready-made combinations. A template's variations each start from one of these.
@@ -726,6 +739,11 @@ export const MOTION_PRESETS = {
   hearth: { name: 'Fireside', hint: 'The page lifts in; the heading rises line by line, sections open like a curtain and pictures move at their own depth.', motion: { scroll: 'curtain', heading: 'rising', buttons: 'fill', pictures: 'depth', arrive: 'settle', mark: 'underline', pace: 'measured', count: true } },
   gallery: { name: 'Gallery', hint: 'Tiles arrive in a wave and lean to the pointer; a sheet slides off each picture.', motion: { scroll: 'cascade', heading: 'letters', buttons: 'arrow', pictures: 'sheet', pointer: 'lean', arrive: 'dissolve', mark: 'highlight', pace: 'measured', count: true } },
   showtime: { name: 'Showtime', hint: 'A coloured sheet opens the page; everything arrives in a quick wave.', motion: { scroll: 'cascade', heading: 'words', buttons: 'press', pictures: 'depth', pointer: 'lean', arrive: 'veil', mark: 'underline', pace: 'measured', count: true } },
+  // Release 7, mental health: a slow, still page. Headings rise line by line, slower than
+  // anywhere else; sections fade in unhurried; nothing on the first screen waits.
+  stillwater: { name: 'Still water', hint: 'A slow, still page: the heading rises line by line, slowly, and sections fade in without hurry.', motion: { scroll: 'fade', heading: 'rising', buttons: 'lift', mark: 'underline', pace: 'unhurried', count: true } },
+  // Release 7, children's health: tiles that settle with a little bounce, words that rise.
+  sandpit: { name: 'Sandpit', hint: 'Friendly: things rise and settle into place, the heading rises line by line.', motion: { scroll: 'rise', heading: 'rising', buttons: 'press', pictures: 'depth', arrive: 'settle', mark: 'highlight', pace: 'measured', count: true } },
   nocturne: { name: 'Nocturne', hint: 'A dark sheet draws off the opening photo; sections wipe in and the heading rises line by line.', motion: { scroll: 'wipe', heading: 'rising', buttons: 'fill', pictures: 'depth', arrive: 'veil', mark: 'underline', pace: 'measured', count: true } },
 };
 export function cleanMotion(v) {
@@ -748,7 +766,7 @@ export function motionFor(preset, backdrop) {
   return cleanMotion({ ...p.motion, ...(backdrop ? { backdrop } : {}), preset });
 }
 
-const FONT_KEYS = ['classic', 'modern', 'editorial', 'clean', 'friendly', 'grotesk', 'mono', 'fine', 'noir', 'mixed', 'lyric'];
+const FONT_KEYS = ['classic', 'modern', 'editorial', 'clean', 'friendly', 'grotesk', 'mono', 'fine', 'noir', 'mixed', 'lyric', 'quiet'];
 const BODY_FONT_KEYS = ['clean', 'reading', 'easy', 'classic', 'grotesk'];
 export const LOOK_COLOURS = ['bg', 'surface', 'ink', 'accent', 'deep'];
 export function cleanLook(v) {
