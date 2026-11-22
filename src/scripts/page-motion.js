@@ -966,7 +966,8 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
   // ---- the Pause button ----------------------------------------------------------------------
   // Anything that keeps moving for more than a few seconds must be stoppable by the visitor.
   // (The wall of drifting reviews only drifts on a wide screen.)
-  const keepsMoving = [...root.querySelectorAll(KEEPS_MOVING)].some((n) => wide || !n.matches('.cb-rv-drift'));
+  // (On an unhurried page the framed opening photo is still, so it does not count.)
+  const keepsMoving = [...root.querySelectorAll(KEEPS_MOVING)].some((n) => (wide || !n.matches('.cb-rv-drift')) && !(n.matches('.cb-inset-bg') && root.hasAttribute('data-m-unhurried')));
   if (!reduce && !editing && (keepsMoving || ['zoom'].includes(look('pictures')) || ['glow', 'shine'].includes(look('buttons')) || look('heading') === 'shimmer')) {
     const button = doc.createElement('button');
     button.type = 'button'; button.className = 'cbm-pause';

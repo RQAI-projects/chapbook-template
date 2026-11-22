@@ -1083,7 +1083,7 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 }
 
 /* ---- Tiles with a friendly shape drawn on them (no photo) -------------------------------- */
-.cb-shape{position:relative;display:block;width:clamp(3.4rem,5.6vw,4.6rem);height:clamp(3.4rem,5.6vw,4.6rem);margin:0 0 1.1rem}
+.cb-shape{position:relative;display:block;flex:none;width:clamp(3.4rem,5.6vw,4.6rem);height:clamp(3.4rem,5.6vw,4.6rem);margin:clamp(1rem,2vw,1.4rem) clamp(1rem,2vw,1.4rem) 0}
 .cb-shape::before{content:"";position:absolute;inset:0;background:var(--accent)}
 .cb-shape i{position:absolute;right:-10%;bottom:-8%;width:44%;height:44%;border-radius:50%;background:color-mix(in srgb,var(--accent) 18%,#ffc54d)}
 .cb-shape-circle::before{border-radius:50%}
@@ -1091,8 +1091,8 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 .cb-shape-leaf::before{border-radius:0 100% 0 100%}
 .cb-shape-drop::before{inset:8%;border-radius:50% 50% 50% 0;transform:rotate(-45deg)}
 .cb-shape-star::before{clip-path:polygon(50% 0,62% 34%,98% 36%,69% 58%,80% 94%,50% 73%,20% 94%,31% 58%,2% 36%,38% 34%)}
-.cb-shape-wave::before{top:30%;border-radius:999px 999px .5rem .5rem / 160% 160% .5rem .5rem}
-.cb-shape-wave i{right:auto;left:-6%;bottom:auto;top:6%;width:48%;height:48%}
+.cb-shape-wave::before{background:radial-gradient(circle at 26% 100%,var(--accent) 0 25%,transparent 25.5%),radial-gradient(circle at 74% 100%,var(--accent) 0 25%,transparent 25.5%),radial-gradient(circle at 50% 100%,color-mix(in srgb,var(--accent) 55%,transparent) 0 44%,transparent 44.5%)}
+.cb-shape-wave i{right:auto;left:-8%;bottom:auto;top:4%;width:38%;height:38%}
 .cb-tl-item.has-shape{align-content:start}
 @media screen and (prefers-reduced-motion:no-preference){
   /* They arrive rising and settle with a little overshoot, the shape a moment after. */
@@ -1134,8 +1134,8 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 .cb-dawn .cb-dawn-night{z-index:-4}
 .cb-dawn-stars,.cb-dawn-sky,.cb-dawn-glow{position:absolute;pointer-events:none}
 .cb-dawn-stars{inset:0;z-index:-3;opacity:calc(.85 * (1 - var(--p,0)));background-image:radial-gradient(1.5px 1.5px at 8% 14%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 22% 30%,#fff 50%,transparent 52%),radial-gradient(1.6px 1.6px at 37% 9%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 55% 22%,#fff 50%,transparent 52%),radial-gradient(1.3px 1.3px at 68% 12%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 81% 27%,#fff 50%,transparent 52%),radial-gradient(1.5px 1.5px at 92% 8%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 46% 36%,#fff 50%,transparent 52%)}
-.cb-dawn-sky{inset:0;z-index:-3;opacity:calc(var(--p,0) * .8);background:linear-gradient(180deg,#22325f 0%,#46588f 34%,#8e8bb8 62%,#e4b8a6 100%)}
-.cb-dawn-glow{left:-15%;right:-15%;bottom:-38%;height:78%;z-index:-3;opacity:var(--p,0);background:radial-gradient(closest-side,rgba(255,206,164,.9),rgba(255,206,164,0));transform:translate3d(0,calc((1 - var(--p,0)) * 70px),0)}
+.cb-dawn-sky{inset:0;z-index:-3;opacity:calc(var(--p,0) * .92);background:linear-gradient(180deg,#2c4277 0%,#5a71aa 32%,#a99fc6 60%,#f0c3a4 100%)}
+.cb-dawn-glow{left:-15%;right:-15%;bottom:-36%;height:86%;z-index:-3;opacity:var(--p,0);background:radial-gradient(closest-side,rgba(255,200,150,.95),rgba(255,200,150,0));transform:translate3d(0,calc((1 - var(--p,0)) * 90px),0)}
 .cb-dawn-stay::after{content:"";position:absolute;inset:0;z-index:-2;background:linear-gradient(90deg,rgba(6,10,20,.74) 0%,rgba(6,10,20,.42) 48%,rgba(6,10,20,.06) 100%),linear-gradient(0deg,rgba(6,10,20,.55) 0%,rgba(6,10,20,0) 55%)}
 .cb-dawn-words{position:relative;width:min(var(--cb-max,1240px),calc(100% - 2 * var(--cb-gutter,24px)));margin:0 auto;padding:clamp(6rem,16vh,10rem) 0 clamp(3rem,10vh,6rem);transform:translate3d(0,calc(var(--p,0) * -40px),0)}
 .cbp .cb-dawn-words .cb-hero-h{max-width:13ch;font-size:clamp(2.7rem,7vw,6.6rem);line-height:.98}
@@ -1150,7 +1150,11 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 }
 
 /* ---- The unhurried pace: slower than anywhere else ---------------------------------------- */
+/* An opening followed by the help card leaves room for it on the first screen of a computer. */
+.cb-opening:has(+ .cb-notice--help) .cb-inset{min-height:clamp(24rem,58vh,36rem)}
 @media screen and (prefers-reduced-motion:no-preference){
+  /* A still page: the framed opening photo does not drift. */
+  .cbp[data-m-unhurried] .cb-inset-bg :is(img,video){animation:none}
   .cbp[data-m-unhurried]{--m-dur:1.3s;--m-step:140ms;--m-ease:cubic-bezier(.22,1,.36,1);--m-dist:16px}
   .cbm[data-m-unhurried][data-m-heading=rising] .cbm-w>span{transition-duration:1.6s;transition-delay:calc(var(--k,0) * 220ms)}
 }
