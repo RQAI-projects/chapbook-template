@@ -33,7 +33,7 @@ export const SLUG = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
 const TEMPLATE_ID = /^[a-z0-9-]{1,60}$/;
 
 // Slugs a page can never take: the site's own sections and files.
-export const RESERVED_SLUGS = ['demos', 'posts', 'blog', 'writing', 'series', 'c', 'og', 'observatory', 'darkroom', 'apps', 'appointments', 'rss.xml', 'icons', 'glyph-preview', 'site-images', 'guides', 'interactives', 'fonts', 'licences', 'licenses', 'images', 'assets', '_astro', 'favicon.svg', 'robots.txt', 'sitemap.xml', '404', 'index', 'page', 'tag', 'tags', 'search', 'feed', 'admin', 'api'];
+export const RESERVED_SLUGS = ['demos', 'posts', 'blog', 'writing', 'series', 'c', 'og', 'observatory', 'darkroom', 'apps', 'appointments', 'rss.xml', 'icons', 'glyph-preview', 'site-images', 'guides', 'interactives', 'fonts', 'licences', 'licenses', 'images', 'assets', '_astro', 'favicon.svg', 'robots.txt', 'sitemap.xml', '404', 'index', 'page', 'tag', 'tags', 'search', 'feed', 'admin', 'api', 'add-to-calendar'];
 // home, about and contact are pages too, but they render at /, /about/ and /contact/.
 export const SPECIAL_SLUGS = ['home', 'about', 'contact'];
 export function slugProblem(slug, taken = []) {
@@ -583,6 +583,9 @@ export const BLOCK_TYPES = {
         cal: { ...L(160, 'Cal.com event to follow', 'e.g. cal.com/sam/pasta-class'), panel: true, hint: 'Paste the link of a Cal.com event that has seats. Your website then shows its seats left for this date, read from Cal.com as the page opens. Leave it empty to set the number yourself.' },
       }, sample: { name: 'New date', time: '', capacity: 10, left: 10 } },
       past: { kind: 'choice', options: ['hide', 'finished'], def: 'hide', labels: { hide: 'Take them off the page', finished: 'Show them as Finished' }, label: 'Dates that have passed' },
+      // Add to calendar (a Google Calendar link and a calendar file) beside each date with a time:
+      // on unless switched off here.
+      noCalendar: { kind: 'bool', label: 'Leave out Add to calendar' },
       note: L(240, 'Small print'),
     },
   },
@@ -694,7 +697,7 @@ export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'ti
 // quietly become the type's first layout, so they need the update too.
 export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture', 'dawn', 'triptych', 'questions', 'branches'], services: ['pinned', 'rail'], steps: ['sticky', 'timeline'], notice: ['help'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
 // Settings of older section types that came with release 7: an older design ignores them.
-export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace', 'help', 'questions'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat', 'wave'], tiles: ['bounce', 'assemble'] };
+export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace', 'help', 'questions'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], spaces: ['noCalendar'], steps: ['trace'], facts: ['beat', 'wave'], tiles: ['bounce', 'assemble'] };
 // Settings of an entry in a list that came with release 7 (an older design drops them).
 export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'], steps: ['when'], tiles: ['shape'], scenes: ['drawing'], bookstrip: ['paid'], spaces: ['paid'], plans: ['manage'] };
 // A word in a heading set in italic, written *like this*. Release 7 draws it; an older design

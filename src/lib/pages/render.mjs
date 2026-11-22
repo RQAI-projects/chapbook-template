@@ -1467,6 +1467,140 @@ export function dateParts(iso) {
   const dt = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
   return { dow: DAY3[dt.getUTCDay()], day: dt.getUTCDate(), mon: MON3[dt.getUTCMonth()], year: dt.getUTCFullYear() };
 }
+// ---- Add to calendar (owner, 22 Nov) ----
+// A dated class or event in Spaces remaining, booked by phone or email, gets two ways to put it in
+// a calendar: a Google Calendar link, and a calendar file (.ics) made when the website is built,
+// for Apple, Outlook and others. Times are the business's own (its time zone, set once in Details
+// and booking), written in UTC so summer time is always right. Chapbook stores and sends nothing.
+// The Google link follows the long-standing calendar.google.com/calendar/render?action=TEMPLATE
+// form (Google publishes no reference for it; the community reference read on 22 Nov 2026 is
+// github.com/InteractionDesignFoundation/add-event-to-calendar-docs, services/google.md).
+export const CALENDAR_DIR = '/add-to-calendar/';
+// "6pm", "6.30pm", "18:30", "9am to 10am", "6 to 7.30pm", "noon": the start, and the end when
+// given, in minutes after midnight. Null when no clock time can be read.
+export function clockSpan(text) {
+  const s = String(text || '').toLowerCase().replace(/\b(?:noon|midday)\b/g, '12pm');
+  const toks = [];
+  for (const m of s.matchAll(/(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)?/g)) {
+    const h = +m[1], mi = m[2] ? +m[2] : 0, ap = m[3] || '';
+    if (mi > 59) continue;
+    if (ap ? h < 1 || h > 12 : !m[2] || h > 23) { if (!ap && !m[2] && h >= 1 && h <= 12 && toks.length === 0) toks.push({ h, mi, ap: '', bare: true }); continue; }
+    toks.push({ h, mi, ap });
+    if (toks.filter((t) => !t.bare).length === 2) break;
+  }
+  const real = toks.filter((t, i) => !t.bare || (toks[i + 1] && toks[i + 1].ap));
+  if (!real.length || (real.length === 1 && real[0].bare)) return null;
+  const at = (t, ap) => { const p = t.ap || ap; if (!p) return t.h * 60 + t.mi; return ((t.h % 12) + (p === 'pm' ? 12 : 0)) * 60 + t.mi; };
+  const [a, b] = real;
+  let start = at(a, b && !a.ap ? b.ap : ''), end = b ? at(b, '') : null;
+  // "11 to 1pm": the start is in the morning.
+  if (b && a.bare && end != null && start >= end) start -= 12 * 60;
+  if (start < 0 || start >= 24 * 60) return null;
+  return { start, end: end != null && end > start ? end : null };
+}
+// "45 min", "90 minutes", "1 hour", "2 hours": a length in minutes, or null.
+export function lengthOf(text) {
+  const m = String(text || '').toLowerCase().match(/(\d+(?:\.\d+)?)\s*(min(?:ute)?s?|hours?|hrs?)\b/);
+  if (!m) return null;
+  const n = Number(m[1]) * (m[2].startsWith('h') ? 60 : 1);
+  return n > 0 && n <= 24 * 60 ? Math.round(n) : null;
+}
+// A wall clock time in a time zone, as the moment it is (UTC). Summer time is worked out from the
+// zone itself (two passes, so a time beside a clock change lands right).
+const zoneOffset = (ms, tz) => {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
+  return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second) - ms;
+};
+export function zonedTime(iso, minutes, tz) {
+  const [y, mo, d] = String(iso).split('-').map(Number);
+  const wall = Date.UTC(y, mo - 1, d, 0, minutes);
+  let t = wall - zoneOffset(wall, tz);
+  t = wall - zoneOffset(t, tz);
+  return new Date(t);
+}
+const utcStamp = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+const LONG_DAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const LONG_MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+// "Tuesday 3 December", for the links' names.
+export const longDate = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); if (!m) return ''; const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])); return `${LONG_DAY[d.getUTCDay()]} ${d.getUTCDate()} ${LONG_MON[d.getUTCMonth()]}`; };
+// One dated item as a calendar event, or null: it needs a name, a date that has not passed and a
+// start time it can read, and it must not follow a Cal.com event (Cal.com gives its own links).
+// slug and blockId make its file name and its UID, which stay the same from one publish to the
+// next. No personal data: only the business's own words, address and website.
+export function spaceEvent(x, { slug = 'home', blockId = '', tz = 'Europe/London', today = '', url = '', place = '', siteName = '' } = {}) {
+  if (!x || !x.name || !x.date || x.cal || (today && x.date < today)) return null;
+  const span = clockSpan(x.time);
+  if (!span) return null;
+  const minutes = span.end != null ? span.end - span.start : lengthOf(x.time) || lengthOf(x.detail) || 60;
+  const start = zonedTime(x.date, span.start, tz), end = zonedTime(x.date, span.start + minutes, tz);
+  const site = cleanHref(url);
+  const host = /^https:/.test(site) ? new URL(site).hostname : 'chapbook-website';
+  const file = `${slug}-${blockId}-${x.id || 'i'}`.replace(/[^a-z0-9-]/gi, '').toLowerCase();
+  return {
+    file: `${file}.ics`, uid: `${file}@${host}`, start, end,
+    summary: siteName ? `${x.name}, ${siteName}` : x.name,
+    location: String(place || '').split('\n').map((l) => l.trim()).filter(Boolean).join(', '),
+    description: [x.detail, x.price ? `Price: ${x.price}` : '', /^https:/.test(site) ? `Details and changes: ${site}` : ''].filter(Boolean).join('\n'),
+    url: /^https:/.test(site) ? site : '', name: x.name, date: x.date,
+  };
+}
+// RFC 5545: text with its backslashes, semicolons, commas and new lines escaped; lines folded at
+// 75 octets (never inside a character), each joined with CRLF.
+export const icsEscape = (v) => String(v ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+export function icsFold(line) {
+  const out = []; let cur = '', size = 0, limit = 75;
+  for (const ch of line) {
+    const n = new TextEncoder().encode(ch).length;
+    if (size + n > limit) { out.push(cur); cur = ' '; size = 1; limit = 75; }
+    cur += ch; size += n;
+  }
+  out.push(cur);
+  return out.join('\r\n');
+}
+export function icsText(ev, { stamp = new Date() } = {}) {
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Chapbook//Add to calendar//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
+    `UID:${ev.uid}`, `DTSTAMP:${utcStamp(stamp)}`, `DTSTART:${utcStamp(ev.start)}`, `DTEND:${utcStamp(ev.end)}`, `SUMMARY:${icsEscape(ev.summary)}`,
+    ...(ev.location ? [`LOCATION:${icsEscape(ev.location)}`] : []), ...(ev.description ? [`DESCRIPTION:${icsEscape(ev.description)}`] : []), ...(ev.url ? [`URL:${ev.url}`] : []),
+    'END:VEVENT', 'END:VCALENDAR'];
+  return `${lines.map(icsFold).join('\r\n')}\r\n`;
+}
+export function googleCalendarHref(ev) {
+  const q = new URLSearchParams({ action: 'TEMPLATE', text: ev.summary });
+  if (ev.description) q.set('details', ev.description);
+  if (ev.location) q.set('location', ev.location);
+  // The two times stay joined by a plain slash, as the form is written.
+  return `https://calendar.google.com/calendar/render?${q.toString().replace(/^action=TEMPLATE/, `action=TEMPLATE&dates=${utcStamp(ev.start)}/${utcStamp(ev.end)}`)}`;
+}
+// Every calendar file a website's pages need, for the website build: [{ name, text }].
+export function calendarFiles(pages, { site = {}, today = localIso(), stamp = new Date() } = {}) {
+  const biz = professionalDetails(site.professional || {});
+  const out = [];
+  for (const raw of pages || []) {
+    const page = normalisePage(raw);
+    for (const b of page.blocks) {
+      if (b.type !== 'spaces' || b.data.noCalendar) continue;
+      for (const x of b.data.items || []) {
+        const ev = spaceEvent(x, { slug: page.slug, blockId: b.id, tz: biz.timeZone, today, url: site.url, place: biz.location, siteName: cleanLine(site.name || site.masthead || '', 80) });
+        if (ev) out.push({ name: ev.file.replace(/\.ics$/, ''), text: icsText(ev, { stamp }) });
+      }
+    }
+  }
+  return out;
+}
+// Where a Thank you page sends people to add a class to their calendar: the first section with an
+// upcoming dated item that has places left, or ''.
+export function datesHrefOf(pages, { site = {}, today = localIso(), href = (p) => p } = {}) {
+  const biz = professionalDetails(site.professional || {});
+  for (const raw of pages || []) {
+    const page = normalisePage(raw);
+    for (const b of page.blocks) {
+      if (b.type !== 'spaces' || b.data.noCalendar) continue;
+      if ((b.data.items || []).some((x) => x.left !== 0 && spaceEvent(x, { slug: page.slug, blockId: b.id, tz: biz.timeZone, today }))) return `${href(page.slug === 'home' ? '/' : `/${page.slug}/`)}#dates-${b.id}`;
+    }
+  }
+  return '';
+}
+
 // What a number of spaces is called: "6 spaces left", "Last 2", "Last space", "Full".
 export const spacesWords = (left) => (left == null ? '' : left <= 0 ? 'Full' : left === 1 ? 'Last space' : left === 2 ? 'Last 2' : `${left} spaces left`);
 const localIso = (now = new Date()) => `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -1512,7 +1646,11 @@ R_.spaces = (C, b) => {
     const time = T(C, b, `items.${i}.time`, x.time, 'span', 'cb-sp-time');
     const meta = `${zone ? time.replace(/<\/span>$/, `${zone}</span>`) : time}${T(C, b, `items.${i}.detail`, x.detail, 'span', 'cb-sp-detail')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-sp-price')}${x.paid ? `<span class="cb-paid">${PAY_WHEN_BOOK}</span>` : ''}`;
     const body = `<div class="cb-sp-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sp-name')}${meta ? `<p class="cb-sp-meta">${meta}</p>` : ''}</div>`;
-    return w(`${when}${body}<div class="cb-sp-state">${state}</div>${acts ? `<p class="cb-sp-acts">${acts}</p>` : ''}`, 'li', `cb-sp-item${past ? ' is-past' : ''}${full ? ' is-full' : ''}`)
+    // Add to calendar: for a date with places left that is not followed from Cal.com.
+    const ev = !past && !full && !d.noCalendar ? spaceEvent(x, { slug: C.page.slug || 'home', blockId: b.id, tz: C.biz.timeZone, today, url: C.site?.url, place: C.biz.location, siteName: siteName(C) }) : null;
+    const name = ev ? `${x.name}, ${longDate(x.date)}` : '';
+    const cal = ev ? `<details class="cb-sp-cal"><summary>Add to calendar</summary><p class="cb-sp-calgo"><a href="${esc(googleCalendarHref(ev))}" target="_blank" rel="noopener" aria-label="${esc(`Add ${name}, to Google Calendar`)}">Google Calendar</a><a href="${esc(C.href ? C.href(`${CALENDAR_DIR}${ev.file}`) : `${CALENDAR_DIR}${ev.file}`)}" download="${esc(ev.file)}" aria-label="${esc(`Add ${name}, to Apple, Outlook or another calendar`)}">Apple, Outlook and others</a></p></details>` : '';
+    return w(`${when}${body}<div class="cb-sp-state">${state}</div>${acts ? `<p class="cb-sp-acts">${acts}</p>` : ''}${cal}`, 'li', `cb-sp-item${past ? ' is-past' : ''}${full ? ' is-full' : ''}`)
       .replace(/^<li /, `<li${x.date ? ` data-date="${esc(x.date)}"` : ''}${follow && !C.editable ? ` data-cal="${esc(follow)}"` : ''} `);
   };
   // (While editing, every date is listed, so each row's place in the list is its own.)
@@ -1678,9 +1816,11 @@ function renderBlock(b, C) {
   if (C.backdrop && b.id === C.heroId && !['photo-behind', 'inset', 'open'].includes(frame) && s.bg !== 'picture') moving = backdropHtml(C.backdrop);
   else if (C.backdrop && C.backdrop !== 'dawn' && b.type === 'cta' && ['accent', 'dark'].includes(s.bg)) moving = backdropHtml(C.backdrop, ' cbm-bd-echo');
   // The help card is where an opening's help line goes (#help-now).
-  const anchor = !C.editable && C.helpId && b.id === C.helpId ? ' id="help-now"' : '';
+  const anchor = !C.editable && C.helpId && b.id === C.helpId ? ' id="help-now"' : !C.editable && b.type === 'spaces' ? ` id="dates-${esc(b.id)}"` : '';
+  // A Thank you page's opening: one quiet line to the dated classes, when the website has some.
+  const datesLine = b.role === 'thanks' && b.type === 'hero' && /^(?:\/|https:)[^\s"<>]*$/.test(C.datesHref || '') ? `<p class="cb-cal-line"><a class="cb-link" href="${esc(C.datesHref)}">Booked a class? Add it to your calendar</a></p>` : '';
   // A guide beside a section that plays a known part, in the editor only.
   const guide = C.editable && Object.hasOwn(ROLE_GUIDES, b.role) ? `<p class="cb-note cb-role-guide" data-cb-hint>${esc(ROLE_GUIDES[b.role](C))}</p>` : '';
-  return `<section class="${cls}"${anchor}${ED(C, 'data-cb-block', b.id)}>${backdrop}${moving}<div class="cb-in">${inner}${guide}</div></section>`;
+  return `<section class="${cls}"${anchor}${ED(C, 'data-cb-block', b.id)}>${backdrop}${moving}<div class="cb-in">${inner}${datesLine}${guide}</div></section>`;
 }
 export { renderBlock as _renderBlock };

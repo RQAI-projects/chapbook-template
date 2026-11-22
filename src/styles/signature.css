@@ -1366,3 +1366,16 @@ html.cbm-js .cb-bg-dark .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-count{backgrou
 @media (max-width:760px){
   .cb-pl-manage{display:inline-flex;align-items:center;min-height:44px}
 }
+
+/* ---- Add to calendar (owner, 22 Nov) ----------------------------------------------------- */
+.cb-sp-cal{grid-column:1/-1;margin:0;font-size:.88rem}
+.cb-sp-cal>summary{display:inline-flex;align-items:center;gap:.45rem;min-height:44px;cursor:pointer;color:var(--cb-accent-text,var(--accent));font-weight:600;list-style:none}
+.cb-sp-cal>summary::-webkit-details-marker{display:none}
+.cb-sp-cal>summary::before{content:"";width:.85rem;height:.8rem;border:1.5px solid currentColor;border-top-width:3px;border-radius:.15rem;flex:none}
+.cb-sp-cal>summary:focus-visible{outline:2px solid currentColor;outline-offset:3px;border-radius:.2rem}
+.cb-sp-calgo{display:flex;flex-wrap:wrap;gap:.3rem 1.4rem;margin:0 0 .2rem}
+.cb-sp-calgo a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);text-decoration:underline;text-underline-offset:.2em}
+.cb-sp-item.is-past .cb-sp-cal{display:none}
+.cb-sp-tickets .cb-sp-cal{padding-left:calc(var(--stub) + 1.1rem)}
+.cb-cal-line{margin:1.2rem 0 0;font-size:.95rem}
+@media (min-width:761px){.cb-sp-rows .cb-sp-cal,.cb-sp-tickets .cb-sp-cal{grid-column:2/-1;padding-left:0}}

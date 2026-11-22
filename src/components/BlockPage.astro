@@ -2,8 +2,8 @@
 // A page built in Chapbook's page editor. The same renderer runs in the editor's preview.
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
-import { renderPage, PHONE_SIZES, photoSrcset } from '../lib/pages/render.mjs';
-import { baseColours } from '../lib/pages/site-pages';
+import { renderPage, PHONE_SIZES, photoSrcset, datesHrefOf } from '../lib/pages/render.mjs';
+import { baseColours, blockPages } from '../lib/pages/site-pages';
 import { site } from '../lib/site';
 import { withBase } from '../lib/withBase';
 import { formAddress } from '../lib/professional.mjs';
@@ -35,6 +35,8 @@ const html = renderPage({ ...page, blocks }, {
   site, posts, base: baseColours(), formEndpoint: endpoint,
   fallbackEmail: (profile as any).email && (profile as any).email !== 'you@example.com' ? (profile as any).email : '',
   href: (p: string) => withBase(p), postsHref: withBase('/posts/'),
+  // A Thank you page's line to the dated classes, when the website has some (Add to calendar).
+  datesHref: blocks.some((b: any) => b.role === 'thanks') ? datesHrefOf(blockPages, { site, href: (p: string) => withBase(p) }) : '',
 });
 // The opening's photo is the largest thing a phone paints first: it is asked for before the
 // stylesheets are read, so the page's largest paint is not held up by them.
