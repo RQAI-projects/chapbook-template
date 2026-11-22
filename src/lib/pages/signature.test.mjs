@@ -309,6 +309,10 @@ test('consultant doctors: a portrait set in type, a photo that opens from a circ
   assert.ok(!renderPage(page([{ type: 'hero', variant: 'centred', data: { heading: 'Quiet rooms', trace: 'none' } }]), { site: SITE }).includes('cb-trace'));
   assert.ok(needsSignature({ type: 'hero', variant: 'split', data: { trace: 'wave' } }) && !needsSignature({ type: 'hero', variant: 'split', data: { trace: 'none' } }));
   assert.match(rail, /cb-rail-card cb-solo has-facts/);
+  // A numbered list of services is a real list: each entry a list item (Clearview's treatments).
+  const numbered = renderPage(page([{ type: 'services', variant: 'numbered', data: { heading: 'What I treat', items: [{ name: 'Cataracts', price: 'from £250' }, { name: 'Glaucoma' }] } }]), { site: SITE });
+  assert.match(numbered, /<ol class="cb-svc cb-svc-numbered"><li><span class="cb-num" aria-hidden="true">01<\/span>/);
+  assert.ok(!/<ol class="cb-svc cb-svc-numbered">[\s\S]*?<article/.test(numbered.split('</ol>')[0]), 'no article straight inside the list');
   // The release gate knows every one of them; a choice of "none" needs nothing new.
   for (const b of [{ type: 'hero', variant: 'portrait', data: {} }, { type: 'hero', variant: 'aperture', data: {} }, { type: 'steps', variant: 'line', data: { trace: 'heart' } }, { type: 'facts', variant: 'row', data: { beat: true } }, { type: 'services', variant: 'list', data: { items: [{ name: 'x', recovery: '6 weeks' }] } }]) assert.ok(needsSignature(b), JSON.stringify(b));
   assert.ok(!needsSignature({ type: 'steps', variant: 'line', data: { trace: 'none' } }));
