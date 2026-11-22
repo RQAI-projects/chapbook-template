@@ -1294,3 +1294,45 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
   html.cbm-js .cbm:not([data-m-edit]) .cb-trace-band.is-live .cb-trace-win{transform:translate3d(calc((var(--p,0) - 1) * 100%),0,0)}
   html.cbm-js .cbm:not([data-m-edit]) .cb-trace-band.is-live .cb-trace-in{transform:translate3d(calc((1 - var(--p,0)) * 100%),0,0)}
 }
+
+/* ---- A recovery plan: a progress line beside sticky steps (therapy batch 1) -------------- */
+/* --p comes from the page's script as the steps are read (data-scroll="read"); without it, or
+   with movement turned down, the line is simply full. */
+.cb-stk-steps{position:relative;padding-left:clamp(2.4rem,4.4vw,3.6rem)}
+.cb-stk-prog{position:absolute;left:.4rem;top:.5rem;bottom:.5rem;width:6px;border-radius:6px;background:color-mix(in srgb,var(--ink) 13%,transparent)}
+.cb-stk-fill{position:absolute;inset:0;border-radius:inherit;background:var(--cb-accent-text,var(--accent));transform-origin:50% 0;transform:scaleY(var(--p,1))}
+.cb-stk-mark{position:absolute;left:0;top:0;width:100%;height:100%;transform:translate3d(0,calc(var(--p,1) * 100%),0)}
+.cb-stk-mark::before{content:"";position:absolute;left:50%;top:0;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:var(--cb-accent-text,var(--accent));box-shadow:0 0 0 6px color-mix(in srgb,var(--cb-accent-text,var(--accent)) 22%,transparent)}
+.cbp .cb-step-when{margin:0 0 .55rem;font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cb-accent-text,var(--accent))}
+.cb-stk-steps .cb-steps-sticky{margin:0}
+@media screen and (prefers-reduced-motion:no-preference){
+  html.cbm-js .cbm[data-m-scroll] .cb-stk.has-prog:not(.is-live){--p:0}
+}
+
+/* ---- Everyday tasks drawn in line, and tiles on a sideways rail (therapy batch 1) -------- */
+.cb-task{display:block;flex:none;width:clamp(6.6rem,10vw,8.4rem);aspect-ratio:1;margin:clamp(1.1rem,2vw,1.5rem) clamp(1.1rem,2vw,1.5rem) 0}
+.cb-task svg{display:block;width:100%;height:100%;overflow:visible}
+.cb-task-disc{fill:color-mix(in srgb,var(--cb-accent-text,var(--accent)) 15%,transparent)}
+.cb-task-line path{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.cb-task-line .a{stroke:var(--cb-accent-text,var(--accent))}
+.cb-tl-item.has-shape:has(.cb-task){justify-content:space-between}
+.cb-tl-rail .cb-hs-view{scroll-snap-type:x mandatory}
+.cb-tl-railtrack>.cb-tl-item{flex:0 0 min(78vw,19rem);min-height:23rem}
+.cbp .cb .cb-tl-railtrack h3.cb-tl-name{font-size:clamp(1.45rem,2.2vw,1.85rem);line-height:1.08}
+.cb-tl-railtrack .cb-tl-text{font-size:1rem}
+@media (min-width:761px){.cb-tl-railtrack>.cb-tl-item{flex-basis:clamp(17rem,24vw,21rem);min-height:26rem}}
+.cb-tl-railrow{grid-auto-rows:minmax(18rem,auto)}
+@media screen and (prefers-reduced-motion:no-preference){
+  /* A drawing settles a moment after its card, the disc first. */
+  .cbm .cb-tl-railtrack .cb-task-disc{transform-box:fill-box;transform-origin:center;transition:transform .9s cubic-bezier(.22,1,.36,1) .15s}
+  .cbm .cb-tl-railtrack .cb-tl-item:hover .cb-task-disc{transform:scale(1.08)}
+}
+
+/* ---- Tiles that come in from different sides and fit together (therapy batch 1) --------- */
+@media screen and (prefers-reduced-motion:no-preference){
+  .cbm.cbm-ready[data-m-scroll] .cb-tl-assemble>[data-m]{transform:translate3d(var(--ax,0px),var(--ay,40px),0) scale(.94);transition:opacity .6s cubic-bezier(.22,1,.36,1) calc(var(--m-i,0) * 85ms),transform 1.05s cubic-bezier(.22,1,.36,1) calc(var(--m-i,0) * 85ms)}
+  .cb-tl-assemble>:nth-child(4n+1){--ax:-44px;--ay:8px}
+  .cb-tl-assemble>:nth-child(4n+2){--ax:0px;--ay:-40px}
+  .cb-tl-assemble>:nth-child(4n+3){--ax:44px;--ay:8px}
+  .cb-tl-assemble>:nth-child(4n){--ax:0px;--ay:44px}
+}

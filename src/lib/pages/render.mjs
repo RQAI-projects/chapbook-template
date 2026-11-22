@@ -1214,7 +1214,10 @@ R_.steps = (C, b) => {
   const d = b.data, items = d.items || [];
   // A step can end in the button that does it ("Register", "Book a first visit").
   const go = (x, i) => (x.link ? `<p class="cb-step-go">${BTN(C, b, `items.${i}.link`, x.link, 'cb-btn cb-btn-small')}</p>` : '');
-  const one = (x, i, w) => w(`<span class="cb-step-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div class="cb-step-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-step-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-step-desc')}${go(x, i)}</div>`, 'li', `cb-step${i || b.variant !== 'sticky' ? '' : ' is-on'}`);
+  // With a progress line (a recovery plan), each step shows its time above it.
+  const prog = b.variant === 'sticky' && choiceValue('steps', d, 'trace') === 'progress';
+  const when = (x, i) => (prog && (x.when || C.editable) ? T(C, b, `items.${i}.when`, x.when, 'p', 'cb-step-when') : '');
+  const one = (x, i, w) => w(`<span class="cb-step-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><div class="cb-step-body">${when(x, i)}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-step-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-step-desc')}${go(x, i)}</div>`, 'li', `cb-step${i || b.variant !== 'sticky' ? '' : ' is-on'}`);
   const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
   const list = LIST(C, b, 'items', items, one, 'ol', `cb-steps cb-steps-${b.variant}`);
   // A thin line (a calm heart trace, or a sound wave) with one stretch for each step. It is
@@ -1234,10 +1237,16 @@ R_.steps = (C, b) => {
     const tl = LIST(C, b, 'items', items, row, 'ol', 'cb-steps cb-steps-timeline');
     return `${head}<div class="cb-tline" style="--n:${n}"${C.editable ? '' : ' data-scroll="read"'}><span class="cb-tline-rail" aria-hidden="true"><i></i></span>${tl}</div>`;
   }
+  // A progress line (therapy batch 1): beside the steps, a line that fills as they are read, with
+  // a marker at its end; the big number still changes as each step passes. Decoration, so hidden
+  // from screen readers; without movement the line is simply full.
+  const track = prog ? `<span class="cb-stk-prog" aria-hidden="true"><i class="cb-stk-fill"></i><i class="cb-stk-mark"></i></span>` : '';
   if (b.variant === 'sticky' && !C.editable && items.length > 1) {
     const n = items.length, two = (k) => String(k).padStart(2, '0');
-    return `${head}<div class="cb-stk${svg ? ' has-trace' : ''}" data-stk style="--n:${n}">${line('cb-trace-top', ' data-scroll="enter"')}<div class="cb-stk-rail" aria-hidden="true"><span class="cb-stk-num">${items.map((_, k) => `<span${k ? '' : ' class="is-on"'}>${two(k + 1)}</span>`).join('')}</span><span class="cb-stk-of">of ${two(n)}</span>${svg ? line('cb-stk-trace') : '<span class="cb-stk-bar"><i></i></span>'}</div>${list}</div>`;
+    const steps = prog ? `<div class="cb-stk-steps">${track}${list}</div>` : list;
+    return `${head}<div class="cb-stk${svg ? ' has-trace' : ''}${prog ? ' has-prog' : ''}" data-stk${prog ? ' data-scroll="read"' : ''} style="--n:${n}">${line('cb-trace-top', ' data-scroll="enter"')}<div class="cb-stk-rail" aria-hidden="true"><span class="cb-stk-num">${items.map((_, k) => `<span${k ? '' : ' class="is-on"'}>${two(k + 1)}</span>`).join('')}</span><span class="cb-stk-of">of ${two(n)}</span>${svg ? line('cb-stk-trace') : prog ? '' : '<span class="cb-stk-bar"><i></i></span>'}</div>${steps}</div>`;
   }
+  if (prog) return `${head}<div class="cb-stk-steps">${track}${list}</div>`;
   return `${head}${line('cb-trace-top', C.editable ? '' : ' data-scroll="enter"')}${list}`;
 };
 // The drawn line: a calm heart trace (one beat a stretch) or a sound wave (one swell a stretch),
@@ -1513,6 +1522,17 @@ R_.menuboard = (C, b) => {
 };
 
 // ---- tiles ----
+// Simple line drawings of everyday tasks (therapy batch 1, occupational therapy): drawn in the
+// text colour, with one part in the accent and a soft disc behind. Decoration only.
+const TASKS = {
+  dressing: '<path class="a" d="M48 24v-5a4 4 0 1 1 4 4"/><path d="M22 37 48 24l26 13"/><path d="M33 37h30l15 12-8 9-6-4v30H32V54l-6 4-8-9z"/><path d="M41 37l7 8 7-8M48 45v39"/>',
+  cooking: '<path class="a" d="M33 36c-4-5 4-8 0-14M44 36c-4-5 4-8 0-14M55 36c-4-5 4-8 0-14"/><path d="M14 46h58"/><path d="M18 46v20a10 10 0 0 0 10 10h30a10 10 0 0 0 10-10V46"/><path d="M68 52h18"/><path d="M22 84h44"/>',
+  washing: '<path d="M18 52h60a30 22 0 0 1-60 0z"/><path d="M42 74l-2 10h16l-2-10"/><path d="M48 26v-6h14v6M55 20v-6M48 26a6 6 0 0 0-6 6v4"/><path class="a" d="M42 42c-3 4-3 6 0 7 3-1 3-3 0-7z"/>',
+  stairs: '<path d="M12 82h18V68h16V54h16V40h20"/><path class="a" d="M16 62 72 24"/><path d="M24 68v-11M40 54v-11M56 40v-11"/>',
+  work: '<path d="M16 28h48v30H16z"/><path d="M8 64h64l-5 7H13z"/><path class="a" d="M24 38h24M24 46h16"/><path d="M74 50h12v16a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4z"/><path d="M86 54h3a4 4 0 0 1 0 8h-3"/>',
+  school: '<path d="M28 34a20 20 0 0 1 40 0v42a6 6 0 0 1-6 6H34a6 6 0 0 1-6-6z"/><path d="M42 20a6 6 0 0 1 12 0"/><path d="M28 46h40"/><path class="a" d="M38 58h20v14H38z"/>',
+};
+const taskSvg = (kind) => `<span class="cb-task cb-task-${kind}" aria-hidden="true"><svg viewBox="0 0 96 96" focusable="false"><circle class="cb-task-disc" cx="50" cy="54" r="34"/><g class="cb-task-line">${TASKS[kind]}</g></svg></span>`;
 R_.tiles = (C, b) => {
   const d = b.data, items = d.items || [], open = b.variant === 'open';
   const meta = (x, i) => (x.duration || x.price || (C.editable && open) ? `<p class="cb-tl-meta">${T(C, b, `items.${i}.duration`, x.duration, 'span', 'cb-tl-time')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-tl-price')}</p>` : '');
@@ -1523,11 +1543,18 @@ R_.tiles = (C, b) => {
   const one = (x, i, w) => {
     const panel = open && x.picture;
     const kind = BLOCK_TYPES.tiles.fields.items.item.shape.options.includes(x.shape) ? x.shape : 'none';
-    const shape = !x.picture && kind !== 'none' ? `<span class="cb-shape cb-shape-${kind}" aria-hidden="true"><i></i></span>` : '';
+    const shape = x.picture || kind === 'none' ? '' : TASKS[kind] ? taskSvg(kind) : `<span class="cb-shape cb-shape-${kind}" aria-hidden="true"><i></i></span>`;
     const html = w(`${x.picture || (C.editable && !x.value && !shape) ? `<figure class="cb-tl-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : ''}${shape}<div class="cb-tl-body">${T(C, b, `items.${i}.value`, x.value, 'p', 'cb-tl-value')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-tl-name')}${panel ? '' : more(x, i)}</div>${panel ? `<div class="cb-tl-panel">${more(x, i)}</div>` : ''}`, 'article', `cb-tl-item${x.picture ? ' has-pic' : ''}${x.value ? ' has-value' : ''}${panel ? ' has-panel' : ''}${shape ? ' has-shape' : ''}`);
     return panel && !x.link && !C.editable ? html.replace(/^<article/, '<article tabindex="0"') : html;
   };
-  return `${HEAD(C, b, d)}${LIST(C, b, 'items', items, one, 'div', `cb-tl cb-tl-${b.variant}${d.bounce ? ' cb-tl-bounce' : ''}`)}`;
+  // Cards that travel sideways as the page scrolls on (S5 with M4), as the services rail does:
+  // phones swipe them, and the editor shows them as a plain row.
+  if (b.variant === 'rail' && !C.editable && items.length > 1) {
+    const cards = items.map((x, i) => one(x, i, (inner, tag, cls) => `<${tag} class="${cls}">${inner}</${tag}>`)).join('');
+    return `${HEAD(C, b, d)}<div class="cb-hs cb-tl-rail" data-hs><div class="cb-hs-pin"><div class="cb-hs-view" tabindex="0" role="region" aria-label="${esc(plainHeading(d.heading) || 'Tiles')}, scrolls sideways"><div class="cb-hs-track cb-tl-railtrack">${cards}</div></div><span class="cb-hs-bar" aria-hidden="true"><i></i></span></div></div>`;
+  }
+  const cls = `cb-tl cb-tl-${b.variant === 'rail' ? 'row cb-tl-railrow' : b.variant}${d.bounce ? ' cb-tl-bounce' : ''}${d.assemble ? ' cb-tl-assemble' : ''}`;
+  return `${HEAD(C, b, d)}${LIST(C, b, 'items', items, one, 'div', cls)}`;
 };
 
 // ---- before and after ----

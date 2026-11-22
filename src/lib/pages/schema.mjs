@@ -470,7 +470,9 @@ export const BLOCK_TYPES = {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 8, label: 'Steps', add: 'Add a step', item: { when: L(40, 'When', 'e.g. First 10 minutes'), name: L(100, 'Step', 'Name of the step'), description: R(600, 'What happens'), link: { kind: 'link', label: 'Button' } }, sample: { name: 'Next step', description: '' } },
       // A thin line beside the steps that draws one more stretch as each step passes.
-      trace: { kind: 'choice', options: ['none', 'heart', 'wave'], def: 'none', labels: { none: 'No line', heart: 'A calm heart trace', wave: 'A sound wave' }, label: 'Line drawn beside the steps' },
+      // `progress` (therapy batch 1): beside sticky steps, a line that fills as the steps are read,
+      // each step with its time above it (a recovery plan, week by week).
+      trace: { kind: 'choice', options: ['none', 'heart', 'wave', 'progress'], def: 'none', labels: { none: 'No line', heart: 'A calm heart trace', wave: 'A sound wave', progress: 'A progress line that fills as you scroll' }, label: 'Line drawn beside the steps' },
     },
   },
   showcase: {
@@ -550,16 +552,19 @@ export const BLOCK_TYPES = {
   },
   tiles: {
     label: 'Tiles', hint: 'A grid of tiles in mixed sizes: photos, a few words, a big number.',
-    variants: { mosaic: 'Mixed sizes', feature: 'One large, the rest small', row: 'One row of tall tiles', open: 'Tiles that open to show the price and time' },
+    variants: { mosaic: 'Mixed sizes', feature: 'One large, the rest small', row: 'One row of tall tiles', open: 'Tiles that open to show the price and time', rail: 'Cards that travel sideways as you scroll' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 9, label: 'Tiles', add: 'Add a tile', item: {
         value: L(16, 'Big number or word', 'e.g. 12'), name: L(60, 'Heading', 'Heading'), text: L(200, 'Words'), duration: L(40, 'Time', 'e.g. 45 min'), price: L(40, 'Price', 'Price'), picture: PIC(), link: { kind: 'link', label: 'Link' },
         // A friendly shape drawn on a tile without a photo (release 7).
-        shape: { kind: 'choice', options: ['none', 'circle', 'arch', 'leaf', 'star', 'drop', 'wave'], def: 'none', labels: { none: 'No shape', circle: 'A circle', arch: 'An arch', leaf: 'A leaf', star: 'A star', drop: 'A drop', wave: 'A wave' }, label: 'Shape on the tile' },
+        // Shapes, or a simple line drawing of an everyday task (therapy batch 1, occupational therapy).
+        shape: { kind: 'choice', options: ['none', 'circle', 'arch', 'leaf', 'star', 'drop', 'wave', 'dressing', 'cooking', 'washing', 'stairs', 'work', 'school'], def: 'none', labels: { none: 'No shape', circle: 'A circle', arch: 'An arch', leaf: 'A leaf', star: 'A star', drop: 'A drop', wave: 'A wave', dressing: 'A drawing: a shirt on a hanger', cooking: 'A drawing: a pan on the hob', washing: 'A drawing: a basin and tap', stairs: 'A drawing: stairs with a rail', work: 'A drawing: a laptop and a mug', school: 'A drawing: a school bag' }, label: 'Shape on the tile' },
       }, sample: { name: 'New tile', text: '' } },
       // The tiles settle into place with a little bounce as they arrive (release 7).
       bounce: { kind: 'bool', label: 'Tiles settle into place with a little bounce' },
+      // The tiles come in from different sides and assemble into the grid (therapy batch 1).
+      assemble: { kind: 'bool', label: 'Tiles come in from different sides and fit together' },
     },
   },
   compare: {
@@ -642,7 +647,7 @@ export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'ti
 // quietly become the type's first layout, so they need the update too.
 export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture', 'dawn', 'triptych', 'questions', 'branches'], services: ['pinned', 'rail'], steps: ['sticky', 'timeline'], notice: ['help'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
 // Settings of older section types that came with release 7: an older design ignores them.
-export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace', 'help', 'questions'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat', 'wave'], tiles: ['bounce'] };
+export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace', 'help', 'questions'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat', 'wave'], tiles: ['bounce', 'assemble'] };
 // Settings of an entry in a list that came with release 7 (an older design drops them).
 export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'], steps: ['when'], tiles: ['shape'], scenes: ['drawing'] };
 // A word in a heading set in italic, written *like this*. Release 7 draws it; an older design
