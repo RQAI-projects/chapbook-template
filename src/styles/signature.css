@@ -1451,3 +1451,7 @@ html.cbm-js .cb-bg-dark .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-count{backgrou
 @media screen and (prefers-reduced-motion:no-preference){
   html.cbm-js .cbm[data-m-scroll] .cb-route:not(.is-live){--p:0}
 }
+
+/* A giant word behind the opening on a deep band (Kneadwell): set strong enough to read as large
+   type (3:1 at least) on every deep colour, rather than as a faint watermark. */
+.cbp .cb-bg-dark .cb-bw-word{color:color-mix(in srgb,currentColor 38%,transparent)}

@@ -59,3 +59,7 @@ test('a route down the page: numbered points on one line that draws as the steps
   assert.match(css, /\.cb-route-line i\{[^}]*transform:scaleY\(var\(--p,1\)\)\}/);
   assert.match(css, /html\.cbm-js \.cbm\[data-m-scroll\] \.cb-route:not\(\.is-live\)\{--p:0\}/);
 });
+
+test('a giant word behind an opening on a deep band reads as large type, not a faint watermark', () => {
+  assert.match(css, /\.cbp \.cb-bg-dark \.cb-bw-word\{color:color-mix\(in srgb,currentColor 38%,transparent\)\}/);
+});
