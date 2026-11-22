@@ -37,7 +37,8 @@ test('arched ways to work rise into place, the marked one raised; a plain grid i
   assert.ok(!draw([{ ...plans }], { editable: true }).includes('data-scroll'));
   assert.equal(needsSignature(plans), true);
   assert.match(css, /\.cb-pl-arches>\.cb-pl-item\{border-radius:999px 999px/);
-  assert.match(css, /\.cb-pl-arches\.is-live>\.cb-pl-item\{opacity:[^}]*transform:translate3d/);
+  // Transform only: the words are at full strength the whole way, so nothing is ever faint.
+  assert.match(css, /\.cb-pl-arches\.is-live>\.cb-pl-item\{transform:translate3d\([^}]*\)\}/);
 });
 
 test('steps that climb: a ladder with rise builds itself; without it the ladder draws as before', () => {
