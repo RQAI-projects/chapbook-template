@@ -728,7 +728,7 @@ html:not(.cbm-js) .cb-rail-band{display:none}
 /* The panel is in the page's own colour (light on a light palette, dark on a dark one), with the
    page's own text colours, so it belongs to the palette instead of darkening it. Solid, so its
    words read the same whatever the photo behind it. */
-.cb-tl-panel{display:grid;gap:.35rem;padding:clamp(.9rem,1.8vw,1.2rem) clamp(1rem,2vw,1.4rem);background:var(--bg-0,#ffffff);color:var(--cb-page-ink,#16181d);--ink:var(--cb-page-ink,#16181d);--ink-dim:var(--cb-page-dim,#3d4250);text-shadow:none;box-shadow:0 -1px 0 color-mix(in srgb,var(--cb-page-ink,#16181d) 8%,transparent)}
+.cb-tl-panel{display:grid;gap:.35rem;padding:clamp(.9rem,1.8vw,1.2rem) clamp(1rem,2vw,1.4rem);background:var(--bg-0,#ffffff);color:var(--cb-page-ink,#16181d);--ink:var(--cb-page-ink,#16181d);--ink-dim:var(--cb-page-dim,#3d4250);--cb-accent-text:var(--cb-page-accent,var(--cb-page-ink,#16181d));text-shadow:none;box-shadow:0 -1px 0 color-mix(in srgb,var(--cb-page-ink,#16181d) 8%,transparent)}
 .cb-tl-panel .cb-tl-meta .cb-tl-price{color:var(--cb-page-accent,var(--cb-page-ink,#16181d))}
 .cb-tl-panel .cb-tl-text{color:var(--cb-page-dim,#3d4250)}
 .cb-tl-panel .cb-link{display:inline-flex;align-items:center;min-height:max(2.75rem,44px);color:var(--cb-page-accent,var(--cb-page-ink,#16181d));text-decoration-color:currentColor}
