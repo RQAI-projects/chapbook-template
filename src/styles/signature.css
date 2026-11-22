@@ -1164,3 +1164,10 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 /* ---- The reading serif set light (mental health): quiet, even headings ----------------------- */
 .cbp-hf-quiet :is(.cb-h,.cb h3,.cb-fact-value,.cb-pl-amount,.cb-stk-num,.cb-ft-value,.cb-sp-day,.cb-initials,.cb-mono-letters){font-weight:400;letter-spacing:-.008em}
 .cbp-hf-quiet :is(.cb-h,.cb h3) em{font-weight:400;font-style:italic}
+
+/* ---- Words on the accent of a split opening, at full strength ------------------------------ */
+/* A page that chooses its text typeface (the signature websites) sets the opening's softer words
+   and its Open now line on the accent at full strength, so they read on a mid-tone accent too
+   (Fenwick's amber). Other pages draw as before. */
+.cbp-bodyfont .cb-curtain-words{--ink-dim:var(--cb-on-accent)}
+.cbp-bodyfont .cb-curtain-words .cb-opennow{background:color-mix(in srgb,#fff 24%,transparent)}
