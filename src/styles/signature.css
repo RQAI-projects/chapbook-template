@@ -1311,17 +1311,18 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 }
 
 /* ---- Everyday tasks drawn in line, and tiles on a sideways rail (therapy batch 1) -------- */
-.cb-task{display:block;flex:none;width:clamp(6.6rem,10vw,8.4rem);aspect-ratio:1;margin:clamp(1.1rem,2vw,1.5rem) clamp(1.1rem,2vw,1.5rem) 0}
+.cb-task{display:block;flex:none;width:clamp(8rem,12vw,10.5rem);aspect-ratio:1;margin:clamp(1.2rem,2.2vw,1.8rem) clamp(1.1rem,2vw,1.5rem) 0}
 .cb-task svg{display:block;width:100%;height:100%;overflow:visible}
-.cb-task-disc{fill:color-mix(in srgb,var(--cb-accent-text,var(--accent)) 15%,transparent)}
+/* Drawings are decoration, never words: the disc and the marked part take the accent itself. */
+.cb-task-disc{fill:color-mix(in srgb,var(--accent) 18%,transparent)}
 .cb-task-line path{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-.cb-task-line .a{stroke:var(--cb-accent-text,var(--accent))}
-.cb-tl-item.has-shape:has(.cb-task){justify-content:space-between}
+.cb-task-line .a{stroke:var(--accent)}
+.cb-tl-item.has-shape:has(.cb-task){justify-content:flex-start}
 .cb-tl-rail .cb-hs-view{scroll-snap-type:x mandatory}
-.cb-tl-railtrack>.cb-tl-item{flex:0 0 min(78vw,19rem);min-height:23rem}
+.cb-tl-railtrack>.cb-tl-item{flex:0 0 min(78vw,19rem);min-height:21rem}
 .cbp .cb .cb-tl-railtrack h3.cb-tl-name{font-size:clamp(1.45rem,2.2vw,1.85rem);line-height:1.08}
 .cb-tl-railtrack .cb-tl-text{font-size:1rem}
-@media (min-width:761px){.cb-tl-railtrack>.cb-tl-item{flex-basis:clamp(17rem,24vw,21rem);min-height:26rem}}
+@media (min-width:761px){.cb-tl-railtrack>.cb-tl-item{flex-basis:clamp(17rem,24vw,21rem);min-height:24rem}}
 .cb-tl-railrow{grid-auto-rows:minmax(18rem,auto)}
 @media screen and (prefers-reduced-motion:no-preference){
   /* A drawing settles a moment after its card, the disc first. */
