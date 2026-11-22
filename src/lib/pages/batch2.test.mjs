@@ -26,7 +26,7 @@ test('still water: the words, then the photo and a mirrored copy hidden from scr
   assert.equal(needsSignature(hero), true);
   // It settles once, by opacity and transform, only with movement allowed.
   assert.match(css, /@media screen and \(prefers-reduced-motion:no-preference\)\{\n  html\.cbm-js \.cbm \.cb-rf-mirror\{animation:cb-rf-settle/);
-  assert.match(css, /@keyframes cb-rf-settle\{from\{opacity:0;transform:translate3d\(0,-10px,0\)\}to\{opacity:\.5;transform:none\}\}/);
+  assert.match(css, /@keyframes cb-rf-settle\{from\{opacity:0;transform:translate3d\(0,-10px,0\)\}to\{opacity:\.42;transform:none\}\}/);
 });
 
 test('arched ways to work rise into place, the marked one raised; a plain grid in the editor', () => {
