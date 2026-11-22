@@ -183,6 +183,17 @@ test('regulator: the business types its own governing body, or picks a UK regist
   assert.ok(old.includes('<ul class="cb-reg-list"><li class="cb-reg-person"><span class="cb-reg-name">Dr A</span><span class="cb-reg-num"><span class="cb-reg-body">GMC</span> <span>1234567</span></span></li><li class="cb-reg-person"><span class="cb-reg-name">Jo</span><span class="cb-reg-num"><span class="cb-reg-body">NMC PIN</span> <span>12A3456B</span></span></li><li class="cb-reg-person"><span class="cb-reg-name">Old</span><span class="cb-reg-num"><span class="cb-reg-body">GMC</span> <span>1</span></span></li></ul><p class="cb-reg-checks"><a class="cb-link cb-reg-check" href="https://www.gmc-uk.org/registration-and-licensing/the-medical-register" rel="noopener">Check the General Medical Council register</a><a class="cb-link cb-reg-check" href="https://www.nmc.org.uk/registration/search-the-register/" rel="noopener">Check the Nursing and Midwifery Council register</a></p>'));
 });
 
+test('not registered with the CQC: no rating shown on the website, and the editor asks for none', () => {
+  const reg = { id: 'b1', type: 'regulator', variant: 'panel', data: { heading: 'Registered', items: [{ name: 'Sam Lee', body: 'hcpc', number: 'PH123456' }] } };
+  const none = { ...pro, cqcRating: 'none' };
+  assert.equal(professionalDetails({ cqcRating: 'none' }).cqcRating, 'none');
+  assert.ok(!draw([reg], none).includes('Care Quality Commission'));
+  assert.ok(!draw([reg], none, { editable: true }).includes('Add your CQC location ID'));
+  assert.equal(draw([{ type: 'regulator', variant: 'line', data: { heading: 'Our CQC rating' } }], none).includes('cb-reg'), false);
+  // Nothing set still asks, in the editor only, as before.
+  assert.match(draw([reg], pro, { editable: true }), /Add your CQC location ID/);
+});
+
 test('the clinic typeface: a clean sans with one warm italic phrase', () => {
   const html = renderPage(page([hero()], { font: 'mixed' }), { site: { professional: pro } });
   assert.match(html, /class="cbp cbp-font cbp-hf-mixed"/);

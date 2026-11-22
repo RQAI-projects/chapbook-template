@@ -80,8 +80,10 @@ export function cleanTimeZone(v){
  try{new Intl.DateTimeFormat('en-GB',{timeZone:z});return z;}catch{return DEFAULT_TIME_ZONE;}
 }
 // The CQC's location ID (1-101641587), the latest overall rating and the day it was given. Only
-// what the business has set; never a sample rating.
-const CQC_RATING_KEYS=['outstanding','good','requires-improvement','inadequate'];
+// what the business has set; never a sample rating. `none`: the business says it is not
+// registered with the CQC (most therapists, and everyone outside England), so no rating is shown
+// and none is asked for.
+const CQC_RATING_KEYS=['outstanding','good','requires-improvement','inadequate','none'];
 const isoDay=(v)=>{const s=text(v,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return '';const d=new Date(s+'T00:00:00Z');return !isNaN(d)&&d.toISOString().slice(0,10)===s?s:'';};
 export function professionalDetails(value={},{allowDataImages=false}={}){
   const pic=v=>safeImage(v,allowDataImages);

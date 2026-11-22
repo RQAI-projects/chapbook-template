@@ -1081,7 +1081,8 @@ const cqcPage = (id) => (CQC_ID.test(id || '') ? `https://www.cqc.org.uk/locatio
 const longDay = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); if (!m) return ''; const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])); return `${d.getUTCDate()} ${['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][d.getUTCMonth()]} ${d.getUTCFullYear()}`; };
 function cqcRating(C, b, d) {
   const biz = C.biz, rating = CQC_RATINGS[biz.cqcRating] || '', page = cqcPage(biz.cqcId);
-  if (!rating && !page) return C.editable ? '<div class="cb-reg-cqc cb-reg-empty"><p class="cb-reg-label">Care Quality Commission</p><p class="cb-note" data-cb-hint>Add your CQC location ID, your latest overall rating and its date in Details and booking. Providers in England must show their rating on their website.</p></div>' : '';
+  // Not registered with the CQC (chosen in Details and booking): nothing to show or ask for.
+  if (!rating && !page) return C.editable && biz.cqcRating !== 'none' ? '<div class="cb-reg-cqc cb-reg-empty"><p class="cb-reg-label">Care Quality Commission</p><p class="cb-note" data-cb-hint>Add your CQC location ID, your latest overall rating and its date in Details and booking. Providers in England must show their rating on their website.</p></div>' : '';
   const when = longDay(biz.cqcDate);
   const word = rating ? `<p class="cb-reg-rating"><span class="cb-reg-small">Overall rating</span> <strong class="cb-reg-word cb-reg-${esc(biz.cqcRating)}">${esc(rating)}</strong></p>${when ? `<p class="cb-reg-date">Rated ${esc(when)}</p>` : ''}` : '';
   const link = `<a class="cb-link cb-reg-report" href="${esc(page || CQC_HOME)}" rel="noopener">${rating ? 'Read the CQC report' : 'See our CQC rating and report'}</a>`;
