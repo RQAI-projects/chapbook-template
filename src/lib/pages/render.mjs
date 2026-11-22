@@ -173,6 +173,8 @@ export function renderPage(rawPage, ctx = {}) {
   const m = page.look.motion || null;
   C.backdrop = m?.backdrop || '';
   C.heroId = page.blocks.find((b) => b.type === 'hero')?.id;
+  // The page's If you need help now card, when it has one: an opening's help line goes to it.
+  C.helpId = page.blocks.find((b) => b.type === 'notice' && b.variant === 'help')?.id || '';
   // A page that opens with words only: its first photo is what a phone paints largest, so it is
   // asked for at once instead of waiting until it is scrolled near.
   const first = page.blocks[0];
@@ -391,10 +393,10 @@ const shownMore = (b, d) => (d.pictures || []).slice(0, HERO_PHOTO_ROOM[b.varian
 // Openings built round a photo. On the published page one with no photo or film is drawn as its
 // words alone, so no room is kept for a picture that was never added. The editor is not touched:
 // it goes on showing the "Add a picture" prompt in the photo's place.
-const PHOTO_LED = ['split', 'photo-behind', 'stacked', 'blob', 'inset', 'open', 'orbit', 'collage', 'arch', 'curtain', 'reveal', 'dawn'];
+const PHOTO_LED = ['split', 'photo-behind', 'stacked', 'blob', 'inset', 'open', 'orbit', 'collage', 'arch', 'curtain', 'reveal', 'dawn', 'triptych'];
 // Of those, the ones whose whole frame is shaped for the photo. Without one they take the plain
 // "words" frame instead of their own.
-const PHOTO_FRAMED = ['photo-behind', 'inset', 'open', 'curtain', 'dawn'];
+const PHOTO_FRAMED = ['photo-behind', 'inset', 'open', 'curtain', 'dawn', 'triptych'];
 const heroBare = (C, b) => !C.editable && b.type === 'hero' && !b.data.picture && !b.data.video && !shownMore(b, b.data).length;
 // The class name an opening is drawn with.
 const heroFrame = (C, b) => (b.type === 'hero' && PHOTO_FRAMED.includes(b.variant) && heroBare(C, b) ? 'words' : b.variant);
@@ -446,7 +448,10 @@ R_.hero = (C, b) => {
   // The booking bar, when there is one, always sits under the buttons, whatever the layout, and
   // then whether the business is open now.
   const nowLine = d.openNow && v !== 'actions' ? openLine(C, C.biz.hours, 'cb-opennow cb-hero-now') : '';
-  const btns = `${BTNS(C, b, d.buttons)}${heroBar(C, b, d)}${nowLine}`;
+  // A short still line that goes to the page's If you need help now card (release 7), so the
+  // first screen of a phone already says where help is. Only when the page has that card.
+  const helpLine = d.help && (C.editable || C.helpId) ? `<p class="cb-hero-help">${C.editable ? T(C, b, 'help', d.help, 'span') : `<a href="#help-now"><span class="cb-hero-help-dot" aria-hidden="true"></span>${esc(d.help)}</a>`}</p>` : '';
+  const btns = `${BTNS(C, b, d.buttons)}${heroBar(C, b, d)}${nowLine}${helpLine}`;
   // A line drawn under the heading as the page opens (a sound wave, or a calm heart trace).
   const heroTrace = choiceValue('hero', d, 'trace');
   const traceLine = heroTrace === 'heart' || heroTrace === 'wave' ? `<span class="cb-trace cb-trace-${heroTrace} cb-trace-hero" aria-hidden="true"><span class="cb-trace-ghost">${traceSvg(heroTrace, 5)}</span><span class="cb-trace-win"><span class="cb-trace-in">${traceSvg(heroTrace, 5)}</span></span></span>` : '';
@@ -636,6 +641,17 @@ R_.hero = (C, b) => {
   if (v === 'dawn') {
     const bg = fileBehind || !d.video ? pic('cb-hero-bg cb-dawn-night') : `<figure class="cb-hero-bg cb-dawn-night">${P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`;
     return `<div class="cb-dawn"${C.editable ? '' : ' data-scroll="through"'}><div class="cb-dawn-stay">${bg}<span class="cb-dawn-stars" aria-hidden="true"></span><span class="cb-dawn-sky" aria-hidden="true"></span><span class="cb-dawn-glow" aria-hidden="true"></span><div class="cb-hero-words cb-dawn-words">${words}${details}</div>${toggle}</div></div>`;
+  }
+  // Three tall windows onto one photo (release 7, skin): the words beside them and the details
+  // as a ledger along the foot. The windows stand at different heights while the photo lies
+  // still behind all three, so it reads as one picture; they rise into place once as the page
+  // opens. The copies in the second and third windows are hidden from screen readers.
+  if (v === 'triptych') {
+    const one = d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false });
+    const copy = one.replace(/ alt="[^"]*"/, ' alt=""').replace(' fetchpriority="high"', '');
+    const pics = C.editable || d.video ? `<figure class="cb-hero-pic cb-tri-one">${one}</figure>` : `<div class="cb-tri-pic">${[0, 1, 2].map((k) => `<figure class="cb-tri-strip"${k ? ' aria-hidden="true"' : ''}>${k ? copy : one}</figure>`).join('')}</div>`;
+    const ledger = d.details ? `<div class="cb-tri-ledger">${factsList(C, b, d, { cls: 'cb-facts cb-tri-facts' })}</div>` : '';
+    return `<div class="cb-tri"><div class="cb-hero-words cb-tri-words">${words}</div>${pics}</div>${ledger}${d.picture ? creditsOf([d.picture]) : ''}`;
   }
   if (v === 'reveal') return `<div class="cb-reveal"><div class="cb-hero-words cb-reveal-words">${words}${details}</div>${media ? `<figure class="cb-hero-pic cb-reveal-pic"><span class="cb-reveal-in">${d.video ? heroVideo(C, b, d, fileBehind) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</span></figure>${creditsOf([d.picture])}` : ''}${toggle}</div>`;
   // One statement that fills the first screen. No photo, by design.
@@ -1540,6 +1556,8 @@ function renderBlock(b, C) {
   let moving = '';
   if (C.backdrop && b.id === C.heroId && !['photo-behind', 'inset', 'open'].includes(frame) && s.bg !== 'picture') moving = backdropHtml(C.backdrop);
   else if (C.backdrop && C.backdrop !== 'dawn' && b.type === 'cta' && ['accent', 'dark'].includes(s.bg)) moving = backdropHtml(C.backdrop, ' cbm-bd-echo');
-  return `<section class="${cls}"${ED(C, 'data-cb-block', b.id)}>${backdrop}${moving}<div class="cb-in">${inner}</div></section>`;
+  // The help card is where an opening's help line goes (#help-now).
+  const anchor = !C.editable && C.helpId && b.id === C.helpId ? ' id="help-now"' : '';
+  return `<section class="${cls}"${anchor}${ED(C, 'data-cb-block', b.id)}>${backdrop}${moving}<div class="cb-in">${inner}</div></section>`;
 }
 export { renderBlock as _renderBlock };

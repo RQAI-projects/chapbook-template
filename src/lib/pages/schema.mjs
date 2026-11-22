@@ -230,6 +230,9 @@ export const BLOCK_TYPES = {
       // Release 7, consultant doctors (sleep): a night photo that lightens to dawn as people
       // scroll, by layers that only change how see-through they are.
       dawn: 'A night photo that lightens to dawn as people scroll',
+      // Release 7, consultant doctors (skin): three tall windows onto one photo, at different
+      // heights, with the details as a ledger along the foot.
+      triptych: 'Three tall windows onto one photo, the details along the foot',
     },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, rotate: { ...L(160, 'Changing words', 'e.g. brands, websites, films'), panel: true, hint: 'A few words with commas between them. They take turns at the end of the heading.' }, word: L(12, 'Big word', 'e.g. Fresh'), intro: R(1200, 'Introduction'), picture: PIC(), pictures: { kind: 'pictures', max: 6, label: 'More photos' },
@@ -256,6 +259,9 @@ export const BLOCK_TYPES = {
       // A thin line drawn once under the heading as the page opens: a calm heart trace or a sound
       // wave (the same lines the steps can have beside them).
       trace: { kind: 'choice', options: ['none', 'heart', 'wave'], def: 'none', labels: { none: 'No line', heart: 'A calm heart trace', wave: 'A sound wave' }, label: 'Line drawn under the heading', panel: true },
+      // A short line under the buttons that goes to the page's If you need help now card, so a
+      // phone's first screen says where help is (release 7). Still, and shown only with that card.
+      help: { ...L(120, 'Help line', 'e.g. Need help now? Numbers to call, day or night'), panel: true, hint: 'A short line under the buttons that takes people to the If you need help now card on this page. It is shown only when the page has that card, and it never moves.' },
       frame: { kind: 'choice', options: ['arch', 'circle', 'square'], def: 'arch', labels: { arch: 'Arch', circle: 'Circle', square: 'Square' }, label: 'Portrait frame' },
     },
   },
@@ -591,9 +597,9 @@ export const BLOCK_TYPES = {
 export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'tiles', 'compare', 'timetable', 'casestudy', 'scenes', 'regulator'];
 // Layouts of older section types that came with the same release. On an older design they would
 // quietly become the type's first layout, so they need the update too.
-export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture', 'dawn'], services: ['pinned', 'rail'], steps: ['sticky', 'timeline'], notice: ['help'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
+export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture', 'dawn', 'triptych'], services: ['pinned', 'rail'], steps: ['sticky', 'timeline'], notice: ['help'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
 // Settings of older section types that came with release 7: an older design ignores them.
-export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat'], tiles: ['bounce'] };
+export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace', 'help'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat'], tiles: ['bounce'] };
 // Settings of an entry in a list that came with release 7 (an older design drops them).
 export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'], steps: ['when'], tiles: ['shape'] };
 // A word in a heading set in italic, written *like this*. Release 7 draws it; an older design

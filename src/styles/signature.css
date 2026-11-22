@@ -826,6 +826,10 @@ html:not(.cbm-js) .cb-rail-band{display:none}
    word is set upright in the accent colour instead of a slanted copy. */
 .cbp-hf-modern :is(.cb-h,.cb h3) em{font-weight:400}
 .cbp-hf-grotesk .cb-h em{font-style:normal;color:var(--cb-accent-text,var(--accent))}
+/* The rounded face has no italic of its own: a marked word is set in the accent instead of a
+   slanted copy of the letters. */
+.cbp-hf-friendly .cb-h em{font-style:normal;color:var(--cb-accent-text,var(--accent))}
+.cb-bg-dark.cbp-hf-friendly .cb-h em,.cbp-hf-friendly .cb-bg-dark .cb-h em,.cbp-hf-friendly .cb-bg-accent .cb-h em{color:inherit}
 .cb-bg-dark.cbp-hf-grotesk .cb-h em,.cbp-hf-grotesk .cb-bg-dark .cb-h em,.cbp-hf-grotesk .cb-bg-accent .cb-h em{color:inherit}
 
 /* ---- Quick actions over an Open now card (C1's opening) ------------------------------------ */
@@ -1084,6 +1088,15 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
   html.cbm-js .cbm .cb-still>.cb-in,html.cbm-js .cbm .cb-still *{opacity:1!important;transform:none!important;filter:none!important;transition:none!important;animation:none!important;-webkit-mask:none!important;mask:none!important}
 }
 
+/* The opening's line that goes to the help card: small, calm and still, in the first screen. */
+.cb-hero-help{margin:clamp(.8rem,2vw,1.1rem) 0 0;font-size:1rem;line-height:1.4}
+.cb-hero-help a{display:inline-flex;align-items:center;gap:.6rem;min-height:44px;color:inherit;font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em}
+.cb-hero-help-dot{flex:none;width:.6rem;height:.6rem;border-radius:50%;background:currentColor;opacity:.7}
+@media screen and (prefers-reduced-motion:no-preference){
+  html.cbm-js .cbm .cb-hero-help,html.cbm-js .cbm .cb-hero-help *{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}
+}
+#help-now{scroll-margin-top:calc(var(--header-h,0px) + 1rem)}
+
 /* ---- Tiles with a friendly shape drawn on them (no photo) -------------------------------- */
 .cb-shape{position:relative;display:block;flex:none;width:clamp(3.4rem,5.6vw,4.6rem);height:clamp(3.4rem,5.6vw,4.6rem);margin:clamp(1rem,2vw,1.4rem) clamp(1rem,2vw,1.4rem) 0}
 .cb-shape::before{content:"";position:absolute;inset:0;background:var(--accent)}
@@ -1171,3 +1184,42 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
    (Fenwick's amber). Other pages draw as before. */
 .cbp-bodyfont .cb-curtain-words{--ink-dim:var(--cb-on-accent)}
 .cbp-bodyfont .cb-curtain-words .cb-opennow{background:color-mix(in srgb,#fff 24%,transparent)}
+
+/* ======================================================================================== */
+/* Consultant doctors, third batch (release 7) and the second batch's fixes: three windows   */
+/* onto one photo (skin), hand studies drawn in line beside the conditions (hand and wrist),  */
+/* questions as the opening (men's health), branching lines drawn behind the opening          */
+/* (neurology), and a gentle wave drawn through a numbers band (hormones).                    */
+/* ======================================================================================== */
+
+/* ---- Three windows onto one photo ------------------------------------------------------ */
+.cb-tri{display:grid;gap:clamp(2rem,5vw,4.5rem);align-items:center}
+.cb-tri-words{max-width:36rem}
+.cbp .cb-hero--triptych .cb-hero-h{font-size:clamp(2.7rem,6.2vw,5.6rem);line-height:.98;letter-spacing:-.045em}
+.cb-tri-pic{--g:clamp(.4rem,.9vw,.8rem);--h:clamp(21rem,46vw,40rem);position:relative;height:var(--h)}
+.cb-tri-strip{position:absolute;top:calc(var(--t) * 100%);bottom:calc(var(--b) * 100%);width:calc((100% - 2 * var(--g)) / 3);margin:0;overflow:hidden;border-radius:clamp(.3rem,.6vw,.55rem);background:var(--cb-surface)}
+.cb-tri-strip:nth-child(1){--k:0;--t:.12;--b:.04;left:0}
+.cb-tri-strip:nth-child(2){--k:1;--t:0;--b:.14;left:calc((100% - 2 * var(--g)) / 3 + var(--g))}
+.cb-tri-strip:nth-child(3){--k:2;--t:.22;--b:0;left:calc(2 * ((100% - 2 * var(--g)) / 3 + var(--g)))}
+/* The photo lies behind all three windows at once: as wide and as tall as the whole set. */
+.cb-tri-strip img{position:absolute;top:calc(var(--t) / (1 - var(--t) - var(--b)) * -100%);left:calc(var(--k) * -100% - var(--k) * var(--g));width:calc(300% + 2 * var(--g));max-width:none;height:calc(100% / (1 - var(--t) - var(--b)));object-fit:cover}
+.cb-tri-one img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.cb-tri-ledger{margin-top:clamp(2rem,4.5vw,3.6rem);padding:clamp(1.1rem,2.6vw,1.7rem) clamp(1.2rem,3vw,2.4rem);border-radius:clamp(.4rem,.8vw,.7rem);background:var(--cb-deep);color:var(--cb-on-deep);--ink:var(--cb-on-deep);--ink-dim:var(--cb-on-deep);--line:color-mix(in srgb,var(--cb-on-deep) 24%,transparent)}
+.cbp .cb-tri-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:1rem clamp(1.4rem,3.5vw,3rem);margin:0}
+.cbp .cb-tri-facts>div{display:block;padding-left:clamp(.9rem,1.6vw,1.2rem);border-left:1px solid var(--line)}
+.cb-tri-facts dt{font-size:.78rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
+.cbp .cb-tri-facts dd{margin:.45rem 0 0}
+.cb-tri-facts dd p{margin:0}
+.cb-tri-facts a{color:inherit}
+@media (min-width:761px){
+  .cb-tri{grid-template-columns:minmax(0,5fr) minmax(0,6.5fr)}
+}
+@media screen and (prefers-reduced-motion:no-preference){
+  html.cbm-js .cbm:not([data-m-edit]) .cb-tri-strip{animation:cbs-tri-rise 1.3s cubic-bezier(.22,1,.36,1) both}
+  html.cbm-js .cbm:not([data-m-edit]) .cb-tri-strip img{animation:cbs-tri-hold 1.3s cubic-bezier(.22,1,.36,1) both}
+  html.cbm-js .cbm:not([data-m-edit]) .cb-tri-strip:nth-child(2),html.cbm-js .cbm:not([data-m-edit]) .cb-tri-strip:nth-child(2) img{animation-delay:.14s}
+  html.cbm-js .cbm:not([data-m-edit]) .cb-tri-strip:nth-child(3),html.cbm-js .cbm:not([data-m-edit]) .cb-tri-strip:nth-child(3) img{animation-delay:.28s}
+}
+/* Each window rises into place while the photo inside it holds still, so the picture settles. */
+@keyframes cbs-tri-rise{from{transform:translate3d(0,3.2rem,0);opacity:0}to{transform:none;opacity:1}}
+@keyframes cbs-tri-hold{from{transform:translate3d(0,-3.2rem,0)}to{transform:none}}
