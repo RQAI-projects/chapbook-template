@@ -1015,8 +1015,10 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 @keyframes cbs-trace-win{from{transform:translate3d(-100%,0,0)}to{transform:none}}
 @keyframes cbs-trace-in{from{transform:translate3d(100%,0,0)}to{transform:none}}
 
-/* Numbers that beat once, like a pulse, after counting up: set in the accent, like a pulse. */
+/* Numbers that beat once, like a pulse, after counting up: set in the accent, and larger in a
+   band, so the beat is the first thing seen there. */
 .cb-factlist.cb-beat .cb-fact-value{color:var(--cb-accent-text,var(--accent))}
+.cb-factlist-band.cb-beat .cb-fact-value{font-size:clamp(3.6rem,9vw,8.4rem)}
 @keyframes cbs-beat{0%{transform:none}12%{transform:scale(1.09)}24%{transform:scale(.985)}36%{transform:scale(1.05)}60%,100%{transform:none}}
 
 /* A condition's card: typical recovery first, large. */
