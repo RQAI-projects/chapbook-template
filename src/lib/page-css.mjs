@@ -223,6 +223,131 @@ export function inlinePageCss(html, readCss, scripts) {
   });
 }
 
+// ---- What the first screen does not need waits until the page has loaded -------------------
+// Two things a phone would otherwise fetch before it paints the first screen, sharing a slow line
+// with the opening's photo and words:
+// - typefaces that only words further down use. The site's own static faces (public/fonts, one
+//   file per weight and style) that the page does not preload in its head (BlockPage.astro
+//   preloads exactly the faces its first screen draws with) are taken out of the page's styles
+//   and set in a <noscript data-cb-late> before the page; BlockPage's inline script puts them
+//   back, in a <style> after it, once the page has loaded. Without scripts the noscript's style
+//   simply applies. Inter and Space Grotesk (one file for every weight) are left as they are.
+// - photos below the opening. Every lazily loaded photo after the page's first section keeps
+//   its addresses in data-cb-src and data-cb-srcset; the same script gives them back once the
+//   page has loaded, and they then load lazily as before, as they are scrolled near.
+// Nothing else changes: the same rules, in the same order, so once loaded the page is exactly
+// as it was.
+
+const FONT_FACE = /^@font-face$/i;
+const fontFile = (block) => { const m = /url\(\s*['"]?([^'")\s]+)['"]?\s*\)/.exec(block); return m ? m[1] : ''; };
+
+/** Splits a page's styles into the rules that stay and the @font-face rules of the site's own
+ *  static faces that the first screen does not use (not in `first`, a set of file names). */
+export function lateFonts(css, first) {
+  let keep = '', late = '';
+  for (const { prelude, block } of cssParts(css)) {
+    if (block === null) { keep += `${prelude};`; continue; }
+    const rule = `${prelude}{${block}}`;
+    const file = FONT_FACE.test(prelude) ? fontFile(block) : '';
+    if (/\/fonts\/[\w.-]+\.woff2$/.test(file) && !first.has(file.slice(file.lastIndexOf('/') + 1))) late += rule;
+    else keep += rule;
+  }
+  return { keep, late };
+}
+
+/** One block page, after its styles are its own (inlinePageCss): late typefaces and photos. */
+export function deferLate(html) {
+  const start = html.search(/<div class="cbp[\s"]/);
+  if (start < 0) return html;
+  const first = new Set();
+  for (const m of html.matchAll(/<link\b[^>]*\brel="preload"[^>]*>/gi)) {
+    if (!/\bas="font"/i.test(m[0])) continue;
+    const href = hrefOf(m[0]);
+    first.add(href.slice(href.lastIndexOf('/') + 1));
+  }
+  let late = '';
+  let out = html.slice(0, start).replace(/(<style data-page-css>)([\s\S]*?)(<\/style>)/g, (m, a, css, b) => {
+    const split = lateFonts(css, first);
+    late += split.late;
+    return a + split.keep + b;
+  });
+  // The page: its first section is the opening; every lazy photo after it waits.
+  let page = html.slice(start);
+  const firstEnd = page.indexOf('</section>');
+  if (firstEnd > 0) {
+    const head = page.slice(0, firstEnd), rest = page.slice(firstEnd);
+    page = head + rest.replace(/<img\b[^>]*>/g, (tag) => (/\sloading="lazy"/.test(tag) && !/\sdata-cb-src=/.test(tag) ? tag.replace(/\ssrc="/, ' data-cb-src="').replace(/\ssrcset="/, ' data-cb-srcset="') : tag));
+  }
+  return out + (late ? `<noscript data-cb-late><style>${late}</style></noscript>` : '') + page;
+}
+
+// ---- GSAP stays with the blog looks ------------------------------------------------------
+// GSAP and the blog looks' movement (BlogMotion.astro) are bundled on their own, `blog-motion`
+// (astro.config.mjs). Every page's script imports it, and so does the shared chunk with the
+// website's own script (only to keep the order the two run in). A block page uses none of it,
+// yet a phone would fetch and run about 50 KB of it before its first screen settles. So:
+// - the shared chunks lose that import. Each page's script still imports blog-motion itself,
+//   after them, so on a blog page both still run, in the order they were written. A page whose
+//   script IS such a chunk is given a two-line script that imports the chunk, then blog-motion
+//   (`<name>.blog.js`);
+// - a block page with nothing of the blog looks' movement on it (no data-reveal, data-count or
+//   data-tilt) takes its script without the import (a copy, `<name>.cbp.js`, or the shared
+//   chunk itself). The shared chunks keep their addresses, so moving from page to page never
+//   runs the website's script twice.
+const BLOG_MOTION = /import\s*"\.\/(blog-motion\.[\w-]+\.js)";/g;
+const HAS_BLOG_MOTION = /import\s*"\.\/blog-motion\.[\w-]+\.js";/;
+const NAMED_BLOG_MOTION = /import\s*\{[^}]*\}\s*from\s*"\.\/blog-motion\.[\w-]+\.js"|import\s*\*\s*as\s*\w+\s*from\s*"\.\/blog-motion\./;
+const SCRIPT_SRC = /<script\b[^>]*\btype="module"[^>]*\bsrc="([^"]*\/_astro\/([\w.-]+\.js))"[^>]*>/g;
+const IMPORTS = /from\s*"\.\/([\w.-]+\.js)"|import\s*"\.\/([\w.-]+\.js)"/g;
+
+/** What to change, given the scripts in _astro (`files`, name to text) and the names pages load
+ *  (`entries`): `chunks` (name to its text without blog-motion), and for a page's script, the
+ *  script a block page loads (`block`) and the one a blog page loads (`blog`), each
+ *  { name, text } (text null when the file is not new). Nothing changes when anything does not
+ *  fit (a named import of GSAP, or a page that reaches a chunk without importing blog-motion). */
+export function blogMotionPlan(files, entries) {
+  const none = { chunks: new Map(), block: () => null, blog: () => null };
+  const motion = [...files.keys()].find((n) => /^blog-motion\.[\w-]+\.js$/.test(n));
+  if (!motion || [...files.values()].some((js) => NAMED_BLOG_MOTION.test(js))) return none;
+  const deps = (js) => [...js.matchAll(IMPORTS)].map((m) => m[1] || m[2]);
+  const chunks = new Map();
+  for (const [n, js] of files) {
+    if (n === motion || !HAS_BLOG_MOTION.test(js)) continue;
+    const importers = [...files].filter(([, t]) => deps(t).includes(n)).map(([e]) => e);
+    if (!importers.length) continue;
+    if (importers.some((e) => !HAS_BLOG_MOTION.test(files.get(e)))) return none;
+    chunks.set(n, js.replace(BLOG_MOTION, ''));
+  }
+  const block = (n) => (chunks.has(n) ? { name: n, text: null } : files.has(n) && HAS_BLOG_MOTION.test(files.get(n)) ? { name: n.replace(/\.js$/, '.cbp.js'), text: files.get(n).replace(BLOG_MOTION, '') } : null);
+  const blog = (n) => (chunks.has(n) ? { name: n.replace(/\.js$/, '.blog.js'), text: `import"./${n}";import"./${motion}";` } : null);
+  return { chunks, block, blog };
+}
+
+/** After the build: blog-motion out of the shared chunks, and each page given its script. */
+export function splitBlogMotion(dist) {
+  const astro = join(dist, '_astro');
+  if (!existsSync(astro)) return { pages: 0 };
+  const files = new Map(readdirSync(astro).filter((n) => n.endsWith('.js')).map((n) => [n, readFileSync(join(astro, n), 'utf8')]));
+  const htmls = walk(dist, '.html').map((f) => [f, readFileSync(f, 'utf8')]);
+  const entries = new Set(htmls.flatMap(([, h]) => [...h.matchAll(SCRIPT_SRC)].map((m) => m[2])));
+  const plan = blogMotionPlan(files, entries);
+  if (!plan.chunks.size && ![...entries].some((e) => plan.block(e))) return { pages: 0 };
+  for (const [n, js] of plan.chunks) writeFileSync(join(astro, n), js);
+  let pages = 0;
+  for (const [f, html] of htmls) {
+    const isBlock = /<div class="cbp[\s"]/.test(html) && !/\sdata-(?:reveal|count|tilt)[\s=>]/.test(html);
+    const next = html.replace(SCRIPT_SRC, (tag, src, name) => {
+      const to = isBlock ? plan.block(name) : plan.blog(name);
+      if (!to) return tag;
+      if (to.text !== null) writeFileSync(join(astro, to.name), to.text);
+      return to.name === name ? tag : tag.replace(src, src.slice(0, -name.length) + to.name);
+    });
+    if (next !== html) writeFileSync(f, next);
+    if (isBlock) pages++;
+  }
+  return { pages, chunks: plan.chunks.size };
+}
+
 function walk(dir, ext, out = []) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
@@ -247,7 +372,7 @@ export function splitPageCss(dist) {
   let pages = 0;
   for (const f of walk(dist, '.html')) {
     const html = readFileSync(f, 'utf8');
-    const next = inlinePageCss(html, readCss, scripts);
+    const next = deferLate(inlinePageCss(html, readCss, scripts));
     if (next !== html) { writeFileSync(f, next); pages++; }
   }
   return { pages };
@@ -263,6 +388,8 @@ export default function pageCssIntegration() {
         if (process.env.CHAPBOOK_PAGE_CSS === 'off') return;
         const { pages } = splitPageCss(fileURLToPath(dir));
         logger?.info?.(`${pages} block pages carry only their own styles`);
+        const motion = splitBlogMotion(fileURLToPath(dir));
+        logger?.info?.(`${motion.pages} block pages leave out the blog looks' movement`);
       },
     },
   };

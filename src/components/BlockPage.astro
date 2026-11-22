@@ -2,7 +2,7 @@
 // A page built in Chapbook's page editor. The same renderer runs in the editor's preview.
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
-import { renderPage, PHONE_SIZES } from '../lib/pages/render.mjs';
+import { renderPage, PHONE_SIZES, photoSrcset } from '../lib/pages/render.mjs';
 import { baseColours } from '../lib/pages/site-pages';
 import { site } from '../lib/site';
 import { withBase } from '../lib/withBase';
@@ -43,15 +43,32 @@ const openingSrc = opening && !opening.data?.video && typeof opening.data?.pictu
 const preloadSrc = /^\/site-images\/[A-Za-z0-9][A-Za-z0-9._-]{0,120}$/.test(openingSrc) ? withBase(openingSrc) : /^https:\/\//.test(openingSrc) ? openingSrc : '';
 // With a phone copy, a phone asks for that one instead.
 const openingPhone = preloadSrc && typeof opening.data?.picture?.phone === 'string' && /^\/site-images\/[A-Za-z0-9][A-Za-z0-9._-]{0,120}$/.test(opening.data.picture.phone) ? withBase(opening.data.picture.phone) : '';
-// The page's own typefaces that the site serves itself (the warm serifs and the extra-clear
-// sans) are asked for at once too, so words set in them are not repainted late, after the
-// stylesheets have been read. At most two: the heading's and the text's.
-const HEADING_FILES: Record<string, string> = { modern: 'fraunces-latin-600-normal', fine: 'fraunces-latin-400-normal', noir: 'fraunces-latin-900-italic', editorial: 'newsreader-latin-600-normal', mixed: 'newsreader-latin-400-italic', lyric: 'fraunces-latin-400-italic' };
-const BODY_FILES: Record<string, string> = { easy: 'atkinson-hyperlegible-latin-400-normal', reading: 'newsreader-latin-400-normal' };
+// The typefaces the first screen draws with, among those the site serves itself (the warm
+// serifs, the rounded and the extra-clear sans: one file for each weight and style), are asked
+// for at once, so the opening's words are not repainted late. Every other face of these is only
+// asked for once the page has loaded (page-css.mjs moves its rule to the end, `cb-late`), so a
+// phone's first screen does not wait for words further down. Inter and Space Grotesk are one
+// file for every weight, which the first screen always needs: they are left as they are.
+// The opening's heading face, and the face its marked word (*like this*) is set in.
+const HEADING_FACES: Record<string, [string, string]> = {
+  modern: ['fraunces-latin-600-normal', 'fraunces-latin-400-italic'],
+  fine: ['fraunces-latin-400-normal', 'fraunces-latin-400-italic'],
+  noir: ['fraunces-latin-900-italic', 'fraunces-latin-400-normal'],
+  lyric: ['fraunces-latin-400-italic', 'fraunces-latin-400-normal'],
+  editorial: ['newsreader-latin-600-normal', 'newsreader-latin-600-italic'],
+  mixed: ['', 'newsreader-latin-400-italic'],
+  friendly: ['fredoka-latin-600-normal', ''],
+};
+// Running text, and its bolder weight for the small heading above (kicker) and the buttons.
+const BODY_FACES: Record<string, string[]> = {
+  easy: ['atkinson-hyperlegible-latin-400-normal', 'atkinson-hyperlegible-latin-700-normal'],
+  reading: ['newsreader-latin-400-normal', 'newsreader-latin-600-normal'],
+};
 const look = (page as any).look || {};
-// The clean sans with a serif italic only needs its italic when a heading has a marked word.
-const headingFile = look.font === 'mixed' && !html.includes('<em>') ? '' : HEADING_FILES[look.font] || '';
-const fontPreloads = [...new Set([headingFile, BODY_FILES[look.bodyFont] || ''].filter(Boolean))].map((f) => withBase(`/fonts/${f}.woff2`));
+const firstSection = (/<section\b[\s\S]*?<\/section>/.exec(html) || [''])[0];
+const [headingFace, emFace] = HEADING_FACES[look.font] || ['', ''];
+const firstFaces = [headingFace, firstSection.includes('<em>') ? emFace : '', ...(BODY_FACES[look.bodyFont] || [])].filter(Boolean);
+const fontPreloads = [...new Set(firstFaces)].slice(0, 4).map((f) => withBase(`/fonts/${f}.woff2`));
 // An About page whose blocks are all still empty would publish with nothing on it. It says one
 // plain line instead and points to the Contact page. Nothing about the business is made up.
 const blankAbout = page.slug === 'about' && !html.includes('<section');
@@ -62,7 +79,7 @@ const faqLd = faqJsonLd(blocks);
   {/* Everything for the head in one place: several expressions naming the same slot keep only one. */}
   <Fragment slot="head">
     {preloadSrc && (openingPhone
-      ? <link rel="preload" as="image" href={preloadSrc} imagesrcset={`${openingPhone} 800w, ${preloadSrc} 1600w`} imagesizes={PHONE_SIZES} fetchpriority="high" />
+      ? <link rel="preload" as="image" href={preloadSrc} imagesrcset={photoSrcset({ ...opening.data.picture, src: preloadSrc, phone: openingPhone })} imagesizes={PHONE_SIZES} fetchpriority="high" />
       : <link rel="preload" as="image" href={preloadSrc} fetchpriority="high" />)}
     {fontPreloads.map((href) => <link rel="preload" as="font" type="font/woff2" href={href} crossorigin />)}
   </Fragment>
@@ -73,7 +90,14 @@ const faqLd = faqJsonLd(blocks);
       first. If the script never starts, the page goes back to plain and still within 3s. */}
   {/* The same for the booking bar and the order list (cba-js): they show from the first paint,
       and if their script never starts, their plain buttons come back within 3s. */}
-  <script is:inline data-astro-rerun>document.documentElement.classList.add('cbm-js','cba-js');setTimeout(function(){if(!window.__cbm)document.documentElement.classList.remove('cbm-js');if(!window.__cba)document.documentElement.classList.remove('cba-js')},3000)</script>
+  {/* What the first screen does not need waits until the page has loaded (page-css.mjs marks
+      it): the typefaces only words further down use (`noscript[data-cb-late]`, whose rules are
+      put back in a style after it), and the photos below the opening (`img[data-cb-src]`, given
+      their addresses back, still loading lazily as they are scrolled near). After the load
+      event, one frame more, so the first screen has been painted (a fast load can finish
+      first). So a phone paints its first screen without sharing the line with them. Rerun
+      after a page change, when the page has long since loaded. */}
+  <script is:inline data-astro-rerun>document.documentElement.classList.add('cbm-js','cba-js');setTimeout(function(){if(!window.__cbm)document.documentElement.classList.remove('cbm-js');if(!window.__cba)document.documentElement.classList.remove('cba-js')},3000);(function(d){function late(){d.querySelectorAll('noscript[data-cb-late]').forEach(function(n){var s=n.nextElementSibling;if(s&&s.hasAttribute('data-cb-late-on'))return;s=d.createElement('style');s.setAttribute('data-cb-late-on','');s.textContent=n.textContent.replace(/<\/?style[^>]*>/g,'');n.after(s)});d.querySelectorAll('img[data-cb-src]').forEach(function(i){var a=i.getAttribute('data-cb-srcset');if(a)i.setAttribute('srcset',a);i.setAttribute('src',i.getAttribute('data-cb-src'));i.removeAttribute('data-cb-src');i.removeAttribute('data-cb-srcset')})}function soon(){requestAnimationFrame(function(){setTimeout(late,0)})}if(d.readyState==='complete')late();else addEventListener('load',soon,{once:true})})(document)</script>
   <Fragment set:html={html} />
   {blankAbout && (
     <div class="cbp"><section class="cb cb-t-text cb-text--plain cb-bg-none cb-w-normal cb-sp-m cb-al-left"><div class="cb-in">

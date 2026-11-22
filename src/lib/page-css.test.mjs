@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { cssParts, selectorList, selectorNeeds, words, scriptWords, pageAttrs, pageContext, pageCss, inlinePageCss, KEEP_PREFIXES, PAGE_ATTR } from './page-css.mjs';
+import { cssParts, selectorList, selectorNeeds, words, scriptWords, pageAttrs, pageContext, pageCss, inlinePageCss, KEEP_PREFIXES, PAGE_ATTR, lateFonts, deferLate, blogMotionPlan } from './page-css.mjs';
 import { renderPage } from './pages/render.mjs';
 
 const page = (html, scripts = '') => pageContext(html, scriptWords(scripts));
@@ -78,4 +78,82 @@ test('guard: no script changes a page attribute, and run-time class names stay i
   }
   assert.match(readFileSync(new URL('../../astro.config.mjs', import.meta.url), 'utf8'), /integrations:\s*\[pageCss\(\)\]/);
   assert.ok(words('a b-c').has('b-c'));
+});
+
+// ---- What the first screen does not need waits until the page has loaded -------------------
+const FACE = (file, weight = 400) => `@font-face{font-family:F;font-weight:${weight};font-display:swap;src:url(/fonts/${file}) format("woff2")}`;
+const LATE_PAGE = `<html><head><link rel="preload" as="font" type="font/woff2" href="/fonts/f-600.woff2" crossorigin><style data-page-css>${FACE('f-600.woff2', 600)}${FACE('f-400.woff2')}@font-face{font-family:Inter Variable;src:url(/_astro/inter-latin.woff2) format("woff2")}.cb{color:red}</style></head><body><main><style>.x{}</style><div class="cbp"><section class="cb"><img src="/site-images/h.webp" fetchpriority="high"><img src="/site-images/f.webp" alt="" loading="lazy" decoding="async"></section><section class="cb"><figure><img src="/site-images/b.webp" srcset="/site-images/b-phone.webp 600w, /site-images/b.webp 832w" sizes="100vw" alt="A room" loading="lazy" decoding="async"></figure></section></div></main></body></html>`;
+
+test('typefaces the first screen does not preload wait; one file for every weight stays', () => {
+  const { keep, late } = lateFonts(`${FACE('f-600.woff2', 600)}${FACE('f-400.woff2')}@font-face{font-family:V;src:url(/_astro/v.woff2)}.a{b:c}`, new Set(['f-600.woff2']));
+  assert.match(keep, /f-600\.woff2/);
+  assert.match(keep, /_astro\/v\.woff2/);
+  assert.match(keep, /\.a\{b:c\}/);
+  assert.doesNotMatch(keep, /f-400/);
+  assert.match(late, /^@font-face\{[^}]*f-400\.woff2[^}]*\}$/);
+});
+
+test('a block page: late faces in a noscript before it, lazy photos after the opening keep their addresses for later', () => {
+  const out = deferLate(LATE_PAGE);
+  // The preloaded face stays in the head; the other moves, whole, into the noscript.
+  const head = out.slice(0, out.indexOf('</head>'));
+  assert.match(head, /f-600\.woff2\) format/);
+  assert.doesNotMatch(head, /f-400/);
+  assert.match(out, /<noscript data-cb-late><style>@font-face\{font-family:F;font-weight:400;[^}]*\}<\/style><\/noscript><div class="cbp">/);
+  // The opening's photos are left alone, even a lazy one; a photo further down waits.
+  assert.match(out, /<img src="\/site-images\/h\.webp" fetchpriority="high">/);
+  assert.match(out, /<img src="\/site-images\/f\.webp" alt="" loading="lazy"/);
+  assert.match(out, /<img data-cb-src="\/site-images\/b\.webp" data-cb-srcset="\/site-images\/b-phone\.webp 600w, \/site-images\/b\.webp 832w" sizes="100vw" alt="A room" loading="lazy" decoding="async">/);
+  // Its words for screen readers are untouched, and running it again changes nothing.
+  assert.equal(deferLate(out), out);
+  // A page that is not a block page is never touched.
+  const blog = LATE_PAGE.replace('<div class="cbp">', '<div class="post">');
+  assert.equal(deferLate(blog), blog);
+});
+
+test('the page puts them back after load and one painted frame, and again after a page change', () => {
+  const astro = readFileSync(new URL('../components/BlockPage.astro', import.meta.url), 'utf8');
+  const script = /<script is:inline data-astro-rerun>([\s\S]*?)<\/script>/.exec(astro)[1];
+  assert.match(script, /noscript\[data-cb-late\]/);
+  assert.match(script, /img\[data-cb-src\]/);
+  assert.match(script, /addEventListener\('load',soon/);
+  assert.match(script, /requestAnimationFrame\(function\(\)\{setTimeout\(late,0\)\}\)/);
+  assert.match(script, /readyState==='complete'\)late\(\)/);
+  // Run it on a tiny page: the face comes back as a style after the noscript, the photo its addresses.
+  const els = [];
+  const style = { setAttribute(k) { this[k] = true; }, hasAttribute(k) { return !!this[k]; } };
+  const nos = { textContent: '<style>@font-face{x}</style>', nextElementSibling: null, after(s) { this.nextElementSibling = s; els.push(s); } };
+  const attrs = { 'data-cb-src': '/b.webp', 'data-cb-srcset': '/b-phone.webp 600w' };
+  const img = { getAttribute: (k) => attrs[k] ?? null, setAttribute: (k, v) => { attrs[k] = v; }, removeAttribute: (k) => { delete attrs[k]; } };
+  const doc = { readyState: 'complete', documentElement: { classList: { add() {}, remove() {} } }, createElement: () => Object.create(style), querySelectorAll: (q) => (q.startsWith('noscript') ? [nos] : q.startsWith('img') && attrs['data-cb-src'] ? [img] : []) };
+  new Function('document', 'window', 'setTimeout', 'addEventListener', 'requestAnimationFrame', script)(doc, {}, () => 0, () => {}, () => {});
+  assert.equal(els.length, 1);
+  assert.equal(els[0].textContent, '@font-face{x}');
+  assert.deepEqual(attrs, { src: '/b.webp', srcset: '/b-phone.webp 600w' });
+});
+
+test('GSAP leaves the shared chunks and block pages, never a blog page', () => {
+  const files = new Map([
+    ['blog-motion.AAA.js', 'gsap()'],
+    ['hoisted.base.js', 'import"./blog-motion.AAA.js";nav()'],
+    ['hoisted.page.js', 'import"./hoisted.base.js";import"./blog-motion.AAA.js";page()'],
+    ['hoisted.blog.js', 'import"./hoisted.base.js";import"./blog-motion.AAA.js";posts()'],
+  ]);
+  const entries = new Set(['hoisted.base.js', 'hoisted.page.js', 'hoisted.blog.js']);
+  const plan = blogMotionPlan(files, entries);
+  assert.equal(plan.chunks.get('hoisted.base.js'), 'nav()');
+  // A block page's own script loses the import (a copy); a blog page's keeps it.
+  assert.deepEqual(plan.block('hoisted.page.js'), { name: 'hoisted.page.cbp.js', text: 'import"./hoisted.base.js";page()' });
+  assert.equal(plan.blog('hoisted.page.js'), null);
+  // A page whose script is the shared chunk itself: a block page takes it as it is now; a blog
+  // page gets two lines that load it, then GSAP, so it keeps its movement.
+  assert.deepEqual(plan.block('hoisted.base.js'), { name: 'hoisted.base.js', text: null });
+  assert.deepEqual(plan.blog('hoisted.base.js'), { name: 'hoisted.base.blog.js', text: 'import"./hoisted.base.js";import"./blog-motion.AAA.js";' });
+  // A script that needs GSAP by name keeps everything as it was.
+  files.set('hoisted.rings.js', 'import{g as gsap}from"./blog-motion.AAA.js";gsap.to()');
+  assert.equal(blogMotionPlan(files, entries).chunks.size, 0);
+  // So does a chunk reached by a page script that does not load blog-motion itself.
+  files.delete('hoisted.rings.js');
+  files.set('hoisted.other.js', 'import"./hoisted.base.js";other()');
+  assert.equal(blogMotionPlan(files, entries).chunks.size, 0);
 });

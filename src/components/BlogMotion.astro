@@ -1,0 +1,85 @@
+---
+// The blog looks' movement, drawn with GSAP: words and cards that rise in as they are reached,
+// counters, and cards that tilt toward the pointer. Base.astro renders it straight after its own
+// script, so it runs on the same events, in the same order, as it always did. It is bundled on its
+// own with GSAP (astro.config.mjs, `blog-motion`), so a page made in the page editor, which never
+// uses it, can leave both out (src/lib/page-css.mjs, `withoutBlogMotion`).
+---
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function initReveals() {
+    if (reducedMotion) return;
+    document.querySelectorAll<HTMLElement>('[data-reveal]:not([data-revealed])').forEach((el) => {
+      el.dataset.revealed = '1';
+      const dir = el.dataset.reveal; // '', 'left', 'right', 'scale'
+      const delay = parseFloat(el.dataset.delay || '0');
+      const from: gsap.TweenVars = { opacity: 0, duration: 0.9, ease: 'power3.out', delay };
+      if (dir === 'left') from.x = -36;
+      else if (dir === 'right') from.x = 36;
+      else if (dir === 'scale') from.scale = 0.92;
+      else from.y = 34;
+      gsap.from(el, {
+        ...from,
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+      });
+    });
+  }
+
+  function initCounters() {
+    document.querySelectorAll<HTMLElement>('[data-count]:not([data-counted])').forEach((el) => {
+      el.dataset.counted = '1';
+      const target = parseFloat(el.dataset.count || '0');
+      const suffix = el.dataset.suffix || '';
+      if (reducedMotion) { el.textContent = target + suffix; return; }
+      const obj = { v: 0 };
+      gsap.to(obj, {
+        v: target,
+        duration: 1.6,
+        ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 90%', once: true },
+        onUpdate: () => { el.textContent = Math.round(obj.v) + suffix; },
+      });
+    });
+  }
+
+  function initTilt() {
+    if (reducedMotion || window.matchMedia('(hover: none)').matches) return;
+    document.querySelectorAll<HTMLElement>('[data-tilt]:not([data-tilted])').forEach((card) => {
+      card.dataset.tilted = '1';
+      const strength = 7;
+      card.addEventListener('pointermove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        gsap.to(card, {
+          rotateY: px * strength,
+          rotateX: -py * strength,
+          transformPerspective: 700,
+          duration: 0.4,
+          ease: 'power2.out',
+        });
+      });
+      card.addEventListener('pointerleave', () => {
+        gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.6, ease: 'elastic.out(1, 0.6)' });
+      });
+    });
+  }
+
+  function initBlogMotion() {
+    initReveals();
+    initCounters();
+    initTilt();
+    ScrollTrigger.refresh();
+  }
+
+  document.addEventListener('astro:page-load', initBlogMotion);
+  document.addEventListener('astro:before-swap', () => {
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+  });
+</script>

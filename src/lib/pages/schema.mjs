@@ -98,7 +98,13 @@ export function cleanPicture(v, { allowData = false } = {}) {
   const out = { src, alt: cleanLine(v.alt, 240) };
   // A smaller copy of the same photo for phones (about 800px wide), in the site's own images.
   const phone = typeof v.phone === 'string' ? v.phone.trim() : '';
-  if (phone && SITE_IMAGE.test(phone) && !phone.includes('..') && SITE_IMAGE.test(src)) out.phone = phone;
+  if (phone && SITE_IMAGE.test(phone) && !phone.includes('..') && SITE_IMAGE.test(src)) {
+    out.phone = phone;
+    // How wide each copy really is, in pixels, so a browser takes the right one.
+    const px = (n) => (Number.isInteger(n) && n >= 16 && n <= 8000 ? n : 0);
+    if (px(v.w)) out.w = v.w;
+    if (px(v.phoneW)) out.phoneW = v.phoneW;
+  }
   const credit = cleanCredit(v.credit);
   if (credit) out.credit = credit;
   // Where the picture's centre of interest is, so crops keep faces in frame.

@@ -94,7 +94,13 @@ export function pageCss(page, base = {}) {
       `color-scheme:${k.dark ? 'dark' : 'light'}`);
   }
   if (look.font && PAGE_FONTS[look.font]) v.push(`--cb-heading-font:${PAGE_FONTS[look.font].css}`);
-  if (look.bodyFont && PAGE_BODY_FONTS[look.bodyFont]) v.push(`--cb-body-font:${PAGE_BODY_FONTS[look.bodyFont].css}`);
+  if (look.bodyFont && PAGE_BODY_FONTS[look.bodyFont]) {
+    v.push(`--cb-body-font:${PAGE_BODY_FONTS[look.bodyFont].css}`);
+    // The website's own words around a page set in another typeface than the clean sans (the
+    // header and the footer) take that typeface too, so the page is one family, and a phone does
+    // not fetch the clean sans as well for a few words at the top.
+    if (look.bodyFont !== 'clean') v.push(`--font-body:${PAGE_BODY_FONTS[look.bodyFont].css}`, `--font-display:${PAGE_BODY_FONTS[look.bodyFont].css}`);
+  }
   let css = `html[data-blog-theme][data-blog-theme][data-blog-theme]{${v.join(';')}}`;
   if (look.colours) css += `html[data-blog-theme][data-blog-theme][data-blog-theme] body{background:${k.bg};color:${k.ink}}`;
   return css;
@@ -241,9 +247,13 @@ function P(C, b, path, p, cls = '', { eager = false, credits = true } = {}) {
   const focus = p.focus ? ` style="object-position:${p.focus === 'top' ? '50% 20%' : p.focus === 'bottom' ? '50% 80%' : p.focus === 'left' ? '20% 50%' : '80% 50%'}"` : '';
   return `<img${cls ? ` class="${cls}"` : ''} src="${esc(imgSrc(C, p.src))}"${srcsetOf(C, p)} alt="${esc(p.alt)}"${eager ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async"${focus}${ED(C, 'data-cb-img', `${b.id}:${path}`)}>${credits ? credit(p) : ''}`;
 }
-// A photo with a smaller copy for phones: the browser takes the copy on a small screen.
-export const PHONE_SIZES = '(max-width: 760px) 100vw, 60vw';
-const srcsetOf = (C, p) => (p.phone ? ` srcset="${esc(imgSrc(C, p.phone))} 800w, ${esc(imgSrc(C, p.src))} 1600w" sizes="${PHONE_SIZES}"` : '');
+// A photo with a smaller copy for phones: the browser takes the copy on a small screen. Each copy
+// is described by its own width when the photo says it (`phoneW`, `w`); older photos are taken as
+// 800 and 1600 pixels wide, as they always were. On a phone a photo is about the page's width less
+// its side margins (92% of the screen).
+export const PHONE_SIZES = '(max-width: 760px) 92vw, 60vw';
+export const photoSrcset = (p, at = (s) => s) => (p?.phone ? `${at(p.phone)} ${p.phoneW || 800}w, ${at(p.src)} ${p.w || 1600}w` : '');
+const srcsetOf = (C, p) => (p.phone ? ` srcset="${esc(photoSrcset(p, (s) => imgSrc(C, s)))}" sizes="${PHONE_SIZES}"` : '');
 // A button or link. Hidden on the published page when it has nowhere to go.
 function BTN(C, b, path, link, cls = 'cb-btn') {
   const href = link?.href ? resolveLink(link.href, C) : '';
@@ -507,7 +517,7 @@ R_.hero = (C, b) => {
     let ring;
     if (C.editable) ring = `<div class="cb-car cb-car-still"><figure>${P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${morePics(C, b, d, 'cb-car-more')}</div>`;
     else if (all.length < 3) ring = band;
-    else ring = `<div class="cb-car" style="--n:${all.length}"><div class="cb-car-ring">${all.map((p, i) => `<figure style="--i:${i}"><img src="${esc(imgSrc(C, p.src))}" alt="${esc(p.alt)}" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async"></figure>`).join('')}</div></div>`;
+    else ring = `<div class="cb-car" style="--n:${all.length}"><div class="cb-car-ring">${all.map((p, i) => `<figure style="--i:${i}"><img src="${esc(imgSrc(C, p.src))}"${srcsetOf(C, p)} alt="${esc(p.alt)}" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async"></figure>`).join('')}</div></div>`;
     return `<div class="cb-hero-words">${words}${details}</div>${ring}${all.length < 3 && !C.editable ? '' : creditsOf(all)}`;
   }
   if (v === 'depth') {
@@ -589,7 +599,7 @@ R_.hero = (C, b) => {
     if (C.editable) film = `<div class="cb-film cb-film-still"><div class="cb-film-row"><figure>${P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>${morePics(C, b, d, 'cb-film-more')}</div></div>`;
     else if (all.length < 2) film = band;
     else {
-      const tile = (p, hidden) => `<figure${hidden ? ' aria-hidden="true"' : ''}><img src="${esc(imgSrc(C, p.src))}" alt="${hidden ? '' : esc(p.alt)}" loading="lazy" decoding="async"></figure>`;
+      const tile = (p, hidden) => `<figure${hidden ? ' aria-hidden="true"' : ''}><img src="${esc(imgSrc(C, p.src))}"${srcsetOf(C, p)} alt="${hidden ? '' : esc(p.alt)}" loading="lazy" decoding="async"></figure>`;
       const n = Math.max(2, Math.ceil(8 / all.length));
       const row = (list, firstReal) => { let out = ''; for (let k = 0; k < n * 2; k++) out += list.map((p) => tile(p, !(firstReal && k === 0))).join(''); return out; };
       film = `<div class="cb-film" style="--mq-dur:${all.length * n * 7}s"><div class="cb-film-row">${row(all, true)}</div><div class="cb-film-row cb-film-rev">${row([...all].reverse(), false)}</div></div>`;
@@ -752,7 +762,7 @@ R_.gallery = (C, b) => {
   const head = `<div class="cb-head">${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
   // A reel that rolls by itself. The copies that make the loop are hidden from screen readers.
   if (b.variant === 'reel' && !C.editable && pics.length > 1) {
-    const one = (p, hidden) => `<figure${hidden ? ' aria-hidden="true"' : ''}>${p.video ? `<video src="${esc(imgSrc(C, p.video))}" poster="${esc(imgSrc(C, p.src))}" muted loop playsinline preload="none"${hidden ? ' tabindex="-1"' : ' controls'} aria-label="${esc(p.alt || 'Video')}"></video>` : `<img src="${esc(imgSrc(C, p.src))}" alt="${hidden ? '' : esc(p.alt)}" loading="lazy" decoding="async">`}</figure>`;
+    const one = (p, hidden) => `<figure${hidden ? ' aria-hidden="true"' : ''}>${p.video ? `<video src="${esc(imgSrc(C, p.video))}" poster="${esc(imgSrc(C, p.src))}" muted loop playsinline preload="none"${hidden ? ' tabindex="-1"' : ' controls'} aria-label="${esc(p.alt || 'Video')}"></video>` : `<img src="${esc(imgSrc(C, p.src))}"${srcsetOf(C, p)} alt="${hidden ? '' : esc(p.alt)}" loading="lazy" decoding="async">`}</figure>`;
     const sets = Math.max(2, Math.ceil(9 / pics.length) + 1);
     let track = pics.map((p) => one(p, false)).join('');
     for (let k = 1; k < sets; k++) track += pics.map((p) => one(p, true)).join('');
@@ -813,7 +823,7 @@ R_.services = (C, b) => {
 function pinnedList(C, b, d, items, f) {
   const one = (s, i, w) => w(`${s.picture || C.editable ? `<figure class="cb-pin-pic">${P(C, b, `items.${i}.picture`, s.picture)}</figure>` : ''}<div class="cb-pin-body"><p class="cb-pin-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</p>${f.name(s, i)}<p class="cb-pin-meta">${f.time(s, i)}${f.price(s, i)}</p>${f.desc(s, i)}${f.offer(s, i)}${serviceLinks(C, b, i, s)}</div>`, 'li', `cb-pin-item${i ? '' : ' is-on'}`);
   const shots = C.editable ? [] : items.map((s, i) => [s, i]).filter(([s]) => s.picture);
-  const stage = shots.length > 1 ? `<div class="cb-pin-stage" aria-hidden="true">${shots.map(([s, i], k) => `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, s.picture.src))}" alt="" loading="lazy" decoding="async"${focusPos(s.picture) ? ` style="object-position:${focusPos(s.picture)}"` : ''}>`).join('')}</div>` : '';
+  const stage = shots.length > 1 ? `<div class="cb-pin-stage" aria-hidden="true">${shots.map(([s, i], k) => `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, s.picture.src))}"${srcsetOf(C, s.picture)} alt="" loading="lazy" decoding="async"${focusPos(s.picture) ? ` style="object-position:${focusPos(s.picture)}"` : ''}>`).join('')}</div>` : '';
   const list = LIST(C, b, 'items', items, one, 'ol', 'cb-pin-list');
   return `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div><div class="cb-pin${stage ? ' has-stage' : ''}"${stage ? ' data-pinlist' : ''}>${list}${stage}</div>${creditsOf(items.map((s) => s.picture).filter(Boolean))}`;
 }
@@ -1200,7 +1210,7 @@ R_.showcase = (C, b) => {
     // from screen readers; each item keeps its own photo, which is what shows with the script off,
     // for less movement, on phones and in the editor.
     const shots = C.editable ? [] : items.map((x, i) => [x, i]).filter(([x]) => x.picture);
-    const frame = shots.length ? `<div class="cb-story-frame" aria-hidden="true">${shots.map(([x, i], k) => `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, x.picture.src))}" alt="" loading="lazy" decoding="async"${focusPos(x.picture) ? ` style="object-position:${focusPos(x.picture)}"` : ''}>`).join('')}</div>` : '';
+    const frame = shots.length ? `<div class="cb-story-frame" aria-hidden="true">${shots.map(([x, i], k) => `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, x.picture.src))}"${srcsetOf(C, x.picture)} alt="" loading="lazy" decoding="async"${focusPos(x.picture) ? ` style="object-position:${focusPos(x.picture)}"` : ''}>`).join('')}</div>` : '';
     return `${head}<div class="cb-story${frame ? ' has-frame' : ''}">${LIST(C, b, 'items', items, one, 'div', 'cb-show cb-show-story')}${frame}</div>`;
   }
   if (b.variant === 'switch') return `${head}${LIST(C, b, 'items', items, (x, i, w) => focusable(C, x.picture, one(x, i, w)), 'div', 'cb-show cb-show-switch')}`;
@@ -1444,7 +1454,7 @@ R_.compare = (C, b) => {
     }
     const soon = !C.editable && C.eagerLeft > 0 ? ' fetchpriority="high"' : ' loading="lazy"';
     if (soon.includes('high')) C.eagerLeft = 0;
-    const slider = `<div class="cb-cmp-stage" data-cmp style="--pos:50%"><img class="cb-cmp-b" src="${esc(imgSrc(C, x.after.src))}" alt="${esc(x.after.alt || lb)}"${soon} decoding="async"><div class="cb-cmp-a"><img src="${esc(imgSrc(C, x.before.src))}" alt="${esc(x.before.alt || la)}"${soon} decoding="async"></div><span class="cb-cmp-tag cb-cmp-tag-a">${esc(la)}</span><span class="cb-cmp-tag cb-cmp-tag-b">${esc(lb)}</span><span class="cb-cmp-handle" aria-hidden="true"></span><input class="cb-cmp-range" type="range" min="0" max="100" value="50" step="1" aria-label="${esc(`${x.name ? `${x.name}: ` : ''}how much of the ${la.toLowerCase()} photo shows`)}" hidden></div>`;
+    const slider = `<div class="cb-cmp-stage" data-cmp style="--pos:50%"><img class="cb-cmp-b" src="${esc(imgSrc(C, x.after.src))}"${srcsetOf(C, x.after)} alt="${esc(x.after.alt || lb)}"${soon} decoding="async"><div class="cb-cmp-a"><img src="${esc(imgSrc(C, x.before.src))}"${srcsetOf(C, x.before)} alt="${esc(x.before.alt || la)}"${soon} decoding="async"></div><span class="cb-cmp-tag cb-cmp-tag-a">${esc(la)}</span><span class="cb-cmp-tag cb-cmp-tag-b">${esc(lb)}</span><span class="cb-cmp-handle" aria-hidden="true"></span><input class="cb-cmp-range" type="range" min="0" max="100" value="50" step="1" aria-label="${esc(`${x.name ? `${x.name}: ` : ''}how much of the ${la.toLowerCase()} photo shows`)}" hidden></div>`;
     return w(`${slider}${creditsOf([x.before, x.after])}<div class="cb-cmp-cap">${cap}</div>`, 'article', 'cb-cmp-item');
   };
   const list = LIST(C, b, 'items', items, one, 'div', `cb-cmp cb-cmp-${v}`);
@@ -1484,7 +1494,7 @@ R_.scenes = (C, b) => {
   // The stage that stays put holds copies of the photos, hidden from screen readers; each scene
   // keeps its own photo, which is what shows on phones, with scripts off and for less movement.
   const shots = C.editable ? [] : items.map((x, i) => [x, i]).filter(([x]) => x.picture);
-  const stage = shots.length > 1 ? `<div class="cb-sc-stage" aria-hidden="true">${shots.map(([x, i], k) => `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, x.picture.src))}" alt="" loading="lazy" decoding="async"${focusPos(x.picture) ? ` style="object-position:${focusPos(x.picture)}"` : ''}>`).join('')}<span class="cb-sc-count"></span><span class="cb-sc-ticks">${items.map(() => '<i></i>').join('')}</span></div>` : '';
+  const stage = shots.length > 1 ? `<div class="cb-sc-stage" aria-hidden="true">${shots.map(([x, i], k) => `<img${k ? '' : ' class="is-on"'} data-i="${i}" src="${esc(imgSrc(C, x.picture.src))}"${srcsetOf(C, x.picture)} alt="" loading="lazy" decoding="async"${focusPos(x.picture) ? ` style="object-position:${focusPos(x.picture)}"` : ''}>`).join('')}<span class="cb-sc-count"></span><span class="cb-sc-ticks">${items.map(() => '<i></i>').join('')}</span></div>` : '';
   return `${HEAD(C, b, d)}<div class="cb-sc cb-sc-${v}${stage ? ' has-stage' : ''}"${stage ? ` data-pin style="--n:${items.length}"` : ''}>${stage}${list}</div>`;
 };
 
@@ -1496,7 +1506,7 @@ function renderBlock(b, C) {
   const s = b.style;
   const frame = heroFrame(C, b);
   const cls = `cb${b.id === C.heroId ? ' cb-opening' : ''} cb-t-${b.type} cb-${b.type}--${frame} cb-bg-${s.bg} cb-w-${s.width} cb-sp-${s.space} cb-al-${s.align}${b.type === 'spacer' ? ` cb-size-${choiceValue('spacer', b.data, 'size')}` : ''}`;
-  const backdrop = s.bg === 'picture' && b.data.backdrop ? `<img class="cb-backdrop" src="${esc(imgSrc(C, b.data.backdrop.src))}" alt="" loading="lazy"${ED(C, 'data-cb-img', `${b.id}:backdrop`)}>${credit(b.data.backdrop, 'cb-credit cb-backdrop-credit')}` : '';
+  const backdrop = s.bg === 'picture' && b.data.backdrop ? `<img class="cb-backdrop" src="${esc(imgSrc(C, b.data.backdrop.src))}"${srcsetOf(C, b.data.backdrop)} alt="" loading="lazy"${ED(C, 'data-cb-img', `${b.id}:backdrop`)}>${credit(b.data.backdrop, 'cb-credit cb-backdrop-credit')}` : '';
   // The chosen backdrop moves behind the page's opening, and more quietly behind a coloured call to action.
   let moving = '';
   if (C.backdrop && b.id === C.heroId && !['photo-behind', 'inset', 'open'].includes(frame) && s.bg !== 'picture') moving = backdropHtml(C.backdrop);

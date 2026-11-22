@@ -37,8 +37,12 @@ function oneHome() {
   };
 }
 
+// GSAP, and the blog looks' movement that uses it (src/components/BlogMotion.astro), are bundled on
+// their own, so a page made in the page editor can leave them out (src/lib/page-css.mjs).
+const blogMotion = (id) => (/\/node_modules\/gsap\//.test(id) || /\/src\/components\/BlogMotion\.astro\?astro&type=script/.test(id) ? 'blog-motion' : undefined);
+
 export default defineConfig({
-  vite: { plugins: [oneLook(), oneHome()] },
+  vite: { plugins: [oneLook(), oneHome()], build: { rollupOptions: { output: { manualChunks: blogMotion } } } },
   // After the build, each block page keeps only the styles it can use, in its own head
   // (src/lib/page-css.mjs); blog pages are left exactly as built.
   integrations: [pageCss()],

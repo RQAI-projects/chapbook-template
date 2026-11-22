@@ -160,7 +160,11 @@ test('a business home page is found by what it does and where', () => {
 test('a photo with a phone copy is drawn with both sizes; anything else is dropped', () => {
   const pic2 = { src: '/site-images/cbp-vale-hero.webp', phone: '/site-images/cbp-vale-hero-phone.webp', alt: 'A room' };
   const html = renderPage(page([{ type: 'hero', variant: 'reveal', data: { heading: 'Hi', picture: pic2 } }]), { site: SITE });
-  assert.match(html, /srcset="\/site-images\/cbp-vale-hero-phone\.webp 800w, \/site-images\/cbp-vale-hero\.webp 1600w" sizes="\(max-width: 760px\) 100vw, 60vw"/);
+  assert.match(html, /srcset="\/site-images\/cbp-vale-hero-phone\.webp 800w, \/site-images\/cbp-vale-hero\.webp 1600w" sizes="\(max-width: 760px\) 92vw, 60vw"/);
+  // A photo that says how wide each copy is (every signature photo does) is described exactly.
+  const sized = renderPage(page([{ type: 'hero', variant: 'reveal', data: { heading: 'Hi', picture: { ...pic2, w: 832, phoneW: 720 } } }]), { site: SITE });
+  assert.match(sized, /srcset="\/site-images\/cbp-vale-hero-phone\.webp 720w, \/site-images\/cbp-vale-hero\.webp 832w"/);
+  assert.equal(normalisePage(page([{ type: 'hero', variant: 'reveal', data: { picture: { ...pic2, w: 99999, phoneW: 'x' } } }])).blocks[0].data.picture.w, undefined, 'only real widths');
   const n = normalisePage(page([{ type: 'hero', variant: 'reveal', data: { picture: { ...pic2, phone: 'https://example.com/x.webp' } } }]));
   assert.equal(n.blocks[0].data.picture.phone, undefined, 'only the site’s own images');
   assert.ok(!renderPage(page([{ type: 'hero', variant: 'reveal', data: { heading: 'Hi', picture: { src: pic2.src, alt: 'x' } } }]), { site: SITE }).includes('srcset'));
