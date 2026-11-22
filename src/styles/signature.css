@@ -1344,3 +1344,25 @@ html.cbm-js .cb-bg-dark .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-count{backgrou
   .cb-tl-assemble>:nth-child(4n+3){--ax:44px;--ay:8px}
   .cb-tl-assemble>:nth-child(4n){--ax:0px;--ay:44px}
 }
+
+/* ---- Booking and paying (owner, 22 Nov) ----------------------------------------------- */
+/* Who takes the payment, beside a pay button; the two steps when booking and paying are separate;
+   "Pay when you book"; a monthly plan's own page; the reminder promise; where to look for an email. */
+.cb-paynote{display:flex;flex-direction:column;gap:.15rem;flex:1 1 100%;font-size:.84rem;line-height:1.4;color:var(--ink-dim)}
+.cb-paysafe{display:block;font-size:.84rem;line-height:1.4;color:var(--ink-dim)}
+.cb-paynote .cb-paysafe{font-size:inherit}
+.cb-thenpay{color:var(--ink)}
+.cb-pl-foot .cb-paysafe{text-align:center}
+.cb-paid{display:inline-block;padding:.05rem .5rem;border-radius:99px;border:1px solid var(--line-strong);font-size:.78rem;font-weight:650;color:var(--ink);white-space:nowrap}
+.cb-bs-time+.cb-paid::before,.cb-bs-price+.cb-paid::before{content:none}
+.cb-pl-manage{justify-self:center;font-size:.9rem}
+.cb-sp-zone{font-size:.86em;color:var(--ink-dim)}
+.cb-remind,.cb-spam{margin:.8rem 0 0}
+.cb-order-safe{margin-top:.4rem}
+.cb-role-guide{margin:1.2rem 0 0;padding:.7rem .9rem;border:1px dashed var(--line-strong);border-radius:var(--cb-r)}
+@media (min-width:761px){
+  .cb-sp-rows .cb-paynote,.cb-sp-tickets .cb-paynote{text-align:right}
+}
+@media (max-width:760px){
+  .cb-pl-manage{display:inline-flex;align-items:center;min-height:44px}
+}

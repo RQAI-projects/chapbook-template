@@ -153,6 +153,45 @@ export function bookingTarget(v) {
   if (g && /^calendar\/appointments\/schedules\/[A-Za-z0-9_-]{10,200}$/.test(g)) return { kind: 'google', href: `https://calendar.google.com/${g}`, frame: `https://calendar.google.com/${g}?gv=true`, provider: 'Google Calendar' };
   return { kind: 'link', href: u.href, provider: '' };
 }
+// Payment pages the website recognises, so a pay button can say who takes the payment ("Pays
+// securely through Stripe"). `path` is what the address must start with on that host; `query`,
+// a saved button's id after the "?". Chapbook's pay link check (payLink.js) uses the same list.
+export const PAY_HOSTS = [
+  { host: 'buy.stripe.com', name: 'Stripe' },
+  { host: 'book.stripe.com', name: 'Stripe' },
+  { host: 'donate.stripe.com', name: 'Stripe' },
+  { host: 'paypal.me', name: 'PayPal' },
+  { host: 'www.paypal.me', name: 'PayPal' },
+  { host: 'www.paypal.com', path: '/paypalme/', name: 'PayPal' },
+  { host: 'paypal.com', path: '/paypalme/', name: 'PayPal' },
+  // PayPal's own "payment links and buttons", its donate page and its older saved buttons.
+  { host: 'www.paypal.com', path: '/ncp/payment/', name: 'PayPal' },
+  { host: 'www.paypal.com', path: '/donate', query: ['hosted_button_id', 'campaign_id'], name: 'PayPal' },
+  { host: 'www.paypal.com', path: '/cgi-bin/webscr', query: ['hosted_button_id'], name: 'PayPal' },
+  // PayPal's sandbox: the same pages, for trying things out. Recognised so it can be warned about.
+  { host: 'www.sandbox.paypal.com', path: '/ncp/payment/', name: 'PayPal', test: true },
+  { host: 'sandbox.paypal.com', path: '/ncp/payment/', name: 'PayPal', test: true },
+  { host: 'www.sandbox.paypal.com', path: '/cgi-bin/webscr', query: ['hosted_button_id'], name: 'PayPal', test: true },
+  { host: 'www.sandbox.paypal.com', path: '/donate', query: ['hosted_button_id', 'campaign_id'], name: 'PayPal', test: true },
+  { host: 'pay.sumup.com', name: 'SumUp' },
+  { host: 'square.link', name: 'Square' },
+  { host: 'checkout.square.site', name: 'Square' },
+];
+// The payment page an address is, or null: { name, test }. A Stripe test link (its path starts
+// /test_) and a PayPal sandbox page are recognised as `test: true`: no real money changes hands.
+export function payPage(href) {
+  let u;
+  try { u = new URL(String(href ?? '').trim()); } catch { return null; }
+  if (u.protocol !== 'https:' || u.username || u.password) return null;
+  const host = u.hostname.toLowerCase().replace(/\.$/, ''), path = u.pathname || '/';
+  const hit = PAY_HOSTS.find((h) => h.host === host && path.toLowerCase().startsWith(h.path || '/')
+    && (h.query ? h.query.some((q) => u.searchParams.get(q)) : path.length > (h.path || '/').length));
+  if (!hit) return null;
+  return { name: hit.name, test: !!hit.test || (hit.name === 'Stripe' && /^\/test_/i.test(path)) };
+}
+// "Pays securely through Stripe": the words beside a pay button, named from its address, or ''
+// for an address the website does not recognise.
+export const payLine = (href) => { const p = payPage(href); return p ? `Pays securely through ${p.name}` : ''; };
 export const INTERACTIVE_SRC = /^\/interactives\/[a-z0-9][a-z0-9-]{0,79}\.html$/;
 
 // ---- block types ---------------------------------------------------------------------------
@@ -495,6 +534,9 @@ export const BLOCK_TYPES = {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(600, 'Introduction'),
       items: { kind: 'items', max: 12, label: 'Things to book', add: 'Add one', item: {
         name: L(80, 'Name', 'e.g. Dinner for two'), duration: L(40, 'Time', 'e.g. 90 min'), price: L(40, 'Price', 'e.g. £45'), link: { kind: 'link', label: 'Its own booking link' },
+        // Payment is taken as the visitor books (payment switched on in Cal.com or Google), so
+        // the item says so and needs no separate pay button.
+        paid: { kind: 'bool', label: 'Pay when you book' },
       }, sample: { name: 'New booking', duration: '', price: '' } },
       button: L(40, 'Button text', 'Book'),
       sticky: { kind: 'bool', label: 'On phones, keep a Book bar at the bottom of the screen' },
@@ -514,6 +556,9 @@ export const BLOCK_TYPES = {
         name: L(60, 'Name', 'e.g. Deposit'), price: L(40, 'Price', 'e.g. £20'), per: L(40, 'For what or how often', 'e.g. a month'),
         includes: R(600, 'What is included', 'A short list of what is included'), small: L(160, 'Small print', 'e.g. Balance due on the day'),
         pay: { kind: 'link', label: 'Pay link' }, popular: { kind: 'bool', label: 'Most popular' },
+        // A monthly plan's link to the payment service's own page where members change their card
+        // or cancel (Stripe's customer portal link, for example). Optional.
+        manage: { kind: 'link', label: 'Manage your membership link' },
       }, sample: { name: 'New way to pay', price: '', includes: '' } },
       note: L(240, 'Small print'),
       // A card with no pay link yet still leads somewhere by itself (the booking page, a call or
@@ -531,6 +576,8 @@ export const BLOCK_TYPES = {
         name: L(100, 'What it is', 'e.g. Pasta class'), date: { kind: 'date', label: 'Date' }, time: L(40, 'Time', 'e.g. 6.30pm'), detail: L(120, 'Detail', 'e.g. With Sam, in the studio'), price: L(40, 'Price', 'Price'),
         capacity: { kind: 'number', min: 1, max: 999, step: 1, label: 'Spaces in all' }, left: { kind: 'number', min: 0, max: 999, step: 1, quick: true, label: 'Spaces left' },
         link: { kind: 'link', label: 'Booking link' }, pay: { kind: 'link', label: 'Pay link' }, waitlist: { kind: 'link', label: 'Waiting list link' },
+        // Payment is taken as the place is booked (payment switched on in Cal.com), so it says so.
+        paid: { kind: 'bool', label: 'Pay when you book' },
         // Follow a Cal.com event with seats: the website then reads the seats left from Cal.com
         // as the page opens (no key is needed), and the number set by hand is only the fallback.
         cal: { ...L(160, 'Cal.com event to follow', 'e.g. cal.com/sam/pasta-class'), panel: true, hint: 'Paste the link of a Cal.com event that has seats. Your website then shows its seats left for this date, read from Cal.com as the page opens. Leave it empty to set the number yourself.' },
@@ -649,7 +696,7 @@ export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'acti
 // Settings of older section types that came with release 7: an older design ignores them.
 export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace', 'help', 'questions'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat', 'wave'], tiles: ['bounce', 'assemble'] };
 // Settings of an entry in a list that came with release 7 (an older design drops them).
-export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'], steps: ['when'], tiles: ['shape'], scenes: ['drawing'] };
+export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'], steps: ['when'], tiles: ['shape'], scenes: ['drawing'], bookstrip: ['paid'], spaces: ['paid'], plans: ['manage'] };
 // A word in a heading set in italic, written *like this*. Release 7 draws it; an older design
 // would show the stars.
 export const HEADING_EM = /(^|[\s(\u201c"'])\*([^*\s](?:[^*]{0,60}?[^*\s])?)\*(?=$|[\s.,;:?)\u201d"'])/g;

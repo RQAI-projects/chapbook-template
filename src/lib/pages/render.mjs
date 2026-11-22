@@ -3,7 +3,7 @@
 // Everything a writer types is escaped. Rich text allows only paragraphs, **bold**, *italic*,
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
-import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading, CQC_ID, CQC_RATINGS, registerOf } from './schema.mjs';
+import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading, CQC_ID, CQC_RATINGS, registerOf, payLine } from './schema.mjs';
 import { professionalDetails, telHref, sameText } from '../professional.mjs';
 
 export * from './schema.mjs';
@@ -279,6 +279,24 @@ function BTNS(C, b, buttons = [], cls = 'cb-actions') {
   const add = C.editable && buttons.length < 2 ? `<button type="button" class="cb-add-btn" data-cb-add="${esc(b.id)}:buttons">Add a button</button>` : '';
   return out || add ? `<div class="${cls}">${out}${add}</div>` : '';
 }
+// Booking and paying (owner, 22 Nov). "Pays securely through Stripe" beside a pay button whose
+// address the website recognises (nothing for any other address); plain words where a visitor
+// books and pays in two steps; "Pay when you book" where payment is taken as they book.
+const payNote = (href) => { const w = payLine(href); return w ? `<span class="cb-paysafe">${esc(w)}</span>` : ''; };
+const thenPay = (pay, place = 'time') => `<span class="cb-thenpay">Book your ${place}, then ${/deposit/i.test(pay?.label || '') ? 'pay the deposit' : 'pay'}.</span>`;
+export const PAY_WHEN_BOOK = 'Pay when you book';
+// Only once the business has ticked that booking emails and the day-before reminder are switched
+// on in its booking service (Details and booking).
+export const REMINDER_LINE = 'You will get an email to confirm your booking, and a reminder the day before.';
+const remindLine = (C) => (C.biz?.reminders ? `<p class="cb-small cb-remind">${REMINDER_LINE}</p>` : '');
+// Guides shown only in the editor, beside a section that plays a known part (its role).
+// (Checked on the providers' own help pages, 22 Nov 2026: Stripe's "After the payment" redirect,
+// PayPal payment links' Auto-return, Square's "Redirect to a website after checkout".)
+const thanksAddress = (C) => { const u = cleanHref(C.site?.url || ''); return /^https:/.test(u) ? `${u.replace(/\/+$/, '')}/thank-you/` : 'your website’s address with /thank-you/ on the end'; };
+const ROLE_GUIDES = {
+  cancel: () => 'A starting point, not legal advice. Check the UK rules on cancelling services booked online (Business Companion’s guide to distance sales, from Trading Standards), then change these words to your own policy.',
+  thanks: (C) => `This page is not in your menu. Send people here after they pay: in Stripe, edit the payment link, open After the payment and choose to send customers to your website, then paste ${thanksAddress(C)}. In PayPal, on a payment link’s Confirmation tab, turn on Auto-return and paste the same address. A Square checkout link can do the same (Redirect to a website after checkout). PayPal.me links cannot.`,
+};
 // A repeating list. Each item carries its own marker so the editor can move or remove it.
 function LIST(C, b, key, items, each, tag = 'div', cls = '') {
   const body = items.map((it, i) => each(it, i, (inner, itag = 'article', icls = '') => `<${itag}${icls ? ` class="${icls}"` : ''}${ED(C, 'data-cb-item', `${b.id}:${key}.${i}`)}>${inner}</${itag}>`)).join('');
@@ -769,7 +787,7 @@ R_.order = (C, b) => {
   const plain = send === 'whatsapp' ? waHref(to, 'Hello, I would like to place an order.') : mailHref(to, 'An order');
   const away = send === 'whatsapp' ? ' target="_blank" rel="noopener"' : '';
   const payHref = d.pay?.href ? resolveLink(d.pay.href, C) : '';
-  const pay = payHref ? `<a class="cb-btn cb-btn-2 cb-order-pay" href="${esc(payHref)}" rel="noopener" hidden>${esc(d.pay.label || 'Pay now')}</a>` : '';
+  const pay = payHref ? `<a class="cb-btn cb-btn-2 cb-order-pay" href="${esc(payHref)}" rel="noopener" hidden>${esc(d.pay.label || 'Pay now')}</a>${payLine(payHref) ? `<span class="cb-paysafe cb-order-safe" hidden>${esc(payLine(payHref))}</span>` : ''}` : '';
   // Send is a plain link to the same place until the page's script takes it over.
   const foot = `<div class="cb-order-foot" hidden><p class="cb-order-total" role="status" aria-live="polite">Nothing chosen yet</p><div class="cb-order-who"><label for="on-${uid}">Your name</label><p class="cb-small cb-order-hint" id="oh-${uid}">${NAME_HINT}</p><input id="on-${uid}" class="cb-order-who-name" type="text" autocomplete="name" maxlength="80" aria-describedby="oh-${uid}"><label for="ot-${uid}">Notes (optional)</label><textarea id="ot-${uid}" class="cb-order-who-notes" rows="2" maxlength="600"></textarea></div><p class="cb-order-go"><a class="cb-btn cb-order-send" href="${esc(plain)}"${away} aria-disabled="true">${esc(label)}</a>${pay}</p><p class="cb-small cb-order-need">Choose at least one item</p><p class="cb-order-status" role="status" aria-live="polite"></p></div>`;
   return `${head}<div class="cb-order" data-order="${send}" data-order-to="${esc(to)}" data-site="${esc(siteName(C))}">${list}${foot}<p class="cb-order-plain"><a class="cb-btn" href="${esc(plain)}"${away}>${esc(label)}</a></p>${small}</div>`;
@@ -832,7 +850,10 @@ R_.gallery = (C, b) => {
 function serviceLinks(C, b, i, s) {
   const book = s.link ? BTN(C, b, `items.${i}.link`, s.link, 'cb-link') : '';
   const pay = s.pay ? BTN(C, b, `items.${i}.pay`, s.pay, 'cb-btn cb-btn-small') : '';
-  return book || pay ? `<p class="cb-svc-links">${book}${pay}</p>` : '';
+  // Booking and paying are two steps here, so they say so; a recognised pay page is named.
+  const known = pay && s.pay?.href ? payNote(s.pay.href) : '';
+  const words = known && book ? thenPay(s.pay) : '';
+  return book || pay ? `<p class="cb-svc-links">${book}${pay}${words || known ? `<span class="cb-paynote">${words}${known}</span>` : ''}</p>` : '';
 }
 R_.services = (C, b) => {
   const d = b.data, v = b.variant, items = d.items || [];
@@ -995,7 +1016,10 @@ R_.contact = (C, b) => {
   const hoursText = bizDetails(C, d, own).hours || '';
   const openNow = d.openNow ? openLine(C, hoursText) : '';
   const head = `${K(C, b, d)}${H(C, b, d)}${openNow}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
-  const acts = `${closedNote(C, b, d)}${d.business ? socials(C) : ''}${BTNS(C, b, d.buttons)}${map ? `<p class="cb-map">${map}</p>` : ''}`;
+  // With a booking page, confirmation emails come from the booking service: where to look when
+  // one does not arrive (owner, 22 Nov).
+  const spam = C.biz.bookingUrl ? `<p class="cb-small cb-spam">${C.biz.phone ? 'No email? Check your spam folder, or call us.' : 'No email? Check your spam folder.'}</p>` : '';
+  const acts = `${closedNote(C, b, d)}${d.business ? socials(C) : ''}${BTNS(C, b, d.buttons)}${map ? `<p class="cb-map">${map}</p>` : ''}${spam}`;
   if (!facts && !d.heading && !d.intro && !(d.buttons || []).length && !C.editable) return '';
   // Opening hours as a table, one line of the hours to a row, so the page's script can mark today.
   // (While the owner's own hours are being typed in the editor they stay one editable block.)
@@ -1187,12 +1211,12 @@ R_.booking = (C, b) => {
     return alt ? `${head}<div class="cb-actions">${alt}</div>` : '';
   }
   const button = C.editable ? T(C, b, 'button', label, 'span', 'cb-btn') : `<a class="cb-btn" href="${esc(t.href)}" rel="noopener">${esc(label)}</a>`;
-  if (b.variant === 'button' || t.kind === 'link') return `${head}<div class="cb-booking-card"><div class="cb-actions">${button}</div>${note}</div>`;
+  if (b.variant === 'button' || t.kind === 'link') return `${head}<div class="cb-booking-card"><div class="cb-actions">${button}</div>${note}${remindLine(C)}</div>`;
   const where = t.provider;
   const panel = C.editable
     ? `<div class="cb-booking-hold" data-cb-hint><p>Your ${esc(where)} calendar appears here on your website when a visitor taps “Show available times”.</p></div>`
     : `<div class="cb-booking-cal" data-booking-kind="${esc(t.kind)}" data-booking-src="${esc(t.kind === 'cal' ? t.calLink : t.frame)}"><button type="button" class="cb-btn cb-booking-load">Show available times</button><p class="cb-small">This loads ${esc(where)}, which handles your booking. <a href="${esc(t.href)}" rel="noopener">Open it in a new page instead</a>.</p><p class="cb-booking-status" role="status" aria-live="polite"></p><div class="cb-booking-frame" hidden></div></div>`;
-  return `${head}${panel}${note}`;
+  return `${head}${panel}${note}${remindLine(C)}`;
 };
 
 // A band of words that rolls across the page. Written once for readers; the copies that make
@@ -1366,8 +1390,9 @@ R_.bookstrip = (C, b) => {
   const d = b.data, v = b.variant, uid = esc(b.id), items = d.items || [];
   const label = d.button || 'Book';
   const ways = bookWays(C, { label, whatsapp: d.whatsapp });
-  const meta = (x, i) => `<span class="cb-bs-meta">${T(C, b, `items.${i}.duration`, x.duration, 'span', 'cb-bs-time')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-bs-price')}</span>`;
-  const note = T(C, b, 'note', d.note, 'p', 'cb-small cb-bs-note');
+  const paid = (x) => (x.paid ? `<span class="cb-paid">${PAY_WHEN_BOOK}</span>` : '');
+  const meta = (x, i) => `<span class="cb-bs-meta">${T(C, b, `items.${i}.duration`, x.duration, 'span', 'cb-bs-time')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-bs-price')}${paid(x)}</span>`;
+  const note = `${T(C, b, 'note', d.note, 'p', 'cb-small cb-bs-note')}${remindLine(C)}`;
   const head = v === 'bar' ? `<div class="cb-bs-words">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>` : HEAD(C, b, d);
   // Free times read from Cal.com, only when the owner asked for it and the link is a Cal.com one.
   const cal = d.live ? calEvent(C.biz?.bookingUrl) : '';
@@ -1386,7 +1411,7 @@ R_.bookstrip = (C, b) => {
   const sticky = d.sticky ? `<div class="cb-bookbar" data-bookbar role="region" aria-label="${esc(label)}" hidden>${ways.slice(0, 2).map((w, i) => wayLink({ ...w, label: w.kind === 'call' ? 'Call' : w.kind === 'whatsapp' ? 'WhatsApp' : w.label }, i ? 'cb-btn cb-btn-2' : 'cb-btn')).join('')}</div>` : '';
   if (v === 'bar' || !named.length) return `<div class="cb-bs cb-bs-bar">${head}<div class="cb-bs-go">${buttons}${live}</div></div>${note}${sticky}`;
   if (v === 'cards') {
-    const cards = named.map(([x, i]) => { const own = bookWays(C, { own: x.link, label, whatsapp: d.whatsapp })[0]; return `<article class="cb-bs-opt"><h3 class="cb-bs-name">${esc(x.name)}</h3><p class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}</p>${wayLink({ ...own, label: own.kind === 'book' ? label : own.label }, 'cb-btn cb-btn-small')}</article>`; }).join('');
+    const cards = named.map(([x, i]) => { const own = bookWays(C, { own: x.link, label, whatsapp: d.whatsapp })[0]; return `<article class="cb-bs-opt"><h3 class="cb-bs-name">${esc(x.name)}</h3><p class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}${paid(x)}</p>${wayLink({ ...own, label: own.kind === 'book' ? label : own.label }, 'cb-btn cb-btn-small')}</article>`; }).join('');
     return `${head}<div class="cb-bs cb-bs-cards"><div class="cb-bs-pick">${cards}</div>${live}</div>${note}${sticky}`;
   }
   // One strip: a choice of what to book, then one button. Each choice carries where it goes; the
@@ -1395,7 +1420,7 @@ R_.bookstrip = (C, b) => {
   const opts = named.map(([x, i], k) => {
     const own = x.link?.href && x.link.href !== '@booking' ? resolveLink(x.link.href, C) : '';
     const words = [x.duration, x.price].filter(Boolean).join(', ');
-    return `<label class="cb-bs-opt"><input type="radio" name="bs-${uid}" value="${i}"${k ? '' : ' checked'}${own ? ` data-href="${esc(own)}"` : ''}><span class="cb-bs-name">${esc(x.name)}</span>${words ? `<span class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}</span>` : ''}</label>`;
+    return `<label class="cb-bs-opt"><input type="radio" name="bs-${uid}" value="${i}"${k ? '' : ' checked'}${own ? ` data-href="${esc(own)}"` : ''}><span class="cb-bs-name">${esc(x.name)}</span>${words || x.paid ? `<span class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}${paid(x)}</span>` : ''}</label>`;
   }).join('');
   return `${head}<div class="cb-bs cb-bs-strip" data-bs><fieldset class="cb-bs-pick"><legend class="cb-sr">Choose what to book</legend>${opts}</fieldset><div class="cb-bs-go">${buttons}${live}</div></div>${note}${sticky}`;
 };
@@ -1408,13 +1433,16 @@ R_.plans = (C, b) => {
     // Its own pay link; a card without one still leads somewhere (the booking page, a call or
     // the Contact page), so no card ends in a button that does nothing.
     let action;
-    if (C.editable) action = BTN(C, b, `items.${i}.pay`, { label: x.pay?.label || 'Pay now', href: x.pay?.href || '' }, 'cb-btn cb-pl-pay');
-    else if (x.pay?.href) action = `<a class="cb-btn cb-pl-pay" href="${esc(resolveLink(x.pay.href, C))}" rel="noopener">${esc(x.pay.label || 'Pay now')}</a>`;
+    if (C.editable) action = `${BTN(C, b, `items.${i}.pay`, { label: x.pay?.label || 'Pay now', href: x.pay?.href || '' }, 'cb-btn cb-pl-pay')}${payNote(x.pay?.href)}`;
+    else if (x.pay?.href) action = `<a class="cb-btn cb-pl-pay" href="${esc(resolveLink(x.pay.href, C))}" rel="noopener">${esc(x.pay.label || 'Pay now')}</a>${payNote(x.pay.href)}`;
     else if (d.unpaid === 'ask') action = '<p class="cb-pl-ask">Ask at reception</p>';
     else if (d.unpaid === 'none') action = '';
     else action = wayLink({ ...other, label: other.kind === 'contact' ? 'Ask about this' : other.label }, 'cb-btn cb-btn-2 cb-pl-pay');
     const price = x.price || x.per || C.editable ? `<p class="cb-pl-price">${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-pl-amount')}${T(C, b, `items.${i}.per`, x.per, 'span', 'cb-pl-per')}</p>` : '';
-    return w(`${x.popular ? '<p class="cb-pl-flag">Most popular</p>' : ''}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-pl-name')}${price}${RT(C, b, `items.${i}.includes`, x.includes, 'cb-rich cb-pl-inc')}<div class="cb-pl-foot">${action}${T(C, b, `items.${i}.small`, x.small, 'p', 'cb-small cb-pl-small')}</div>`, 'article', `cb-pl-item${x.popular ? ' is-popular' : ''}`);
+    // A monthly plan's own link to the payment service's page where members change their card or
+    // cancel, when the business adds one.
+    const manage = x.manage?.href ? BTN(C, b, `items.${i}.manage`, { label: x.manage.label || 'Manage your membership', href: x.manage.href }, 'cb-link cb-pl-manage') : '';
+    return w(`${x.popular ? '<p class="cb-pl-flag">Most popular</p>' : ''}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-pl-name')}${price}${RT(C, b, `items.${i}.includes`, x.includes, 'cb-rich cb-pl-inc')}<div class="cb-pl-foot">${action}${T(C, b, `items.${i}.small`, x.small, 'p', 'cb-small cb-pl-small')}${manage}</div>`, 'article', `cb-pl-item${x.popular ? ' is-popular' : ''}`);
   };
   let list = LIST(C, b, 'items', items, one, 'div', `cb-pl cb-pl-${b.variant}`);
   // Cards held like a hand: on a wide screen they start fanned together and spread into a row as
@@ -1471,10 +1499,18 @@ R_.spaces = (C, b) => {
       if (full) acts = x.waitlist ? BTN(C, b, `items.${i}.waitlist`, { label: x.waitlist.label || 'Join the waiting list', href: x.waitlist.href }, 'cb-btn cb-btn-2 cb-btn-small') : '';
       else {
         const book = x.link ? BTN(C, b, `items.${i}.link`, { label: x.link.label || 'Book', href: x.link.href }, 'cb-btn cb-btn-small') : C.editable ? '' : wayLink(site, 'cb-btn cb-btn-small');
-        acts = `${book}${x.pay ? BTN(C, b, `items.${i}.pay`, { label: x.pay.label || 'Pay now', href: x.pay.href }, 'cb-btn cb-btn-2 cb-btn-small') : ''}`;
+        const pay = x.pay && !x.paid ? BTN(C, b, `items.${i}.pay`, { label: x.pay.label || 'Pay now', href: x.pay.href }, 'cb-btn cb-btn-2 cb-btn-small') : '';
+        // Booking and paying in two steps say so; a recognised pay page is named.
+        const known = pay && x.pay?.href ? payNote(x.pay.href) : '';
+        const words = known && book ? thenPay(x.pay, 'place') : '';
+        acts = `${book}${pay}${words || known ? `<span class="cb-paynote">${words}${known}</span>` : ''}`;
       }
     }
-    const meta = `${T(C, b, `items.${i}.time`, x.time, 'span', 'cb-sp-time')}${T(C, b, `items.${i}.detail`, x.detail, 'span', 'cb-sp-detail')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-sp-price')}`;
+    // A class's time with the business's own time zone beside it ("6pm UK time"), when one is
+    // set in Details and booking.
+    const zone = x.time && C.biz.zoneLabel ? ` <span class="cb-sp-zone">${esc(C.biz.zoneLabel)}</span>` : '';
+    const time = T(C, b, `items.${i}.time`, x.time, 'span', 'cb-sp-time');
+    const meta = `${zone ? time.replace(/<\/span>$/, `${zone}</span>`) : time}${T(C, b, `items.${i}.detail`, x.detail, 'span', 'cb-sp-detail')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-sp-price')}${x.paid ? `<span class="cb-paid">${PAY_WHEN_BOOK}</span>` : ''}`;
     const body = `<div class="cb-sp-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sp-name')}${meta ? `<p class="cb-sp-meta">${meta}</p>` : ''}</div>`;
     return w(`${when}${body}<div class="cb-sp-state">${state}</div>${acts ? `<p class="cb-sp-acts">${acts}</p>` : ''}`, 'li', `cb-sp-item${past ? ' is-past' : ''}${full ? ' is-full' : ''}`)
       .replace(/^<li /, `<li${x.date ? ` data-date="${esc(x.date)}"` : ''}${follow && !C.editable ? ` data-cal="${esc(follow)}"` : ''} `);
@@ -1643,6 +1679,8 @@ function renderBlock(b, C) {
   else if (C.backdrop && C.backdrop !== 'dawn' && b.type === 'cta' && ['accent', 'dark'].includes(s.bg)) moving = backdropHtml(C.backdrop, ' cbm-bd-echo');
   // The help card is where an opening's help line goes (#help-now).
   const anchor = !C.editable && C.helpId && b.id === C.helpId ? ' id="help-now"' : '';
-  return `<section class="${cls}"${anchor}${ED(C, 'data-cb-block', b.id)}>${backdrop}${moving}<div class="cb-in">${inner}</div></section>`;
+  // A guide beside a section that plays a known part, in the editor only.
+  const guide = C.editable && Object.hasOwn(ROLE_GUIDES, b.role) ? `<p class="cb-note cb-role-guide" data-cb-hint>${esc(ROLE_GUIDES[b.role](C))}</p>` : '';
+  return `<section class="${cls}"${anchor}${ED(C, 'data-cb-block', b.id)}>${backdrop}${moving}<div class="cb-in">${inner}${guide}</div></section>`;
 }
 export { renderBlock as _renderBlock };

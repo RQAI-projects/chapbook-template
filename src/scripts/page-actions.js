@@ -434,7 +434,7 @@ export function initPageActions(doc = document, win = window, { open, preview = 
       step: li.querySelector('.cb-order-step'), less: li.querySelector('.cb-order-less'), more: li.querySelector('.cb-order-more'), out: li.querySelector('.cb-order-qty'), qty: 0,
     })).filter((r) => r.name && r.step && r.less && r.more && r.out);
     const foot = list.querySelector('.cb-order-foot'), plain = list.querySelector('.cb-order-plain');
-    const total = list.querySelector('.cb-order-total'), send = list.querySelector('.cb-order-send'), need = list.querySelector('.cb-order-need'), pay = list.querySelector('.cb-order-pay');
+    const total = list.querySelector('.cb-order-total'), send = list.querySelector('.cb-order-send'), need = list.querySelector('.cb-order-need'), pay = list.querySelector('.cb-order-pay'), safe = list.querySelector('.cb-order-safe');
     const status = list.querySelector('.cb-order-status'), who = list.querySelector('.cb-order-who-name'), notes = list.querySelector('.cb-order-who-notes');
     if (!rows.length || !foot || !total || !send || !status) continue;
     const payHref = pay?.getAttribute('href') || '';
@@ -472,7 +472,7 @@ export function initPageActions(doc = document, win = window, { open, preview = 
       status.textContent = `We tried to open ${what} with this order. If nothing opened, copy it and send it to ${where(kind, to)}.`;
       box = sentBox(status, box, { text: orderMessage(order), copy: 'Copy order' });
       if (pay && payHref) setAttr(pay, 'href', payWithTotal(payHref, orderTotal(order.lines)));
-      show(pay, true);
+      show(pay, true); show(safe, true);
     });
     sync();
     undo.push(() => {

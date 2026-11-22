@@ -103,6 +103,13 @@ export function professionalDetails(value={},{allowDataImages=false}={}){
     gallery:(Array.isArray(p.gallery)?p.gallery:[]).map(pic).filter(Boolean).slice(0,12),
     credentials:(Array.isArray(p.credentials)?p.credentials:[]).map(v=>text(v,160)).filter(Boolean).slice(0,8),
     timeZone:cleanTimeZone(p.timeZone),
+    // A short name for the business's time zone ("UK time"), typed once in Details and booking and
+    // shown beside class and event times, so a visitor abroad knows whose clock they are.
+    zoneLabel:text(p.zoneLabel,24),
+    // The business has switched on booking emails and the day-before reminder in its own booking
+    // service (Cal.com or Google), and ticked so in Details and booking. Only then does the website
+    // promise them beside Book.
+    reminders:p.reminders===true,
     cqcId:/^1-\d{6,12}$/.test(text(p.cqcId,20))?text(p.cqcId,20):'',
     cqcRating:CQC_RATING_KEYS.includes(p.cqcRating)?p.cqcRating:'',
     cqcDate:isoDay(p.cqcDate),
