@@ -494,6 +494,8 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
   .cbp[data-m-pace=measured]{--m-dur:.8s;--m-step:75ms;--m-ease:cubic-bezier(.22,1,.36,1);--m-dist:28px}
   /* ---- The opening heading, line by line from behind a mask (M2: 800ms each, 80ms apart) ---- */
   .cbm[data-m-heading=rising] .cbm-w>span{transform:translate3d(0,105%,0);transition:transform .8s cubic-bezier(.22,1,.36,1) calc(var(--k,0) * 80ms)}
+  /* A line's mask leaves room at its ends, so an italic word that leans past its box is not cut. */
+  .cbm[data-m-heading=rising] .cbm-w{padding-inline:.12em;margin-inline:-.12em}
   .cbm[data-m-heading=rising] .is-in .cbm-w>span{transform:none}
   /* ---- The curtain opening (M1): inset 12% at 1.12, open over 1400ms, once ----------------- */
   html.cbm-js .cbm:not([data-m-edit]) .cb-reveal-pic{animation:cbs-reveal-frame 1.4s cubic-bezier(.22,1,.36,1) .15s both}
