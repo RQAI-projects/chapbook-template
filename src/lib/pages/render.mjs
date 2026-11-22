@@ -295,7 +295,7 @@ const remindLine = (C) => (C.biz?.reminders ? `<p class="cb-small cb-remind">${R
 const thanksAddress = (C) => { const u = cleanHref(C.site?.url || ''); return /^https:/.test(u) ? `${u.replace(/\/+$/, '')}/thank-you/` : 'your website’s address with /thank-you/ on the end'; };
 const ROLE_GUIDES = {
   cancel: () => 'A starting point, not legal advice. Check the UK rules on cancelling services booked online (Business Companion’s guide to distance sales, from Trading Standards), then change these words to your own policy.',
-  thanks: (C) => `This page is not in your menu. Send people here after they pay: in Stripe, edit the payment link, open After the payment and choose to send customers to your website, then paste ${thanksAddress(C)}. In PayPal, on a payment link’s Confirmation tab, turn on Auto-return and paste the same address. A Square checkout link can do the same (Redirect to a website after checkout). PayPal.me links cannot.`,
+  thanks: (C) => `This page is not in your menu. Send people here after they pay: in Stripe, edit the payment link, open After the payment and choose to send customers to your website, then paste ${thanksAddress(C)}. In PayPal, on a payment link’s Confirmation tab, turn on Auto-return and paste the same address. A Square checkout link can do the same (Redirect to a website after checkout).`,
 };
 // A repeating list. Each item carries its own marker so the editor can move or remove it.
 function LIST(C, b, key, items, each, tag = 'div', cls = '') {
