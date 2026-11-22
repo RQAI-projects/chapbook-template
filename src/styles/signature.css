@@ -1235,6 +1235,12 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 .cb-sc-draw .cb-hand{width:auto;height:100%;max-height:22rem}
 .cb-sc-stage.is-art{background:color-mix(in srgb,var(--accent) 7%,var(--bg-0));border:1px solid var(--line)}
 .cb-sc-art{position:absolute;inset:7% 12%;display:block}
+/* On a deep band (Fine Motion Hand Therapy) the drawing's panel is deep too, so the light outline
+   reads; the ring is lightened to stay clear of the panel, and the count turns over. */
+.cb-bg-dark :is(.cb-sc-draw,.cb-sc-stage.is-art){background:color-mix(in srgb,var(--accent) 18%,var(--cb-deep))}
+.cb-bg-dark .cb-hand-ring{stroke:color-mix(in srgb,var(--accent) 45%,var(--cb-on-deep))}
+.cb-bg-dark .cb-hand-halo{fill:color-mix(in srgb,var(--accent) 34%,transparent)}
+html.cbm-js .cb-bg-dark .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-count{background:var(--cb-on-deep);color:var(--cb-deep)}
 @media screen and (prefers-reduced-motion:no-preference) and (min-width:761px){
   html.cbm-js .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-count{background:var(--cb-deep);color:var(--cb-on-deep)}
   html.cbm-js .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-ticks i{background:color-mix(in srgb,var(--ink) 22%,transparent)}
