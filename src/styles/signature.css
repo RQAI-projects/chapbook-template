@@ -1229,7 +1229,7 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 .cb-hand-line{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 .cb-hand-crease{fill:none;stroke:color-mix(in srgb,var(--ink) 42%,transparent);stroke-width:1.3;stroke-linecap:round;vector-effect:non-scaling-stroke}
 .cb-hand-halo{fill:color-mix(in srgb,var(--accent) 16%,transparent);stroke:none}
-.cb-hand-ring{fill:none;stroke:var(--cb-accent-text,var(--accent));stroke-width:2;stroke-dasharray:4 5;vector-effect:non-scaling-stroke}
+.cb-hand-ring{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:4 5;vector-effect:non-scaling-stroke}
 .cb-hand-focus{transform-box:fill-box;transform-origin:center}
 .cb-sc-draw{display:grid;place-items:center;margin:0;aspect-ratio:4/3;padding:clamp(1rem,3vw,1.6rem);border-radius:calc(var(--cb-r-img) + .3rem);background:color-mix(in srgb,var(--accent) 7%,var(--bg-0));border:1px solid var(--line)}
 .cb-sc-draw .cb-hand{width:auto;height:100%;max-height:22rem}
@@ -1262,7 +1262,7 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 
 /* ---- Branching lines drawn slowly behind the opening's words ------------------------------ */
 .cb-br{position:relative;display:flex;align-items:center;min-height:clamp(30rem,74vh,44rem)}
-.cb-br-art{position:absolute;top:0;bottom:0;right:calc(-1 * var(--cb-gutter,1rem));width:min(68%,52rem);color:var(--cb-accent-text,var(--accent));pointer-events:none}
+.cb-br-art{position:absolute;top:0;bottom:0;right:calc(-1 * var(--cb-gutter,1rem));width:min(50%,46rem);color:var(--cb-accent-text,var(--accent));pointer-events:none}
 .cb-br-ghost,.cb-br-win,.cb-br-in{position:absolute;inset:0;display:block}
 .cb-br-ghost{opacity:.16}
 .cb-br-win{overflow:hidden}
@@ -1270,10 +1270,11 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 .cb-br-l{fill:none;stroke:currentColor;stroke-linecap:round;vector-effect:non-scaling-stroke;stroke-width:1.2}
 .cb-br-l0{stroke-width:2.6}.cb-br-l1{stroke-width:2.2}.cb-br-l2{stroke-width:1.8}.cb-br-l3{stroke-width:1.5}
 .cb-br-dot{fill:currentColor}
-.cb-br-words{position:relative;z-index:1;max-width:38rem}
+.cb-br-words{position:relative;z-index:1;max-width:min(36rem,52%)}
 .cbp .cb-hero--branches .cb-hero-h{font-size:clamp(2.7rem,6vw,5.4rem);line-height:1;letter-spacing:-.01em}
 @media (max-width:760px){
   .cb-br{align-items:flex-end;padding-top:clamp(9rem,40vw,13rem)}
+  .cb-br-words{max-width:none}
   .cb-br-art{top:0;bottom:auto;height:clamp(12rem,58vw,17rem);width:auto;left:calc(-1 * var(--cb-gutter,1rem));right:calc(-1 * var(--cb-gutter,1rem))}
 }
 @media screen and (prefers-reduced-motion:no-preference){
@@ -1286,7 +1287,7 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 @keyframes cbs-br-ghost{from{opacity:0}to{opacity:.16}}
 
 /* ---- A gentle wave drawn through a numbers band ------------------------------------------- */
-.cb-trace-band{height:clamp(2.4rem,5vw,3.8rem);margin:clamp(.4rem,1.4vw,1rem) 0 clamp(-1.4rem,-2vw,-.6rem)}
+.cb-trace-band{color:var(--accent);height:clamp(2.4rem,5vw,3.8rem);margin:clamp(.4rem,1.4vw,1rem) 0 clamp(-1.4rem,-2vw,-.6rem)}
 .cb-trace-band .cb-trace-svg path{stroke-width:2.4}
 .cb-trace-band .cb-trace-ghost{opacity:.18}
 @media screen and (prefers-reduced-motion:no-preference){
