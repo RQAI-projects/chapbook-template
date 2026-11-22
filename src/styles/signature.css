@@ -1273,7 +1273,7 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 .cb-br-words{position:relative;z-index:1;max-width:min(36rem,52%)}
 .cbp .cb-hero--branches .cb-hero-h{font-size:clamp(2.7rem,6vw,5.4rem);line-height:1;letter-spacing:-.01em}
 @media (max-width:760px){
-  .cb-br{align-items:flex-end;padding-top:clamp(9rem,40vw,13rem)}
+  .cb-br{align-items:flex-end;padding-top:clamp(11.5rem,56vw,16rem)}
   .cb-br-words{max-width:none}
   .cb-br-art{top:0;bottom:auto;height:clamp(12rem,58vw,17rem);width:auto;left:calc(-1 * var(--cb-gutter,1rem));right:calc(-1 * var(--cb-gutter,1rem))}
 }
