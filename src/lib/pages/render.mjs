@@ -434,7 +434,10 @@ R_.hero = (C, b) => {
   // then whether the business is open now.
   const nowLine = d.openNow && v !== 'actions' ? openLine(C, C.biz.hours, 'cb-opennow cb-hero-now') : '';
   const btns = `${BTNS(C, b, d.buttons)}${heroBar(C, b, d)}${nowLine}`;
-  const words = `${head}${intro}${btns}`;
+  // A line drawn under the heading as the page opens (a sound wave, or a calm heart trace).
+  const heroTrace = choiceValue('hero', d, 'trace');
+  const traceLine = heroTrace === 'heart' || heroTrace === 'wave' ? `<span class="cb-trace cb-trace-${heroTrace} cb-trace-hero" aria-hidden="true"><span class="cb-trace-ghost">${traceSvg(heroTrace, 5)}</span><span class="cb-trace-win"><span class="cb-trace-in">${traceSvg(heroTrace, 5)}</span></span></span>` : '';
+  const words = `${head}${traceLine}${intro}${btns}`;
   const details = d.details ? factsList(C, b, d, { cls: 'cb-facts cb-hero-facts' }) : '';
   const pic = (cls = 'cb-hero-pic') => (v === 'minimal' ? '' : `<figure class="${cls}">${d.video ? heroVideo(C, b, d, cls.includes('cb-hero-bg')) : P(C, b, 'picture', d.picture, '', { eager: true })}</figure>`);
   const media = d.picture || d.video || C.editable;
@@ -828,7 +831,12 @@ function railList(C, b, d, items, f) {
     // A condition's card can say how long people usually take to recover, set out first and large.
     if (!(s.who || s.wait || s.recovery) && !(C.editable && items.some((x) => x.who || x.wait || x.recovery))) return `<p class="cb-rail-meta">${f.time(s, i)}${f.price(s, i)}</p>`;
     const row = (k, label, v, cls = '') => (v || C.editable ? `<div${cls ? ` class="${cls}"` : ''}><dt>${label}</dt><dd>${T(C, b, `items.${i}.${k}`, v, 'span')}</dd></div>` : '');
-    return `<dl class="cb-rail-facts">${row('recovery', 'Typical recovery', s.recovery, 'cb-rail-rec')}${row('who', 'With', s.who)}${row('wait', 'Usual wait', s.wait)}${row('price', 'Fee', s.price)}</dl>`;
+    // The typical recovery is also marked on a short track of the year (or two years), so the
+    // cards can be compared at a glance. Decoration: the words say the same.
+    const span = recoverySpan(s.recovery);
+    const track = span ? `<span class="cb-rec" aria-hidden="true" data-end="${span.end}" style="--a:${span.a};--b:${span.b}"><i></i></span>` : '';
+    const recRow = s.recovery || C.editable ? `<div class="cb-rail-rec"><dt>Typical recovery</dt><dd>${T(C, b, `items.${i}.recovery`, s.recovery, 'span')}${track}</dd></div>` : '';
+    return `<dl class="cb-rail-facts">${recRow}${row('who', 'With', s.who)}${row('wait', 'Usual wait', s.wait)}${row('price', 'Fee', s.price)}</dl>`;
   };
   const card = (s, i, w) => w(`${s.picture || C.editable ? `<figure class="cb-rail-pic">${P(C, b, `items.${i}.picture`, s.picture, '', { credits: false })}</figure>` : ''}<div class="cb-rail-body"><p class="cb-rail-n" aria-hidden="true">${two(i + 1)}</p>${f.name(s, i)}${facts(s, i)}${f.desc(s, i)}${f.offer(s, i)}${serviceLinks(C, b, i, s)}</div>`, 'article', `cb-rail-card${s.picture || C.editable ? '' : ' cb-solo'}${s.who || s.wait || s.recovery ? ' has-facts' : ''}`);
   const head = `<div class="cb-head">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>`;
@@ -840,6 +848,18 @@ function railList(C, b, d, items, f) {
   const band = words.length ? `<div class="cb-rail-band" aria-hidden="true"><div class="cb-mq" style="--mq-shift:${(-100 / sets).toFixed(4)}%;--mq-dur:${dur}s"><div class="cb-mq-track">${`<span class="cb-mq-set">${words.map((t) => `<span class="cb-mq-item">${esc(t)}</span>`).join('')}</span>`.repeat(sets)}</div></div></div>` : '';
   const cards = items.map((s, i) => card(s, i, (inner, tag, cls) => `<${tag} class="${cls}">${inner}</${tag}>`)).join('');
   return `${head}<div class="cb-hs cb-rail" data-hs><div class="cb-hs-pin">${band}<div class="cb-hs-view" tabindex="0" role="region" aria-label="${esc(plainHeading(d.heading) || 'Treatments')}, scrolls sideways"><div class="cb-hs-track cb-rail-track">${cards}</div></div><span class="cb-hs-bar" aria-hidden="true"><i></i></span></div></div>${creditsOf(items.map((s) => s.picture).filter(Boolean))}`;
+}
+
+// "4 to 6 weeks", "3 to 6 months", "1 year": where that sits on a track of a year (or two years,
+// when it runs past one). Null when the words give no length of time a track can show.
+export function recoverySpan(text) {
+  const m = String(text || '').match(/(\d+(?:\.\d+)?)(?:\s*(?:to|-|and)\s*(\d+(?:\.\d+)?))?\s*(day|week|month|year)s?\b/i);
+  if (!m) return null;
+  const unit = { day: 12 / 365, week: 12 / 52, month: 1, year: 12 }[m[3].toLowerCase()];
+  const lo = Number(m[1]) * unit, hi = Number(m[2] || m[1]) * unit;
+  if (!(hi > 0) || hi > 24 || lo > hi) return null;
+  const max = hi > 12 ? 24 : 12;
+  return { a: +(lo / max).toFixed(3), b: +(hi / max).toFixed(3), end: max === 12 ? '12 months' : '2 years' };
 }
 
 // The words on a person's own Book button: "Book with Hannah", "Book with Dr Osei".

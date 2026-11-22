@@ -263,7 +263,7 @@ test('the proof palettes keep every text colour readable', () => {
 });
 
 test('consultant doctors: a portrait set in type, a photo that opens from a circle, drawn lines, beats and recovery', async () => {
-  const { traceSvg } = await import('./render.mjs');
+  const { traceSvg, recoverySpan } = await import('./render.mjs');
   const { lookNeedsSignature } = await import('./schema.mjs');
   // The portrait: the letters of the name, large, never a made-up face; a photo once added.
   const portrait = (data, editable = false) => renderPage(page([{ id: 'p', type: 'hero', variant: 'portrait', data }]), { site: SITE, editable });
@@ -296,7 +296,18 @@ test('consultant doctors: a portrait set in type, a photo that opens from a circ
   assert.match(renderPage(page([{ type: 'facts', variant: 'band', data: { beat: true, items: [{ value: '20', label: 'years' }] } }]), { site: SITE }), /cb-factlist cb-factlist-band cb-beat/);
   assert.match(readFileSync(new URL('../../scripts/page-motion.js', import.meta.url), 'utf8'), /if \(el\.closest\('\.cb-beat'\)\) el\.classList\.add\('is-beat'\)/);
   const rail = renderPage(page([{ type: 'services', variant: 'rail', data: { heading: 'Conditions', items: [{ name: 'Knee pain', recovery: '6 to 12 weeks', description: 'Words.' }, { name: 'Hip pain' }] } }]), { site: SITE });
-  assert.match(rail, /<dl class="cb-rail-facts"><div class="cb-rail-rec"><dt>Typical recovery<\/dt><dd><span>6 to 12 weeks<\/span><\/dd><\/div><\/dl>/);
+  // The words first, then the same span marked on a track of the year, hidden from screen readers.
+  assert.match(rail, /<dl class="cb-rail-facts"><div class="cb-rail-rec"><dt>Typical recovery<\/dt><dd><span>6 to 12 weeks<\/span><span class="cb-rec" aria-hidden="true" data-end="12 months" style="--a:0\.115;--b:0\.231"><i><\/i><\/span><\/dd><\/div><\/dl>/);
+  assert.deepEqual(recoverySpan('3 to 6 months'), { a: 0.25, b: 0.5, end: '12 months' });
+  assert.deepEqual(recoverySpan('6 to 18 months'), { a: 0.25, b: 0.75, end: '2 years' });
+  assert.deepEqual(recoverySpan('1 year'), { a: 1, b: 1, end: '12 months' });
+  for (const t of ['', 'it depends', '3 years', '9 to 3 months']) assert.equal(recoverySpan(t), null, t);
+  assert.ok(!renderPage(page([{ type: 'services', variant: 'rail', data: { items: [{ name: 'x', recovery: 'it varies' }] } }]), { site: SITE }).includes('cb-rec"'), 'no track without a length of time');
+  // A line drawn under the opening's heading: decoration, after the one h1, in any layout.
+  const heroT = renderPage(page([{ type: 'hero', variant: 'centred', data: { heading: 'Quiet rooms', trace: 'wave', intro: 'Words.' } }]), { site: SITE });
+  assert.match(heroT, /<\/h1><span class="cb-trace cb-trace-wave cb-trace-hero" aria-hidden="true"><span class="cb-trace-ghost"><svg class="cb-trace-svg" viewBox="0 0 500 40"/);
+  assert.ok(!renderPage(page([{ type: 'hero', variant: 'centred', data: { heading: 'Quiet rooms', trace: 'none' } }]), { site: SITE }).includes('cb-trace'));
+  assert.ok(needsSignature({ type: 'hero', variant: 'split', data: { trace: 'wave' } }) && !needsSignature({ type: 'hero', variant: 'split', data: { trace: 'none' } }));
   assert.match(rail, /cb-rail-card cb-solo has-facts/);
   // The release gate knows every one of them; a choice of "none" needs nothing new.
   for (const b of [{ type: 'hero', variant: 'portrait', data: {} }, { type: 'hero', variant: 'aperture', data: {} }, { type: 'steps', variant: 'line', data: { trace: 'heart' } }, { type: 'facts', variant: 'row', data: { beat: true } }, { type: 'services', variant: 'list', data: { items: [{ name: 'x', recovery: '6 weeks' }] } }]) assert.ok(needsSignature(b), JSON.stringify(b));
@@ -306,7 +317,7 @@ test('consultant doctors: a portrait set in type, a photo that opens from a circ
   // The new movement only runs for visitors who have not asked for less, and moves transforms only.
   const css = readFileSync(new URL('../../styles/signature.css', import.meta.url), 'utf8');
   const batch = css.slice(css.indexOf('Consultant doctors batch'));
-  for (const m of batch.matchAll(/animation:cbs-(beat|act-rise)|transition:transform \.7s|--ap:calc/g)) {
+  for (const m of batch.matchAll(/animation:cbs-(beat|act-rise|trace-win|trace-in)|transition:transform \.7s|--ap:calc/g)) {
     const before = batch.slice(0, m.index);
     assert.ok(before.lastIndexOf('@media screen and (prefers-reduced-motion:no-preference)') > before.lastIndexOf('\n}'), `${m[0]} outside the reduce-motion guard`);
   }

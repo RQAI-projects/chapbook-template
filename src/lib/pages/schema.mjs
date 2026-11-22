@@ -244,6 +244,9 @@ export const BLOCK_TYPES = {
       // The portrait layout: the letters set large in the portrait until a photo is added, and
       // the frame's shape.
       monogram: { ...L(3, 'Letters in the portrait', 'e.g. EM'), panel: true, hint: 'Up to three letters, set large where a photo would be, until you add a photo.' },
+      // A thin line drawn once under the heading as the page opens: a calm heart trace or a sound
+      // wave (the same lines the steps can have beside them).
+      trace: { kind: 'choice', options: ['none', 'heart', 'wave'], def: 'none', labels: { none: 'No line', heart: 'A calm heart trace', wave: 'A sound wave' }, label: 'Line drawn under the heading', panel: true },
       frame: { kind: 'choice', options: ['arch', 'circle', 'square'], def: 'arch', labels: { arch: 'Arch', circle: 'Circle', square: 'Square' }, label: 'Portrait frame' },
     },
   },
@@ -571,7 +574,7 @@ export const SIGNATURE_TYPES = ['bookstrip', 'plans', 'spaces', 'menuboard', 'ti
 // quietly become the type's first layout, so they need the update too.
 export const SIGNATURE_LAYOUTS = { hero: ['reveal', 'statement', 'pinned', 'actions', 'portrait', 'aperture'], services: ['pinned', 'rail'], steps: ['sticky'], facts: ['ticker', 'band'], credentials: ['row'], contact: ['map', 'hours'], team: ['carousel', 'rail'], reviews: ['drift'], gallery: ['sideways'] };
 // Settings of older section types that came with release 7: an older design ignores them.
-export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat'] };
+export const SIGNATURE_FIELDS = { hero: ['mark', 'story', 'actions', 'openNow', 'closed', 'monogram', 'trace'], text: ['mark'], cta: ['mark'], team: ['bookEach'], contact: ['openNow', 'closed'], services: ['band'], steps: ['trace'], facts: ['beat'] };
 // Settings of an entry in a list that came with release 7 (an older design drops them).
 export const SIGNATURE_ITEM_FIELDS = { credentials: ['link'], services: ['who', 'wait', 'recovery'] };
 // A word in a heading set in italic, written *like this*. Release 7 draws it; an older design

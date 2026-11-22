@@ -1003,9 +1003,17 @@ html:not(.cbm-js) .cb-rail-band{display:none}
 .cb-trace-win{overflow:hidden}
 .cb-trace-svg{display:block;width:100%;height:100%;overflow:visible}
 .cb-trace-top{margin:0 0 clamp(1.6rem,4vw,2.6rem);max-width:46rem}
-.cb-stk-trace{width:min(30rem,100%);height:clamp(3.6rem,5.4vw,5rem)}
+.cb-stk-trace{width:100%;height:clamp(4.4rem,7.5vw,7rem)}
 .cb-stk-trace .cb-trace-svg path,.cb-trace-top .cb-trace-svg path{stroke-width:2.4}
 html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
+
+/* The same line under the opening's heading, drawn once from the left as the page opens. */
+.cb-trace-hero{width:min(40rem,100%);height:clamp(3.4rem,7vw,5.8rem);margin:clamp(.3rem,1.2vw,.9rem) 0 clamp(1rem,2.4vw,1.8rem)}
+.cb-hero--centred .cb-trace-hero{margin-inline:auto}
+.cb-trace-hero .cb-trace-svg path{stroke-width:2.6}
+.cb-trace-hero .cb-trace-ghost{opacity:.16}
+@keyframes cbs-trace-win{from{transform:translate3d(-100%,0,0)}to{transform:none}}
+@keyframes cbs-trace-in{from{transform:translate3d(100%,0,0)}to{transform:none}}
 
 /* Numbers that beat once, like a pulse, after counting up: set in the accent, like a pulse. */
 .cb-factlist.cb-beat .cb-fact-value{color:var(--cb-accent-text,var(--accent))}
@@ -1015,6 +1023,13 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
 .cbp .cb-rail-facts .cb-rail-rec{display:grid;justify-content:stretch;gap:.15rem;padding:.7rem 0 .8rem}
 .cb-rail-rec dt{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase}
 .cbp .cb-rail-facts .cb-rail-rec dd{text-align:left;font-family:var(--cb-head);font-size:clamp(1.45rem,2.2vw,1.9rem);font-weight:600;line-height:1.05;letter-spacing:-.02em;color:var(--cb-accent-text,var(--accent))}
+/* And marked on a short track of the year (or two): four quarters, the usual months in the
+   accent, so the cards can be compared at a glance as they pass. */
+.cb-rec{position:relative;display:block;height:.5rem;margin:.8rem 0 1.45rem;border-radius:999px;background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--ink) 14%,transparent) 0 calc(25% - 3px),transparent calc(25% - 3px) 25%)}
+.cb-rec i{position:absolute;top:0;bottom:0;left:calc(var(--a) * 100%);width:max(.5rem,calc((var(--b) - var(--a)) * 100%));border-radius:999px;background:var(--cb-accent-text,var(--accent))}
+.cb-rec::before,.cb-rec::after{position:absolute;top:calc(100% + .45rem);font-family:var(--cb-body-font,inherit);font-size:.72rem;font-weight:500;line-height:1;letter-spacing:.02em;color:var(--ink-dim)}
+.cb-rec::before{content:"0";left:0}
+.cb-rec::after{content:attr(data-end);right:0}
 
 /* A list in the pinned opening's story: set as type between fine lines, each name large. */
 .cb-pinhero-story ul{list-style:none;margin:clamp(1.4rem,3vw,2.2rem) 0 0;padding:0;border-top:1px solid var(--line-strong)}
@@ -1027,6 +1042,8 @@ html.cbm-js .cb-stk.is-live .cb-trace-top{display:none}
   html.cbm-js .cbm:not([data-m-edit]) .cb-ap-pic.is-live{--ap:calc(.07 + .93 * var(--p,0))}
   html.cbm-js .cbm:not([data-m-edit]) :is(.cb-ap-ring,.cb-ap-in){will-change:transform}
   html.cbm-js .cbm:not([data-m-edit]) .cb-mono-letters{display:inline-block;animation:cbs-act-rise 1.2s cubic-bezier(.22,1,.36,1) .1s both}
+  html.cbm-js .cbm:not([data-m-edit]) .cb-trace-hero .cb-trace-win{animation:cbs-trace-win 1.5s cubic-bezier(.65,0,.35,1) .3s both}
+  html.cbm-js .cbm:not([data-m-edit]) .cb-trace-hero .cb-trace-in{animation:cbs-trace-in 1.5s cubic-bezier(.65,0,.35,1) .3s both}
   html.cbm-js .cbm:not([data-m-edit]) .cb-trace-top.is-live .cb-trace-win{transform:translate3d(calc((var(--p,0) - 1) * 100%),0,0)}
   html.cbm-js .cbm:not([data-m-edit]) .cb-trace-top.is-live .cb-trace-in{transform:translate3d(calc((1 - var(--p,0)) * 100%),0,0)}
   html.cbm-js .cbm:not([data-m-edit]) .cb-beat .cb-fact-value.is-beat{animation:cbs-beat 1s cubic-bezier(.22,1,.36,1) both;transform-origin:0 75%}
