@@ -44,8 +44,15 @@ test('dated places: two steps said plainly, or Pay when you book; the time zone 
   const row = (extra) => ({ type: 'spaces', variant: 'rows', data: { items: [{ name: 'Class', date: '2026-12-01', time: '6pm', capacity: 8, left: 3, link: { label: 'Book', href: '@booking' }, ...extra }] } });
   const two = draw([row({ pay: { label: 'Pay now', href: STRIPE } })]);
   assert.match(two, /<span class="cb-thenpay">Book your place, then pay\.<\/span><span class="cb-paysafe">Pays securely through Stripe<\/span>/);
-  const paid = draw([row({ pay: { label: 'Pay now', href: STRIPE }, paid: true })]);
+  const BOOKS = { site: withPro({ bookingUrl: 'https://cal.com/sam/massage' }) };
+  const paid = draw([row({ pay: { label: 'Pay now', href: STRIPE }, paid: true })], BOOKS);
   assert.ok(paid.includes(`<span class="cb-paid">${PAY_WHEN_BOOK}</span>`) && !paid.includes('cb-order-pay') && !paid.includes('Pay now') && !paid.includes('cb-thenpay'));
+  // With nowhere to book online (Book becomes Call), it promises nothing and keeps its pay button
+  // (newcomer walk, 23 Nov).
+  const phoneOnly = draw([row({ pay: { label: 'Pay now', href: STRIPE }, paid: true })]);
+  assert.ok(!phoneOnly.includes('cb-paid') && phoneOnly.includes('Pay now'));
+  // Its own booking page is enough.
+  assert.ok(draw([row({ link: { label: 'Book', href: 'https://cal.com/sam/class' }, paid: true })]).includes('cb-paid'));
   const zoned = draw([row({})], { site: withPro({ zoneLabel: 'UK time' }) });
   assert.match(zoned, /<span class="cb-sp-time">6pm <span class="cb-sp-zone">UK time<\/span><\/span>/);
   assert.ok(!draw([row({})]).includes('cb-sp-zone'), 'no zone until one is set');
@@ -54,12 +61,19 @@ test('dated places: two steps said plainly, or Pay when you book; the time zone 
 
 test('a booking item can say Pay when you book', () => {
   const strip = (v) => ({ type: 'bookstrip', variant: v, data: { heading: 'Book', items: [{ name: 'Sports massage', duration: '60 min', price: '£55', paid: true }, { name: 'Follow-up', duration: '30 min' }] } });
+  const BOOKS = { site: withPro({ bookingUrl: 'https://cal.com/sam/massage' }) };
   for (const v of ['strip', 'cards']) {
-    const html = draw([strip(v)]);
+    const html = draw([strip(v)], BOOKS);
     assert.equal((html.match(/<span class="cb-paid">Pay when you book<\/span>/g) || []).length, 1, v);
+    assert.equal((html.match(/You pay when you book\./g) || []).length, 1, `${v}: said once under the choices`);
+    // No booking link: the strip offers a call, so it says nothing about paying (newcomer walk).
+    const call = draw([strip(v)]);
+    assert.ok(!call.includes('cb-paid') && !call.includes('You pay when you book'), v);
   }
-  const edit = draw([{ ...strip('strip'), id: 'b1' }], { editable: true });
+  const edit = draw([{ ...strip('strip'), id: 'b1' }], { editable: true, ...BOOKS });
   assert.ok(edit.includes('cb-paid'));
+  const editCall = draw([{ ...strip('strip'), id: 'b1' }], { editable: true });
+  assert.ok(!editCall.includes('cb-paid') && editCall.includes('Pay when you book shows on your website once your booking link is set'));
 });
 
 test('a monthly plan can link to the payment service’s own page for members', () => {
@@ -138,4 +152,32 @@ test('an older page with none of this draws exactly as before', () => {
   ];
   const html = draw(blocks);
   for (const c of ['cb-paysafe', 'cb-thenpay', 'cb-paid', 'cb-pl-manage', 'cb-sp-zone', 'cb-remind', 'cb-spam', 'cb-role-guide']) assert.ok(!html.includes(c), c);
+});
+
+test('ways to pay: a card with no amount leads to Contact, not Book (newcomer walk, 23 Nov)', () => {
+  const plans = (price) => ({ type: 'plans', variant: 'cards', data: { items: [{ name: 'Clubs and teams', price }] } });
+  const site = { site: withPro({ bookingUrl: 'https://cal.com/sam/massage' }) };
+  for (const price of ['Ask for a quote', 'Free', '']) {
+    const html = draw([plans(price)], site);
+    assert.match(html, /<a class="cb-btn cb-btn-2 cb-pl-pay" href="\/contact\/"[^>]*>Get in touch<\/a>/, price);
+  }
+  assert.match(draw([plans('£150')], site), /href="\/appointments\/"[^>]*>Book<\/a>/);
+});
+
+test('a Full date offers the waiting list by email with its name, or a call (newcomer walk, 23 Nov)', () => {
+  const full = (extra) => ({ type: 'spaces', variant: 'rows', data: { items: [{ name: 'Foam rolling', date: '2026-12-03', time: '6pm', capacity: 8, left: 0, ...extra }] } });
+  const both = withPro({ email: 'sam@example.com' });
+  const mail = draw([full({ waitlist: { label: 'Join the waiting list', href: '@email' } })], { site: both });
+  assert.ok(mail.includes('href="mailto:sam@example.com?subject=Waiting%20list%3A%20Foam%20rolling%2C%20Thursday%203%20December"') && mail.includes('>Join the waiting list</a>'));
+  const call = draw([full({ waitlist: { label: 'Join the waiting list', href: '@email' } })]);
+  assert.match(call, /href="tel:01632960123">Call 01632 960 123 to join the waiting list<\/a>/);
+  const ask = draw([full({})], { site: both });
+  assert.ok(ask.includes('>Email to ask about a space</a>'), 'no waiting list link: still a way to ask');
+  assert.match(draw([full({})]), />Call 01632 960 123 to ask about a space<\/a>/);
+  assert.ok(draw([full({ waitlist: { label: 'Join', href: '/contact/' } })]).includes('href="/contact/"'), 'an own link is kept');
+});
+
+test('a calendar that does not load has words and links ready to show (newcomer walk, 23 Nov)', () => {
+  const html = draw([{ type: 'booking', variant: 'calendar', data: { heading: 'Book' } }], { site: withPro({ bookingUrl: 'https://cal.com/sam/massage' }) });
+  assert.match(html, /<p class="cb-booking-fail" hidden>The calendar did not load\. <a href="https:\/\/cal\.com\/sam\/massage" rel="noopener">Open booking in a separate page<\/a>, or call <a href="tel:01632960123">01632 960 123<\/a>\.<\/p>/);
 });

@@ -406,6 +406,8 @@
 .cb-booking-frame{margin-top:1rem;min-height:640px;border-radius:min(var(--cb-r),12px);overflow:hidden}
 .cb-booking-frame[data-kind=google]{background:#fff}
 .cb-booking-load[hidden]{display:none!important}
+.cbp .cb-emk{opacity:.35;font-style:normal;font-weight:400}
+.cbp .cb-booking-status.is-failed{font-size:1rem;color:inherit}.cbp .cb-booking-status a{color:inherit;text-decoration:underline}
 .cb-booking-frame iframe{display:block;width:100%;min-height:700px;border:0}
 .cb-al-centre .cb-booking-cal,.cb-al-centre .cb-booking-card{margin-inline:auto;max-width:48rem}
 .cb-al-centre .cb-booking-card .cb-actions{justify-content:center}

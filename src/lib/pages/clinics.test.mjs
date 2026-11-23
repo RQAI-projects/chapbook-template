@@ -190,8 +190,12 @@ test('not registered with the CQC: no rating shown on the website, and the edito
   assert.ok(!draw([reg], none).includes('Care Quality Commission'));
   assert.ok(!draw([reg], none, { editable: true }).includes('Add your CQC location ID'));
   assert.equal(draw([{ type: 'regulator', variant: 'line', data: { heading: 'Our CQC rating' } }], none).includes('cb-reg'), false);
-  // Nothing set still asks, in the editor only, as before.
-  assert.match(draw([reg], pro, { editable: true }), /Add your CQC location ID/);
+  // Nothing set still asks, in the editor only, but only for a section that uses the CQC: a
+  // registered doctor does, a therapist on the HCPC does not (newcomer walk, 23 Nov).
+  assert.ok(!draw([reg], pro, { editable: true }).includes('Add your CQC location ID'));
+  const gmc = { ...reg, data: { ...reg.data, items: [{ name: 'Dr Lee', body: 'gmc', number: '1234567' }] } };
+  assert.match(draw([gmc], pro, { editable: true }), /Add your CQC location ID/);
+  assert.match(draw([{ ...reg, data: { ...reg.data, widget: true } }], pro, { editable: true }), /Add your CQC location ID/);
 });
 
 test('the clinic typeface: a clean sans with one warm italic phrase', () => {

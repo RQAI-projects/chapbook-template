@@ -1357,7 +1357,7 @@ html.cbm-js .cb-bg-dark .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-count{backgrou
 .cb-bs-time+.cb-paid::before,.cb-bs-price+.cb-paid::before{content:none}
 .cb-pl-manage{justify-self:center;font-size:.9rem}
 .cb-sp-zone{font-size:.86em;color:var(--ink-dim);white-space:nowrap}
-.cb-remind,.cb-spam{margin:.8rem 0 0}
+.cb-remind,.cb-spam,.cb-bs-paid{margin:.8rem 0 0}
 .cb-order-safe{margin-top:.4rem}
 .cb-role-guide{margin:1.2rem 0 0;padding:.7rem .9rem;border:1px dashed var(--line-strong);border-radius:var(--cb-r)}
 @media (min-width:761px){

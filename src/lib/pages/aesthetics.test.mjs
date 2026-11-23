@@ -96,7 +96,10 @@ test('a registration can link to its public register', () => {
 test('italic words in headings: drawn on the website, typed with their stars in the editor, never markup', () => {
   const one = (heading, editable = false) => renderPage(page([{ type: 'text', variant: 'plain', data: { heading } }]), { site: SITE, editable });
   assert.match(one('Skin care, *quietly* done'), /Skin care, <em>quietly<\/em> done/);
-  assert.match(one('Skin care, *quietly* done', true), /Skin care, \*quietly\* done/);
+  // The editor shows the word as it will look, with its stars faint; its words read back the same.
+  const edited = one('Skin care, *quietly* done', true);
+  assert.match(edited, /Skin care, <span class="cb-emk"[^>]*>\*<\/span><em>quietly<\/em><span class="cb-emk">\*<\/span> done/);
+  assert.ok(edited.replace(/<[^>]*>/g, '').includes('Skin care, *quietly* done'));
   assert.ok(!one('Rated 5* by guests').includes('<em>'));
   assert.ok(!one('*<b>x</b>*').includes('<b>'), 'escaped first');
   assert.equal(plainHeading('A *word* here'), 'A word here');

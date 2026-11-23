@@ -274,6 +274,16 @@ export function registerOf(x) {
 // A CQC location ID, as CQC writes it: 1-101641587.
 export const CQC_ID = /^1-\d{6,12}$/;
 export const CQC_RATINGS = { outstanding: 'Outstanding', good: 'Good', 'requires-improvement': 'Requires improvement', inadequate: 'Inadequate' };
+// Whether a regulator section uses the CQC: its one-line rating layout, CQC's own widget, or a
+// person registered with a body whose practices the CQC registers (doctors, nurses, dentists,
+// pharmacists). A CQC detail already given in Details and booking counts too. Therapists (the
+// HCPC and the accredited registers) and anyone naming their own governing body are not asked.
+// The app's Make it yours and the editor's placeholder use this same rule (walk, 23 Nov).
+export const CQC_BODIES = ['gmc', 'nmc', 'gdc', 'gphc'];
+const hasText = (v) => typeof v === 'string' && v.trim() !== '';
+export const usesCqc = (b, pro = {}) => !!b && b.type === 'regulator' && (b.variant === 'line' || b.data?.widget === true
+  || (b.data?.items || []).some((x) => CQC_BODIES.includes(x?.body ?? 'gmc'))
+  || !!(pro && (hasText(pro.cqcId) || hasText(pro.cqcRating) || hasText(pro.cqcDate))));
 
 export const BLOCK_TYPES = {
   hero: {
@@ -496,7 +506,7 @@ export const BLOCK_TYPES = {
     variants: { calendar: 'Calendar on the page', button: 'Button only' },
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
-      useSite: { kind: 'bool', label: 'Use the booking link from Site settings' },
+      useSite: { kind: 'bool', label: 'Use the booking link from Details & booking' },
       url: { kind: 'booking', label: 'Booking page address' }, button: L(40, 'Button text', 'Book online'), note: L(240, 'Small print'),
     },
   },

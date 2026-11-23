@@ -3,7 +3,7 @@
 // Everything a writer types is escaped. Rich text allows only paragraphs, **bold**, *italic*,
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
-import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading, CQC_ID, CQC_RATINGS, registerOf, payLine } from './schema.mjs';
+import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading, CQC_ID, CQC_RATINGS, registerOf, payLine, usesCqc, payPage } from './schema.mjs';
 import { professionalDetails, telHref, sameText } from '../professional.mjs';
 
 export * from './schema.mjs';
@@ -289,6 +289,12 @@ function BTNS(C, b, buttons = [], cls = 'cb-actions') {
 const payNote = (href) => { const w = payLine(href); return w ? `<span class="cb-paysafe">${esc(w)}</span>` : ''; };
 const thenPay = (pay, place = 'time') => `<span class="cb-thenpay">Book your ${place}, then ${/deposit/i.test(pay?.label || '') ? 'pay the deposit' : 'pay'}.</span>`;
 export const PAY_WHEN_BOOK = 'Pay when you book';
+// "Pay when you book" is only said where there is a booking page to pay on: the item's own
+// booking link or the website's. With only a phone to call it would promise what cannot happen
+// (newcomer walk, 23 Nov). The strip then also says it once, under the choices.
+const paysOnBooking = (C, x) => !!x?.paid && !!((x.link?.href && x.link.href !== '@booking') || C.biz?.bookingUrl);
+export const PAY_WHEN_BOOK_LINE = 'You pay when you book.';
+const PAID_HINT = 'Pay when you book shows on your website once your booking link is set in Details & booking.';
 // Only once the business has ticked that booking emails and the day-before reminder are switched
 // on in its booking service (Details and booking).
 export const REMINDER_LINE = 'You will get an email to confirm your booking, and a reminder the day before.';
@@ -325,10 +331,13 @@ function H(C, b, d, tag = 'h2', cls = 'cb-h', attrs = '') {
   return withMark(C, d, emHeading(C, T(C, b, 'heading', d.heading, hTag(C, b, tag), cls, attrs)));
 }
 // A word in a heading written *like this* is set in italic on the published page. The editor
-// keeps the stars, so the heading can still be typed into as it is.
+// keeps the stars, so the heading can still be typed into as it is, but shows the word as it
+// will look and the stars faint, so they never read as stray characters (newcomer walk, 23 Nov).
+// The heading's words are read back as plain text, stars included, so nothing else changes.
 function emHeading(C, html) {
-  if (C.editable || !html.includes('*')) return html;
-  return html.split(/(<[^>]*>)/).map((part) => (part.startsWith('<') ? part : part.replace(new RegExp(HEADING_EM.source, 'g'), '$1<em>$2</em>'))).join('');
+  if (!html.includes('*')) return html;
+  const to = C.editable ? '$1<span class="cb-emk" title="Words between stars are set like this on your website">*</span><em>$2</em><span class="cb-emk">*</span>' : '$1<em>$2</em>';
+  return html.split(/(<[^>]*>)/).map((part) => (part.startsWith('<') ? part : part.replace(new RegExp(HEADING_EM.source, 'g'), to))).join('');
 }
 // "Words to mark": on the published page the first place those words appear (in the heading, or
 // else in the words under it) is wrapped in <mark>, which the stylesheet underlines or highlights
@@ -384,7 +393,7 @@ function factsList(C, b, d, { own = false, cls = 'cb-facts', skip = '' } = {}) {
     row('Phone', 'phone', own ? (f.phone && !C.editable ? `<a href="${esc(tel)}">${esc(f.phone)}</a>` : val('phone')) : (tel ? `<a href="${esc(tel)}">${esc(f.phone)}</a>` : '')),
     row('Email', 'email', own ? (f.email && !C.editable ? `<a href="mailto:${esc(f.email)}">${esc(f.email)}</a>` : val('email')) : (f.email ? `<a href="mailto:${esc(f.email)}">${esc(f.email)}</a>` : '')),
   ].join('');
-  if (!html) return C.editable && !own ? `<p class="cb-note" data-cb-hint>Your address, hours, phone and email from Site settings appear here.</p>` : '';
+  if (!html) return C.editable && !own ? `<p class="cb-note" data-cb-hint>Your address, hours, phone and email from Details & booking appear here.</p>` : '';
   return `<dl class="${cls}">${html}</dl>`;
 }
 
@@ -758,9 +767,9 @@ const BAR_NOTE = {
   email: 'Opens your email with your request written out. Nothing is sent until you press send.',
 };
 const BAR_MISSING = {
-  page: 'Add your booking link in Site settings and this bar opens it.',
+  page: 'Add your booking link in Details & booking and this bar opens it.',
   whatsapp: 'Add your WhatsApp number in this section’s settings and this bar opens WhatsApp.',
-  email: 'Add your email address in Site settings and this bar opens an email to you.',
+  email: 'Add your email address in Details & booking and this bar opens an email to you.',
 };
 // Where a booking bar sends people, or null when that is missing.
 export function barTarget(d, C) {
@@ -817,7 +826,7 @@ R_.order = (C, b) => {
   const label = d.button || 'Send order';
   const NAME_HINT = 'Needed, so they know whose order it is.';
   if (C.editable) {
-    const missing = to ? '' : `<p class="cb-note" data-cb-hint>${send === 'whatsapp' ? 'Add your WhatsApp number in this section’s settings so people can send you their order.' : 'Add your email address in Site settings so people can send you their order.'}</p>`;
+    const missing = to ? '' : `<p class="cb-note" data-cb-hint>${send === 'whatsapp' ? 'Add your WhatsApp number in this section’s settings so people can send you their order.' : 'Add your email address in Details & booking so people can send you their order.'}</p>`;
     const foot = `<div class="cb-order-foot"><p class="cb-order-total">The total shows here as people choose.</p><div class="cb-order-who"><label>Your name</label><p class="cb-small cb-order-hint">${NAME_HINT}</p><input type="text" disabled tabindex="-1"><label>Notes (optional)</label><textarea rows="2" disabled tabindex="-1"></textarea></div><p class="cb-order-go">${T(C, b, 'button', label, 'span', 'cb-btn')}${BTN(C, b, 'pay', { label: d.pay?.label || 'Pay now', href: d.pay?.href || '' }, 'cb-btn cb-btn-2 cb-order-pay')}</p><p class="cb-note" data-cb-hint>Pay now appears after an order is written out, when it has a pay link.</p></div>`;
     return `${head}<div class="cb-order">${list}${foot}${small}${missing}</div>`;
   }
@@ -1115,7 +1124,7 @@ R_.form = (C, b) => {
     + `<label for="m-${uid}">Message</label><textarea id="m-${uid}" name="message" rows="5" required${C.editable ? ' tabindex="-1"' : ''}></textarea>`;
   const btn = C.editable ? T(C, b, 'button', d.button || 'Send message', 'span', 'cb-btn') : `<button class="cb-btn" type="submit">${esc(d.button || 'Send message')}</button>`;
   const note = T(C, b, 'note', d.note, 'p', 'cb-small');
-  const warn = !ep && C.editable ? `<p class="cb-note" data-cb-hint>This form isn't connected yet. Add a form address in Site settings, under Contact form.</p>` : '';
+  const warn = !ep && C.editable ? `<p class="cb-note" data-cb-hint>This form isn't connected yet. Add a form address in More settings, under Contact form address.</p>` : '';
   const status = C.editable ? '' : '<p class="cb-form-status" role="status" aria-live="polite" hidden></p>';
   const form = `<form class="cb-form" method="POST" action="${esc(ep || '#')}">${fields}${btn}${note}</form>${status}${warn}`;
   return b.variant === 'split' ? `<div class="cb-side"><div class="cb-side-head">${words}</div><div>${form}</div></div>` : `${words}${form}`;
@@ -1145,7 +1154,9 @@ const longDay = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '')
 function cqcRating(C, b, d) {
   const biz = C.biz, rating = CQC_RATINGS[biz.cqcRating] || '', page = cqcPage(biz.cqcId);
   // Not registered with the CQC (chosen in Details and booking): nothing to show or ask for.
-  if (!rating && !page) return C.editable && biz.cqcRating !== 'none' ? '<div class="cb-reg-cqc cb-reg-empty"><p class="cb-reg-label">Care Quality Commission</p><p class="cb-note" data-cb-hint>Add your CQC location ID, your latest overall rating and its date in Details and booking. Providers in England must show their rating on their website.</p></div>' : '';
+  // The empty box is drawn only for a section that uses the CQC (a sports massage or counselling
+  // section is never asked for a rating).
+  if (!rating && !page) return C.editable && biz.cqcRating !== 'none' && usesCqc(b, biz) ? '<div class="cb-reg-cqc cb-reg-empty"><p class="cb-reg-label">Care Quality Commission</p><p class="cb-note" data-cb-hint>Add your CQC location ID, your latest overall rating and its date in Details and booking. Providers in England must show their rating on their website.</p></div>' : '';
   const when = longDay(biz.cqcDate);
   const word = rating ? `<p class="cb-reg-rating"><span class="cb-reg-small">Overall rating</span> <strong class="cb-reg-word cb-reg-${esc(biz.cqcRating)}">${esc(rating)}</strong></p>${when ? `<p class="cb-reg-date">Rated ${esc(when)}</p>` : ''}` : '';
   const link = `<a class="cb-link cb-reg-report" href="${esc(page || CQC_HOME)}" rel="noopener">${rating ? 'Read the CQC report' : 'See our CQC rating and report'}</a>`;
@@ -1234,6 +1245,12 @@ R_.interactive = (C, b) => {
   return `${H(C, b, d)}<div class="cb-interactive"><iframe src="${esc(imgSrc(C, d.src))}" title="${esc(d.title || d.heading || 'Interactive')}" loading="lazy" sandbox="allow-scripts allow-forms" style="height:${h}px"></iframe></div>`;
 };
 
+// What a calendar that did not load says instead (newcomer walk, 23 Nov): kept hidden in the page,
+// and shown by the page's script about 5 seconds after "Show available times" if no calendar came.
+export function calendarFail(C, href) {
+  const call = C.biz.phone ? `, or call <a href="${esc(telHref(C.biz))}">${esc(C.biz.phone)}</a>` : mailOf(C) ? `, or email <a href="mailto:${esc(mailOf(C))}">${esc(mailOf(C))}</a>` : '';
+  return `<p class="cb-booking-fail" hidden>The calendar did not load. <a href="${esc(href)}" rel="noopener">Open booking in a separate page</a>${call}.</p>`;
+}
 // Booking: the calendar loads only when a visitor asks for it, so nobody's browser contacts the
 // booking service just by opening the page. The website's script (BlockPage) does the loading.
 R_.booking = (C, b) => {
@@ -1244,7 +1261,7 @@ R_.booking = (C, b) => {
   const label = d.button || 'Book online';
   const note = T(C, b, 'note', d.note, 'p', 'cb-small');
   if (!t) {
-    if (C.editable) return `${head}<div class="cb-booking-hold" data-cb-hint><p>Add your booking link in Site settings, or paste one in this section’s settings. Cal.com is free and links to Gmail, Outlook or Apple calendars.</p></div>`;
+    if (C.editable) return `${head}<div class="cb-booking-hold" data-cb-hint><p>Add your booking link in Details & booking, or paste one in this section’s settings. Cal.com is free and links to Gmail, Outlook or Apple calendars.</p></div>`;
     // No booking page yet: offer the phone or email instead, if there is one.
     const alt = C.biz.phone ? `<a class="cb-btn" href="${esc(telHref(C.biz))}">Call ${esc(C.biz.phone)}</a>` : C.biz.email ? `<a class="cb-btn" href="mailto:${esc(C.biz.email)}">Email to book</a>` : '';
     return alt ? `${head}<div class="cb-actions">${alt}</div>` : '';
@@ -1254,7 +1271,7 @@ R_.booking = (C, b) => {
   const where = t.provider;
   const panel = C.editable
     ? `<div class="cb-booking-hold" data-cb-hint><p>Your ${esc(where)} calendar appears here on your website when a visitor taps “Show available times”.</p></div>`
-    : `<div class="cb-booking-cal" data-booking-kind="${esc(t.kind)}" data-booking-src="${esc(t.kind === 'cal' ? t.calLink : t.frame)}"><button type="button" class="cb-btn cb-booking-load">Show available times</button><p class="cb-small">This loads ${esc(where)}, which handles your booking. <a href="${esc(t.href)}" rel="noopener">Open it in a new page instead</a>.</p><p class="cb-booking-status" role="status" aria-live="polite"></p><div class="cb-booking-frame" hidden></div></div>`;
+    : `<div class="cb-booking-cal" data-booking-kind="${esc(t.kind)}" data-booking-src="${esc(t.kind === 'cal' ? t.calLink : t.frame)}"><button type="button" class="cb-btn cb-booking-load">Show available times</button><p class="cb-small">This loads ${esc(where)}, which handles your booking. <a href="${esc(t.href)}" rel="noopener">Open it in a new page instead</a>.</p><p class="cb-booking-status" role="status" aria-live="polite"></p>${calendarFail(C, t.href)}<div class="cb-booking-frame" hidden></div></div>`;
   return `${head}${panel}${note}${remindLine(C)}`;
 };
 
@@ -1438,16 +1455,17 @@ R_.bookstrip = (C, b) => {
   const d = b.data, v = b.variant, uid = esc(b.id), items = d.items || [];
   const label = d.button || 'Book';
   const ways = bookWays(C, { label, whatsapp: d.whatsapp });
-  const paid = (x) => (x.paid ? `<span class="cb-paid">${PAY_WHEN_BOOK}</span>` : '');
+  const paid = (x) => (paysOnBooking(C, x) ? `<span class="cb-paid">${PAY_WHEN_BOOK}</span>` : '');
   const meta = (x, i) => `<span class="cb-bs-meta">${T(C, b, `items.${i}.duration`, x.duration, 'span', 'cb-bs-time')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-bs-price')}${paid(x)}</span>`;
-  const note = `${T(C, b, 'note', d.note, 'p', 'cb-small cb-bs-note')}${remindLine(C)}`;
+  const payLineHere = items.some((x) => (x.name || C.editable) && paysOnBooking(C, x)) ? `<p class="cb-small cb-bs-paid">${PAY_WHEN_BOOK_LINE}</p>` : '';
+  const note = `${payLineHere}${T(C, b, 'note', d.note, 'p', 'cb-small cb-bs-note')}${remindLine(C)}`;
   const head = v === 'bar' ? `<div class="cb-bs-words">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>` : HEAD(C, b, d);
   // Free times read from Cal.com, only when the owner asked for it and the link is a Cal.com one.
   const cal = d.live ? calEvent(C.biz?.bookingUrl) : '';
   const live = cal && !C.editable ? `<p class="cb-bs-live" data-cal="${esc(cal)}" role="status" aria-live="polite" hidden></p>` : '';
   if (C.editable) {
     const button = T(C, b, 'button', label, 'span', 'cb-btn');
-    const hints = `${C.biz?.bookingUrl ? '' : `<p class="cb-note" data-cb-hint>${BOOK_HINT}</p>`}${d.sticky ? '<p class="cb-note" data-cb-hint>On phones a Book bar stays at the bottom of the screen.</p>' : ''}${d.live ? `<p class="cb-note" data-cb-hint>${calEvent(C.biz?.bookingUrl) ? 'On your website this shows how many times are free today, read from Cal.com.' : 'Free times can only be shown for a Cal.com booking link, set in Details and booking.'}</p>` : ''}`;
+    const hints = `${C.biz?.bookingUrl ? '' : `<p class="cb-note" data-cb-hint>${BOOK_HINT}</p>`}${items.some((x) => x.paid && !paysOnBooking(C, x)) ? `<p class="cb-note" data-cb-hint>${PAID_HINT}</p>` : ''}${d.sticky ? '<p class="cb-note" data-cb-hint>On phones a Book bar stays at the bottom of the screen.</p>' : ''}${d.live ? `<p class="cb-note" data-cb-hint>${calEvent(C.biz?.bookingUrl) ? 'On your website this shows how many times are free today, read from Cal.com.' : 'Free times can only be shown for a Cal.com booking link, set in Details and booking.'}</p>` : ''}`;
     if (v === 'bar') return `<div class="cb-bs cb-bs-bar">${head}<div class="cb-bs-go">${button}</div></div>${note}${hints}`;
     const list = LIST(C, b, 'items', items, (x, i, w) => w(`${T(C, b, `items.${i}.name`, x.name, 'span', 'cb-bs-name')}${meta(x, i)}${v === 'cards' ? `<span class="cb-btn cb-btn-small" aria-hidden="true">${esc(label)}</span>` : ''}`, 'div', 'cb-bs-opt'), 'div', 'cb-bs-pick');
     return `${head}<div class="cb-bs cb-bs-${v}">${list}${v === 'cards' ? '' : `<div class="cb-bs-go">${button}</div>`}</div>${note}${hints}`;
@@ -1468,12 +1486,14 @@ R_.bookstrip = (C, b) => {
   const opts = named.map(([x, i], k) => {
     const own = x.link?.href && x.link.href !== '@booking' ? resolveLink(x.link.href, C) : '';
     const words = [x.duration, x.price].filter(Boolean).join(', ');
-    return `<label class="cb-bs-opt"><input type="radio" name="bs-${uid}" value="${i}"${k ? '' : ' checked'}${own ? ` data-href="${esc(own)}"` : ''}><span class="cb-bs-name">${esc(x.name)}</span>${words || x.paid ? `<span class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}${paid(x)}</span>` : ''}</label>`;
+    return `<label class="cb-bs-opt"><input type="radio" name="bs-${uid}" value="${i}"${k ? '' : ' checked'}${own ? ` data-href="${esc(own)}"` : ''}><span class="cb-bs-name">${esc(x.name)}</span>${words || paid(x) ? `<span class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}${paid(x)}</span>` : ''}</label>`;
   }).join('');
   return `${head}<div class="cb-bs cb-bs-strip" data-bs><fieldset class="cb-bs-pick"><legend class="cb-sr">Choose what to book</legend>${opts}</fieldset><div class="cb-bs-go">${buttons}${live}</div></div>${note}${sticky}`;
 };
 
 // ---- ways to pay ----
+// A price with an amount in it ("£35", "From £60", "70"), not "Free", "Ask" or nothing.
+export const hasAmount = (price) => /\d/.test(String(price || ''));
 R_.plans = (C, b) => {
   const d = b.data, items = d.items || [];
   const other = bookWays(C, { label: 'Book' })[0];
@@ -1485,6 +1505,9 @@ R_.plans = (C, b) => {
     else if (x.pay?.href) action = `<a class="cb-btn cb-pl-pay" href="${esc(resolveLink(x.pay.href, C))}" rel="noopener">${esc(x.pay.label || 'Pay now')}</a>${payNote(x.pay.href)}`;
     else if (d.unpaid === 'ask') action = '<p class="cb-pl-ask">Ask at reception</p>';
     else if (d.unpaid === 'none') action = '';
+    // A card with no amount ("Free", "Ask for a quote", blank) is a question, not a booking:
+    // it leads to the Contact page (newcomer walk, 23 Nov).
+    else if (!hasAmount(x.price)) action = wayLink({ href: C.href ? C.href('/contact/') : '/contact/', label: 'Get in touch', kind: 'contact', away: false }, 'cb-btn cb-btn-2 cb-pl-pay');
     else action = wayLink({ ...other, label: other.kind === 'contact' ? 'Ask about this' : other.label }, 'cb-btn cb-btn-2 cb-pl-pay');
     const price = x.price || x.per || C.editable ? `<p class="cb-pl-price">${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-pl-amount')}${T(C, b, `items.${i}.per`, x.per, 'span', 'cb-pl-per')}</p>` : '';
     // A monthly plan's own link to the payment service's page where members change their card or
@@ -1697,6 +1720,23 @@ export function datesHrefOf(pages, { site = {}, today = localIso(), href = (p) =
   return '';
 }
 
+// A Full date's way to ask for a place (newcomer walk, 23 Nov). A waiting list link set to the
+// business's email ("@email", as the samples are) writes an email with the date's name as its
+// subject, or calls when there is no email. With no waiting list link at all, a Full date still
+// offers a call or an email, so a visitor is never left without a way to ask.
+function waitWay(C, b, x, i) {
+  const cls = 'cb-btn cb-btn-2 cb-btn-small', list = x.waitlist;
+  if (list && list.href !== '@email') return BTN(C, b, `items.${i}.waitlist`, { label: list.label || 'Join the waiting list', href: list.href }, cls);
+  const what = [x.name, longDate(x.date)].filter(Boolean).join(', ');
+  const mail = mailOf(C), phone = C.biz.phone;
+  const way = mail ? { href: mailHref(mail, `Waiting list: ${what || 'a full date'}`), label: list ? list.label || 'Join the waiting list' : 'Email to ask about a space' }
+    : phone ? { href: telHref(C.biz), label: `Call ${phone} ${list ? 'to join the waiting list' : 'to ask about a space'}` } : null;
+  if (C.editable) {
+    if (list) return BTN(C, b, `items.${i}.waitlist`, { label: list.label || 'Join the waiting list', href: way?.href || '' }, cls);
+    return `<span class="cb-note" data-cb-hint>${way ? `Full: visitors see ${esc(way.label)}. Add a waiting list link under Links to send them elsewhere.` : 'Full: add your email or phone in Details & booking so visitors can ask about a space.'}</span>`;
+  }
+  return way ? `<a class="${cls}" href="${esc(way.href)}">${esc(way.label)}</a>` : '';
+}
 // What a number of spaces is called: "6 spaces left", "Last 2", "Last space", "Full".
 export const spacesWords = (left) => (left == null ? '' : left <= 0 ? 'Full' : left === 1 ? 'Last space' : left === 2 ? 'Last 2' : `${left} spaces left`);
 const localIso = (now = new Date()) => `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -1726,10 +1766,13 @@ R_.spaces = (C, b) => {
     const state = words || (follow && !past) ? `<p class="cb-sp-left${full ? ' is-full' : x.left != null && x.left <= 2 ? ' is-last' : ''}"${gate}>${esc(words)}</p>${taken != null && !past ? `<span class="cb-sp-meter" aria-hidden="true" style="--f:${taken.toFixed(3)}"${gate}><i></i></span>` : ''}` : '';
     let acts = '';
     if (!past) {
-      if (full) acts = x.waitlist ? BTN(C, b, `items.${i}.waitlist`, { label: x.waitlist.label || 'Join the waiting list', href: x.waitlist.href }, 'cb-btn cb-btn-2 cb-btn-small') : '';
+      if (full) acts = waitWay(C, b, x, i);
       else {
-        const book = x.link ? BTN(C, b, `items.${i}.link`, { label: x.link.label || 'Book', href: x.link.href }, 'cb-btn cb-btn-small') : C.editable ? '' : wayLink(site, 'cb-btn cb-btn-small');
-        const pay = x.pay && !x.paid ? BTN(C, b, `items.${i}.pay`, { label: x.pay.label || 'Pay now', href: x.pay.href }, 'cb-btn cb-btn-2 cb-btn-small') : '';
+        // In the editor a date without its own link still shows its Book button, which opens the
+        // website's booking page (or calls), so the owner sees where it goes and can change it.
+        const book = x.link ? BTN(C, b, `items.${i}.link`, { label: x.link.label || 'Book', href: x.link.href }, 'cb-btn cb-btn-small')
+          : C.editable ? BTN(C, b, `items.${i}.link`, { label: 'Book', href: '@booking' }, 'cb-btn cb-btn-small') : wayLink(site, 'cb-btn cb-btn-small');
+        const pay = x.pay && !paysOnBooking(C, x) ? BTN(C, b, `items.${i}.pay`, { label: x.pay.label || 'Pay now', href: x.pay.href }, 'cb-btn cb-btn-2 cb-btn-small') : '';
         // Booking and paying in two steps say so; a recognised pay page is named.
         const known = pay && x.pay?.href ? payNote(x.pay.href) : '';
         const words = known && book ? thenPay(x.pay, 'place') : '';
@@ -1740,7 +1783,7 @@ R_.spaces = (C, b) => {
     // set in Details and booking.
     const zone = x.time && C.biz.zoneLabel ? ` <span class="cb-sp-zone">${esc(C.biz.zoneLabel)}</span>` : '';
     const time = T(C, b, `items.${i}.time`, x.time, 'span', 'cb-sp-time');
-    const meta = `${zone ? time.replace(/<\/span>$/, `${zone}</span>`) : time}${T(C, b, `items.${i}.detail`, x.detail, 'span', 'cb-sp-detail')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-sp-price')}${x.paid ? `<span class="cb-paid">${PAY_WHEN_BOOK}</span>` : ''}`;
+    const meta = `${zone ? time.replace(/<\/span>$/, `${zone}</span>`) : time}${T(C, b, `items.${i}.detail`, x.detail, 'span', 'cb-sp-detail')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-sp-price')}${paysOnBooking(C, x) ? `<span class="cb-paid">${PAY_WHEN_BOOK}</span>` : ''}`;
     const body = `<div class="cb-sp-body">${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sp-name')}${meta ? `<p class="cb-sp-meta">${meta}</p>` : ''}</div>`;
     // Add to calendar: for a date with places left that is not followed from Cal.com.
     const ev = !past && !full && !d.noCalendar ? spaceEvent(x, { slug: C.page.slug || 'home', blockId: b.id, tz: C.biz.timeZone, today, url: C.site?.url, place: C.biz.location, siteName: siteName(C) }) : null;
@@ -1758,7 +1801,9 @@ R_.spaces = (C, b) => {
   // Says where the numbers come from and how fresh they are: the business sets them by hand.
   const asOf = rows.some((r) => r.x.left != null && !r.past) ? `<p class="cb-small cb-sp-asof">Spaces as last updated on ${tp.day} ${tp.mon} ${tp.year}. Booking confirms your place.</p>` : '';
   const none = C.editable ? '' : `<p class="cb-sp-none"${rows.length ? ' hidden' : ''}>No dates at the moment.</p>`;
-  const hint = C.editable ? '<p class="cb-note" data-cb-hint>Set the spaces left with the plus and minus buttons, then publish. A date that has passed takes itself off your website. A date can follow a Cal.com event with seats instead: your website then shows its seats left by itself.</p>' : '';
+  // Where a date's Book goes when it has no link of its own (newcomer walk, 23 Nov).
+  const own = (d.items || []).some((x) => !x.link && x.left !== 0) ? ` ${C.biz.bookingUrl ? 'A date without its own link books through your booking page from Details & booking, the same one every Book button opens. Give a date its own link under Links.' : 'Until you add a booking link in Details & booking, Book becomes Call or Contact.'}` : '';
+  const hint = C.editable ? `<p class="cb-note" data-cb-hint>Set the spaces left with the plus and minus buttons, then publish. A date that has passed takes itself off your website. A date can follow a Cal.com event with seats instead: your website then shows its seats left by itself.${own}</p>` : '';
   return `${HEAD(C, b, d)}${list}${none}${asOf}${T(C, b, 'note', d.note, 'p', 'cb-small cb-sp-note')}${hint}`;
 };
 
