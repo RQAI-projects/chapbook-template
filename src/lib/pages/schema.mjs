@@ -552,7 +552,7 @@ export const BLOCK_TYPES = {
         name: L(80, 'Name', 'e.g. Dinner for two'), duration: L(40, 'Time', 'e.g. 90 min'), price: L(40, 'Price', 'e.g. £45'), link: { kind: 'link', label: 'Its own booking link' },
         // Payment is taken as the visitor books (payment switched on in Cal.com or Google), so
         // the item says so and needs no separate pay button.
-        paid: { kind: 'bool', label: 'Pay when you book' },
+        paid: { kind: 'bool', label: 'Pay when you book', hint: 'Tick only once payment is switched on in Cal.com or Google (Details & booking, Take payment as people book).' },
       }, sample: { name: 'New booking', duration: '', price: '' } },
       button: L(40, 'Button text', 'Book'),
       sticky: { kind: 'bool', label: 'On phones, keep a Book bar at the bottom of the screen' },
@@ -595,7 +595,7 @@ export const BLOCK_TYPES = {
         capacity: { kind: 'number', min: 1, max: 999, step: 1, label: 'Spaces in all' }, left: { kind: 'number', min: 0, max: 999, step: 1, quick: true, label: 'Spaces left' },
         link: { kind: 'link', label: 'Booking link' }, pay: { kind: 'link', label: 'Pay link' }, waitlist: { kind: 'link', label: 'Waiting list link' },
         // Payment is taken as the place is booked (payment switched on in Cal.com), so it says so.
-        paid: { kind: 'bool', label: 'Pay when you book' },
+        paid: { kind: 'bool', label: 'Pay when you book', hint: 'Tick only once payment is switched on in Cal.com or Google (Details & booking, Take payment as people book).' },
         // Follow a Cal.com event with seats: the website then reads the seats left from Cal.com
         // as the page opens (no key is needed), and the number set by hand is only the fallback.
         cal: { ...L(160, 'Cal.com event to follow', 'e.g. cal.com/sam/pasta-class'), panel: true, hint: 'Paste the link of a Cal.com event that has seats. Your website then shows its seats left for this date, read from Cal.com as the page opens. Leave it empty to set the number yourself.' },
