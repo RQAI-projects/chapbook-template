@@ -228,6 +228,14 @@ html.cbm-paused .cbp *,html.cbm-paused .cbp *::before,html.cbm-paused .cbp *::af
 .cbm-pause:focus-visible{outline:3px solid var(--accent-text,var(--accent,#16181d));outline-offset:3px}
 .cbm-pause::before{content:"";width:.7rem;height:.75rem;border-inline:.24rem solid currentColor;box-sizing:border-box}
 html.cbm-paused .cbm-pause::before{width:0;height:0;border-block:.42rem solid transparent;border-inline:0;border-left:.7rem solid currentColor}
+/* The button never rests on the page's last lines (the footer's links): the page ends a little
+   lower when it is there. On a phone it is a small round button, so it covers no more than a
+   corner of what scrolls under it (price cards); its words stay its name for screen readers. */
+body:has(> .cbm-pause){padding-bottom:3.8rem}
+@media (max-width:760px){
+  .cbm-pause{font-size:0;gap:0;width:2.75rem;height:2.75rem;min-height:0;padding:0;justify-content:center}
+  body:has(.cb-bookbar.is-live):has(> .cbm-pause){padding-bottom:calc(8rem + env(safe-area-inset-bottom))}
+}
 @media print{.cbm-pause,.cbm-bd{display:none!important}}
 
 /* ======================================================================================== */
