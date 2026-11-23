@@ -214,3 +214,9 @@ test('a dark page gives a tinted footer (Woodland) a tint of its own colours, wi
   const { readFileSync } = await import('node:fs');
   assert.match(readFileSync(new URL('../../styles/themes/woodland-chronicle.css', import.meta.url), 'utf8'), /\.site-footer \{[^}]*background:var\(--footer-tint, rgba\(238,240,223,\.45\)\)/);
 });
+
+test('a price asks only with no digit and a way of asking, as whole words (review 2, 23 Nov)', async () => {
+  const { asksPrice } = await import('./render.mjs');
+  for (const p of ['', '  ', 'Ask', 'ask us', 'Quote', 'Get a quote', 'Quoted', 'Quotation', 'POA', 'P.O.A.', 'p.o.a', 'Price on application', 'On request', 'Price on request', 'TBC', 'To be confirmed', 'Enquire', 'Enquire for price']) assert.equal(asksPrice(p), true, p);
+  for (const p of ['Free', 'Card', 'Card, when you book', 'Insured', '£0', 'From £50', '£50 (ask about concessions)', '£45 TBC', 'Tasks', 'Basket', 'Taskforce', 'Enquired']) assert.equal(asksPrice(p), false, p);
+});

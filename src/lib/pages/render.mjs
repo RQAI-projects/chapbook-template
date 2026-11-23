@@ -1502,9 +1502,12 @@ R_.bookstrip = (C, b) => {
 // ---- ways to pay ----
 // A price with an amount in it ("£35", "From £60", "70"), not "Free", "Ask" or nothing.
 export const hasAmount = (price) => /\d/.test(String(price || ''));
-// A price that is a question: blank, or one that asks (Ask, Quote, Quoted, POA, On request, TBC,
-// whole words, any case). "Free", "Card" and other words keep the card's way to book (review, 23 Nov).
-export const asksPrice = (price) => { const p = String(price ?? '').trim(); return !p || /\b(ask|quote|quoted|poa|on request|tbc)\b/i.test(p); };
+// A price that is a question: blank, or, with no digit in it, one that asks (Ask, Quote, Quoted,
+// Quotation, POA, P.O.A., Price on application, On request, TBC, To be confirmed, Enquire; whole
+// words, any case). "Free", "Card" and other words keep the card's way to book, and so does any
+// price with an amount ("£50 (ask about concessions)", "£45 TBC") (reviews, 23 Nov).
+const ASKS = /(?<![a-z])(ask|quote|quoted|quotation|poa|p\.\s?o\.\s?a\.?|price on application|on request|tbc|to be confirmed|enquire)(?![a-z])/i;
+export const asksPrice = (price) => { const p = String(price ?? '').trim(); return !p || (!/\d/.test(p) && ASKS.test(p)); };
 R_.plans = (C, b) => {
   const d = b.data, items = d.items || [];
   const other = bookWays(C, { label: 'Book' })[0];
