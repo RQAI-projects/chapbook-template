@@ -13,20 +13,27 @@ const css = readFileSync(new URL('../../styles/signature.css', import.meta.url),
 const PIC = { src: '/site-images/water.webp', alt: 'Still water at dawn', phone: '/site-images/water-phone.webp', w: 1088, phoneW: 720 };
 const PLANS = [{ name: 'Power hour', price: '£150' }, { name: 'Monthly', price: '£600', popular: true }, { name: 'Project', price: 'From £3,000' }];
 
-test('still water: the words, then the photo and a mirrored copy hidden from screen readers', () => {
+test('still water: the words, then the photo whole (its own reflection), settling as the page opens', () => {
   const hero = { id: 'h', type: 'hero', variant: 'reflection', data: { heading: 'A quiet place to talk', picture: PIC, help: 'Need help now?' } };
   const html = draw([hero, { id: 'n', type: 'notice', variant: 'help', data: { heading: 'If you need help now', items: [{ name: 'Samaritans', number: '116 123' }] } }]);
   assert.match(html, /<div class="cb-rf"><div class="cb-hero-words cb-rf-words"><h1 class="cb-h cb-hero-h">A quiet place to talk<\/h1>/);
   assert.match(html, /<figure class="cb-hero-pic cb-rf-water"><img src="\/site-images\/water\.webp"[^>]*alt="Still water at dawn" fetchpriority="high"/);
-  assert.match(html, /<span class="cb-rf-mirror" aria-hidden="true"><img src="\/site-images\/water\.webp" srcset="[^"]+" sizes="[^"]+" alt="" decoding="async"><\/span><\/figure>/);
+  // No mirrored copy under the photo (it would double the photo's own reflection): only the
+  // softened water that settles, hidden from screen readers.
+  assert.ok(!html.includes('cb-rf-mirror') && !html.includes('scaleY(-1)'));
+  assert.match(html, /<span class="cb-rf-ripple" aria-hidden="true"><img src="\/site-images\/water\.webp" srcset="[^"]+" sizes="[^"]+" alt="" decoding="async"><\/span><\/figure>/);
   assert.match(html, /<a href="#help-now">/, 'the help line in the first screen');
-  // The editor shows the photo without its copy; with no photo it is the words alone.
-  assert.ok(!draw([hero], { editable: true }).includes('cb-rf-mirror'));
+  // The editor shows the photo alone; with no photo it is the words alone.
+  assert.ok(!draw([hero], { editable: true }).includes('cb-rf-ripple'));
   assert.ok(!draw([{ ...hero, data: { heading: 'Words' } }]).includes('cb-rf-water'));
   assert.equal(needsSignature(hero), true);
-  // It settles once, by opacity and transform, only with movement allowed.
-  assert.match(css, /@media screen and \(prefers-reduced-motion:no-preference\)\{\n  html\.cbm-js \.cbm \.cb-rf-mirror\{animation:cb-rf-settle/);
-  assert.match(css, /@keyframes cb-rf-settle\{from\{opacity:0;transform:translate3d\(0,-10px,0\)\}to\{opacity:\.42;transform:none\}\}/);
+  // The photo is whole (wide, the horizon across the middle); the settling copy is drawn only with
+  // movement allowed, and moves by opacity and transform alone.
+  assert.match(css, /\.cbp \.cb-hero-pic\.cb-rf-water\{[^}]*aspect-ratio:2\/1/);
+  assert.match(css, /\.cb-rf-ripple\{display:none;/);
+  assert.match(css, /@media screen and \(prefers-reduced-motion:no-preference\)\{\n  html\.cbm-js \.cbm \.cb-rf-ripple\{display:block;animation:cb-rf-calm/);
+  assert.match(css, /@keyframes cb-rf-calm\{from\{opacity:\.8\}to\{opacity:0\}\}/);
+  assert.match(css, /@keyframes cb-rf-wave\{from\{transform:scaleY\(1\.07\) translate3d\(0,8px,0\)\}to\{transform:none\}\}/);
 });
 
 test('arched ways to work rise into place, the marked one raised; a plain grid in the editor', () => {

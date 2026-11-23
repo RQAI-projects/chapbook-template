@@ -1382,24 +1382,28 @@ html.cbm-js .cb-bg-dark .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-count{backgrou
 @media (min-width:761px){.cb-sp-rows .cb-sp-cal,.cb-sp-tickets .cb-sp-cal{grid-column:2/-1;padding-left:0}}
 
 /* ---- Batch 2: still water, arched ways to work, steps that climb, a route down the page ---- */
-/* Still water (counselling): the words, then a wide photo with its reflection beneath, which settles
-   slowly as the page opens. The reflection is a mirrored copy; a mask lets it fade into the page. */
+/* Still water (counselling): the words, then a wide photo of still water and its own reflection,
+   shown whole with the horizon across the middle. As the page opens the water settles: the photo
+   comes to rest, and a softened copy of the water below the horizon (54% down, as the sample photo
+   has it) starts a little stretched and fades as its ripples die away. Transform and opacity only;
+   the copy is not drawn at all with movement turned down. */
 .cb-rf{display:grid;justify-items:center;gap:clamp(2rem,5vw,3.4rem);text-align:center}
 .cb-rf.cb-solo{gap:0}
 .cbp .cb-rf-words{max-width:44rem;margin-inline:auto}
 .cbp .cb-rf-words .cb-lead{margin-inline:auto}
 .cb-rf-words .cb-actions,.cb-rf-words .cb-hero-help{justify-content:center}
-.cbp .cb-hero-pic.cb-rf-water{--h:clamp(12rem,31vw,24rem);position:relative;width:100%;max-width:none;height:var(--h);aspect-ratio:auto;margin:0 0 calc(var(--h) * .42);overflow:visible;border-radius:0}
-.cbp .cb-rf-water>img,.cbp .cb-rf-water>video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 32%;border-radius:var(--cb-r-img) var(--cb-r-img) 0 0}
-.cb-rf-water::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:color-mix(in srgb,var(--bg-0,#fff) 55%,transparent);pointer-events:none}
-.cb-rf-mirror{position:absolute;left:0;right:0;top:100%;height:42%;overflow:hidden;opacity:.42;border-radius:0 0 var(--cb-r-img) var(--cb-r-img);-webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.45) 45%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.45) 45%,transparent 100%);pointer-events:none}
-.cb-rf-mirror img{position:absolute;left:0;top:0;width:100%;height:238.1%;object-fit:cover;object-position:50% 32%;transform:scaleY(-1);transform-origin:50% 50%;filter:blur(1.5px)}
-@media (max-width:760px){.cbp .cb-hero-pic.cb-rf-water{--h:clamp(10rem,52vw,15rem)}}
+.cbp .cb-hero-pic.cb-rf-water{position:relative;width:100%;max-width:none;height:auto;aspect-ratio:2/1;margin:0;overflow:hidden;border-radius:var(--cb-r-img)}
+.cbp .cb-rf-water>img,.cbp .cb-rf-water>video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%;border-radius:0}
+.cb-rf-ripple{display:none;position:absolute;left:0;right:0;top:54%;bottom:0;overflow:hidden;opacity:0;pointer-events:none}
+.cb-rf-ripple img{position:absolute;left:0;top:calc(-54% / .46);width:100%;height:calc(100% / .46);object-fit:cover;object-position:50% 50%;filter:blur(3px);transform-origin:50% 0}
+@media (max-width:760px){.cbp .cb-hero-pic.cb-rf-water{aspect-ratio:4/3}}
 @media screen and (prefers-reduced-motion:no-preference){
-  html.cbm-js .cbm .cb-rf-mirror{animation:cb-rf-settle 3.2s cubic-bezier(.22,1,.36,1) .5s both}
+  html.cbm-js .cbm .cb-rf-ripple{display:block;animation:cb-rf-calm 3.4s cubic-bezier(.22,1,.36,1) .35s both}
+  html.cbm-js .cbm .cb-rf-ripple img{animation:cb-rf-wave 3.4s cubic-bezier(.22,1,.36,1) .35s both}
   html.cbm-js .cbm .cb-rf-water>img{animation:cb-rf-still 3.6s cubic-bezier(.22,1,.36,1) both}
 }
-@keyframes cb-rf-settle{from{opacity:0;transform:translate3d(0,-10px,0)}to{opacity:.42;transform:none}}
+@keyframes cb-rf-calm{from{opacity:.8}to{opacity:0}}
+@keyframes cb-rf-wave{from{transform:scaleY(1.07) translate3d(0,8px,0)}to{transform:none}}
 @keyframes cb-rf-still{from{opacity:.4;transform:scale(1.03)}to{opacity:1;transform:none}}
 
 /* Arched ways to work (solo consultant): the cards are arched at the top, the marked one raised and

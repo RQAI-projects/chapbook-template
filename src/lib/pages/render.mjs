@@ -692,12 +692,14 @@ R_.hero = (C, b) => {
   }
   // Branching lines drawn slowly behind the words (release 7, brain and nerves): the stem first,
   // then each level of branches, then the dots where they divide. Drawn whole when still.
-  // Still water (batch 2, counselling): the words, then a wide photo of still water with its
-  // reflection under it. The reflection is a mirrored copy, decoration only (hidden from screen
-  // readers); it settles slowly as the page opens, and is simply there with movement turned down.
+  // Still water (batch 2, counselling): the words, then a wide photo of still water that shows its
+  // own reflection, whole (fix round, 23 Nov: a mirrored copy under a photo that already has its
+  // reflection looked doubled). As the page opens the water settles: the photo comes to rest, and a
+  // softened copy of the water below the horizon (decoration only, hidden from screen readers)
+  // fades as its ripples die away. With movement turned down the photo is simply there.
   if (v === 'reflection') {
-    const mirror = d.picture && !C.editable ? `<span class="cb-rf-mirror" aria-hidden="true"><img src="${esc(imgSrc(C, d.picture.src))}"${srcsetOf(C, d.picture)} alt="" decoding="async"${focusPos(d.picture) ? ` style="object-position:${focusPos(d.picture)}"` : ''}></span>` : '';
-    const water = media ? `<figure class="cb-hero-pic cb-rf-water">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}${mirror}</figure>` : '';
+    const ripple = d.picture && !d.video && !C.editable ? `<span class="cb-rf-ripple" aria-hidden="true"><img src="${esc(imgSrc(C, d.picture.src))}"${srcsetOf(C, d.picture)} alt="" decoding="async"${focusPos(d.picture) ? ` style="object-position:${focusPos(d.picture)}"` : ''}></span>` : '';
+    const water = media ? `<figure class="cb-hero-pic cb-rf-water">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}${ripple}</figure>` : '';
     return `<div class="cb-rf${water ? '' : ' cb-solo'}"><div class="cb-hero-words cb-rf-words">${words}${details}</div>${water}</div>${d.picture ? creditsOf([d.picture]) : ''}`;
   }
   if (v === 'branches') return `<div class="cb-br"><div class="cb-br-art" aria-hidden="true"><span class="cb-br-ghost">${branchSvg()}</span><span class="cb-br-win"><span class="cb-br-in">${branchSvg()}</span></span></div><div class="cb-hero-words cb-br-words">${words}${details}</div></div>`;
