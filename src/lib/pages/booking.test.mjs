@@ -75,16 +75,25 @@ test('the reminder promise appears beside Book only once the business has ticked
   assert.ok(!off.includes(REMINDER_LINE));
   const on = draw([strip, booking], { site: withPro({ bookingUrl: 'https://cal.com/sam/session', reminders: true }) });
   assert.equal((on.match(new RegExp(REMINDER_LINE.replace('.', '\\.'), 'g')) || []).length, 2);
+  // Ticked, but with no booking link (only a phone to call): nothing would send those emails, so
+  // no promise is made.
+  const phoneOnly = draw([strip, booking], { site: withPro({ reminders: true }) });
+  assert.ok(!phoneOnly.includes(REMINDER_LINE) && !phoneOnly.includes('cb-remind'));
   assert.equal(professionalDetails({ reminders: 'yes' }).reminders, false, 'only a real tick counts');
   assert.equal(professionalDetails({ reminders: true }).reminders, true);
   assert.equal(professionalDetails({ zoneLabel: '  UK time  ' }).zoneLabel, 'UK time');
 });
 
-test('a contact section says where to look when a confirmation email does not arrive, once there is a booking page', () => {
+test('a contact section says where to look when a confirmation email does not arrive, once there is a booking page and the emails are ticked', () => {
   const contact = { type: 'contact', variant: 'card', data: { heading: 'Contact', business: true } };
   assert.ok(!draw([contact]).includes('cb-spam'), 'no booking page, no line: the page draws as before');
-  assert.ok(draw([contact], { site: withPro({ bookingUrl: 'https://cal.com/sam/session' }) }).includes('<p class="cb-small cb-spam">No email? Check your spam folder, or call us.</p>'));
-  assert.ok(draw([contact], { site: { ...SITE, professional: { bookingUrl: 'https://cal.com/sam/session' } } }).includes('No email? Check your spam folder.</p>'));
+  // A booking link alone (a café's table booking, say) changes nothing: the page draws as before.
+  const before = draw([contact], { site: withPro({ bookingUrl: 'https://cal.com/sam/session' }) });
+  assert.ok(!before.includes('cb-spam'));
+  assert.equal(before, draw([contact], { site: withPro({ bookingUrl: 'https://cal.com/sam/session', reminders: false }) }));
+  assert.ok(!draw([contact], { site: withPro({ reminders: true }) }).includes('cb-spam'), 'ticked with no booking link: no line');
+  assert.ok(draw([contact], { site: withPro({ bookingUrl: 'https://cal.com/sam/session', reminders: true }) }).includes('<p class="cb-small cb-spam">No email? Check your spam folder, or call us.</p>'));
+  assert.ok(draw([contact], { site: { ...SITE, professional: { bookingUrl: 'https://cal.com/sam/session', reminders: true } } }).includes('No email? Check your spam folder.</p>'));
 });
 
 test('guides for the cancelling words and the thank-you page show in the editor only', () => {

@@ -288,7 +288,8 @@ export const PAY_WHEN_BOOK = 'Pay when you book';
 // Only once the business has ticked that booking emails and the day-before reminder are switched
 // on in its booking service (Details and booking).
 export const REMINDER_LINE = 'You will get an email to confirm your booking, and a reminder the day before.';
-const remindLine = (C) => (C.biz?.reminders ? `<p class="cb-small cb-remind">${REMINDER_LINE}</p>` : '');
+// It needs a booking link too: with only a phone to call, nothing would send those emails.
+const remindLine = (C) => (C.biz?.reminders && C.biz?.bookingUrl ? `<p class="cb-small cb-remind">${REMINDER_LINE}</p>` : '');
 // Guides shown only in the editor, beside a section that plays a known part (its role).
 // (Checked on the providers' own help pages, 22 Nov 2026: Stripe's "After the payment" redirect,
 // PayPal payment links' Auto-return, Square's "Redirect to a website after checkout".)
@@ -1027,9 +1028,10 @@ R_.contact = (C, b) => {
   const hoursText = bizDetails(C, d, own).hours || '';
   const openNow = d.openNow ? openLine(C, hoursText) : '';
   const head = `${K(C, b, d)}${H(C, b, d)}${openNow}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}`;
-  // With a booking page, confirmation emails come from the booking service: where to look when
-  // one does not arrive (owner, 22 Nov).
-  const spam = C.biz.bookingUrl ? `<p class="cb-small cb-spam">${C.biz.phone ? 'No email? Check your spam folder, or call us.' : 'No email? Check your spam folder.'}</p>` : '';
+  // With a booking page whose emails the business has ticked as switched on, confirmation emails
+  // come from the booking service: where to look when one does not arrive (owner, 22 Nov). Without
+  // the tick a contact section draws exactly as before.
+  const spam = C.biz.bookingUrl && C.biz.reminders ? `<p class="cb-small cb-spam">${C.biz.phone ? 'No email? Check your spam folder, or call us.' : 'No email? Check your spam folder.'}</p>` : '';
   const acts = `${closedNote(C, b, d)}${d.business ? socials(C) : ''}${BTNS(C, b, d.buttons)}${map ? `<p class="cb-map">${map}</p>` : ''}${spam}`;
   if (!facts && !d.heading && !d.intro && !(d.buttons || []).length && !C.editable) return '';
   // Opening hours as a table, one line of the hours to a row, so the page's script can mark today.
