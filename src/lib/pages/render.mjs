@@ -384,6 +384,16 @@ const R_ = {};
 // A video in the opening. Behind the words it plays silently on a loop (with a pause button, and
 // paused for people who ask for less motion); elsewhere it has the usual controls. The picture is
 // its poster. YouTube and Vimeo can't sit behind words, so they show as a player instead.
+// The giant word's width in em, in capitals at its weight and letter spacing: each letter's own
+// width, measured in Space Grotesk (the font the deep band was drawn for) at weight 800 with
+// -.045em letter spacing, plus 3.3% so the sample's "Ease" keeps its size. Never less than four
+// average letters (2.24em), as before, so a short word is not drawn larger than the band.
+const LETTER_EM = { A: .608, B: .639, C: .619, D: .621, E: .526, F: .505, G: .637, H: .631, I: .226, J: .551, K: .6, L: .513, M: .865, N: .646, O: .652, P: .577, Q: .652, R: .606, S: .58, T: .561, U: .648, V: .592, W: .881, X: .619, Y: .598, Z: .549, 0: .623, 1: .42, 2: .567, 3: .582, 4: .61, 5: .573, 6: .592, 7: .526, 8: .573, 9: .592, ' ': .26 };
+export function wordEm(word) {
+  let em = 0;
+  for (const ch of Array.from(String(word || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase())) em += LETTER_EM[ch] ?? .66;
+  return Math.max(2.24, Math.round(em * 1000) / 1000);
+}
 function heroVideo(C, b, d, behind) {
   const e = videoEmbed(d.video);
   const mark = ED(C, 'data-cb-video', `${b.id}:video`);
@@ -578,7 +588,10 @@ R_.hero = (C, b) => {
   if (v === 'backword') {
     // One short word drawn as wide as the page, with the photo (or a film) floating in front of
     // it among a few loose shapes. The shapes are decoration only, so the editor leaves them out.
-    const word = T(C, b, 'word', d.word, 'p', 'cb-bw-word', ` style="--len:${Math.max(4, Array.from(d.word || '').length)}"`);
+    // On a deep band the word is sized to the photo's column by its own letters (--bw-em, see
+    // signature.css), so a wide word ("Move") fits as well as a narrow one.
+    const em = b.style && b.style.bg === 'dark' ? `;--bw-em:${wordEm(d.word)}` : '';
+    const word = T(C, b, 'word', d.word, 'p', 'cb-bw-word', ` style="--len:${Math.max(4, Array.from(d.word || '').length)}${em}"`);
     // With nothing to show, the words stand alone. A film file plays silently in the frame; a
     // YouTube or Vimeo film needs its controls, so it gets a plain frame and no loose shapes.
     if (!media) return `${word}<div class="cb-hero-words">${words}${details}</div>`;

@@ -75,3 +75,19 @@ test('a route down the page: numbered points on one line that draws as the steps
 test('a giant word behind an opening on a deep band reads as large type, not a faint watermark', () => {
   assert.match(css, /\.cbp \.cb-bg-dark \.cb-bw-word\{color:color-mix\(in srgb,currentColor 38%,transparent\)\}/);
 });
+
+// Review 2, finding 4 (23 Nov): the giant word keeps its size at Edge to edge, and a wide word is
+// sized by its own letters, so it stays inside the band and clear of the words.
+test('the giant word on a deep band is sized by its letters, and never by a percentage', async () => {
+  const { wordEm } = await import('./render.mjs');
+  assert.equal(wordEm('Ease'), 2.24, 'the sample keeps its size');
+  assert.ok(wordEm('Move') > 2.24 && wordEm('Mmmm') > wordEm('Move'));
+  assert.equal(wordEm('Go'), 2.24, 'a short word is never drawn larger than four letters');
+  const hero = (bg, width = 'normal') => ({ id: 'h', type: 'hero', variant: 'backword', style: { bg, width }, data: { heading: 'Massage', word: 'Move', picture: PIC } });
+  assert.match(draw([hero('dark')]), /<p class="cb-bw-word" style="--len:4;--bw-em:2\.635">MOVE<\/p>|<p class="cb-bw-word" style="--len:4;--bw-em:2\.635">Move<\/p>/);
+  assert.ok(!draw([hero('none')]).includes('--bw-em'), 'an opening that is not on a deep band draws as before');
+  assert.match(css, /font-size:min\(24rem,calc\(\(var\(--bw-col\) \+ var\(--bw-room\)\) \/ var\(--bw-em,calc\(var\(--len,6\) \* \.56\)\)\)\)/);
+  assert.match(css, /--bw-room:min\(var\(--bw-gap\) \* \.9,100vw - var\(--bw-w\)\)/);
+  assert.match(css, /\.cbp \.cb-bg-dark\.cb-hero--backword\.cb-w-full \.cb-bw-word\{--bw-w:100vw\}/);
+});
+

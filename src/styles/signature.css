@@ -1465,9 +1465,15 @@ html.cbm-js .cb-bg-dark .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-count{backgrou
    sits behind the photo's side only, centred under the photo column and sized to it (a letter is
    about .54em wide; .56 leaves room), so it never runs behind the words or the buttons. The column
    is worked out as the grid draws it: the content width, the gap, and columns of 1.05 and 1. With
-   one column it stays at the foot of the band, behind the photo, which comes after the words. */
+   one column it stays at the foot of the band, behind the photo, which comes after the words.
+   The word's width comes from its own letters (--bw-em, from the renderer), so a wide word fits
+   too; it may reach a little into the gap, but never past the band's right edge. Edge to edge
+   has no side gutters, so its content width is the window's (a length, never a percentage,
+   which a font size would read against the font size). */
 .cbp .cb-bg-dark .cb-bw-word{color:color-mix(in srgb,currentColor 38%,transparent)}
 @media (min-width:761px){
   .cbp .cb-bg-dark.cb-hero--backword .cb-bw-word{--bw-w:min(var(--cb-max),calc(100vw - 2 * var(--cb-gutter)));--bw-gap:clamp(2rem,5vw,5rem);--bw-col:calc((var(--bw-w) - var(--bw-gap)) / 2.05);
-    left:calc(50% + var(--bw-w) * .0122 + var(--bw-gap) * .4878 + var(--bw-col) / 2);font-size:min(24rem,calc((var(--bw-col) + var(--bw-gap) * .9) / (var(--len,6) * .56)))}
+    --bw-room:min(var(--bw-gap) * .9,100vw - var(--bw-w));
+    left:calc(50% + var(--bw-w) * .0122 + var(--bw-gap) * .4878 + var(--bw-col) / 2);font-size:min(24rem,calc((var(--bw-col) + var(--bw-room)) / var(--bw-em,calc(var(--len,6) * .56))))}
+  .cbp .cb-bg-dark.cb-hero--backword.cb-w-full .cb-bw-word{--bw-w:100vw}
 }
