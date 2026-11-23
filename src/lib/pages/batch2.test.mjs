@@ -91,3 +91,14 @@ test('the giant word on a deep band is sized by its letters, and never by a perc
   assert.match(css, /\.cbp \.cb-bg-dark\.cb-hero--backword\.cb-w-full \.cb-bw-word\{--bw-w:100vw\}/);
 });
 
+// Review 2 minor (23 Nov): the still water photo is shown across the content width.
+test('the still water photo says it is shown across the content width', () => {
+  const hero = (width) => ({ id: 'h', type: 'hero', variant: 'reflection', style: { width }, data: { heading: 'A quiet place to talk', picture: PIC } });
+  const html = draw([hero('normal')]);
+  assert.equal((html.match(/sizes="\(max-width: 760px\) 92vw, min\(72rem, 92vw\)"/g) || []).length, 2, 'the photo and its settling copy, so one file serves both');
+  assert.match(draw([hero('full')]), /sizes="100vw"/);
+  assert.match(draw([hero('wide')]), /sizes="\(max-width: 760px\) 92vw, min\(90rem, 92vw\)"/);
+  // Other photos keep their sizes.
+  const split = { id: 's', type: 'hero', variant: 'split', data: { heading: 'Hello', picture: PIC } };
+  assert.match(draw([split]), /sizes="\(max-width: 760px\) 92vw, 60vw"/);
+});

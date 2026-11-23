@@ -253,11 +253,11 @@ function credit(p, cls = 'cb-credit') {
 const focusPos = (p) => (p?.focus ? (p.focus === 'top' ? '50% 20%' : p.focus === 'bottom' ? '50% 80%' : p.focus === 'left' ? '20% 50%' : '80% 50%') : '');
 const picVars = (C, p) => `--cb-pic:${esc(cssUrl(imgSrc(C, p.src)))}${focusPos(p) ? `;--cb-pos:${focusPos(p)}` : ''}`;
 // A picture. `eager` for the first screen; `cls` on the <img>.
-function P(C, b, path, p, cls = '', { eager = false, credits = true } = {}) {
+function P(C, b, path, p, cls = '', { eager = false, credits = true, sizes = PHONE_SIZES } = {}) {
   if (p && !eager && !C.editable && C.eagerLeft > 0) { eager = true; C.eagerLeft = 0; }
   if (!p) return C.editable ? `<div class="cb-pic-empty ${cls}"${ED(C, 'data-cb-img', `${b.id}:${path}`)} role="img" aria-label="Add a picture"><span>Add a picture</span></div>` : '';
   const focus = p.focus ? ` style="object-position:${p.focus === 'top' ? '50% 20%' : p.focus === 'bottom' ? '50% 80%' : p.focus === 'left' ? '20% 50%' : '80% 50%'}"` : '';
-  return `<img${cls ? ` class="${cls}"` : ''} src="${esc(imgSrc(C, p.src))}"${srcsetOf(C, p)} alt="${esc(p.alt)}"${eager ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async"${focus}${ED(C, 'data-cb-img', `${b.id}:${path}`)}>${credits ? credit(p) : ''}`;
+  return `<img${cls ? ` class="${cls}"` : ''} src="${esc(imgSrc(C, p.src))}"${srcsetOf(C, p, sizes)} alt="${esc(p.alt)}"${eager ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async"${focus}${ED(C, 'data-cb-img', `${b.id}:${path}`)}>${credits ? credit(p) : ''}`;
 }
 // A photo with a smaller copy for phones: the browser takes the copy on a small screen. Each copy
 // is described by its own width when the photo says it (`phoneW`, `w`); older photos are taken as
@@ -265,7 +265,11 @@ function P(C, b, path, p, cls = '', { eager = false, credits = true } = {}) {
 // its side margins (92% of the screen).
 export const PHONE_SIZES = '(max-width: 760px) 92vw, 60vw';
 export const photoSrcset = (p, at = (s) => s) => (p?.phone ? `${at(p.phone)} ${p.phoneW || 800}w, ${at(p.src)} ${p.w || 1600}w` : '');
-const srcsetOf = (C, p) => (p.phone ? ` srcset="${esc(photoSrcset(p, (s) => imgSrc(C, s)))}" sizes="${PHONE_SIZES}"` : '');
+const srcsetOf = (C, p, sizes = PHONE_SIZES) => (p.phone ? ` srcset="${esc(photoSrcset(p, (s) => imgSrc(C, s)))}" sizes="${esc(sizes)}"` : '');
+// A photo shown across the whole content width (the still water opening): as wide as the section
+// allows, so a computer screen of about 761 to 1060 pixels never takes the phone copy (review 2).
+const SECTION_MAX = { narrow: '44rem', normal: '72rem', wide: '90rem' };
+export const fullWidthSizes = (width) => (width === 'full' ? '100vw' : `(max-width: 760px) 92vw, min(${SECTION_MAX[width] || '72rem'}, 92vw)`);
 // A button or link. Hidden on the published page when it has nowhere to go.
 function BTN(C, b, path, link, cls = 'cb-btn') {
   const href = link?.href ? resolveLink(link.href, C) : '';
@@ -717,8 +721,9 @@ R_.hero = (C, b) => {
   // softened copy of the water below the horizon (decoration only, hidden from screen readers)
   // fades as its ripples die away. With movement turned down the photo is simply there.
   if (v === 'reflection') {
-    const ripple = d.picture && !d.video && !C.editable ? `<span class="cb-rf-ripple" aria-hidden="true"><img src="${esc(imgSrc(C, d.picture.src))}"${srcsetOf(C, d.picture)} alt="" decoding="async"${focusPos(d.picture) ? ` style="object-position:${focusPos(d.picture)}"` : ''}></span>` : '';
-    const water = media ? `<figure class="cb-hero-pic cb-rf-water">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}${ripple}</figure>` : '';
+    const sizes = fullWidthSizes(b.style && b.style.width);
+    const ripple = d.picture && !d.video && !C.editable ? `<span class="cb-rf-ripple" aria-hidden="true"><img src="${esc(imgSrc(C, d.picture.src))}"${srcsetOf(C, d.picture, sizes)} alt="" decoding="async"${focusPos(d.picture) ? ` style="object-position:${focusPos(d.picture)}"` : ''}></span>` : '';
+    const water = media ? `<figure class="cb-hero-pic cb-rf-water">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false, sizes })}${ripple}</figure>` : '';
     return `<div class="cb-rf${water ? '' : ' cb-solo'}"><div class="cb-hero-words cb-rf-words">${words}${details}</div>${water}</div>${d.picture ? creditsOf([d.picture]) : ''}`;
   }
   if (v === 'branches') return `<div class="cb-br"><div class="cb-br-art" aria-hidden="true"><span class="cb-br-ghost">${branchSvg()}</span><span class="cb-br-win"><span class="cb-br-in">${branchSvg()}</span></span></div><div class="cb-hero-words cb-br-words">${words}${details}</div></div>`;
