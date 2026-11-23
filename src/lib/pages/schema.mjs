@@ -176,9 +176,12 @@ export const PAY_HOSTS = [
   { host: 'pay.sumup.com', name: 'SumUp' },
   { host: 'square.link', name: 'Square' },
   { host: 'checkout.square.site', name: 'Square' },
+  // Square's sandbox links, for trying things out (Square's developer pages, Checkout API
+  // "optional checkout configurations": "url" : "https://sandbox.square.link/u/fTkKKauH").
+  { host: 'sandbox.square.link', name: 'Square', test: true },
 ];
 // The payment page an address is, or null: { name, test }. A Stripe test link (its path starts
-// /test_) and a PayPal sandbox page are recognised as `test: true`: no real money changes hands.
+// /test_) and a PayPal or Square sandbox page are recognised as `test: true`: no real money changes hands.
 export function payPage(href) {
   let u;
   try { u = new URL(String(href ?? '').trim()); } catch { return null; }

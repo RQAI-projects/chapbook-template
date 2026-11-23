@@ -21,6 +21,8 @@ test('a pay page is named from its address, and test pages are known for what th
   }
   assert.deepEqual(payPage('https://buy.stripe.com/test_cN25nr0iZ7bUa7meUY'), { name: 'Stripe', test: true });
   assert.deepEqual(payPage('https://www.sandbox.paypal.com/ncp/payment/PLB-A87RKBMWWFHM'), { name: 'PayPal', test: true });
+  // Square's test links (its developer pages show https://sandbox.square.link/u/...).
+  assert.deepEqual(payPage('https://sandbox.square.link/u/fTkKKauH'), { name: 'Square', test: true });
   for (const href of ['https://example.com/pay', 'http://buy.stripe.com/abc', 'https://buy.stripe.com/', 'https://buy.stripe.com.example.net/x', 'https://u:p@buy.stripe.com/a', '', 'javascript:alert(1)']) assert.equal(payLine(href), '', href);
   assert.ok(PAY_HOSTS.every((h) => h.host && h.name));
 });
