@@ -181,3 +181,11 @@ test('a calendar that does not load has words and links ready to show (newcomer 
   const html = draw([{ type: 'booking', variant: 'calendar', data: { heading: 'Book' } }], { site: withPro({ bookingUrl: 'https://cal.com/sam/massage' }) });
   assert.match(html, /<p class="cb-booking-fail" hidden>The calendar did not load\. <a href="https:\/\/cal\.com\/sam\/massage" rel="noopener">Open booking in a separate page<\/a>, or call <a href="tel:01632960123">01632 960 123<\/a>\.<\/p>/);
 });
+
+test('with no form, the form section’s note speaks of email, not of a form (newcomer walk, 23 Nov)', () => {
+  const form = { type: 'form', variant: 'split', data: { heading: 'Send a message', note: 'Please do not send health details, or anything urgent, through this form.' } };
+  const html = draw([form], { site: withPro({ email: 'sam@example.com' }) });
+  assert.ok(html.includes('Please do not send health details, or anything urgent, by email.') && !html.includes('this form'));
+  const withForm = draw([form], { site: withPro({ email: 'sam@example.com' }), formEndpoint: 'https://formspree.io/f/abcd' });
+  assert.ok(withForm.includes('through this form'));
+});
