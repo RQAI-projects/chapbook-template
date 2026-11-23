@@ -27,6 +27,64 @@ test('clock times are read from the words people type', () => {
   assert.equal(lengthOf('90 min'), 90); assert.equal(lengthOf('2 hours'), 120); assert.equal(lengthOf('With Sam'), null);
 });
 
+test('a bare number is a time only when joined to a clock time, so a count or a week is never read as one', () => {
+  assert.deepEqual(clockSpan('2 sessions, 6pm'), { start: 1080, end: null });
+  assert.deepEqual(clockSpan('Week 3, 6pm'), { start: 1080, end: null });
+  assert.deepEqual(clockSpan('1 hour from 6pm'), { start: 1080, end: null });
+  assert.equal(spaceEvent({ ...ITEM, time: '1 hour from 6pm' }, { tz: 'Europe/London' }).start.toISOString(), '2026-03-29T17:00:00.000Z');
+  // Joined by to, till, until or a dash, it is the start or the end.
+  assert.deepEqual(clockSpan('6 till 7.30pm'), { start: 1080, end: 1170 });
+  assert.deepEqual(clockSpan('9 until 11am'), { start: 540, end: 660 });
+  assert.deepEqual(clockSpan('6-8pm'), { start: 1080, end: 1200 });
+  assert.deepEqual(clockSpan('6.30 to 8pm'), { start: 1110, end: 1200 });
+  assert.deepEqual(clockSpan('10am to 12'), { start: 600, end: 720 });
+  assert.deepEqual(clockSpan('6pm to 8'), { start: 1080, end: 1200 });
+  // Two times not joined are not a span: the first is the start.
+  assert.deepEqual(clockSpan('10am, then 2pm'), { start: 600, end: null });
+  assert.equal(clockSpan('£6.30'), null);
+});
+
+test('an end earlier than the start is the next day', () => {
+  assert.deepEqual(clockSpan('11pm to 1am'), { start: 1380, end: 1500 });
+  assert.deepEqual(clockSpan('22:00-01:00'), { start: 1320, end: 1500 });
+  assert.deepEqual(clockSpan('11 to 1am'), { start: 1380, end: 1500 });
+  const late = spaceEvent({ ...ITEM, date: '2026-12-31', time: '11pm to 1am' }, { tz: 'Europe/London' });
+  assert.equal(late.end - late.start, 120 * 60e3);
+  assert.equal(late.end.toISOString(), '2027-01-01T01:00:00.000Z');
+  const ev = spaceEvent({ ...ITEM, date: '2026-12-31', time: '22:00-01:00' }, { tz: 'Europe/London' });
+  assert.equal(ev.end - ev.start, 180 * 60e3);
+});
+
+test('the end is the start plus the length, so the clock change days keep the length', () => {
+  // 28 March 2027 in London: the clocks go forward at 1am (1.30am does not happen on the clock).
+  const spring = spaceEvent({ ...ITEM, date: '2027-03-28', time: '1.30am' }, { tz: 'Europe/London' });
+  assert.equal(spring.end - spring.start, 60 * 60e3);
+  // 31 October 2027: back again, so 1am to 2am happens twice.
+  const autumn = spaceEvent({ ...ITEM, date: '2027-10-31', time: '12.30am' }, { tz: 'Europe/London' });
+  assert.equal(autumn.end - autumn.start, 60 * 60e3);
+  const ny = spaceEvent({ ...ITEM, date: '2027-11-07', time: '1.30am', detail: '90 minutes' }, { tz: 'America/New_York' });
+  assert.equal(ny.end - ny.start, 90 * 60e3);
+  const span = spaceEvent({ ...ITEM, date: '2027-03-28', time: '12.30am to 2.30am' }, { tz: 'Europe/London' });
+  assert.equal(span.end - span.start, 120 * 60e3);
+});
+
+test('when nothing safe can be read, there is no Add to calendar', () => {
+  for (const none of ['6 to 8', 'From 6', '9am to 8am', 'Doors at 7', '2 sessions']) {
+    assert.equal(clockSpan(none), null, none);
+    assert.equal(spaceEvent({ ...ITEM, time: none }, { tz: 'Europe/London' }), null, none);
+    assert.ok(!draw([spaces([{ ...ITEM, time: none }])]).includes('cb-sp-cal'), none);
+  }
+});
+
+test('the design’s placeholder address is never written into a calendar file', () => {
+  const ev = spaceEvent(ITEM, { slug: 'events', blockId: 'sp1', tz: 'Europe/London', url: 'https://your-domain.com' });
+  const text = icsText(ev).replace(/\r\n /g, '');
+  assert.doesNotMatch(text, /your-domain/);
+  assert.doesNotMatch(text, /^URL:/m);
+  assert.match(text, /\r\nUID:events-sp1-i1-2026-03-29@chapbook-website\r\n/);
+  assert.doesNotMatch(googleCalendarHref(ev), /your-domain/);
+});
+
 test('times are written in UTC from the business’s time zone, right either side of a clock change', () => {
   // 29 March 2026: the clocks go forward in the UK at 1am.
   assert.equal(zonedTime('2026-03-28', 18 * 60, 'Europe/London').toISOString(), '2026-03-28T18:00:00.000Z');
@@ -45,7 +103,7 @@ test('the calendar file follows RFC 5545: CRLF, folding at 75 octets, escaping, 
   assert.ok(!/[^\r]\n/.test(text), 'every line ends CRLF');
   for (const line of text.split('\r\n')) assert.ok(new TextEncoder().encode(line).length <= 75, `${line.length}: ${line}`);
   const unfolded = text.replace(/\r\n /g, '');
-  assert.match(unfolded, /\r\nUID:events-sp1-i1@kneadwell\.example\r\n/);
+  assert.match(unfolded, /\r\nUID:events-sp1-i1-2026-03-29@kneadwell\.example\r\n/);
   assert.match(unfolded, /\r\nDTSTAMP:20260301T090000Z\r\nDTSTART:20260329T170000Z\r\nDTEND:20260329T180000Z\r\n/);
   assert.match(unfolded, /\r\nSUMMARY:Pre-race massage clinic\\, Kneadwell\r\n/);
   assert.match(unfolded, /\r\nLOCATION:4 Mill Lane\\, Leeds LS1 1AA\r\n/);
@@ -54,9 +112,14 @@ test('the calendar file follows RFC 5545: CRLF, folding at 75 octets, escaping, 
   assert.match(text, /END:VEVENT\r\nEND:VCALENDAR\r\n$/);
   // The same item gives the same UID and file on the next publish, whatever else changes.
   const again = spaceEvent({ ...ITEM, left: 2, price: '£18' }, { slug: 'events', blockId: 'sp1', tz: 'Europe/London', url: SITE.url });
-  assert.equal(again.uid, ev.uid); assert.equal(again.file, 'events-sp1-i1.ics');
+  assert.equal(again.uid, ev.uid); assert.equal(again.file, 'events-sp1-i1-2026-03-29.ics');
+  // The same row used again for a new date is a new event, with a new UID and file.
+  const moved = spaceEvent({ ...ITEM, date: '2026-04-26' }, { slug: 'events', blockId: 'sp1', tz: 'Europe/London', url: SITE.url });
+  assert.notEqual(moved.uid, ev.uid); assert.equal(moved.file, 'events-sp1-i1-2026-04-26.ics');
   // Escaping and folding on their own, with a character of several bytes at the fold.
   assert.equal(icsEscape('a\\b;c,d\ne'), 'a\\\\b\\;c\\,d\\ne');
+  // A lone carriage return (a hand-edited address) is a new line too, never a broken line.
+  assert.equal(icsEscape('1 Mill Lane\rLeeds\r\nLS1'), '1 Mill Lane\\nLeeds\\nLS1');
   const long = `DESCRIPTION:${'é'.repeat(80)}`;
   const folded = icsFold(long);
   for (const l of folded.split('\r\n')) assert.ok(new TextEncoder().encode(l).length <= 75);
@@ -84,11 +147,11 @@ test('the Google Calendar link carries the title, the UTC times, the place and a
 
 test('a dated row with places left has the disclosure and both links, named with the item and date', () => {
   const html = draw([spaces([ITEM])]);
-  assert.match(html, /<details class="cb-sp-cal"><summary>Add to calendar<\/summary><p class="cb-sp-calgo"><a href="https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE&amp;dates=20260329T170000Z\/20260329T180000Z[^"]*" target="_blank" rel="noopener" aria-label="Add Pre-race massage clinic, Sunday 29 March, to Google Calendar">Google Calendar<\/a><a href="\/add-to-calendar\/events-sp1-i1\.ics" download="events-sp1-i1\.ics" aria-label="Add Pre-race massage clinic, Sunday 29 March, to Apple, Outlook or another calendar">Apple, Outlook and others<\/a><\/p><\/details>/);
+  assert.match(html, /<details class="cb-sp-cal"><summary>Add to calendar<span class="cb-sr">: Pre-race massage clinic, Sunday 29 March<\/span><\/summary><p class="cb-sp-calgo"><a href="https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE&amp;dates=20260329T170000Z\/20260329T180000Z[^"]*" target="_blank" rel="noopener" aria-label="Add Pre-race massage clinic, Sunday 29 March, to Google Calendar">Google Calendar<\/a><a href="\/add-to-calendar\/events-sp1-i1-2026-03-29\.ics" download="events-sp1-i1-2026-03-29\.ics" aria-label="Add Pre-race massage clinic, Sunday 29 March, to Apple, Outlook and others">Apple, Outlook and others<\/a><\/p><\/details>/);
   assert.match(html, /<section class="cb cb-t-spaces[^"]*" id="dates-sp1">/);
   assert.equal(longDate('2026-12-03'), 'Thursday 3 December');
   // The website's own address prefix is kept.
-  assert.ok(draw([spaces([ITEM])], { href: (p) => `/site${p}` }).includes('href="/site/add-to-calendar/events-sp1-i1.ics"'));
+  assert.ok(draw([spaces([ITEM])], { href: (p) => `/site${p}` }).includes('href="/site/add-to-calendar/events-sp1-i1-2026-03-29.ics"'));
 });
 
 test('no Add to calendar when full, past, without a time, followed from Cal.com, or switched off', () => {
@@ -102,7 +165,9 @@ test('no Add to calendar when full, past, without a time, followed from Cal.com,
   assert.equal(needsSignature(spaces([ITEM], { noCalendar: true })), true);
   // The files made for the build follow the same rules.
   const files = calendarFiles([page([spaces([ITEM, { ...ITEM, id: 'i2', time: '' }, { ...ITEM, id: 'i3', cal: 'cal.com/a/b' }, { ...ITEM, id: 'i4', date: '2026-02-01' }])])], { site: SITE, today: '2026-03-01' });
-  assert.deepEqual(files.map((f) => f.name), ['events-sp1-i1']);
+  assert.deepEqual(files.map((f) => f.name), ['events-sp1-i1-2026-03-29']);
+  // A Full date has no link, so no file either.
+  assert.deepEqual(calendarFiles([page([spaces([{ ...ITEM, left: 0 }])])], { site: SITE, today: '2026-03-01' }), []);
   assert.deepEqual(calendarFiles([page([spaces([ITEM], { noCalendar: true })])], { site: SITE, today: '2026-03-01' }), []);
   // A page cannot take the files' address.
   assert.ok(RESERVED_SLUGS.includes(CALENDAR_DIR.replace(/\//g, '')));
@@ -116,7 +181,7 @@ test('a Thank you page has one quiet line to the dated classes, only when the we
   const pages = [page([spaces([ITEM])], 'events')];
   const href = datesHrefOf(pages, { site: SITE, today: '2026-03-01' });
   assert.equal(href, '/events/#dates-sp1');
-  assert.ok(draw([thanks], { datesHref: href }).includes('<p class="cb-cal-line"><a class="cb-link" href="/events/#dates-sp1">Booked a class? Add it to your calendar</a></p>'));
+  assert.ok(draw([thanks], { datesHref: href }).includes('<p class="cb-cal-line"><a class="cb-link" href="/events/#dates-sp1">Booked a date with us? Add it to your calendar</a></p>'));
   assert.ok(!draw([thanks]).includes('cb-cal-line'), 'no dates, no line');
   assert.equal(datesHrefOf([page([spaces([{ ...ITEM, left: 0 }])])], { site: SITE, today: '2026-03-01' }), '');
   assert.equal(datesHrefOf(pages, { site: SITE, today: '2026-04-01' }), '');

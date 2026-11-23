@@ -1507,26 +1507,49 @@ export function dateParts(iso) {
 // github.com/InteractionDesignFoundation/add-event-to-calendar-docs, services/google.md).
 export const CALENDAR_DIR = '/add-to-calendar/';
 // "6pm", "6.30pm", "18:30", "9am to 10am", "6 to 7.30pm", "noon": the start, and the end when
-// given, in minutes after midnight. Null when no clock time can be read.
+// given, in minutes after midnight. Null when no clock time can be read safely.
+// - A clock time has am or pm, or minutes ("18:30", "6.30").
+// - A bare number counts only when "to", "till", "until" or a dash joins it to a clock time: as
+//   the start ("6 to 7.30pm") or the end ("10am to 12"). Any other number ("2 sessions, 6pm",
+//   "Week 3, 6pm", "1 hour from 6pm") is not a time.
+// - Two times make a span only when joined in the same way. An end earlier than the start is the
+//   next day ("11pm to 1am" is two hours), so `end` can be more than 24 hours after midnight.
+// - A span longer than 16 hours is not read as one (no link rather than a wrong one).
+const JOIN = /^\s*(?:to|till|until|-|\u2013|\u2014)\s*$/;
 export function clockSpan(text) {
   const s = String(text || '').toLowerCase().replace(/\b(?:noon|midday)\b/g, '12pm');
   const toks = [];
-  for (const m of s.matchAll(/(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)?/g)) {
+  for (const m of s.matchAll(/(?<![\d.:£$€])(\d{1,2})(?:[.:](\d{2}))?(?![\d.:])(?:\s*(am|pm)(?![a-z]))?/g)) {
     const h = +m[1], mi = m[2] ? +m[2] : 0, ap = m[3] || '';
-    if (mi > 59) continue;
-    if (ap ? h < 1 || h > 12 : !m[2] || h > 23) { if (!ap && !m[2] && h >= 1 && h <= 12 && toks.length === 0) toks.push({ h, mi, ap: '', bare: true }); continue; }
-    toks.push({ h, mi, ap });
-    if (toks.filter((t) => !t.bare).length === 2) break;
+    if (mi > 59 || h > 23 || (ap && (h < 1 || h > 12))) { toks.push(null); continue; }
+    toks.push({ h, mi, ap, clock: !!(ap || m[2]), from: m.index, to: m.index + m[0].length });
   }
-  const real = toks.filter((t, i) => !t.bare || (toks[i + 1] && toks[i + 1].ap));
-  if (!real.length || (real.length === 1 && real[0].bare)) return null;
-  const at = (t, ap) => { const p = t.ap || ap; if (!p) return t.h * 60 + t.mi; return ((t.h % 12) + (p === 'pm' ? 12 : 0)) * 60 + t.mi; };
-  const [a, b] = real;
-  let start = at(a, b && !a.ap ? b.ap : ''), end = b ? at(b, '') : null;
-  // "11 to 1pm": the start is in the morning.
-  if (b && a.bare && end != null && start >= end) start -= 12 * 60;
-  if (start < 0 || start >= 24 * 60) return null;
-  return { start, end: end != null && end > start ? end : null };
+  const joined = (a, b) => a && b && JOIN.test(s.slice(a.to, b.from));
+  // The first clock time, or a bare number joined to one with am or pm after it.
+  let i = toks.findIndex((t, k) => t && (t.clock || (joined(t, toks[k + 1]) && toks[k + 1].ap)));
+  if (i < 0) return null;
+  const a = toks[i], b = joined(a, toks[i + 1]) && (toks[i + 1].clock || a.clock) ? toks[i + 1] : null;
+  const at = (t) => ((t.h % 12) + (t.ap === 'pm' ? 12 : 0)) * 60 + t.mi;
+  const both = (t) => [(t.h % 12) * 60 + t.mi, (t.h % 12) * 60 + t.mi + 720];
+  let start, end = null;
+  if (a.ap) start = at(a);
+  else if (b && b.ap && a.h <= 12) {
+    // "6 to 7.30pm", "11 to 1pm": the start is the last of its two readings before the end.
+    end = at(b);
+    const before = both(a).filter((c) => c < end);
+    if (before.length) start = Math.max(...before);
+    else { start = both(a)[1]; end += 1440; }
+  } else start = a.h * 60 + a.mi;
+  if (b && end == null) {
+    if (b.ap) end = at(b);
+    else if (b.h > 12) end = b.h * 60 + b.mi;
+    // "10am to 12", "22:00-01:00": the first reading after the start.
+    else end = both(b).find((c) => c > start) ?? both(b)[0] + 1440;
+    if (end <= start) end += 1440;
+  }
+  if (start < 0 || start >= 1440) return null;
+  if (end != null && end - start > 16 * 60) return null;
+  return { start, end };
 }
 // "45 min", "90 minutes", "1 hour", "2 hours": a length in minutes, or null.
 export function lengthOf(text) {
@@ -1562,21 +1585,23 @@ export function spaceEvent(x, { slug = 'home', blockId = '', tz = 'Europe/London
   const span = clockSpan(x.time);
   if (!span) return null;
   const minutes = span.end != null ? span.end - span.start : lengthOf(x.time) || lengthOf(x.detail) || 60;
-  const start = zonedTime(x.date, span.start, tz), end = zonedTime(x.date, span.start + minutes, tz);
-  const site = cleanHref(url);
-  const host = /^https:/.test(site) ? new URL(site).hostname : 'chapbook-website';
-  const file = `${slug}-${blockId}-${x.id || 'i'}`.replace(/[^a-z0-9-]/gi, '').toLowerCase();
+  // The end is the start plus the length, so a class on a clock change day keeps its length.
+  const start = zonedTime(x.date, span.start, tz), end = new Date(start.getTime() + minutes * 60000);
+  const site = realSiteUrl(url);
+  const host = site ? new URL(site).hostname : 'chapbook-website';
+  // The date is part of the file name and UID, so a row used again for a new date is a new event.
+  const file = `${slug}-${blockId}-${x.id || 'i'}-${x.date}`.replace(/[^a-z0-9-]/gi, '').toLowerCase();
   return {
     file: `${file}.ics`, uid: `${file}@${host}`, start, end,
     summary: siteName ? `${x.name}, ${siteName}` : x.name,
     location: String(place || '').split('\n').map((l) => l.trim()).filter(Boolean).join(', '),
-    description: [x.detail, x.price ? `Price: ${x.price}` : '', /^https:/.test(site) ? `Details and changes: ${site}` : ''].filter(Boolean).join('\n'),
-    url: /^https:/.test(site) ? site : '', name: x.name, date: x.date,
+    description: [x.detail, x.price ? `Price: ${x.price}` : '', site ? `Details and changes: ${site}` : ''].filter(Boolean).join('\n'),
+    url: site, name: x.name, date: x.date,
   };
 }
 // RFC 5545: text with its backslashes, semicolons, commas and new lines escaped; lines folded at
 // 75 octets (never inside a character), each joined with CRLF.
-export const icsEscape = (v) => String(v ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+export const icsEscape = (v) => String(v ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n');
 export function icsFold(line) {
   const out = []; let cur = '', size = 0, limit = 75;
   for (const ch of line) {
@@ -1610,6 +1635,8 @@ export function calendarFiles(pages, { site = {}, today = localIso(), stamp = ne
     for (const b of page.blocks) {
       if (b.type !== 'spaces' || b.data.noCalendar) continue;
       for (const x of b.data.items || []) {
+        // A Full date shows no Add to calendar, so it has no file either.
+        if (x.left === 0) continue;
         const ev = spaceEvent(x, { slug: page.slug, blockId: b.id, tz: biz.timeZone, today, url: site.url, place: biz.location, siteName: cleanLine(site.name || site.masthead || '', 80) });
         if (ev) out.push({ name: ev.file.replace(/\.ics$/, ''), text: icsText(ev, { stamp }) });
       }
@@ -1679,7 +1706,9 @@ R_.spaces = (C, b) => {
     // Add to calendar: for a date with places left that is not followed from Cal.com.
     const ev = !past && !full && !d.noCalendar ? spaceEvent(x, { slug: C.page.slug || 'home', blockId: b.id, tz: C.biz.timeZone, today, url: C.site?.url, place: C.biz.location, siteName: siteName(C) }) : null;
     const name = ev ? `${x.name}, ${longDate(x.date)}` : '';
-    const cal = ev ? `<details class="cb-sp-cal"><summary>Add to calendar</summary><p class="cb-sp-calgo"><a href="${esc(googleCalendarHref(ev))}" target="_blank" rel="noopener" aria-label="${esc(`Add ${name}, to Google Calendar`)}">Google Calendar</a><a href="${esc(C.href ? C.href(`${CALENDAR_DIR}${ev.file}`) : `${CALENDAR_DIR}${ev.file}`)}" download="${esc(ev.file)}" aria-label="${esc(`Add ${name}, to Apple, Outlook or another calendar`)}">Apple, Outlook and others</a></p></details>` : '';
+    // The disclosure names its item and date (read as "Add to calendar: Pre-race clinic, Sunday 29
+    // March"), and each link's name starts from its visible words' meaning and contains them.
+    const cal = ev ? `<details class="cb-sp-cal"><summary>Add to calendar<span class="cb-sr">: ${esc(name)}</span></summary><p class="cb-sp-calgo"><a href="${esc(googleCalendarHref(ev))}" target="_blank" rel="noopener" aria-label="${esc(`Add ${name}, to Google Calendar`)}">Google Calendar</a><a href="${esc(C.href ? C.href(`${CALENDAR_DIR}${ev.file}`) : `${CALENDAR_DIR}${ev.file}`)}" download="${esc(ev.file)}" aria-label="${esc(`Add ${name}, to Apple, Outlook and others`)}">Apple, Outlook and others</a></p></details>` : '';
     return w(`${when}${body}<div class="cb-sp-state">${state}</div>${acts ? `<p class="cb-sp-acts">${acts}</p>` : ''}${cal}`, 'li', `cb-sp-item${past ? ' is-past' : ''}${full ? ' is-full' : ''}`)
       .replace(/^<li /, `<li${x.date ? ` data-date="${esc(x.date)}"` : ''}${follow && !C.editable ? ` data-cal="${esc(follow)}"` : ''} `);
   };
@@ -1848,7 +1877,7 @@ function renderBlock(b, C) {
   // The help card is where an opening's help line goes (#help-now).
   const anchor = !C.editable && C.helpId && b.id === C.helpId ? ' id="help-now"' : !C.editable && b.type === 'spaces' ? ` id="dates-${esc(b.id)}"` : '';
   // A Thank you page's opening: one quiet line to the dated classes, when the website has some.
-  const datesLine = b.role === 'thanks' && b.type === 'hero' && /^(?:\/|https:)[^\s"<>]*$/.test(C.datesHref || '') ? `<p class="cb-cal-line"><a class="cb-link" href="${esc(C.datesHref)}">Booked a class? Add it to your calendar</a></p>` : '';
+  const datesLine = b.role === 'thanks' && b.type === 'hero' && /^(?:\/|https:)[^\s"<>]*$/.test(C.datesHref || '') ? `<p class="cb-cal-line"><a class="cb-link" href="${esc(C.datesHref)}">Booked a date with us? Add it to your calendar</a></p>` : '';
   // A guide beside a section that plays a known part, in the editor only.
   const guide = C.editable && Object.hasOwn(ROLE_GUIDES, b.role) ? `<p class="cb-note cb-role-guide" data-cb-hint>${esc(ROLE_GUIDES[b.role](C))}</p>` : '';
   return `<section class="${cls}"${anchor}${ED(C, 'data-cb-block', b.id)}>${backdrop}${moving}<div class="cb-in">${inner}${datesLine}${guide}</div></section>`;
