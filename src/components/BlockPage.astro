@@ -77,10 +77,14 @@ const fontPreloads = [...new Set(firstFaces)].slice(0, 4).map((f) => withBase(`/
 const blankAbout = page.slug === 'about' && !html.includes('<section');
 // A page with questions and answers says so to search engines too.
 const faqLd = faqJsonLd(blocks);
+// A Thank you page (a section with the role `thanks`) is for people who have just paid: search
+// engines are asked not to list it. (The design makes no sitemap, so nothing lists it there.)
+const noindex = blocks.some((b: any) => b.role === 'thanks');
 ---
 <Base title={title ?? page.title} description={description ?? (page.description || undefined)}>
   {/* Everything for the head in one place: several expressions naming the same slot keep only one. */}
   <Fragment slot="head">
+    {noindex && <meta name="robots" content="noindex" />}
     {preloadSrc && (openingPhone
       ? <link rel="preload" as="image" href={preloadSrc} imagesrcset={photoSrcset({ ...opening.data.picture, src: preloadSrc, phone: openingPhone })} imagesizes={PHONE_SIZES} fetchpriority="high" />
       : <link rel="preload" as="image" href={preloadSrc} fetchpriority="high" />)}
