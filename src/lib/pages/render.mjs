@@ -1116,7 +1116,7 @@ R_.form = (C, b) => {
     // The owner's own line under the form (often what not to send) is kept under the button.
     const email = C.biz.email ? `<div class="cb-actions"><a class="cb-btn" href="mailto:${esc(C.biz.email)}">Email ${esc(C.biz.email)}</a></div>` : '';
     // With no form, a note about "this form" speaks of the email instead (newcomer walk, 23 Nov).
-    const small = email && d.note ? `<p class="cb-small">${esc(String(d.note).replace(/\b(through|in|using) this form\b/gi, 'by email'))}</p>` : '';
+    const small = email && d.note ? `<p class="cb-small">${esc(String(d.note).replace(/\b(through|using) this form\b/gi, 'by email').replace(/\bin this form\b/gi, 'in your email'))}</p>` : '';
     return email ? `${words}${email}${small}` : '';
   }
   const uid = esc(b.id);
