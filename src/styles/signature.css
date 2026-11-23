@@ -1477,8 +1477,10 @@ html.cbm-js .cb-bg-dark .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-count{backgrou
     left:calc(50% + var(--bw-w) * .0122 + var(--bw-gap) * .4878 + var(--bw-col) / 2);font-size:min(24rem,calc((var(--bw-col) + var(--bw-room)) / var(--bw-em,calc(var(--len,6) * .56))))}
   .cbp .cb-bg-dark.cb-hero--backword.cb-w-full .cb-bw-word{--bw-w:100vw}
 }
-/* One column with no photo: the word at the foot of the band would sit behind the buttons, so the
-   words leave room under them for its capitals (four letters at most fill 150vw / 4). */
+/* One column: the word is sized by its own letters too (84vw over --bw-em is 150vw / 4 for Ease,
+   as before), so a wide word stays inside the band. With no photo the word at the foot of the band
+   would sit behind the buttons, so the words leave room under them for its capitals. */
 @media (max-width:760px){
+  .cbp .cb-bg-dark.cb-hero--backword .cb-bw-word{font-size:min(24rem,calc(84vw / var(--bw-em,calc(var(--len,6) * .56))))}
   .cbp .cb-bg-dark.cb-hero--backword>.cb-in>.cb-hero-words{padding-bottom:27vw}
 }

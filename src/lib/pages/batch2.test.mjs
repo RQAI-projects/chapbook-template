@@ -103,8 +103,8 @@ test('the still water photo says it is shown across the content width', () => {
   assert.match(draw([split]), /sizes="\(max-width: 760px\) 92vw, 60vw"/);
 });
 
-test('with one column and no photo, the words leave room under the buttons for the giant word', () => {
-  assert.match(css, /@media \(max-width:760px\)\{\s*\.cbp \.cb-bg-dark\.cb-hero--backword>\.cb-in>\.cb-hero-words\{padding-bottom:27vw\}/);
+test('with one column the giant word is sized by its letters, and with no photo the words leave room under the buttons', () => {
+  assert.match(css, /@media \(max-width:760px\)\{\s*\.cbp \.cb-bg-dark\.cb-hero--backword \.cb-bw-word\{font-size:min\(24rem,calc\(84vw \/ var\(--bw-em,calc\(var\(--len,6\) \* \.56\)\)\)\)\}\s*\.cbp \.cb-bg-dark\.cb-hero--backword>\.cb-in>\.cb-hero-words\{padding-bottom:27vw\}/);
   const hero = { id: 'h', type: 'hero', variant: 'backword', style: { bg: 'dark' }, data: { heading: 'Massage', word: 'Ease' } };
   assert.match(draw([hero]), /<div class="cb-in"><p class="cb-bw-word"[^>]*>Ease<\/p><div class="cb-hero-words">/);
 });
