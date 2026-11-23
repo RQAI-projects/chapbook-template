@@ -121,7 +121,7 @@ const noindex = blocks.some((b: any) => b.role === 'thanks');
   startPageMotion();
   // The booking bar in the opening and the order list. Not movement: it runs for everyone.
   import { startPageActions } from '../scripts/page-actions.js';
-  import { showCalendar } from '../scripts/booking-calendar.js';
+  import { showCalendar, watchCalendar } from '../scripts/booking-calendar.js';
   startPageActions();
 
   // Block contact forms send without leaving the site and show the result in place.
@@ -161,9 +161,11 @@ const noindex = blocks.some((b: any) => b.role === 'thanks');
       button.addEventListener('click', async () => {
         const kind = box.dataset.bookingKind, src = box.dataset.bookingSrc || '';
         button.disabled = true; status.textContent = 'Loading the booking calendar…';
+        // No calendar after about 5 seconds: the page says so, with the booking page and a call.
+        const watch = watchCalendar(frame, status, box.querySelector('.cb-booking-fail'));
         try {
           if (kind === 'google' && /^https:\/\/calendar\.google\.com\/calendar\/appointments\/schedules\//.test(src)) {
-            const f = document.createElement('iframe'); f.src = src; f.title = 'Booking calendar'; f.loading = 'lazy';
+            const f = document.createElement('iframe'); f.src = src; f.title = 'Booking calendar'; f.loading = 'lazy'; f.addEventListener('load', () => { f.dataset.loaded = '1'; });
             frame.replaceChildren(f); frame.dataset.kind = 'google';
           } else if (kind === 'cal') {
             // Each calendar on the page is its own (one per person, say), with its own light or dark setting.
@@ -174,6 +176,7 @@ const noindex = blocks.some((b: any) => b.role === 'thanks');
         } catch {
           button.disabled = false;
           status.textContent = 'The booking calendar could not load. Use the link above to book on its own page.';
+          watch.fail();
         }
       });
     }

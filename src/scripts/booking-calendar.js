@@ -73,5 +73,36 @@ export async function showCalendar(target, calLink, around, win = window) {
   const name = `chapbook-${++calendars}`;
   if (!target.id) target.id = `booking-${name}`;
   Cal('init', name, { origin: 'https://cal.com' });
+  // Cal.com says when the calendar has really loaded (or could not), so the page can tell a
+  // calendar that is there from one that never came (watchCalendar).
+  Cal.ns[name]('on', { action: 'linkReady', callback: () => { target.dataset.ready = '1'; } });
+  Cal.ns[name]('on', { action: 'linkFailed', callback: () => { target.dataset.failed = '1'; } });
   Cal.ns[name]('inline', { elementOrSelector: `#${target.id}`, calLink, config: { layout: 'month_view', theme: calendarTheme(around || target, win) } });
+}
+
+// ---- A calendar that does not come ---------------------------------------------------------
+// An ad blocker, a work network or a weak signal can stop the calendar loading with no error at
+// all. About 5 seconds after "Show available times", if no calendar has appeared, the page says
+// so and offers the booking page on its own and a call or an email (newcomer walk, 23 Nov): the
+// button is never left doing nothing. If the calendar turns up later, the words go back.
+export const CALENDAR_WAIT_MS = 5000;
+export const calendarReady = (target) => target.dataset.ready === '1'
+  || [...target.querySelectorAll('iframe')].some((f) => f.dataset.loaded === '1' || f.offsetHeight > 300);
+// fail: an element (kept hidden in the page) holding the words and links to show instead.
+export function watchCalendar(target, status, fail, { win = window, wait = CALENDAR_WAIT_MS, ready = 'Choose a time in the calendar.' } = {}) {
+  let shown = false;
+  const show = () => {
+    if (shown || !fail) return;
+    shown = true;
+    status.replaceChildren(...[...fail.childNodes].map((n) => n.cloneNode(true)));
+    status.classList.add('is-failed');
+  };
+  let tries = 0;
+  const check = () => {
+    if (calendarReady(target) && target.dataset.failed !== '1') { if (shown) { shown = false; status.classList.remove('is-failed'); status.textContent = ready; } return; }
+    if (tries === 0 || target.dataset.failed === '1') show();
+    if (++tries < 25) win.setTimeout(check, 1000);
+  };
+  win.setTimeout(check, wait);
+  return { fail: show };
 }
