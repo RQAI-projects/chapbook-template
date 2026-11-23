@@ -131,7 +131,7 @@
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
   "src/lib/page-css.mjs": "6f21aacb20cb8b5aaa45cb7367ee23eca1241bbe",
   "src/lib/pages/migrate.mjs": "ac3d603f17de28b7ee79a291ed39ba8b093ad0f5",
-  "src/lib/pages/render.mjs": "e8109cd4a55eddce5204295c5a4771de2326d89e",
+  "src/lib/pages/render.mjs": "101df6a65906dafaa9cc074f32766a1fae02ab53",
   "src/lib/pages/schema.mjs": "d239991a25829bef99cf4e98e661886427f9980a",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
@@ -213,6 +213,7 @@
  },
  "history": {
   "src/lib/pages/render.mjs": [
+   "e8109cd4a55eddce5204295c5a4771de2326d89e",
    "f6226ac35e1cb5d1efba907d2481c55daabf8c64",
    "efe5e8c0574c41ee72c25df6615c5e142c9037f6",
    "22ddc79a9ae6d670ed41ec7a03eb634c935ef678",
