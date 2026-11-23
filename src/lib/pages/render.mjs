@@ -297,8 +297,14 @@ const remindLine = (C) => (C.biz?.reminders && C.biz?.bookingUrl ? `<p class="cb
 // your-domain.com never counts, as in the app's connection.js).
 export const realSiteUrl = (url) => { const u = cleanHref(url || ''); if (!/^https:/.test(u)) return ''; try { return new URL(u).hostname.toLowerCase() === 'your-domain.com' ? '' : u; } catch { return ''; } };
 const thanksAddress = (C) => { const u = realSiteUrl(C.site?.url); return u ? `${u.replace(/\/+$/, '')}/thank-you/` : 'your website’s address with /thank-you/ on the end'; };
+// The consumer guide (the 14 days) belongs beside the consumer sample only. An NHS practice's own
+// section, or plain terms for organisations, gets a short guide of its own (review 2, 23 Nov).
+const CANCEL_GUIDE = 'A starting point, not legal advice. Check the UK rules on cancelling services booked online, by phone or by email (Business Companion’s guide to distance sales, from Trading Standards), then change these words to your own policy. These rights are for consumers, people booking for themselves. When a customer wants a session to start within the 14 days, ask them to confirm that. If customers are not told about the right to cancel, it can run up to a year longer.';
+const sectionWords = (b) => { const d = b?.data || {}; return [d.heading, d.intro, ...(d.items || []).flatMap((x) => [x.question, x.answer])].join(' '); };
 const ROLE_GUIDES = {
-  cancel: () => 'A starting point, not legal advice. Check the UK rules on cancelling services booked online, by phone or by email (Business Companion’s guide to distance sales, from Trading Standards), then change these words to your own policy. These rights are for consumers, people booking for themselves. When a customer wants a session to start within the 14 days, ask them to confirm that. If customers are not told about the right to cancel, it can run up to a year longer.',
+  cancel: (C, b) => (/\bNHS App\b/.test(sectionWords(b)) ? 'A starting point. Change these words to how patients move or cancel appointments with your practice.'
+    : /engagement letter/i.test(sectionWords(b)) ? 'A starting point, not legal advice. Keep these words in line with your engagement letter, which sets your terms.'
+      : CANCEL_GUIDE),
   thanks: (C) => `This page is not in your menu. Send people here after they pay: in Stripe, edit the payment link, open After the payment and choose to send customers to your website, then paste ${thanksAddress(C)}. In PayPal, on a payment link’s Confirmation tab, turn on Auto-return and paste the same address. A Square checkout link can do the same (Redirect to a website after checkout).`,
 };
 // A repeating list. Each item carries its own marker so the editor can move or remove it.
@@ -1907,7 +1913,7 @@ function renderBlock(b, C) {
   // A Thank you page's opening: one quiet line to the dated classes, when the website has some.
   const datesLine = b.role === 'thanks' && b.type === 'hero' && /^(?:\/|https:)[^\s"<>]*$/.test(C.datesHref || '') ? `<p class="cb-cal-line"><a class="cb-link" href="${esc(C.datesHref)}">Booked a date with us? Add it to your calendar</a></p>` : '';
   // A guide beside a section that plays a known part, in the editor only.
-  const guide = C.editable && Object.hasOwn(ROLE_GUIDES, b.role) ? `<p class="cb-note cb-role-guide" data-cb-hint>${esc(ROLE_GUIDES[b.role](C))}</p>` : '';
+  const guide = C.editable && Object.hasOwn(ROLE_GUIDES, b.role) ? `<p class="cb-note cb-role-guide" data-cb-hint>${esc(ROLE_GUIDES[b.role](C, b))}</p>` : '';
   return `<section class="${cls}"${anchor}${ED(C, 'data-cb-block', b.id)}>${backdrop}${moving}<div class="cb-in">${inner}${datesLine}${guide}</div></section>`;
 }
 export { renderBlock as _renderBlock };

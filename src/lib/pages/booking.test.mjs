@@ -118,6 +118,17 @@ test('guides for the cancelling words and the thank-you page show in the editor 
   assert.ok(!draw([{ ...cancel, role: 'constructor' }], { editable: true }).includes('cb-role-guide'));
 });
 
+// Review 2 minor (23 Nov): the consumer guide sits beside the consumer sample only.
+test('an NHS practice or plain terms for organisations get a short guide of their own, not the consumer one', () => {
+  const nhs = { id: 'c2', type: 'faq', role: 'cancel', variant: 'list', data: { heading: 'Moving or cancelling', items: [{ question: 'How do I move or cancel?', answer: 'Cancel in the NHS App or online and book a new time, or call us to cancel or move it.' }] } };
+  const org = { id: 'c3', type: 'faq', role: 'cancel', variant: 'list', data: { heading: 'Moving or ending the work', items: [{ question: 'Fees and deposits', answer: 'Your engagement letter sets out our fees.' }] } };
+  const a = draw([nhs], { editable: true }), b = draw([org], { editable: true });
+  for (const h of [a, b]) { assert.match(h, /cb-role-guide/); assert.doesNotMatch(h, /14 days|consumers/); }
+  assert.match(a, /how patients move or cancel appointments with your practice/);
+  assert.match(b, /in line with your engagement letter/);
+  assert.ok(!draw([nhs, org]).includes('cb-role-guide'));
+});
+
 test('an older page with none of this draws exactly as before', () => {
   const blocks = [
     { type: 'plans', variant: 'cards', data: { items: [{ name: 'Session', price: '£60', pay: { label: 'Pay now', href: '' } }] } },
