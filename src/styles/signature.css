@@ -1385,8 +1385,8 @@ html.cbm-js .cb-bg-dark .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-count{backgrou
 /* Still water (counselling): the words, then a wide photo of still water and its own reflection,
    shown whole with the horizon across the middle. As the page opens the water settles: the photo
    comes to rest, and a softened copy of the water below the horizon (54% down, as the sample photo
-   has it) starts a little stretched and fades as its ripples die away. Transform and opacity only;
-   the copy is not drawn at all with movement turned down. */
+   has it) waits a little stretched and, once the photo is in view, fades as its ripples die away.
+   Transform and opacity only; the copy is not drawn at all with movement turned down or paused. */
 .cb-rf{display:grid;justify-items:center;gap:clamp(2rem,5vw,3.4rem);text-align:center}
 .cb-rf.cb-solo{gap:0}
 .cbp .cb-rf-words{max-width:44rem;margin-inline:auto}
@@ -1398,9 +1398,13 @@ html.cbm-js .cb-bg-dark .cb-sc.is-live .cb-sc-stage.is-art .cb-sc-count{backgrou
 .cb-rf-ripple img{position:absolute;left:0;top:calc(-54% / .46);width:100%;height:calc(100% / .46);object-fit:cover;object-position:50% 50%;filter:blur(3px);transform-origin:50% 0}
 @media (max-width:760px){.cbp .cb-hero-pic.cb-rf-water{aspect-ratio:4/3}}
 @media screen and (prefers-reduced-motion:no-preference){
-  html.cbm-js .cbm .cb-rf-ripple{display:block;animation:cb-rf-calm 3.4s cubic-bezier(.22,1,.36,1) .35s both}
-  html.cbm-js .cbm .cb-rf-ripple img{animation:cb-rf-wave 3.4s cubic-bezier(.22,1,.36,1) .35s both}
   html.cbm-js .cbm .cb-rf-water>img{animation:cb-rf-still 3.6s cubic-bezier(.22,1,.36,1) both}
+  /* The page's script stirs the water (is-stirred) and calms it once half the photo is in view. */
+  html.cbm-js .cbm .cb-rf-water.is-stirred .cb-rf-ripple{display:block;opacity:.8}
+  html.cbm-js .cbm .cb-rf-water.is-stirred .cb-rf-ripple img{transform:scaleY(1.07) translate3d(0,8px,0)}
+  html.cbm-js .cbm .cb-rf-water.is-calm .cb-rf-ripple{animation:cb-rf-calm 3.6s cubic-bezier(.45,.05,.3,1) .2s both}
+  html.cbm-js .cbm .cb-rf-water.is-calm .cb-rf-ripple img{animation:cb-rf-wave 3.6s cubic-bezier(.45,.05,.3,1) .2s both}
+  html.cbm-paused .cb-rf-ripple{display:none!important}
 }
 @keyframes cb-rf-calm{from{opacity:.8}to{opacity:0}}
 @keyframes cb-rf-wave{from{transform:scaleY(1.07) translate3d(0,8px,0)}to{transform:none}}

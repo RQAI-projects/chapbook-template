@@ -287,6 +287,19 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     }
   }
 
+  // ---- still water: the water settles once it is seen ---------------------------------------
+  // The softened copy of the water below the horizon (.cb-rf-ripple) waits, a little stirred,
+  // until half the photo is in view, then calms (is-calm in the stylesheet), so a visitor sees it
+  // settle rather than missing it below the fold. Without this script it is never drawn.
+  if (!reduce && 'IntersectionObserver' in win) {
+    const waters = [...root.querySelectorAll('.cb-rf-water')].filter((w) => w.querySelector('.cb-rf-ripple'));
+    if (waters.length) {
+      const calm = new win.IntersectionObserver((entries) => { for (const e of entries) if (e.isIntersecting) { e.target.classList.add('is-calm'); calm.unobserve(e.target); } }, { threshold: 0.5 });
+      for (const w of waters) { w.classList.add('is-stirred'); calm.observe(w); }
+      undo.push(() => { calm.disconnect(); for (const w of waters) w.classList.remove('is-stirred', 'is-calm'); });
+    }
+  }
+
   // ---- follows the scroll: a bar that fills or a line that draws -----------------------------
   // How far through the page the visitor is, from 0 to 1, as --cbm-p on a thin piece of
   // decoration fixed to the screen. Measured once a frame at most.

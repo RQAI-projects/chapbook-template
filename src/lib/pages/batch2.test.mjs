@@ -31,7 +31,12 @@ test('still water: the words, then the photo whole (its own reflection), settlin
   // movement allowed, and moves by opacity and transform alone.
   assert.match(css, /\.cbp \.cb-hero-pic\.cb-rf-water\{[^}]*aspect-ratio:2\/1/);
   assert.match(css, /\.cb-rf-ripple\{display:none;/);
-  assert.match(css, /@media screen and \(prefers-reduced-motion:no-preference\)\{\n  html\.cbm-js \.cbm \.cb-rf-ripple\{display:block;animation:cb-rf-calm/);
+  assert.match(css, /html\.cbm-js \.cbm \.cb-rf-water\.is-stirred \.cb-rf-ripple\{display:block;opacity:\.8\}/);
+  assert.match(css, /html\.cbm-js \.cbm \.cb-rf-water\.is-calm \.cb-rf-ripple\{animation:cb-rf-calm/);
+  assert.match(css, /html\.cbm-paused \.cb-rf-ripple\{display:none!important\}/);
+  // The page's script stirs the water and calms it once half the photo is in view.
+  const motion = readFileSync(new URL('../../scripts/page-motion.js', import.meta.url), 'utf8');
+  assert.match(motion, /querySelectorAll\('\.cb-rf-water'\)[\s\S]*classList\.add\('is-calm'\)[\s\S]*threshold: 0\.5[\s\S]*classList\.add\('is-stirred'\)/);
   assert.match(css, /@keyframes cb-rf-calm\{from\{opacity:\.8\}to\{opacity:0\}\}/);
   assert.match(css, /@keyframes cb-rf-wave\{from\{transform:scaleY\(1\.07\) translate3d\(0,8px,0\)\}to\{transform:none\}\}/);
 });
