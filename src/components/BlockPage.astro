@@ -172,10 +172,10 @@ const noindex = blocks.some((b: any) => b.role === 'thanks');
             await showCalendar(frame, src, box);
           } else throw new Error('unknown');
           frame.hidden = false; button.hidden = true;
-          status.textContent = 'Choose a time in the calendar. If it does not appear, use the link above.';
+          if (!watch.showing()) status.textContent = 'Choose a time in the calendar. If it does not appear, use the link above.';
         } catch {
+          // The fallback's words, with the call or email, say it (review, 23 Nov).
           button.disabled = false;
-          status.textContent = 'The booking calendar could not load. Use the link above to book on its own page.';
           watch.fail();
         }
       });

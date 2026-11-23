@@ -1116,7 +1116,7 @@ R_.form = (C, b) => {
     // The owner's own line under the form (often what not to send) is kept under the button.
     const email = C.biz.email ? `<div class="cb-actions"><a class="cb-btn" href="mailto:${esc(C.biz.email)}">Email ${esc(C.biz.email)}</a></div>` : '';
     // With no form, a note about "this form" speaks of the email instead (newcomer walk, 23 Nov).
-    const small = email && d.note ? `<p class="cb-small">${esc(String(d.note).replace(/\b(through|using) this form\b/gi, 'by email').replace(/\bin this form\b/gi, 'in your email'))}</p>` : '';
+    const small = email && d.note ? `<p class="cb-small">${esc(String(d.note).replace(/\bthrough this form\b/gi, 'by email').replace(/\bin this form\b/gi, 'in your email'))}</p>` : '';
     return email ? `${words}${email}${small}` : '';
   }
   const uid = esc(b.id);
@@ -1458,7 +1458,10 @@ R_.bookstrip = (C, b) => {
   const ways = bookWays(C, { label, whatsapp: d.whatsapp });
   const paid = (x) => (paysOnBooking(C, x) ? `<span class="cb-paid">${PAY_WHEN_BOOK}</span>` : '');
   const meta = (x, i) => `<span class="cb-bs-meta">${T(C, b, `items.${i}.duration`, x.duration, 'span', 'cb-bs-time')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-bs-price')}${paid(x)}</span>`;
-  const payLineHere = items.some((x) => (x.name || C.editable) && paysOnBooking(C, x)) ? `<p class="cb-small cb-bs-paid">${PAY_WHEN_BOOK_LINE}</p>` : '';
+  // Said once, unless the strip's own words already say it (pages saved from the earlier samples
+  // carry "You pay when you book." in their note, review 23 Nov).
+  const saysIt = /\bwhen you book\b/i.test(`${d.note || ''} ${d.intro || ''}`);
+  const payLineHere = !saysIt && items.some((x) => (x.name || C.editable) && paysOnBooking(C, x)) ? `<p class="cb-small cb-bs-paid">${PAY_WHEN_BOOK_LINE}</p>` : '';
   const note = `${payLineHere}${T(C, b, 'note', d.note, 'p', 'cb-small cb-bs-note')}${remindLine(C)}`;
   const head = v === 'bar' ? `<div class="cb-bs-words">${K(C, b, d)}${H(C, b, d)}${RT(C, b, 'intro', d.intro, 'cb-rich cb-intro')}</div>` : HEAD(C, b, d);
   // Free times read from Cal.com, only when the owner asked for it and the link is a Cal.com one.
@@ -1495,6 +1498,9 @@ R_.bookstrip = (C, b) => {
 // ---- ways to pay ----
 // A price with an amount in it ("£35", "From £60", "70"), not "Free", "Ask" or nothing.
 export const hasAmount = (price) => /\d/.test(String(price || ''));
+// A price that is a question: blank, or one that asks (Ask, Quote, Quoted, POA, On request, TBC,
+// whole words, any case). "Free", "Card" and other words keep the card's way to book (review, 23 Nov).
+export const asksPrice = (price) => { const p = String(price ?? '').trim(); return !p || /\b(ask|quote|quoted|poa|on request|tbc)\b/i.test(p); };
 R_.plans = (C, b) => {
   const d = b.data, items = d.items || [];
   const other = bookWays(C, { label: 'Book' })[0];
@@ -1506,9 +1512,9 @@ R_.plans = (C, b) => {
     else if (x.pay?.href) action = `<a class="cb-btn cb-pl-pay" href="${esc(resolveLink(x.pay.href, C))}" rel="noopener">${esc(x.pay.label || 'Pay now')}</a>${payNote(x.pay.href)}`;
     else if (d.unpaid === 'ask') action = '<p class="cb-pl-ask">Ask at reception</p>';
     else if (d.unpaid === 'none') action = '';
-    // A card with no amount ("Free", "Ask for a quote", blank) is a question, not a booking:
-    // it leads to the Contact page (newcomer walk, 23 Nov).
-    else if (!hasAmount(x.price)) action = wayLink({ href: C.href ? C.href('/contact/') : '/contact/', label: 'Get in touch', kind: 'contact', away: false }, 'cb-btn cb-btn-2 cb-pl-pay');
+    // A card whose price asks ("Ask", "Quote", "POA", blank) is a question, not a booking: it
+    // leads to the Contact page (newcomer walk, 23 Nov).
+    else if (asksPrice(x.price)) action = wayLink({ href: C.href ? C.href('/contact/') : '/contact/', label: 'Get in touch', kind: 'contact', away: false }, 'cb-btn cb-btn-2 cb-pl-pay');
     else action = wayLink({ ...other, label: other.kind === 'contact' ? 'Ask about this' : other.label }, 'cb-btn cb-btn-2 cb-pl-pay');
     const price = x.price || x.per || C.editable ? `<p class="cb-pl-price">${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-pl-amount')}${T(C, b, `items.${i}.per`, x.per, 'span', 'cb-pl-per')}</p>` : '';
     // A monthly plan's own link to the payment service's page where members change their card or

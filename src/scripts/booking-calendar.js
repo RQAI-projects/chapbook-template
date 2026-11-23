@@ -92,17 +92,20 @@ export const calendarReady = (target) => target.dataset.ready === '1'
 export function watchCalendar(target, status, fail, { win = window, wait = CALENDAR_WAIT_MS, ready = 'Choose a time in the calendar.' } = {}) {
   let shown = false;
   const show = () => {
-    if (shown || !fail) return;
+    if (shown) return;
     shown = true;
-    status.replaceChildren(...[...fail.childNodes].map((n) => n.cloneNode(true)));
+    if (fail) status.replaceChildren(...[...fail.childNodes].map((n) => n.cloneNode(true)));
+    else status.textContent = 'The calendar did not load. Use the link above to book on its own page.';
     status.classList.add('is-failed');
   };
-  let tries = 0;
+  // Watched until the calendar appears or the visitor leaves: one cheap look every 2 seconds.
   const check = () => {
+    if (!target.isConnected) return;
     if (calendarReady(target) && target.dataset.failed !== '1') { if (shown) { shown = false; status.classList.remove('is-failed'); status.textContent = ready; } return; }
-    if (tries === 0 || target.dataset.failed === '1') show();
-    if (++tries < 25) win.setTimeout(check, 1000);
+    show();
+    win.setTimeout(check, 2000);
   };
   win.setTimeout(check, wait);
-  return { fail: show };
+  // The callers' own words (loading, choose a time, could not load) never replace these.
+  return { fail: show, showing: () => shown };
 }

@@ -154,14 +154,29 @@ test('an older page with none of this draws exactly as before', () => {
   for (const c of ['cb-paysafe', 'cb-thenpay', 'cb-paid', 'cb-pl-manage', 'cb-sp-zone', 'cb-remind', 'cb-spam', 'cb-role-guide']) assert.ok(!html.includes(c), c);
 });
 
-test('ways to pay: a card with no amount leads to Contact, not Book (newcomer walk, 23 Nov)', () => {
+test('ways to pay: a card whose price asks leads to Contact; other words keep Book or Call (walk and review, 23 Nov)', () => {
   const plans = (price) => ({ type: 'plans', variant: 'cards', data: { items: [{ name: 'Clubs and teams', price }] } });
   const site = { site: withPro({ bookingUrl: 'https://cal.com/sam/massage' }) };
-  for (const price of ['Ask for a quote', 'Free', '']) {
-    const html = draw([plans(price)], site);
-    assert.match(html, /<a class="cb-btn cb-btn-2 cb-pl-pay" href="\/contact\/"[^>]*>Get in touch<\/a>/, price);
+  for (const price of ['Ask', 'Ask for a quote', 'Quote', 'quoted', 'POA', 'On request', 'TBC', '', '  ']) {
+    assert.match(draw([plans(price)], site), /<a class="cb-btn cb-btn-2 cb-pl-pay" href="\/contact\/"[^>]*>Get in touch<\/a>/, price);
   }
-  assert.match(draw([plans('£150')], site), /href="\/appointments\/"[^>]*>Book<\/a>/);
+  for (const price of ['Free', 'Card', 'Card, when you book', 'Insured', '£150', 'From £50', 'Basket', 'Taskforce']) {
+    assert.match(draw([plans(price)], site), /href="\/appointments\/"[^>]*>Book<\/a>/, price);
+    assert.match(draw([plans(price)]), /href="tel:01632960123"[^>]*>Call 01632 960 123<\/a>/, `${price}, phone only`);
+  }
+});
+test('Pay when you book is said once, even on pages saved from the earlier samples (review, 23 Nov)', () => {
+  const BOOKS = { site: withPro({ bookingUrl: 'https://cal.com/sam/massage' }) };
+  for (const note of ['You pay when you book. Move or cancel up to 24 hours before at no cost.', 'You pay for a power hour when you book. Move it up to 48 hours before at no cost.']) {
+    const html = draw([{ type: 'bookstrip', variant: 'strip', data: { heading: 'Book', note, items: [{ name: 'A', price: '£35', paid: true }, { name: 'B', price: '£55', paid: true }] } }], BOOKS);
+    assert.equal((html.match(/when you book/gi) || []).length - (html.match(/Pay when you book<\/span>/g) || []).length, 1, note);
+    assert.ok(!html.includes('cb-bs-paid'));
+  }
+});
+test('a form note: only "through this form" and "in this form" change with no form (review, 23 Nov)', () => {
+  const note = (n) => draw([{ type: 'form', variant: 'split', data: { heading: 'Send', note: n } }], { site: withPro({ email: 'sam@example.com' }) });
+  assert.ok(note('Using this form is fine.').includes('Using this form is fine.'));
+  assert.ok(note('Please send nothing private in this form.').includes('in your email.'));
 });
 
 test('a Full date offers the waiting list by email with its name, or a call (newcomer walk, 23 Nov)', () => {

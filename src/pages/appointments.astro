@@ -12,7 +12,9 @@ const p=professionalDetails((site as any).professional);
 const homeLook=(blockPage('home') as any)?.look||null;
 const lookCss=homeLook&&(homeLook.colours||homeLook.font||homeLook.bodyFont)?pageCss({look:homeLook,blocks:[]},baseColours()):'';
 // Items ticked "Pay when you book" (on the booking strip or dated places): one line says so.
-const paysHere=!!p.bookingUrl&&blockPages.some((pg:any)=>pg.blocks.some((b:any)=>(b.type==='bookstrip'||b.type==='spaces')&&(b.data?.items||[]).some((x:any)=>x?.paid)));
+// Only an item that books through this page (no booking link of its own) counts.
+const ownLink=(x:any)=>{const h=typeof x?.link?.href==='string'?x.link.href.trim():'';return !!h&&h!=='@booking';};
+const paysHere=!!p.bookingUrl&&blockPages.some((pg:any)=>pg.blocks.some((b:any)=>(b.type==='bookstrip'||b.type==='spaces')&&(b.data?.items||[]).some((x:any)=>x?.paid===true&&!ownLink(x))));
 const mail=/^[^\s@<>"'?&#%]+@[^\s@<>"'?&#%]+\.[^\s@<>"'?&#%]+$/.test(p.email||'')?p.email:'';
 const href=contactHref(p),calLink=calBookingLink(p.bookingUrl);
 const vocab=vocabFor(site.defaultTheme);
@@ -26,12 +28,12 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
  <p class="pro-kicker">{site.name}</p><h1>{vocab.bookingTitle}</h1>
  <div class="appointment-layout"><section><h2>{p.bookingUrl?'Choose a time':'Get in touch'}</h2>
  <p>{calLink?'Open the calendar below to see available times and book.':p.bookingUrl?'See available times and book with our booking service.':'Get in touch to ask about availability.'}</p>
- {calLink&&<><button class="pro-button booking-load" type="button" data-booking-link={calLink} aria-controls="booking-calendar">Show available times</button><p class="appointment-note">Opening the calendar connects to Cal.com. Your booking details go directly to the booking service.</p></>}
+ {calLink&&<><button class="pro-button booking-load" type="button" data-booking-link={calLink} aria-controls="booking-calendar">Show available times</button><p class="appointment-note">Opening the calendar connects to Cal.com. Your booking details go directly to the booking service.</p><p class="booking-status" role="status" aria-live="polite"></p><p class="booking-fail" hidden>The calendar did not load. <a href={href}>Open booking in a separate page</a>{p.phone?<>, or call <a href={'tel:'+p.phone.replace(/[^+\d]/g,'')}>{p.phone}</a></>:mail?<>, or email <a href={'mailto:'+mail}>{mail}</a></>:null}.</p></>}
  {href?<p><a class={calLink?'pro-link':'pro-button'} href={href}>{calLink?'Open booking in a separate page':p.bookingUrl?bookWords:'Contact us'} ↗</a></p>:<p class="pro-empty">Online booking is not available yet.</p>}
  {paysHere&&<p class="appointment-pay">Payment is taken as you book.</p>}
  {p.bookingUrl&&<p class="appointment-note">Availability, confirmation and any payment are managed by the booking service.</p>}
  </section><aside>{p.location&&<><h2>Where</h2><p>{p.location}</p></>}{p.hours&&<><h2>When</h2><p class="pro-hours">{p.hours}</p></>}{p.email&&<p><a href={'mailto:'+encodeURIComponent(p.email)}>{p.email}</a></p>}{p.phone&&<p><a href={'tel:'+p.phone.replace(/[^+\d]/g,'')}>{p.phone}</a></p>}</aside></div>
- {calLink&&<><p class="booking-status" role="status" aria-live="polite"></p><p class="booking-fail" hidden>The calendar did not load. <a href={href}>Open booking in a separate page</a>{p.phone?<>, or call <a href={'tel:'+p.phone.replace(/[^+\d]/g,'')}>{p.phone}</a></>:mail?<>, or email <a href={'mailto:'+mail}>{mail}</a></>:null}.</p><div id="booking-calendar" class="booking-embed" hidden></div></>}
+ {calLink&&<div id="booking-calendar" class="booking-embed" hidden></div>}
  {p.services.length>0&&<section class="appointment-services"><h2>What we offer</h2><ServiceMenu services={p.services}/></section>}
 </div>
 </Base>
@@ -50,8 +52,8 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
    try{
     target.hidden=false;
     await showCalendar(target,button.dataset.bookingLink||'',target.parentElement||document.body);if(!target.isConnected)return;
-    status.textContent='Choose a time in the calendar. If it does not load, use the booking link above.';button.hidden=true;
-   }catch{status.textContent='The calendar could not load. Please use the booking link above.';button.disabled=false;watch.fail();}
+    if(!watch.showing())status.textContent='Choose a time in the calendar. If it does not load, use the booking link above.';button.hidden=true;
+   }catch{button.disabled=false;watch.fail();}
   });
  }
  setup();document.addEventListener('astro:page-load',setup);
