@@ -1510,27 +1510,40 @@ export function dateParts(iso) {
 export const CALENDAR_DIR = '/add-to-calendar/';
 // "6pm", "6.30pm", "18:30", "9am to 10am", "6 to 7.30pm", "noon": the start, and the end when
 // given, in minutes after midnight. Null when no clock time can be read safely.
-// - A clock time has am or pm, or minutes ("18:30", "6.30").
-// - A bare number counts only when "to", "till", "until" or a dash joins it to a clock time: as
-//   the start ("6 to 7.30pm") or the end ("10am to 12"). Any other number ("2 sessions, 6pm",
-//   "Week 3, 6pm", "1 hour from 6pm") is not a time.
+// - A clock time has am or pm ("6pm", "6.30pm"), or is plainly on the 24-hour clock: minutes with
+//   an hour of 13 to 23 ("18:30") or a leading zero ("06:30"). "6.30" or "6:30" alone could be
+//   morning or evening, so it is not read (no link rather than a wrong one).
+// - A number with no am or pm counts as the start when "to", "till", "until" or a dash joins it to
+//   a time with am or pm ("6 to 7.30pm", "6.30 to 8pm"), and as the end when joined after a clock
+//   time ("10am to 12", "6pm-7.30"). Any other number ("2 sessions, 6pm", "Week 3, 6pm",
+//   "1 hour from 6pm", "Arrive 5.45, start 6pm") is not a time.
+// - Before a dash, a bare number that follows a word ("Week 3 - 6pm", "Session 1 - 7pm") belongs
+//   to the word, so it is not a start, unless the word is a day ("Thursday 4 - 6pm"), "from",
+//   "between", or one that says when ("Evenings 6-8pm", "Daily 9-10am").
+// - "Midnight" is 12am and "noon" or "midday" 12pm ("10pm to midnight" is two hours).
 // - Two times make a span only when joined in the same way. An end earlier than the start is the
 //   next day ("11pm to 1am" is two hours), so `end` can be more than 24 hours after midnight.
 // - A span longer than 16 hours is not read as one (no link rather than a wrong one).
 const JOIN = /^\s*(?:to|till|until|-|\u2013|\u2014)\s*$/;
+const DASH = /^\s*(?:-|\u2013|\u2014)\s*$/;
+const WHEN_WORD = /^(?:(?:mon|tues?|wed(?:nes)?|thu(?:rs?)?|fri|sat(?:ur)?|sun)(?:day)?s?|from|between|daily|nightly|open|weekdays?|weekends?|mornings?|afternoons?|evenings?|nights?)$/;
 export function clockSpan(text) {
-  const s = String(text || '').toLowerCase().replace(/\b(?:noon|midday)\b/g, '12pm');
+  const s = String(text || '').toLowerCase().replace(/\bmidnight\b/g, '12am').replace(/\b(?:noon|midday)\b/g, '12pm');
   const toks = [];
   for (const m of s.matchAll(/(?<![\d.:£$€])(\d{1,2})(?:[.:](\d{2}))?(?![\d.:])(?:\s*(am|pm)(?![a-z]))?/g)) {
     const h = +m[1], mi = m[2] ? +m[2] : 0, ap = m[3] || '';
     if (mi > 59 || h > 23 || (ap && (h < 1 || h > 12))) { toks.push(null); continue; }
-    toks.push({ h, mi, ap, clock: !!(ap || m[2]), from: m.index, to: m.index + m[0].length });
+    const clock = !!ap || (!!m[2] && (h >= 13 || /^0\d$/.test(m[1])));
+    toks.push({ h, mi, ap, clock, from: m.index, to: m.index + m[0].length, word: (s.slice(0, m.index).match(/([a-z]+)\s*$/) || [])[1] || '', bare: !m[2] && !ap });
   }
   const joined = (a, b) => a && b && JOIN.test(s.slice(a.to, b.from));
-  // The first clock time, or a bare number joined to one with am or pm after it.
-  let i = toks.findIndex((t, k) => t && (t.clock || (joined(t, toks[k + 1]) && toks[k + 1].ap)));
+  // A number with no am or pm, joined to a time with am or pm after it; a bare one before a dash
+  // only when no other word claims it.
+  const leads = (t, b) => joined(t, b) && b.ap && !(t.bare && t.word && !WHEN_WORD.test(t.word) && DASH.test(s.slice(t.to, b.from)));
+  // The first clock time, or a number that leads to one.
+  let i = toks.findIndex((t, k) => t && (t.clock || leads(t, toks[k + 1])));
   if (i < 0) return null;
-  const a = toks[i], b = joined(a, toks[i + 1]) && (toks[i + 1].clock || a.clock) ? toks[i + 1] : null;
+  const a = toks[i], b = joined(a, toks[i + 1]) ? toks[i + 1] : null;
   const at = (t) => ((t.h % 12) + (t.ap === 'pm' ? 12 : 0)) * 60 + t.mi;
   const both = (t) => [(t.h % 12) * 60 + t.mi, (t.h % 12) * 60 + t.mi + 720];
   let start, end = null;

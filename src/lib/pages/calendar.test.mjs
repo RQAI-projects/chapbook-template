@@ -44,6 +44,48 @@ test('a bare number is a time only when joined to a clock time, so a count or a 
   assert.equal(clockSpan('£6.30'), null);
 });
 
+// Review 2, findings 1 and 2 and the minor midnight (23 Nov): no link when unsure.
+test('a number after a word before a dash belongs to the word, so the clock time is the start', () => {
+  for (const [t, start, end] of [['Week 3 - 6pm', 1080, null], ['Week 3 \u2013 6pm', 1080, null], ['Session 1 - 7pm', 1140, null], ['Class 5 - 7pm', 1140, null], ['Class 5 \u2014 7pm', 1140, null],
+    ['Level 2 - 10am', 600, null], ['Studio 2 - 9am', 540, null], ['Part 2 \u2013 6.30pm', 1110, null], ['Room 4 - 6pm', 1080, null], ['Ages 5 - 7pm', 1140, null]]) {
+    assert.deepEqual(clockSpan(t), { start, end }, t);
+  }
+  // A day, from, between, or a word that says when: the number is the start, as before.
+  for (const [t, start, end] of [['4 - 6pm', 960, 1080], ['Thursday 4 - 6pm', 960, 1080], ['Thu 4 - 6pm', 960, 1080], ['Tuesdays 6-7pm', 1080, 1140], ['Wednesdays 6 - 7pm', 1080, 1140],
+    ['from 9 - 11am', 540, 660], ['between 2 - 4pm', 840, 960], ['Evenings 6-8pm', 1080, 1200], ['Daily 9-10am', 540, 600], ['9-10am', 540, 600]]) {
+    assert.deepEqual(clockSpan(t), { start, end }, t);
+  }
+  const ev = spaceEvent({ ...ITEM, time: 'Week 3 - 6pm' }, { tz: 'Europe/London' });
+  assert.equal(ev.start.toISOString(), '2026-03-29T17:00:00.000Z');
+  assert.equal(ev.end - ev.start, 60 * 60e3);
+});
+
+test('a time with minutes and no am or pm counts only on the 24-hour clock or joined to am or pm', () => {
+  for (const none of ['6.30', '6:30', '7.15', '9.30', '10:00', '6.30-8', '7.30 to 9', '8.30-10', '11.30-12.30']) {
+    assert.equal(clockSpan(none), null, none);
+    assert.equal(spaceEvent({ ...ITEM, time: none }, { tz: 'Europe/London' }), null, none);
+  }
+  assert.deepEqual(clockSpan('Arrive 5.45, start 6pm'), { start: 1080, end: null });
+  assert.deepEqual(clockSpan('06:30'), { start: 390, end: null });
+  assert.deepEqual(clockSpan('18:30'), { start: 1110, end: null });
+  assert.deepEqual(clockSpan('19.00'), { start: 1140, end: null });
+  assert.deepEqual(clockSpan('09:00 to 17:00'), { start: 540, end: 1020 });
+  assert.deepEqual(clockSpan('6.30 to 8pm'), { start: 1110, end: 1200 });
+  assert.deepEqual(clockSpan('7.30 till 9pm'), { start: 1170, end: 1260 });
+  assert.deepEqual(clockSpan('11.30am-12.30'), { start: 690, end: 750 });
+  assert.deepEqual(clockSpan('6pm-7.30'), { start: 1080, end: 1170 });
+});
+
+test('midnight is 12am and noon 12pm', () => {
+  assert.deepEqual(clockSpan('10pm to midnight'), { start: 1320, end: 1440 });
+  assert.deepEqual(clockSpan('11pm till midnight'), { start: 1380, end: 1440 });
+  assert.deepEqual(clockSpan('midnight'), { start: 0, end: null });
+  assert.deepEqual(clockSpan('10am till noon'), { start: 600, end: 720 });
+  assert.deepEqual(clockSpan('noon to 2'), { start: 720, end: 840 });
+  const late = spaceEvent({ ...ITEM, time: '10pm to midnight' }, { tz: 'Europe/London' });
+  assert.equal(late.end - late.start, 120 * 60e3);
+});
+
 test('an end earlier than the start is the next day', () => {
   assert.deepEqual(clockSpan('11pm to 1am'), { start: 1380, end: 1500 });
   assert.deepEqual(clockSpan('22:00-01:00'), { start: 1320, end: 1500 });
