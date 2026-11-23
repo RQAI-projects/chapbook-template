@@ -292,9 +292,12 @@ const remindLine = (C) => (C.biz?.reminders ? `<p class="cb-small cb-remind">${R
 // Guides shown only in the editor, beside a section that plays a known part (its role).
 // (Checked on the providers' own help pages, 22 Nov 2026: Stripe's "After the payment" redirect,
 // PayPal payment links' Auto-return, Square's "Redirect to a website after checkout".)
-const thanksAddress = (C) => { const u = cleanHref(C.site?.url || ''); return /^https:/.test(u) ? `${u.replace(/\/+$/, '')}/thank-you/` : 'your website’s address with /thank-you/ on the end'; };
+// The website's own address, or '' while it is not a real https one (the design's placeholder
+// your-domain.com never counts, as in the app's connection.js).
+export const realSiteUrl = (url) => { const u = cleanHref(url || ''); if (!/^https:/.test(u)) return ''; try { return new URL(u).hostname.toLowerCase() === 'your-domain.com' ? '' : u; } catch { return ''; } };
+const thanksAddress = (C) => { const u = realSiteUrl(C.site?.url); return u ? `${u.replace(/\/+$/, '')}/thank-you/` : 'your website’s address with /thank-you/ on the end'; };
 const ROLE_GUIDES = {
-  cancel: () => 'A starting point, not legal advice. Check the UK rules on cancelling services booked online (Business Companion’s guide to distance sales, from Trading Standards), then change these words to your own policy.',
+  cancel: () => 'A starting point, not legal advice. Check the UK rules on cancelling services booked online, by phone or by email (Business Companion’s guide to distance sales, from Trading Standards), then change these words to your own policy. These rights are for consumers, people booking for themselves. When a customer wants a session to start within the 14 days, ask them to confirm that. If customers are not told about the right to cancel, it can run up to a year longer.',
   thanks: (C) => `This page is not in your menu. Send people here after they pay: in Stripe, edit the payment link, open After the payment and choose to send customers to your website, then paste ${thanksAddress(C)}. In PayPal, on a payment link’s Confirmation tab, turn on Auto-return and paste the same address. A Square checkout link can do the same (Redirect to a website after checkout).`,
 };
 // A repeating list. Each item carries its own marker so the editor can move or remove it.

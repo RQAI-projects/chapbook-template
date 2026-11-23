@@ -93,6 +93,14 @@ test('guides for the cancelling words and the thank-you page show in the editor 
   const edit = draw([cancel, thanks], { editable: true });
   assert.match(edit, /not legal advice/);
   assert.match(edit, /https:\/\/test\.example\/thank-you\//);
+  // The cancelling guide says who the rights are for, to confirm an early start, and what happens
+  // when customers are not told.
+  assert.match(edit, /These rights are for consumers/);
+  assert.match(edit, /ask them to confirm that/);
+  assert.match(edit, /it can run up to a year longer/);
+  // The design's placeholder address is never offered for pasting into a pay service.
+  const placeholder = draw([thanks], { editable: true, site: { ...SITE, url: 'https://your-domain.com' } });
+  assert.ok(!placeholder.includes('your-domain.com') && placeholder.includes('your website’s address with /thank-you/ on the end'));
   const live = draw([cancel, thanks]);
   assert.ok(!live.includes('cb-role-guide') && !live.includes('legal advice'));
   // A section with an ordinary role, or one named after something built in, has no guide.
