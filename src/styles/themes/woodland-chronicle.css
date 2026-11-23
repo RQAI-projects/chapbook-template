@@ -43,4 +43,4 @@ html[data-blog-theme="woodland-chronicle"] .article-body a { color:var(--accent)
 html[data-blog-theme="woodland-chronicle"] .article-body a:hover { text-shadow:none; border-bottom-color:var(--accent); }
 html[data-blog-theme="woodland-chronicle"] .btn-primary { background:var(--accent); color:var(--accent-ink); border-radius:999px; box-shadow:none; }
 html[data-blog-theme="woodland-chronicle"] .btn-ghost { border:1px solid var(--accent); color:var(--accent); border-radius:999px; }
-html[data-blog-theme="woodland-chronicle"] .site-footer { border-top:1px solid var(--line-strong); background:rgba(238,240,223,.45); }
+html[data-blog-theme="woodland-chronicle"] .site-footer { border-top:1px solid var(--line-strong); background:var(--footer-tint, rgba(238,240,223,.45)); }

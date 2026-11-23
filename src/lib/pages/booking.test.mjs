@@ -204,3 +204,13 @@ test('with no form, the form section’s note speaks of email, not of a form (ne
   const withForm = draw([form], { site: withPro({ email: 'sam@example.com' }), formEndpoint: 'https://formspree.io/f/abcd' });
   assert.ok(withForm.includes('through this form'));
 });
+
+test('a dark page gives a tinted footer (Woodland) a tint of its own colours, with readable words; light pages as before (review, 23 Nov)', async () => {
+  const { pageCss, pageColours, contrast } = await import('./render.mjs');
+  const dark = { colours: { bg: '#12251f', ink: '#f3efe6', accent: '#f4a77e' } };
+  const tint = pageCss({ look: dark, blocks: [] }).match(/--footer-tint:(#[0-9a-f]{6})/)?.[1];
+  assert.ok(tint && contrast(pageColours(dark).dim, tint) >= 4.5, tint);
+  assert.ok(!pageCss({ look: { colours: { bg: '#eef1e8', ink: '#1e2a22', accent: '#3d5a40' } }, blocks: [] }).includes('--footer-tint'));
+  const { readFileSync } = await import('node:fs');
+  assert.match(readFileSync(new URL('../../styles/themes/woodland-chronicle.css', import.meta.url), 'utf8'), /\.site-footer \{[^}]*background:var\(--footer-tint, rgba\(238,240,223,\.45\)\)/);
+});

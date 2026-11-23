@@ -94,6 +94,10 @@ export function pageCss(page, base = {}) {
       `--ink:${k.ink}`, `--masthead-ink:${k.ink}`, `--ink-dim:${k.dim}`, `--ink-faint:${k.dim}`, `--line:color-mix(in srgb,${k.ink} 14%,transparent)`, `--line-strong:color-mix(in srgb,${k.ink} 30%,transparent)`,
       `--accent:${k.accent}`, `--teal:${k.accent}`, `--cyan:${k.accent}`, `--violet:${k.accent}`, `--accent-text:${k.accentText}`, `--pro-button-ink:${k.onAccent}`, `--badge-ink:${k.ink}`, `--selection-bg:color-mix(in srgb,${k.accent} 30%,transparent)`,
       `color-scheme:${k.dark ? 'dark' : 'light'}`);
+    // A theme that tints its footer (Woodland's pale tint) would put pale words on a pale band
+    // over a dark page: on a dark page the tint is mixed from the page's own colours, and its
+    // words keep 4.5:1 (review, 23 Nov). Light pages keep the theme's own tint.
+    if (k.dark) { const tint = mix(k.bg, k.ink, 0.06); v.push(`--footer-tint:${contrast(k.dim, tint) >= 4.5 ? tint : k.bg}`); }
   }
   // A colour-block opening (the blob) softens its smaller words with a little of the accent. Where
   // that would read under 4.5:1 on the accent (Stride Physiotherapy's own green, so far the only
