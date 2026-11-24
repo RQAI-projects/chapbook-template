@@ -96,7 +96,7 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
      }else if(kind==='cal'&&src)await showCalendar(target,src,target.parentElement||document.body);
      else throw new Error('unknown');
      if(!target.isConnected)return;
-     if(!watch.showing())status.textContent='Choose a time in the calendar. If it does not load, use the booking link above.';button.hidden=true;
+     if(!watch.showing())status.textContent='Choose a time in the calendar. If it does not load, use Open booking in a separate page.';button.hidden=true;
     }catch{button.disabled=false;watch.fail();}
    });
   }
