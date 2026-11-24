@@ -97,3 +97,70 @@ test('ordinary templates: every place hours show gives one row per line', () => 
     assert.doesNotMatch(a, /\{(?:professional|p)\.hours\}/, f);
   }
 });
+
+// ---- round B review (24 Nov 2026) ----------------------------------------------------------------
+import { hoursGroups, hoursOn, openState } from '../../scripts/page-actions.js';
+import { calEmbedParts } from '../../scripts/booking-calendar.js';
+
+test('S1: an owner link keeps its query and hash everywhere; the calendar is given the query', () => {
+  const D60 = 'https://cal.com/sam/sports-massage?duration=60', D90 = 'https://cal.com/sam/sports-massage?duration=90';
+  const t60 = choiceTarget(D60), t90 = choiceTarget(D90);
+  assert.equal(t60.href, D60); assert.equal(t90.href, D90);
+  assert.equal(t60.src, 'sam/sports-massage?duration=60'); assert.equal(t90.src, 'sam/sports-massage?duration=90');
+  assert.equal(choiceTarget('https://cal.com/sam?month=2026-12#top').href, 'https://cal.com/sam?month=2026-12#top');
+  assert.deepEqual(calEmbedParts(t60.src), { path: 'sam/sports-massage', extra: { duration: '60' } });
+  assert.deepEqual(calEmbedParts('sam/x'), { path: 'sam/x', extra: {} });
+  const p = page([{ id: 's', type: 'bookstrip', variant: 'cards', data: { heading: 'Book', items: [
+    { id: 'i60', name: 'Sports massage', duration: '60 min', link: { label: 'Book', href: D60 } },
+    { id: 'i90', name: 'Sports massage', duration: '90 min', link: { label: 'Book', href: D90 } }] } }]);
+  const list = bookingChoices(p);
+  assert.deepEqual(list.map((c) => [c.target.src, c.target.href]), [['sam/sports-massage?duration=60', D60], ['sam/sports-massage?duration=90', D90]]);
+  // The Appointments page uses these (its sections' calendar and "Open booking in a separate page").
+  const appt = readFileSync(new URL('../../pages/appointments.astro', import.meta.url), 'utf8');
+  assert.match(appt, /data-booking-link=\{c\.target\.src\}/); assert.match(appt, /href=\{c\.target\.href\}/);
+  assert.match(appt, /mainT\.embed/);
+  // The Online booking section's calendar too.
+  const sec = draw(page([{ id: 'bk', type: 'booking', data: { heading: 'Book', useSite: false, url: D60 } }]));
+  assert.match(sec, /data-booking-src="sam\/sports-massage\?duration=60"/);
+  assert.match(sec, /href="https:\/\/cal\.com\/sam\/sports-massage\?duration=60"/);
+});
+
+test('S6: a line holding several groups gives the right days, for search engines and Open now', () => {
+  const sp = (h) => openingHours(h).map((x) => [x.dayOfWeek.join(' '), x.opens, x.closes]);
+  assert.deepEqual(sp('Sat 9am to 1pm, Sun closed'), [['Saturday', '09:00', '13:00']]);
+  assert.deepEqual(hoursOn(['Sat 9am to 1pm, Sun closed'], 0), []);
+  assert.deepEqual(sp('Mon to Fri 7am to 8pm, Sat 8am to 1pm'), [['Monday Tuesday Wednesday Thursday Friday', '07:00', '20:00'], ['Saturday', '08:00', '13:00']]);
+  assert.deepEqual(sp('Mon to Fri 9-5 ;Sat  10am-2pm ,  Sun: closed'), [['Monday Tuesday Wednesday Thursday Friday', '09:00', '17:00'], ['Saturday', '10:00', '14:00']]);
+  // Commas that are not between groups keep working.
+  assert.deepEqual(sp('Monday to Friday, 9am to 6pm'), [['Monday Tuesday Wednesday Thursday Friday', '09:00', '18:00']]);
+  assert.deepEqual(sp('Tue, Thu and Sat 9am to 1pm'), [['Tuesday Thursday Saturday', '09:00', '13:00']]);
+  assert.deepEqual(sp('Tue and Thu 9.30am to 1pm, 2pm to 5.30pm'), [['Tuesday Thursday', '09:30', '13:00'], ['Tuesday Thursday', '14:00', '17:30']]);
+  assert.deepEqual(sp('9am to 5pm, Mon to Fri'), [['Monday Tuesday Wednesday Thursday Friday', '09:00', '17:00']]);
+  assert.equal(hoursGroups('Sat 9am to 1pm, Sun closed').length, 2);
+  // Open now on a Sunday (29 Nov 2026) is not "Open now".
+  const sun = new Date('2026-11-29T10:00:00Z');
+  assert.equal(openState(['Mon to Fri 9am to 5pm', 'Sat 9am to 1pm, Sun closed'], sun, 'Europe/London').open, false);
+  const sat = new Date('2026-11-28T10:00:00Z');
+  assert.equal(openState(['Mon to Fri 7am to 8pm, Sat 8am to 1pm'], sat, 'Europe/London').text, 'Open now, closes at 1pm');
+  // The rows on the website stay as the owner typed them.
+  assert.deepEqual(hoursLines('Sat 9am to 1pm, Sun closed\n\n  Mon to Fri  9am to 5pm '), ['Sat 9am to 1pm, Sun closed', 'Mon to Fri 9am to 5pm']);
+});
+
+test('minor 2: block pages draw hours without blank rows', () => {
+  const html = renderPage(page([{ id: 'c', type: 'contact', variant: 'card', data: { heading: 'Find us', business: true } }]), { site: { ...SITE, professional: { ...SITE.professional, hours: 'Mon to Fri 9am to 5pm\n\n\nSat 9am to 1pm  ' } }, today: '2026-11-24' });
+  assert.match(html, /Mon to Fri 9am to 5pm<br>Sat 9am to 1pm</);
+  assert.doesNotMatch(html, /<br><br>/);
+});
+
+test('minor 3: a person’s Book, tiles and pinned scenes with their own booking page are listed and keep the choice', () => {
+  const p = page([
+    { id: 'tm', type: 'team', variant: 'grid', data: { heading: 'Team', bookEach: true, items: [{ id: 'h', name: 'Hannah Reed', book: { label: 'Book with Hannah', href: CAL60 } }, { id: 'j', name: 'Jo Bell' }] } },
+    { id: 'tl', type: 'tiles', variant: 'grid', data: { heading: 'Tiles', items: [{ id: 't1', name: 'Gait check', link: { label: 'Book', href: GOOGLE } }, { id: 't2', name: 'About us', link: { label: 'Read', href: '/about/' } }] } },
+    { id: 'sc', type: 'scenes', variant: 'stack', data: { heading: 'Scenes', items: [{ id: 'k', name: 'First visit', link: { label: 'Book', href: CAL60 } }] } },
+  ]);
+  const list = bookingChoices(p);
+  assert.deepEqual(list.map((c) => [c.type, c.field, c.name]), [['team', 'book', 'Hannah Reed'], ['tiles', 'link', 'Gait check'], ['scenes', 'link', 'First visit']]);
+  const html = draw(p);
+  for (const c of list) assert.ok(html.includes(`/appointments/#${c.key}`), c.key);
+  assert.ok(html.includes('href="/about/"'));
+});

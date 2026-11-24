@@ -92,7 +92,8 @@ test('no Book, Pay or Call button ever goes nowhere, however few details the web
   assert.equal(bookWith('Hannah Reed'), 'Book with Hannah');
   const team = renderPage(page([{ type: 'team', variant: 'grid', data: EXTRA[8][2] }]), { site: SITE });
   assert.match(team, /href="\/appointments\/"[^>]*>Book with Dr Osei</);
-  assert.match(team, /href="https:\/\/cal\.com\/rick\/hannah"[^>]*>Book with Hannah</);
+  // Her own Cal.com page opens the Appointments page with her named (round B review, minor 3).
+  assert.match(team, /href="\/appointments\/#book-[a-z0-9-]+"[^>]*>Book with Hannah</);
   const bare = renderPage(page([{ type: 'team', variant: 'grid', data: { bookEach: true, items: [{ name: 'Hannah Reed' }] } }]), { site: NOTHING });
   assert.match(bare, /href="\/contact\/"[^>]*>Ask about Hannah</);
 });

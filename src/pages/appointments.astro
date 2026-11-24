@@ -24,7 +24,7 @@ const href=contactHref(p);
 // one event or a person's whole page (Cal.com's embed takes either), or a Google appointment
 // schedule in its own frame, as the Online booking section shows it. Nothing loads until pressed.
 const mainT=p.bookingUrl?bookingTarget(p.bookingUrl):null;
-const main=mainT&&(mainT.kind==='cal'||mainT.kind==='google')?{kind:mainT.kind,src:mainT.kind==='cal'?mainT.calLink:mainT.frame,href:mainT.href,provider:mainT.provider}:null;
+const main=mainT&&(mainT.kind==='cal'||mainT.kind==='google')?{kind:mainT.kind,src:mainT.kind==='cal'?mainT.embed:mainT.frame,href:mainT.href,provider:mainT.provider}:null;
 // A Book on an item with its own Cal.com or Google link comes here with the item after "#": that
 // item is named, with its own calendar. Shown by :target with scripts off; the script marks it after
 // the site's own page changes too.

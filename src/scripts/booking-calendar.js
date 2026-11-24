@@ -66,7 +66,17 @@ export function loadCal(win = window) {
 // Draws the calendar for `calLink` (such as "name/consultation") inside `target`, light or dark
 // to suit the words around it. Each call is a calendar of its own.
 let calendars = 0;
-export async function showCalendar(target, calLink, around, win = window) {
+// A link the owner typed with a query (cal.com/sam/massage?duration=60) keeps it: Cal.com's help
+// ("Auto-forwarding Query Parameters", read 24 Nov 2026) passes a query parameter to the inline
+// embed through its config, so each parameter goes there, beside the page's own settings.
+export function calEmbedParts(link) {
+  const s = String(link || ''), at = s.indexOf('?');
+  const path = at < 0 ? s : s.slice(0, at), extra = {};
+  if (at >= 0) for (const [k, v] of new URLSearchParams(s.slice(at + 1))) if (k && !(k in extra)) extra[k] = v;
+  return { path, extra };
+}
+export async function showCalendar(target, link, around, win = window) {
+  const { path: calLink, extra } = calEmbedParts(link);
   await loadCal(win);
   const Cal = win.Cal;
   if (typeof Cal !== 'function') throw new Error('unavailable');
@@ -77,7 +87,7 @@ export async function showCalendar(target, calLink, around, win = window) {
   // calendar that is there from one that never came (watchCalendar).
   Cal.ns[name]('on', { action: 'linkReady', callback: () => { target.dataset.ready = '1'; } });
   Cal.ns[name]('on', { action: 'linkFailed', callback: () => { target.dataset.failed = '1'; } });
-  Cal.ns[name]('inline', { elementOrSelector: `#${target.id}`, calLink, config: { layout: 'month_view', theme: calendarTheme(around || target, win) } });
+  Cal.ns[name]('inline', { elementOrSelector: `#${target.id}`, calLink, config: { layout: 'month_view', theme: calendarTheme(around || target, win), ...extra } });
 }
 
 // ---- A calendar that does not come ---------------------------------------------------------

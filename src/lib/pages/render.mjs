@@ -4,7 +4,7 @@
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
 import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading, CQC_ID, CQC_RATINGS, registerOf, payLine, usesCqc, payPage } from './schema.mjs';
-import { professionalDetails, telHref, sameText } from '../professional.mjs';
+import { professionalDetails, telHref, sameText, hoursLines } from '../professional.mjs';
 
 export * from './schema.mjs';
 
@@ -140,6 +140,9 @@ export function richText(text, ctx = {}) {
 }
 // Plain text with line breaks kept (opening hours, addresses).
 const plain = (text) => esc(text).replace(/\n/g, '<br>');
+// Opening hours: one typed line to a row, blank lines and spaces left out, as the Astro pages draw
+// them (hoursLines; round B review, minor 2).
+const hoursPlain = (text) => hoursLines(text).map(esc).join('<br>');
 
 // ---- links ---------------------------------------------------------------------------------
 function resolveLink(href, ctx) {
@@ -386,6 +389,7 @@ function factsList(C, b, d, { own = false, cls = 'cb-facts', skip = '' } = {}) {
   const val = (key, html, isPlain) => {
     if (own) {
       if (!f[key] && !C.editable) return '';
+      if (key === 'hours' && !C.editable) return `<p>${hoursPlain(f[key])}</p>`;
       return isPlain ? PL(C, b, key, f[key]) : T(C, b, key, f[key], 'span');
     }
     return html;
@@ -393,7 +397,7 @@ function factsList(C, b, d, { own = false, cls = 'cb-facts', skip = '' } = {}) {
   const tel = f.phone ? `tel:${String(f.phone).replace(/[^+\d]/g, '')}` : '';
   const html = [
     row('Address', 'address', val('address', f.address ? `<p>${plain(f.address)}</p>` : '', true)),
-    row('Opening hours', 'hours', val('hours', f.hours ? `<p class="cb-hours">${plain(f.hours)}</p>` : '', true)),
+    row('Opening hours', 'hours', val('hours', f.hours ? `<p class="cb-hours">${hoursPlain(f.hours)}</p>` : '', true)),
     row('Phone', 'phone', own ? (f.phone && !C.editable ? `<a href="${esc(tel)}">${esc(f.phone)}</a>` : val('phone')) : (tel ? `<a href="${esc(tel)}">${esc(f.phone)}</a>` : '')),
     row('Email', 'email', own ? (f.email && !C.editable ? `<a href="mailto:${esc(f.email)}">${esc(f.email)}</a>` : val('email')) : (f.email ? `<a href="mailto:${esc(f.email)}">${esc(f.email)}</a>` : '')),
   ].join('');
@@ -484,7 +488,7 @@ function heroActions(C, b, d, { head, intro, btns, media }) {
   const items = list.map(item).join('');
   const acts = items || C.editable ? `<ul class="cb-act-list"${ED(C, 'data-cb-list', `${b.id}:actions`)}>${items}</ul>` : '';
   const hours = C.biz.hours || '';
-  const today = hours ? `<p class="cb-act-hours">${plain(hours)}</p>` : (C.editable ? '<p class="cb-note" data-cb-hint>Your opening hours from Details and booking appear here.</p>' : '');
+  const today = hours ? `<p class="cb-act-hours">${hoursPlain(hours)}</p>` : (C.editable ? '<p class="cb-note" data-cb-hint>Your opening hours from Details and booking appear here.</p>' : '');
   const now = d.openNow ? openLine(C, hours, 'cb-opennow cb-act-now') : '';
   const card = now || today || d.closed || C.editable ? `<div class="cb-act-card">${now}${today}${closedNote(C, b, d)}</div>` : '';
   const fig = media ? `<figure class="cb-hero-pic cb-act-pic">${d.video ? heroVideo(C, b, d, false) : P(C, b, 'picture', d.picture, '', { eager: true, credits: false })}</figure>` : '';
@@ -1006,7 +1010,7 @@ R_.team = (C, b) => {
     if (!d.bookEach) return '';
     const label = p.book?.label || bookWith(p.name);
     if (C.editable) return `<p class="cb-person-book">${BTN(C, b, `items.${i}.book`, { label, href: p.book?.href || '@booking' }, 'cb-btn cb-btn-small')}</p>`;
-    const way = bookWays(C, { own: p.book, label })[0];
+    const way = bookWays(C, { own: choiceLink(C, b, p, p.book), label })[0];
     return `<p class="cb-person-book">${wayLink(way.kind === 'book' ? way : { ...way, label: way.kind === 'contact' ? `Ask about ${(String(p.name || '').trim().split(/\s+/)[0]) || 'an appointment'}` : way.label }, 'cb-btn cb-btn-small')}</p>`;
   };
   const one = (p, i, w) => w(`<figure class="cb-portrait">${face(p, i)}</figure><div class="cb-person">${T(C, b, `items.${i}.name`, p.name, 'h3', 'cb-person-name')}${T(C, b, `items.${i}.role`, p.role, 'p', 'cb-person-role')}${T(C, b, `items.${i}.quals`, p.quals, 'p', 'cb-person-quals')}${RT(C, b, `items.${i}.bio`, p.bio, 'cb-rich cb-bio')}${p.link ? BTN(C, b, `items.${i}.link`, p.link, 'cb-link') : ''}${book(p, i)}</div>`);
@@ -1276,7 +1280,7 @@ R_.booking = (C, b) => {
   const where = t.provider;
   const panel = C.editable
     ? `<div class="cb-booking-hold" data-cb-hint><p>Your ${esc(where)} calendar appears here on your website when a visitor taps “Show available times”.</p></div>`
-    : `<div class="cb-booking-cal" data-booking-kind="${esc(t.kind)}" data-booking-src="${esc(t.kind === 'cal' ? t.calLink : t.frame)}"><button type="button" class="cb-btn cb-booking-load">Show available times</button><p class="cb-small">This loads ${esc(where)}, which handles your booking. <a href="${esc(t.href)}" rel="noopener">Open it in a new page instead</a>.</p><p class="cb-booking-status" role="status" aria-live="polite"></p>${calendarFail(C, t.href)}<div class="cb-booking-frame" hidden></div></div>`;
+    : `<div class="cb-booking-cal" data-booking-kind="${esc(t.kind)}" data-booking-src="${esc(t.kind === 'cal' ? t.embed : t.frame)}"><button type="button" class="cb-btn cb-booking-load">Show available times</button><p class="cb-small">This loads ${esc(where)}, which handles your booking. <a href="${esc(t.href)}" rel="noopener">Open it in a new page instead</a>.</p><p class="cb-booking-status" role="status" aria-live="polite"></p>${calendarFail(C, t.href)}<div class="cb-booking-frame" hidden></div></div>`;
   return `${head}${panel}${note}${remindLine(C)}`;
 };
 
@@ -1458,7 +1462,7 @@ export function choiceTarget(href) {
   const h = typeof href === 'string' ? href.trim() : '';
   if (!/^https:\/\//i.test(h)) return null;
   const t = bookingTarget(h);
-  return t && (t.kind === 'cal' || t.kind === 'google') ? { kind: t.kind, src: t.kind === 'cal' ? t.calLink : t.frame, href: t.href, provider: t.provider } : null;
+  return t && (t.kind === 'cal' || t.kind === 'google') ? { kind: t.kind, src: t.kind === 'cal' ? t.embed : t.frame, href: t.href, provider: t.provider } : null;
 }
 // The link a Book button uses on the website for item `x` of block `b`.
 function choiceLink(C, b, x, link = x?.link) {
@@ -1466,15 +1470,32 @@ function choiceLink(C, b, x, link = x?.link) {
   return { ...link, href: `/appointments/#${choiceKey(C.page?.slug, b.id, x.id)}` };
 }
 const BOOKABLE = ['bookstrip', 'spaces', 'services'];
+// Sections whose items carry a link that may be a booking page of their own (round B review,
+// minor 3): a person's Book (team, `book`), tiles and pinned scenes (`link`). They are listed only
+// when that link is a Cal.com or Google booking page, which then opens the Appointments page.
+const OWN_BOOKING = { team: 'book', tiles: 'link', scenes: 'link' };
 // The things on a page that a visitor books, each with the link its Book uses (its own, or '' for
-// the website's): booking strip choices, dated places and treatment cards with a Book button.
+// the website's): booking strip choices, dated places and treatment cards with a Book button, and
+// the sections above when their own link is a booking page. `field` is the item's link field.
 // The app's "What people can book" table and the Appointments page both read this list.
-// → [{ key, slug, blockId, itemId, index, type, name, link, target }]
+// → [{ key, slug, blockId, itemId, index, type, field, name, link, target }]
 export function bookingChoices(rawPage, { normalised = false } = {}) {
   const page = normalised ? rawPage : normalisePage(rawPage || {}, { allowData: true });
   const out = [], slug = page.slug || 'home';
+  const named = (words) => words.map((w) => String(w || '').replace(/\*+/g, '').trim()).filter(Boolean).join(', ');
   const walk = (blocks) => { for (const b of blocks || []) {
     if (b.type === 'columns') { walk(b.data?.children); continue; }
+    const field = OWN_BOOKING[b.type];
+    if (field) {
+      if (b.type === 'team' && !b.data?.bookEach) continue;
+      (b.data?.items || []).forEach((x, index) => {
+        const own = typeof x?.[field]?.href === 'string' ? x[field].href : '';
+        const target = choiceTarget(own);
+        if (!x || !target) return;
+        out.push({ key: choiceKey(slug, b.id, x.id), slug, blockId: b.id, itemId: x.id, index, type: b.type, field, name: named([x.name, x.duration]) || 'One to book', link: own, target });
+      });
+      continue;
+    }
     if (!BOOKABLE.includes(b.type)) continue;
     (b.data?.items || []).forEach((x, index) => {
       if (!x) return;
@@ -1483,7 +1504,7 @@ export function bookingChoices(rawPage, { normalised = false } = {}) {
       if (b.type === 'services' && !(x.name && x.link?.href)) return;
       const own = typeof x.link?.href === 'string' && x.link.href !== '@booking' ? x.link.href : '';
       const words = b.type === 'spaces' ? [x.name, longDate(x.date)] : [x.name, x.duration];
-      out.push({ key: choiceKey(slug, b.id, x.id), slug, blockId: b.id, itemId: x.id, index, type: b.type, name: words.map((w) => String(w || '').replace(/\*+/g, '').trim()).filter(Boolean).join(', '), link: own, target: choiceTarget(own) });
+      out.push({ key: choiceKey(slug, b.id, x.id), slug, blockId: b.id, itemId: x.id, index, type: b.type, field: 'link', name: named(words), link: own, target: choiceTarget(own) });
     });
   } };
   walk(page.blocks);
@@ -1921,7 +1942,7 @@ const taskSvg = (kind) => `<span class="cb-task cb-task-${kind}" aria-hidden="tr
 R_.tiles = (C, b) => {
   const d = b.data, items = d.items || [], open = b.variant === 'open';
   const meta = (x, i) => (x.duration || x.price || (C.editable && open) ? `<p class="cb-tl-meta">${T(C, b, `items.${i}.duration`, x.duration, 'span', 'cb-tl-time')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-tl-price')}</p>` : '');
-  const more = (x, i) => `${meta(x, i)}${T(C, b, `items.${i}.text`, x.text, 'p', 'cb-tl-text')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}`;
+  const more = (x, i) => `${meta(x, i)}${T(C, b, `items.${i}.text`, x.text, 'p', 'cb-tl-text')}${x.link ? BTN(C, b, `items.${i}.link`, choiceLink(C, b, x), 'cb-link') : ''}`;
   // Tiles that open (S4 with M13): a photo tile shows its name; pointed at or focused, a panel
   // slides up with the price, the time and the words. On a touch screen, with "reduce motion"
   // and in the editor the panel simply stays open.
@@ -1998,7 +2019,7 @@ R_.scenes = (C, b) => {
   // A scene can show a simple line drawing instead of a photo (release 7, hand studies).
   const art = (x) => (x.picture ? '' : handSvg(x.drawing));
   const fig = (x, i) => (art(x) ? `<figure class="cb-sc-pic cb-sc-draw">${art(x)}</figure>` : x.picture || C.editable ? `<figure class="cb-sc-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : '');
-  const one = (x, i, w) => w(`${fig(x, i)}<div class="cb-sc-body">${T(C, b, `items.${i}.tag`, x.tag, 'p', 'cb-sc-tag')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sc-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-sc-desc')}${x.link ? BTN(C, b, `items.${i}.link`, x.link, 'cb-link') : ''}</div>`, 'article', `cb-sc-item${i ? '' : ' is-on'}`);
+  const one = (x, i, w) => w(`${fig(x, i)}<div class="cb-sc-body">${T(C, b, `items.${i}.tag`, x.tag, 'p', 'cb-sc-tag')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sc-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-sc-desc')}${x.link ? BTN(C, b, `items.${i}.link`, choiceLink(C, b, x), 'cb-link') : ''}</div>`, 'article', `cb-sc-item${i ? '' : ' is-on'}`);
   const list = LIST(C, b, 'items', items, one, 'div', 'cb-sc-list');
   // The stage that stays put holds copies of the photos, hidden from screen readers; each scene
   // keeps its own photo, which is what shows on phones, with scripts off and for less movement.
