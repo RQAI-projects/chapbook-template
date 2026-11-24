@@ -225,6 +225,9 @@ html.cbm-paused .cbp *,html.cbm-paused .cbp *::before,html.cbm-paused .cbp *::af
 /* The page's own Pause button (the script adds it when something keeps moving). */
 .cbm-pause{position:fixed;right:.9rem;bottom:.9rem;z-index:70;display:inline-flex;align-items:center;gap:.45rem;min-height:2.4rem;padding:.4rem .85rem;border-radius:999px;border:1px solid color-mix(in srgb,var(--ink,#16181d) 30%,transparent);background:color-mix(in srgb,var(--bg-0,#fff) 88%,transparent);color:var(--ink,#16181d);font:600 .8rem/1 var(--font-body,system-ui);cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:.82}
 .cbm-pause:hover,.cbm-pause:focus-visible{opacity:1}
+/* Clear of buttons and links under it (the script sets the lift): transform and opacity only. */
+.cbm-pause{transform:translateY(var(--cbm-lift,0px));transition:transform .2s ease,opacity .2s ease}
+html.cbm-js .cbm-pause.is-aside:not(:focus-visible){opacity:0;pointer-events:none}
 .cbm-pause:focus-visible{outline:3px solid var(--accent-text,var(--accent,#16181d));outline-offset:3px}
 .cbm-pause::before{content:"";width:.7rem;height:.75rem;border-inline:.24rem solid currentColor;box-sizing:border-box}
 html.cbm-paused .cbm-pause::before{width:0;height:0;border-block:.42rem solid transparent;border-inline:0;border-left:.7rem solid currentColor}

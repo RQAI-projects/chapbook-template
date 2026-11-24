@@ -1000,6 +1000,47 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     sync();
     doc.body.append(button);
     undo.push(() => button.remove());
+    // It never rests on a button or link (app walk, 24 Nov: on a phone it covered the end of the
+    // price cards' buttons). When one is under it, it rises just above it; while nothing nearby is
+    // clear, it steps aside until the page scrolls on (it comes back when it has the keyboard).
+    // Transform and opacity only.
+    const ACTS = 'a[href],button,input,select,textarea,summary,[role="button"]';
+    let lift = 0, raf = 0;
+    const under = (r) => {
+      const pts = [[r.left + 3, r.top + 3], [r.right - 3, r.top + 3], [r.left + 3, r.bottom - 3], [r.right - 3, r.bottom - 3], [(r.left + r.right) / 2, (r.top + r.bottom) / 2]];
+      let top = null;
+      for (const [x, y] of pts) {
+        if (x < 0 || y < 0 || x >= win.innerWidth || y >= win.innerHeight) continue;
+        for (const n of doc.elementsFromPoint(x, y)) {
+          if (n === button || button.contains(n)) continue;
+          const a = n.closest?.(ACTS);
+          if (a && a !== button) { const t = a.getBoundingClientRect().top; top = top == null ? t : Math.min(top, t); break; }
+        }
+      }
+      return top;
+    };
+    const place = () => {
+      raf = 0;
+      if (!button.isConnected) return;
+      const r = button.getBoundingClientRect(), h = r.height;
+      const home = { left: r.left, right: r.right, bottom: r.bottom - lift, top: r.bottom - lift - h };
+      let want = 0, aside = false;
+      for (let tries = 0; tries < 4; tries++) {
+        const at = { left: home.left, right: home.right, top: home.top + want, bottom: home.bottom + want };
+        const top = under(at);
+        if (top == null) break;
+        want = top - 8 - home.bottom;
+        if (-want > win.innerHeight * 0.5) { aside = true; want = 0; break; }
+        if (tries === 3) aside = true;
+      }
+      if (want !== lift) { lift = want; button.style.setProperty('--cbm-lift', `${Math.round(lift)}px`); }
+      button.classList.toggle('is-aside', aside);
+    };
+    const soon = () => { if (!raf) raf = win.requestAnimationFrame(place); };
+    on(win, 'scroll', soon, { passive: true });
+    on(win, 'resize', soon);
+    soon();
+    undo.push(() => { if (raf) win.cancelAnimationFrame(raf); });
   }
 
   const stop = () => { if (root.__cbmStop === stop) delete root.__cbmStop; while (undo.length) { try { undo.pop()(); } catch { /* keep undoing */ } } };
