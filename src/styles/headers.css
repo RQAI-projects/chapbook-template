@@ -51,6 +51,10 @@ html:has(.site-header:not([data-header="classic"])) {--header-h:0px}
  .site-header:not([data-header="classic"]) .header-book{display:inline-flex;align-items:center;order:2;min-height:44px;padding:0 .9rem;margin-left:auto;border-radius:var(--radius,10px);background:var(--accent);color:var(--cb-on-accent,var(--pro-button-ink,#fff));font-weight:650;font-size:.85rem;line-height:1.2;white-space:nowrap;text-decoration:none}
  .site-header:not([data-header="classic"]):has(.header-book) .nav-toggle{margin-left:0}
  .site-header:not([data-header="classic"]):has(.header-book) .header-identity{max-width:calc(100% - 64px - 8.5rem)}
+ /* Beside the booking button the name keeps to two lines at most on a phone (app walk, 24 Nov:
+    a widely spaced name wrapped to three): a little smaller, closer set, balanced. */
+ .site-header:not([data-header="classic"]):has(.header-book) :is(.logo:not(.has-logo),.logo-name){font-size:clamp(.86rem,3.9vw,1.02rem);letter-spacing:.02em;line-height:1.2;text-wrap:balance}
+ .site-header:not([data-header="classic"]) .header-book{padding:0 .75rem}
 }
 /* Galleries let the work lead; an explicit Menu replaces the long nav on desktop. */
 .site-header:is([data-header="exhibit"],[data-header="gallery"]) .container{min-height:88px;align-items:center}
