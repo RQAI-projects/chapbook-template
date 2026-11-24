@@ -1007,7 +1007,10 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     const ACTS = 'a[href],button,input,select,textarea,summary,[role="button"]';
     let lift = 0, raf = 0;
     const under = (r) => {
-      const pts = [[r.left + 3, r.top + 3], [r.right - 3, r.top + 3], [r.left + 3, r.bottom - 3], [r.right - 3, r.bottom - 3], [(r.left + r.right) / 2, (r.top + r.bottom) / 2]];
+      // A grid over the button, edges included, so a link that only reaches under one side is found.
+      const pts = [];
+      const w = r.right - r.left, h = r.bottom - r.top;
+      for (const fx of [0, 0.25, 0.5, 0.75, 1]) for (const fy of [0, 0.5, 1]) pts.push([r.left + 1 + (w - 2) * fx, r.top + 1 + (h - 2) * fy]);
       let top = null;
       for (const [x, y] of pts) {
         if (x < 0 || y < 0 || x >= win.innerWidth || y >= win.innerHeight) continue;
@@ -1022,8 +1025,11 @@ export function initPageMotion(doc = document, win = window, { clock = win } = {
     const place = () => {
       raf = 0;
       if (!button.isConnected) return;
-      const r = button.getBoundingClientRect(), h = r.height;
-      const home = { left: r.left, right: r.right, bottom: r.bottom - lift, top: r.bottom - lift - h };
+      // Its resting place, from its own fixed position (never from where a lift in progress has
+      // got to).
+      const cs = win.getComputedStyle(button), h = button.offsetHeight, w = button.offsetWidth;
+      const right = win.innerWidth - (parseFloat(cs.right) || 0), bottom = win.innerHeight - (parseFloat(cs.bottom) || 0);
+      const home = { left: right - w, right, bottom, top: bottom - h };
       let want = 0, aside = false;
       for (let tries = 0; tries < 4; tries++) {
         const at = { left: home.left, right: home.right, top: home.top + want, bottom: home.bottom + want };
