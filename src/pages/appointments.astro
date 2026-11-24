@@ -84,7 +84,10 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
    if(!box||!target||!status||button.dataset.ready)continue;
    button.dataset.ready='true';
    button.addEventListener('click',async()=>{
-    button.disabled=true;status.textContent='Loading the booking calendar…';
+    // The button gives way at once, as the visitor presses it, so nothing moves later when the
+    // calendar arrives (a late move counts against the page's steadiness). It comes back if the
+    // calendar cannot load.
+    button.disabled=true;button.hidden=true;status.textContent='Loading the booking calendar…';
     // No calendar after about 5 seconds: the page says so, with the booking page and a call.
     const watch=watchCalendar(target,status,box.querySelector('.booking-fail'));
     try{
@@ -96,8 +99,8 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
      }else if(kind==='cal'&&src)await showCalendar(target,src,target.parentElement||document.body);
      else throw new Error('unknown');
      if(!target.isConnected)return;
-     if(!watch.showing())status.textContent='Choose a time in the calendar. If it does not load, use Open booking in a separate page.';button.hidden=true;
-    }catch{button.disabled=false;watch.fail();}
+     if(!watch.showing())status.textContent='Choose a time in the calendar. If it does not load, use Open booking in a separate page.';
+    }catch{button.disabled=false;button.hidden=false;watch.fail();}
    });
   }
  }
