@@ -68,7 +68,9 @@ export function loadCal(win = window) {
 let calendars = 0;
 // A link the owner typed with a query (cal.com/sam/massage?duration=60) keeps it: Cal.com's help
 // ("Auto-forwarding Query Parameters", read 24 Nov 2026) passes a query parameter to the inline
-// embed through its config, so each parameter goes there, beside the page's own settings.
+// embed through its config, so each parameter goes there, beside the page's own settings. The
+// page's own layout and theme come last and win over a typed ?theme= or ?layout= (round B2
+// re-review minor 1), so the calendar's words stay readable on the page's colours.
 export function calEmbedParts(link) {
   const s = String(link || ''), at = s.indexOf('?');
   const path = at < 0 ? s : s.slice(0, at), extra = {};
@@ -87,7 +89,7 @@ export async function showCalendar(target, link, around, win = window) {
   // calendar that is there from one that never came (watchCalendar).
   Cal.ns[name]('on', { action: 'linkReady', callback: () => { target.dataset.ready = '1'; } });
   Cal.ns[name]('on', { action: 'linkFailed', callback: () => { target.dataset.failed = '1'; } });
-  Cal.ns[name]('inline', { elementOrSelector: `#${target.id}`, calLink, config: { layout: 'month_view', theme: calendarTheme(around || target, win), ...extra } });
+  Cal.ns[name]('inline', { elementOrSelector: `#${target.id}`, calLink, config: { ...extra, layout: 'month_view', theme: calendarTheme(around || target, win) } });
 }
 
 // ---- A calendar that does not come ---------------------------------------------------------

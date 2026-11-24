@@ -62,3 +62,14 @@ test('the script times out: the fallback, with its call line, says so', () => {
   const seen = simulate(1e9, (st, w) => [{ at: 3000, f: () => w.fail() }]);
   assert.deepEqual(seen, ['Loading the booking calendar…', FAIL]);
 });
+
+import { showCalendar } from './booking-calendar.js';
+test('the page’s own layout and theme win over a typed ?theme= or ?layout= (round B2 re-review minor 1)', async () => {
+  const calls = [], ns = (...a) => calls.push(a);
+  const win = { Cal: Object.assign(() => {}, { instance: {}, ns: new Proxy({}, { get: () => ns }) }), getComputedStyle: () => ({ color: 'rgb(255,255,255)' }), document: {} };
+  const target = { id: 'cal1', dataset: {} };
+  await showCalendar(target, 'sam/x?theme=light&layout=week_view&duration=60', target, win);
+  const inline = calls.find((c) => c[0] === 'inline')[1];
+  assert.equal(inline.calLink, 'sam/x');
+  assert.deepEqual(inline.config, { duration: '60', layout: 'month_view', theme: 'dark' });
+});
