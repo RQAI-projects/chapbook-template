@@ -131,8 +131,8 @@
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
   "src/lib/page-css.mjs": "6f21aacb20cb8b5aaa45cb7367ee23eca1241bbe",
   "src/lib/pages/migrate.mjs": "ac3d603f17de28b7ee79a291ed39ba8b093ad0f5",
-  "src/lib/pages/render.mjs": "400e597344bba82f93e293dac42c6169aa067778",
-  "src/lib/pages/schema.mjs": "8e74dc541b0180a78c19f0af16a89d63d34e5549",
+  "src/lib/pages/render.mjs": "01949fa563c223431620f9054b97bb22af908479",
+  "src/lib/pages/schema.mjs": "556a460063c52ee0ce8f0537969988b47af9f692",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
   "src/lib/professional.mjs": "c301823ef4856379e58e3688cffb1b83f574f063",
@@ -144,7 +144,7 @@
   "src/pages/[slug].astro": "7e4cd3a68bbb60f98ab7e2ebe18a289be84a1578",
   "src/pages/about.astro": "5a61371fa1bfc2e8346efcc386b1c0d96490ebf0",
   "src/pages/add-to-calendar/[file].ics.js": "47c612c72ddb6eedd8b388419955b55c02658df6",
-  "src/pages/appointments.astro": "11a6d4cf197163696af52ac687484bbf3f221d89",
+  "src/pages/appointments.astro": "d308f4cb6d686e77bfaaf3a288f3026b62ee2e69",
   "src/pages/apps.astro": "acc07f1db783c9f62f80846dc3f84d95e21b554a",
   "src/pages/blog/[slug].astro": "5600a2f96a9aaec7867fcb51bb554bf4d5ce0013",
   "src/pages/blog/index.astro": "10f13a550ccedc8c9f87a0f34dae995a984d3fce",
@@ -161,11 +161,11 @@
   "src/pages/series/[slug].astro": "32ad82a38b70b6d7440c2fbb31a7089551d95dcd",
   "src/pages/writing/index.astro": "5d5130e01a218bf78e31bff1b708b8a811a97c94",
   "src/plugins/remark-base-path.mjs": "d7770814aa7a3eb5b048d68b29e66c40e1a4f7ba",
-  "src/scripts/booking-calendar.js": "f7bceef4e7abe845c5a6ffcecf960d58db3491ad",
+  "src/scripts/booking-calendar.js": "a89308c9c3bbbc20cf973ba26947a0c2c7460f15",
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
-  "src/scripts/page-actions.js": "64a98d7e2ad0ac9e874bae3cc53e137d5f9b842c",
+  "src/scripts/page-actions.js": "99b03540520322b78bd10066d54ded63d7e4690c",
   "src/scripts/page-motion.js": "c917f5f4f915ff405e8023cc3663dac9c8f955bd",
   "src/styles/blocks.css": "18ff48707427e3512bc3128dc8125553b804fa77",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
@@ -212,7 +212,19 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "src/scripts/page-actions.js": [
+   "64a98d7e2ad0ac9e874bae3cc53e137d5f9b842c",
+   "c41e57da498d9cc3004cb0ccd53114b5f484ccaa",
+   "ffcce1c652c785d670b4c0f8b18344e1c35fec2f",
+   "f0f6e9c75eb65b9c47970c0815a73570de5087b6",
+   "5addd8a7c408bb499206f52a0bcdd150374ca68b",
+   "c08fda2bedbf408c4574abc4bf7623fe983d6e14",
+   "419869c7e5d9a25af8f4517f1b9f2fd56451a7f8",
+   "f1e8d005503afce76faad8de3f6827c42fa62609",
+   "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9"
+  ],
   "src/lib/pages/schema.mjs": [
+   "8e74dc541b0180a78c19f0af16a89d63d34e5549",
    "b04622c10127bb6d3a9912d3ffcbfb325b62a955",
    "2c9da4d2f5e78082834854ee043c736ddd1dfaa6",
    "d239991a25829bef99cf4e98e661886427f9980a",
@@ -249,7 +261,30 @@
    "cf81fb63c6424ce2bedf5f8563fcc91fbbd782ca",
    "09baab156a3a0a6a1e577eed8db8115618800402"
   ],
+  "src/pages/appointments.astro": [
+   "11a6d4cf197163696af52ac687484bbf3f221d89",
+   "ed9e53ff906d7abc763ac7bd232d3802ff993ed7",
+   "9425e319e1c6b7e9ce286901d7a9b7e36711c708",
+   "df3325de5ca15b472c2a331b80c835595df4744c",
+   "de8667366e0a58e37a568569fd522e50773074b5",
+   "e9187167f8d493d59c27552a2dca5bfc70f450b2",
+   "90bf2e7617a64c6f825a24b9682a9bbd52533489",
+   "f2cc9b5c32ea17121e3b846806c3f0f870e4315b",
+   "8bfa1a371731efbd0c00df3a54f369720a90d7e3",
+   "13e22d5a6026e60cb45b9f6650679411d5c73145",
+   "b2ac55fe8ffe23a6d89d01a496b46564c3f2bd44",
+   "013d789f180b6f0491bd60d97b182f54244457df"
+  ],
+  "src/scripts/booking-calendar.js": [
+   "f7bceef4e7abe845c5a6ffcecf960d58db3491ad",
+   "7c13e1b7ee085e3b67e5a2579db3a86d04438658",
+   "b8e2ba875bde94b369afedbd898bc1357eecd520",
+   "c1014241c43d76335878cb5f9d72f5c750408a56",
+   "dfe9a48112fa36e12020334cd6177a32ec372109",
+   "f1de460bcf5d96af76659439d5394ab8908c730c"
+  ],
   "src/lib/pages/render.mjs": [
+   "400e597344bba82f93e293dac42c6169aa067778",
    "ba80846bfec930dea14463aa6921715aa2d01727",
    "f360e6c9d2437cf080f560dbe0087520b2082e0e",
    "65b6953883ce4dbc8a6df0974e08f0471e82e38e",
@@ -313,36 +348,6 @@
    "364e3e88c2c8a5e0d1efb9b0060b445f44fbb6de",
    "c7226998668f0fbee76774c9de823a6b4e21fcfe",
    "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
-  ],
-  "src/pages/appointments.astro": [
-   "ed9e53ff906d7abc763ac7bd232d3802ff993ed7",
-   "9425e319e1c6b7e9ce286901d7a9b7e36711c708",
-   "df3325de5ca15b472c2a331b80c835595df4744c",
-   "de8667366e0a58e37a568569fd522e50773074b5",
-   "e9187167f8d493d59c27552a2dca5bfc70f450b2",
-   "90bf2e7617a64c6f825a24b9682a9bbd52533489",
-   "f2cc9b5c32ea17121e3b846806c3f0f870e4315b",
-   "8bfa1a371731efbd0c00df3a54f369720a90d7e3",
-   "13e22d5a6026e60cb45b9f6650679411d5c73145",
-   "b2ac55fe8ffe23a6d89d01a496b46564c3f2bd44",
-   "013d789f180b6f0491bd60d97b182f54244457df"
-  ],
-  "src/scripts/booking-calendar.js": [
-   "7c13e1b7ee085e3b67e5a2579db3a86d04438658",
-   "b8e2ba875bde94b369afedbd898bc1357eecd520",
-   "c1014241c43d76335878cb5f9d72f5c750408a56",
-   "dfe9a48112fa36e12020334cd6177a32ec372109",
-   "f1de460bcf5d96af76659439d5394ab8908c730c"
-  ],
-  "src/scripts/page-actions.js": [
-   "c41e57da498d9cc3004cb0ccd53114b5f484ccaa",
-   "ffcce1c652c785d670b4c0f8b18344e1c35fec2f",
-   "f0f6e9c75eb65b9c47970c0815a73570de5087b6",
-   "5addd8a7c408bb499206f52a0bcdd150374ca68b",
-   "c08fda2bedbf408c4574abc4bf7623fe983d6e14",
-   "419869c7e5d9a25af8f4517f1b9f2fd56451a7f8",
-   "f1e8d005503afce76faad8de3f6827c42fa62609",
-   "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9"
   ],
   "src/styles/professional.css": [
    "f8a7757991598e502d01394cb27e0883e0fb684a",
