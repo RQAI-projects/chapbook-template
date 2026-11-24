@@ -119,6 +119,12 @@ test('S1: an owner link keeps its query and hash everywhere; the calendar is giv
   const appt = readFileSync(new URL('../../pages/appointments.astro', import.meta.url), 'utf8');
   assert.match(appt, /data-booking-link=\{c\.target\.src\}/); assert.match(appt, /href=\{c\.target\.href\}/);
   assert.match(appt, /mainT\.embed/);
+  // The main calendar's two separate-page links use the schedule without gv=true too (round B2 re-review minor 2).
+  assert.match(appt, /const sepHref=main\?main\.href:href;/);
+  assert.equal((appt.match(/href=\{sepHref\}/g) || []).length, 2);
+  assert.doesNotMatch(appt, /<a href=\{href\}>Open booking in a separate page/);
+  const G = 'https://calendar.google.com/calendar/appointments/schedules/AcZssZ1abcdefghijk?gv=true';
+  assert.equal(choiceTarget(G).href, 'https://calendar.google.com/calendar/appointments/schedules/AcZssZ1abcdefghijk');
   // The Online booking section's calendar too.
   const sec = draw(page([{ id: 'bk', type: 'booking', data: { heading: 'Book', useSite: false, url: D60 } }]));
   assert.match(sec, /data-booking-src="sam\/sports-massage\?duration=60"/);

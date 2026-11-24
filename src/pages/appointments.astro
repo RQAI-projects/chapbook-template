@@ -25,6 +25,9 @@ const href=contactHref(p);
 // schedule in its own frame, as the Online booking section shows it. Nothing loads until pressed.
 const mainT=p.bookingUrl?bookingTarget(p.bookingUrl):null;
 const main=mainT&&(mainT.kind==='cal'||mainT.kind==='google')?{kind:mainT.kind,src:mainT.kind==='cal'?mainT.embed:mainT.frame,href:mainT.href,provider:mainT.provider}:null;
+// "Open booking in a separate page" and the did-not-load link use the same address as the choice
+// sections and the Online booking section (round B2 re-review minor 2): a Google schedule without gv=true.
+const sepHref=main?main.href:href;
 // A Book on an item with its own Cal.com or Google link comes here with the item after "#": that
 // item is named, with its own calendar. Shown by :target with scripts off; the script marks it after
 // the site's own page changes too.
@@ -54,8 +57,8 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
  <div class="appt-main">
  <div class="appointment-layout"><section data-booking-box><h2>{p.bookingUrl?'Choose a time':'Get in touch'}</h2>
  <p>{main?'Open the calendar below to see available times and book.':p.bookingUrl?'See available times and book with our booking service.':'Get in touch to ask about availability.'}</p>
- {main&&<><button class="pro-button booking-load" type="button" data-booking-kind={main.kind} data-booking-link={main.src} aria-controls="booking-calendar">Show available times</button><p class="appointment-note">Opening the calendar connects to {main.provider}. Your booking details go directly to the booking service.</p><p class="booking-status" role="status" aria-live="polite"></p><p class="booking-fail" hidden>The calendar did not load. <a href={href}>Open booking in a separate page</a>{callOr?<>, or {callOr.how} <a href={callOr.href}>{callOr.words}</a></>:null}.</p></>}
- {href?<p><a class={main?'pro-link':'pro-button'} href={href}>{main?'Open booking in a separate page':p.bookingUrl?bookWords:'Contact us'} ↗</a></p>:<p class="pro-empty">Online booking is not available yet.</p>}
+ {main&&<><button class="pro-button booking-load" type="button" data-booking-kind={main.kind} data-booking-link={main.src} aria-controls="booking-calendar">Show available times</button><p class="appointment-note">Opening the calendar connects to {main.provider}. Your booking details go directly to the booking service.</p><p class="booking-status" role="status" aria-live="polite"></p><p class="booking-fail" hidden>The calendar did not load. <a href={sepHref}>Open booking in a separate page</a>{callOr?<>, or {callOr.how} <a href={callOr.href}>{callOr.words}</a></>:null}.</p></>}
+ {href?<p><a class={main?'pro-link':'pro-button'} href={sepHref}>{main?'Open booking in a separate page':p.bookingUrl?bookWords:'Contact us'} ↗</a></p>:<p class="pro-empty">Online booking is not available yet.</p>}
  {paysHere&&<p class="appointment-pay">Payment is taken as you book.</p>}
  {p.bookingUrl&&<p class="appointment-note">Availability, confirmation and any payment are managed by the booking service.</p>}
  </section><aside>{p.location&&<><h2>Where</h2><p>{p.location}</p></>}{hours.length>0&&<><h2>When</h2><p class="pro-hours">{hours.map((l)=><span class="hours-line">{l}</span>)}</p></>}{p.email&&<p><a href={'mailto:'+encodeURIComponent(p.email)}>{p.email}</a></p>}{p.phone&&<p><a href={'tel:'+p.phone.replace(/[^+\d]/g,'')}>{p.phone}</a></p>}</aside></div>

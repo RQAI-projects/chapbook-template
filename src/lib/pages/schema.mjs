@@ -155,8 +155,10 @@ export function bookingTarget(v) {
   if (['cal.com', 'www.cal.com'].includes(u.hostname) && /^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+){0,3}$/.test(path) && !CAL_APP.test(path)) return { kind: 'cal', href: `https://cal.com/${path}${rest}`, calLink: path, embed: `${path}${u.search}`, provider: 'Cal.com' };
   const g = u.hostname === 'calendar.google.com' && path.replace(/^calendar\/u\/\d+\//, 'calendar/');
   if (g && /^calendar\/appointments\/schedules\/[A-Za-z0-9_-]{10,200}$/.test(g)) {
-    // Google's embed code adds gv=true, which is for the frame only: the page's own address is
-    // kept without it, with anything else the owner typed.
+    // A pasted Google embed code carries gv=true on the address it puts in its frame, so the page's
+    // frame keeps it. Google's help page does not describe gv=true, so the address for "Open
+    // booking in a separate page" is the schedule's address without it, with anything else the
+    // owner typed.
     const q = new URLSearchParams(u.search); q.delete('gv');
     return { kind: 'google', href: `https://calendar.google.com/${g}${q.toString() ? `?${q}` : ''}${u.hash}`, frame: `https://calendar.google.com/${g}?gv=true`, provider: 'Google Calendar' };
   }
