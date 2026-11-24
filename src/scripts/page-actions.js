@@ -84,17 +84,40 @@ export function hoursSpans(line) {
   }
   return out;
 }
+// One line of opening hours can hold several groups, each its own days and times, separated by a
+// comma or a semicolon: "Sat 9am to 1pm, Sun closed", "Mon to Fri 7am to 8pm; Sat 8am to 1pm"
+// (round B review, S6). A part with days and no times joins the next part ("Monday to Friday, 9am
+// to 6pm", "Tue, Thu and Sat 9am to 1pm"); a part with times and no days belongs to the group
+// before it ("Tue 9.30am to 1pm, 2pm to 5.30pm"). → [{ days, spans, closed }]
+const ANY_DAY = [0, 1, 2, 3, 4, 5, 6];
+export function hoursGroups(line) {
+  const groups = [];
+  let waiting = '', loose = null;
+  for (const part of String(line || '').split(/[,;]/)) {
+    const days = part.replace(new RegExp(RANGE.source, 'gi'), ' ');
+    const hasDays = ANY_DAY.some((d) => dayInLabel(days, d));
+    const spans = hoursSpans(part), closed = /\bclosed\b/i.test(part);
+    if (hasDays && !spans.length && !closed) { waiting = `${waiting} ${days}`; continue; }
+    if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length }); waiting = ''; continue; }
+    // Times with no days: more times for the group before, or (times written first) for the days after.
+    const last = groups[groups.length - 1];
+    if (last) { last.spans.push(...spans); if (spans.length) last.closed = false; else if (closed && !last.spans.length) last.closed = true; }
+    else if (spans.length || closed) loose = { spans: [...(loose?.spans || []), ...spans], closed: closed && !spans.length && !loose?.spans?.length };
+  }
+  if (waiting.trim()) groups.push({ days: waiting, spans: loose?.spans || [], closed: !!loose?.closed && !loose?.spans?.length });
+  else if (loose && groups.length) { groups[0].spans.unshift(...loose.spans); }
+  return groups;
+}
 // Today's opening times from the lines of opening hours: [[open, close], …]; [] when closed all
 // day; null when no line speaks of that day (or none can be read).
 export function hoursOn(lines, dow) {
   let found = null;
   for (const line of lines || []) {
-    const text = String(line || '');
-    const days = text.replace(new RegExp(RANGE.source, 'gi'), ' ');
-    if (!dayInLabel(days, dow)) continue;
-    const spans = hoursSpans(text);
-    if (spans.length) found = [...(found || []), ...spans];
-    else if (/\bclosed\b/i.test(text)) found = found || [];
+    for (const g of hoursGroups(line)) {
+      if (!dayInLabel(g.days, dow)) continue;
+      if (g.spans.length) found = [...(found || []), ...g.spans];
+      else if (g.closed) found = found || [];
+    }
   }
   return found ? found.sort((x, y) => x[0] - y[0]) : null;
 }
