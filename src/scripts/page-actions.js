@@ -40,14 +40,28 @@ export const spacesText = (left) => (!(left > 0) ? 'Full' : left === 1 ? 'Last s
 // Whether a line of opening hours ("Mon to Fri", "Saturday", "Tue, Thu and Sat", "Every day")
 // covers a day of the week (0 is Sunday). A line that names no day covers none.
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+// A day's name, short or whole, one or many ("Sat", "Tues", "Thurs", "Saturdays"), and never a word
+// that only starts like one ("month", "Satisfaction"; round B2 re-review minor 3).
+const DAY_WORD = String.raw`(sun|mon|tue|wed|thu|fri|sat)(?:day|s|sday|nesday|rs|rsday|r|urday)?s?`;
+const DAY_RE = new RegExp(String.raw`\b(?:${DAY_WORD}|weekdays?|weekends?)\b`, 'g');
+export const DAY_AHEAD = new RegExp(String.raw`^\s*(?:${DAY_WORD}|weekdays?|weekends?|every ?day|daily)\b`, 'i');
+const isDay = (w, key) => new RegExp(String.raw`^${DAY_WORD}$`).test(w) && w.startsWith(key);
 export function dayInLabel(label, dow) {
   const text = String(label || '').toLowerCase();
   if (/\b(every ?day|daily|all week|7 days)\b/.test(text)) return true;
-  const found = [...text.matchAll(/\b(sun|mon|tue|wed|thu|fri|sat)[a-z]*\b/g)].map((m) => ({ d: DAY_KEYS.indexOf(m[1]), at: m.index, end: m.index + m[0].length }));
+  // "Weekdays" is Monday to Friday, "weekends" Saturday and Sunday.
+  const found = [];
+  for (const m of text.matchAll(DAY_RE)) {
+    const w = m[0], at = m.index, end = at + w.length;
+    if (/^weekday/.test(w)) { found.push({ d: 1, at, end: at }, { d: 5, at: end, end, joined: true }); continue; }
+    if (/^weekend/.test(w)) { found.push({ d: 6, at, end: at }, { d: 0, at: end, end, joined: true }); continue; }
+    const d = DAY_KEYS.findIndex((k) => isDay(w, k));
+    if (d >= 0) found.push({ d, at, end });
+  }
   for (let i = 0; i < found.length; i++) {
     const a = found[i], b = found[i + 1];
     // "Mon to Fri", "Mon - Fri", "Fri until Sun": every day from the first to the second, round the week.
-    if (b && /^\s*(to|until|through|till|-|\u2013|\u2014)\s*$/.test(text.slice(a.end, b.at))) {
+    if (b && (b.joined || /^\s*(to|until|through|till|-|\u2013|\u2014)\s*$/.test(text.slice(a.end, b.at)))) {
       for (let d = a.d; ; d = (d + 1) % 7) { if (d === dow) return true; if (d === b.d) break; }
       i++;
     } else if (a.d === dow) return true;
@@ -85,15 +99,32 @@ export function hoursSpans(line) {
   return out;
 }
 // One line of opening hours can hold several groups, each its own days and times, separated by a
-// comma or a semicolon: "Sat 9am to 1pm, Sun closed", "Mon to Fri 7am to 8pm; Sat 8am to 1pm"
-// (round B review, S6). A part with days and no times joins the next part ("Monday to Friday, 9am
-// to 6pm", "Tue, Thu and Sat 9am to 1pm"); a part with times and no days belongs to the group
-// before it ("Tue 9.30am to 1pm, 2pm to 5.30pm"). → [{ days, spans, closed }]
+// comma, a semicolon, a slash, a bar or brackets, and by a full stop or "and" when a day follows:
+// "Sat 9am to 1pm, Sun closed", "Mon to Fri 7am to 8pm; Sat 8am to 1pm", "Mon to Sat 9am to 5pm
+// (Sun closed)", "Sat 9am to 1pm. Sun closed", "Sat 9am to 1pm and Sun closed" (round B review S6,
+// round B2 re-review minor 3). A part with days and no times joins the next part ("Monday to
+// Friday, 9am to 6pm", "Tue, Thu and Sat 9am to 1pm"); a part with times and no days belongs to
+// the group before it ("Tue 9.30am to 1pm, 2pm to 5.30pm"), unless that group is closed. A part
+// about bank or public holidays is left out: it is not a day of the week. → [{ days, spans, closed }]
 const ANY_DAY = [0, 1, 2, 3, 4, 5, 6];
+const JOIN = /(?<=\.)\s+|\s+and\s+/gi;
+export function hoursParts(line) {
+  const out = [];
+  for (const piece of String(line || '').split(/[,;/|()[\]]/)) {
+    let from = 0;
+    for (const m of piece.matchAll(JOIN)) {
+      const after = m.index + m[0].length;
+      if (DAY_AHEAD.test(piece.slice(after))) { out.push(piece.slice(from, m.index)); from = after; }
+    }
+    out.push(piece.slice(from));
+  }
+  return out;
+}
 export function hoursGroups(line) {
   const groups = [];
   let waiting = '', loose = null;
-  for (const part of String(line || '').split(/[,;]/)) {
+  for (const part of hoursParts(line)) {
+    if (/\b(bank|public)\s+holidays?\b/i.test(part)) continue;
     const days = part.replace(new RegExp(RANGE.source, 'gi'), ' ');
     const hasDays = ANY_DAY.some((d) => dayInLabel(days, d));
     const spans = hoursSpans(part), closed = /\bclosed\b/i.test(part);
@@ -101,6 +132,7 @@ export function hoursGroups(line) {
     if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length }); waiting = ''; continue; }
     // Times with no days: more times for the group before, or (times written first) for the days after.
     const last = groups[groups.length - 1];
+    if (last?.closed && spans.length) continue;
     if (last) { last.spans.push(...spans); if (spans.length) last.closed = false; else if (closed && !last.spans.length) last.closed = true; }
     else if (spans.length || closed) loose = { spans: [...(loose?.spans || []), ...spans], closed: closed && !spans.length && !loose?.spans?.length };
   }

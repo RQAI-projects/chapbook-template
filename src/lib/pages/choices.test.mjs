@@ -99,7 +99,7 @@ test('ordinary templates: every place hours show gives one row per line', () => 
 });
 
 // ---- round B review (24 Nov 2026) ----------------------------------------------------------------
-import { hoursGroups, hoursOn, openState } from '../../scripts/page-actions.js';
+import { hoursGroups, hoursOn, openState, dayInLabel, hoursParts } from '../../scripts/page-actions.js';
 import { calEmbedParts } from '../../scripts/booking-calendar.js';
 
 test('S1: an owner link keeps its query and hash everywhere; the calendar is given the query', () => {
@@ -150,6 +150,37 @@ test('S6: a line holding several groups gives the right days, for search engines
   assert.equal(openState(['Mon to Fri 7am to 8pm, Sat 8am to 1pm'], sat, 'Europe/London').text, 'Open now, closes at 1pm');
   // The rows on the website stay as the owner typed them.
   assert.deepEqual(hoursLines('Sat 9am to 1pm, Sun closed\n\n  Mon to Fri  9am to 5pm '), ['Sat 9am to 1pm, Sun closed', 'Mon to Fri 9am to 5pm']);
+});
+
+test('B2 re-review minor 3: other separators, holidays, weekdays and words that only look like a day', () => {
+  const sp = (h) => openingHours(h).map((x) => [x.dayOfWeek.join(' '), x.opens, x.closes]);
+  const W5 = 'Monday Tuesday Wednesday Thursday Friday', W6 = `${W5} Saturday`;
+  // Sunday is closed however the line separates it: brackets, a full stop, a slash, a bar, "and".
+  for (const line of ['Mon to Sat 9am to 5pm (Sun closed)', 'Mon to Sat 9am to 5pm. Sun closed', 'Mon to Sat 9am to 5pm / Sun closed', 'Mon to Sat 9am to 5pm | Sun closed', 'Mon to Sat 9am to 5pm and Sun closed', 'Mon to Sat 9am to 5pm [Sun closed]']) {
+    assert.deepEqual(sp(line), [[W6, '09:00', '17:00']], line);
+    assert.deepEqual(hoursOn([line], 0), [], line);
+  }
+  assert.deepEqual(sp('Sat 9am to 1pm. Sun closed'), [['Saturday', '09:00', '13:00']]);
+  assert.deepEqual(sp('Sat 9am to 1pm and Sun closed'), [['Saturday', '09:00', '13:00']]);
+  // "and" or a full stop with no day after it is not a split: "Tue and Thu", "9.30am", "p.m.".
+  assert.deepEqual(sp('Tue and Thu 9.30am to 1pm and 2pm to 5.30pm'), [['Tuesday Thursday', '09:30', '13:00'], ['Tuesday Thursday', '14:00', '17:30']]);
+  assert.deepEqual(sp('Sat 9 a.m. to 1 p.m. Sun closed'), [['Saturday', '09:00', '13:00']]);
+  // Bank holidays are not a day of the week: Saturday stays closed.
+  assert.deepEqual(sp('Mon to Fri 9am to 5pm, Sat closed, bank holidays 10am to 2pm'), [[W5, '09:00', '17:00']]);
+  assert.deepEqual(hoursOn(['Mon to Fri 9am to 5pm, Sat closed, bank holidays 10am to 2pm'], 6), []);
+  assert.deepEqual(sp('Mon to Fri 9am to 5pm, public holidays closed'), [[W5, '09:00', '17:00']]);
+  // A closed day does not take the times after it.
+  assert.deepEqual(hoursOn(['Closed Sunday, open 9am to 5pm all other days'], 0), []);
+  // "Weekdays" is Monday to Friday; "weekends" Saturday and Sunday.
+  assert.deepEqual(sp('Weekdays 9am to 5pm, Saturday 10am to 1pm'), [[W5, '09:00', '17:00'], ['Saturday', '10:00', '13:00']]);
+  assert.deepEqual([0, 1, 2, 3, 4, 5, 6].filter((d) => dayInLabel('Weekdays', d)), [1, 2, 3, 4, 5]);
+  assert.deepEqual([0, 1, 2, 3, 4, 5, 6].filter((d) => dayInLabel('Weekends', d)), [0, 6]);
+  // "month" is never Monday, and whole, short and many-day names are all read.
+  assert.equal(dayInLabel('first Saturday of the month', 1), false);
+  assert.equal(dayInLabel('Satisfaction guaranteed', 6), false);
+  assert.deepEqual(sp('Mon to Fri 9am to 5pm, first Saturday of the month 10am to 2pm'), [[W5, '09:00', '17:00'], ['Saturday', '10:00', '14:00']]);
+  for (const [w, d] of [['Tues', 2], ['Thurs', 4], ['Wednesday', 3], ['Saturdays', 6], ['Sundays', 0], ['Fri', 5]]) assert.equal(dayInLabel(w, d), true, w);
+  assert.deepEqual(hoursParts('Mon to Fri 9am to 5pm (Sat by appointment)').map((x) => x.trim()).filter(Boolean), ['Mon to Fri 9am to 5pm', 'Sat by appointment']);
 });
 
 test('minor 2: block pages draw hours without blank rows', () => {
