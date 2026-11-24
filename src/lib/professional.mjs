@@ -119,6 +119,12 @@ export function professionalDetails(value={},{allowDataImages=false}={}){
     specialty:(Array.isArray(p.specialty)?p.specialty:[p.specialty]).filter(s=>MEDICAL_SPECIALTIES.includes(s)).slice(0,4),
   };
 }
+// Opening hours, one row for each line the owner typed (app walk, 24 Nov: "Mon to Fri 9am to 6pm"
+// on one line and "Sat 9am to 1pm" on the next are two rows wherever hours show; lines are never
+// run together). Search engines read the same lines (business-schema.mjs openingHours).
+export function hoursLines(value){return String(value??'').replace(/\r\n?/g,'\n').split('\n').map(l=>l.replace(/\s+/g,' ').trim()).filter(Boolean);}
+const escHtml=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+export function hoursHtml(value){return hoursLines(value).map(l=>`<span class="hours-line">${escHtml(l)}</span>`).join('');}
 export function contactHref(p){return p.bookingUrl || (p.email?'mailto:'+encodeURIComponent(p.email):p.phone?'tel:'+p.phone.replace(/[^+\d]/g,''):'');}
 
 
