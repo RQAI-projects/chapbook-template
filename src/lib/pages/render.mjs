@@ -903,7 +903,7 @@ R_.gallery = (C, b) => {
 };
 
 function serviceLinks(C, b, i, s) {
-  const book = s.link ? BTN(C, b, `items.${i}.link`, choiceLink(C, b, s), 'cb-link') : '';
+  const book = s.link ? BTN(C, b, `items.${i}.link`, choiceLink(C, b, s, s.link), 'cb-link') : '';
   const pay = s.pay ? BTN(C, b, `items.${i}.pay`, s.pay, 'cb-btn cb-btn-small') : '';
   // Booking and paying are two steps here, so they say so; a recognised pay page is named.
   const known = pay && s.pay?.href ? payNote(s.pay.href) : '';
@@ -1010,7 +1010,7 @@ R_.team = (C, b) => {
     if (!d.bookEach) return '';
     const label = p.book?.label || bookWith(p.name);
     if (C.editable) return `<p class="cb-person-book">${BTN(C, b, `items.${i}.book`, { label, href: p.book?.href || '@booking' }, 'cb-btn cb-btn-small')}</p>`;
-    const way = bookWays(C, { own: choiceLink(C, b, p, p.book), label })[0];
+    const way = bookWays(C, { own: p.book ? choiceLink(C, b, p, p.book) : null, label })[0];
     return `<p class="cb-person-book">${wayLink(way.kind === 'book' ? way : { ...way, label: way.kind === 'contact' ? `Ask about ${(String(p.name || '').trim().split(/\s+/)[0]) || 'an appointment'}` : way.label }, 'cb-btn cb-btn-small')}</p>`;
   };
   const one = (p, i, w) => w(`<figure class="cb-portrait">${face(p, i)}</figure><div class="cb-person">${T(C, b, `items.${i}.name`, p.name, 'h3', 'cb-person-name')}${T(C, b, `items.${i}.role`, p.role, 'p', 'cb-person-role')}${T(C, b, `items.${i}.quals`, p.quals, 'p', 'cb-person-quals')}${RT(C, b, `items.${i}.bio`, p.bio, 'cb-rich cb-bio')}${p.link ? BTN(C, b, `items.${i}.link`, p.link, 'cb-link') : ''}${book(p, i)}</div>`);
@@ -1465,7 +1465,9 @@ export function choiceTarget(href) {
   return t && (t.kind === 'cal' || t.kind === 'google') ? { kind: t.kind, src: t.kind === 'cal' ? t.embed : t.frame, href: t.href, provider: t.provider } : null;
 }
 // The link a Book button uses on the website for item `x` of block `b`.
-function choiceLink(C, b, x, link = x?.link) {
+// `link` is always passed (round B2 re-review M1): a person's Book must never fall back to their
+// other link (Read more, LinkedIn).
+function choiceLink(C, b, x, link) {
   if (C.editable || !link?.href || !choiceTarget(link.href)) return link;
   return { ...link, href: `/appointments/#${choiceKey(C.page?.slug, b.id, x.id)}` };
 }
@@ -1550,14 +1552,14 @@ R_.bookstrip = (C, b) => {
   const sticky = d.sticky ? `<div class="cb-bookbar" data-bookbar role="region" aria-label="${esc(label)}" hidden>${ways.slice(0, 2).map((w, i) => wayLink({ ...w, label: w.kind === 'call' ? 'Call' : w.kind === 'whatsapp' ? 'WhatsApp' : w.label }, i ? 'cb-btn cb-btn-2' : 'cb-btn')).join('')}</div>` : '';
   if (v === 'bar' || !named.length) return `<div class="cb-bs cb-bs-bar">${head}<div class="cb-bs-go">${buttons}${live}</div></div>${note}${sticky}`;
   if (v === 'cards') {
-    const cards = named.map(([x, i]) => { const own = bookWays(C, { own: choiceLink(C, b, x), label, whatsapp: d.whatsapp })[0]; return `<article class="cb-bs-opt"><h3 class="cb-bs-name">${esc(x.name)}</h3><p class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}${paid(x)}</p>${wayLink({ ...own, label: own.kind === 'book' ? label : own.label }, 'cb-btn cb-btn-small')}</article>`; }).join('');
+    const cards = named.map(([x, i]) => { const own = bookWays(C, { own: choiceLink(C, b, x, x.link), label, whatsapp: d.whatsapp })[0]; return `<article class="cb-bs-opt"><h3 class="cb-bs-name">${esc(x.name)}</h3><p class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}${paid(x)}</p>${wayLink({ ...own, label: own.kind === 'book' ? label : own.label }, 'cb-btn cb-btn-small')}</article>`; }).join('');
     return `${head}<div class="cb-bs cb-bs-cards"><div class="cb-bs-pick">${cards}</div>${live}</div>${note}${sticky}`;
   }
   // One strip: a choice of what to book, then one button. Each choice carries where it goes; the
   // page's script sends the button there. Without it the button opens the booking page, where
   // the same choice is offered.
   const opts = named.map(([x, i], k) => {
-    const mine = choiceLink(C, b, x), own = mine?.href && mine.href !== '@booking' ? resolveLink(mine.href, C) : '';
+    const mine = choiceLink(C, b, x, x.link), own = mine?.href && mine.href !== '@booking' ? resolveLink(mine.href, C) : '';
     const words = [x.duration, x.price].filter(Boolean).join(', ');
     return `<label class="cb-bs-opt"><input type="radio" name="bs-${uid}" value="${i}"${k ? '' : ' checked'}${own ? ` data-href="${esc(own)}"` : ''}><span class="cb-bs-name">${esc(x.name)}</span>${words || paid(x) ? `<span class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}${paid(x)}</span>` : ''}</label>`;
   }).join('');
@@ -1854,7 +1856,7 @@ R_.spaces = (C, b) => {
       else {
         // In the editor a date without its own link still shows its Book button, which opens the
         // website's booking page (or calls), so the owner sees where it goes and can change it.
-        const book = x.link ? BTN(C, b, `items.${i}.link`, { label: x.link.label || 'Book', href: choiceLink(C, b, x).href }, 'cb-btn cb-btn-small')
+        const book = x.link ? BTN(C, b, `items.${i}.link`, { label: x.link.label || 'Book', href: choiceLink(C, b, x, x.link).href }, 'cb-btn cb-btn-small')
           : C.editable ? BTN(C, b, `items.${i}.link`, { label: 'Book', href: '@booking' }, 'cb-btn cb-btn-small') : wayLink(site, 'cb-btn cb-btn-small');
         const pay = x.pay && !paysOnBooking(C, x) ? BTN(C, b, `items.${i}.pay`, { label: x.pay.label || 'Pay now', href: x.pay.href }, 'cb-btn cb-btn-2 cb-btn-small') : '';
         // Booking and paying in two steps say so; a recognised pay page is named.
@@ -1942,7 +1944,7 @@ const taskSvg = (kind) => `<span class="cb-task cb-task-${kind}" aria-hidden="tr
 R_.tiles = (C, b) => {
   const d = b.data, items = d.items || [], open = b.variant === 'open';
   const meta = (x, i) => (x.duration || x.price || (C.editable && open) ? `<p class="cb-tl-meta">${T(C, b, `items.${i}.duration`, x.duration, 'span', 'cb-tl-time')}${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-tl-price')}</p>` : '');
-  const more = (x, i) => `${meta(x, i)}${T(C, b, `items.${i}.text`, x.text, 'p', 'cb-tl-text')}${x.link ? BTN(C, b, `items.${i}.link`, choiceLink(C, b, x), 'cb-link') : ''}`;
+  const more = (x, i) => `${meta(x, i)}${T(C, b, `items.${i}.text`, x.text, 'p', 'cb-tl-text')}${x.link ? BTN(C, b, `items.${i}.link`, choiceLink(C, b, x, x.link), 'cb-link') : ''}`;
   // Tiles that open (S4 with M13): a photo tile shows its name; pointed at or focused, a panel
   // slides up with the price, the time and the words. On a touch screen, with "reduce motion"
   // and in the editor the panel simply stays open.
@@ -2019,7 +2021,7 @@ R_.scenes = (C, b) => {
   // A scene can show a simple line drawing instead of a photo (release 7, hand studies).
   const art = (x) => (x.picture ? '' : handSvg(x.drawing));
   const fig = (x, i) => (art(x) ? `<figure class="cb-sc-pic cb-sc-draw">${art(x)}</figure>` : x.picture || C.editable ? `<figure class="cb-sc-pic">${P(C, b, `items.${i}.picture`, x.picture)}</figure>` : '');
-  const one = (x, i, w) => w(`${fig(x, i)}<div class="cb-sc-body">${T(C, b, `items.${i}.tag`, x.tag, 'p', 'cb-sc-tag')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sc-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-sc-desc')}${x.link ? BTN(C, b, `items.${i}.link`, choiceLink(C, b, x), 'cb-link') : ''}</div>`, 'article', `cb-sc-item${i ? '' : ' is-on'}`);
+  const one = (x, i, w) => w(`${fig(x, i)}<div class="cb-sc-body">${T(C, b, `items.${i}.tag`, x.tag, 'p', 'cb-sc-tag')}${T(C, b, `items.${i}.name`, x.name, 'h3', 'cb-sc-name')}${RT(C, b, `items.${i}.description`, x.description, 'cb-rich cb-sc-desc')}${x.link ? BTN(C, b, `items.${i}.link`, choiceLink(C, b, x, x.link), 'cb-link') : ''}</div>`, 'article', `cb-sc-item${i ? '' : ' is-on'}`);
   const list = LIST(C, b, 'items', items, one, 'div', 'cb-sc-list');
   // The stage that stays put holds copies of the photos, hidden from screen readers; each scene
   // keeps its own photo, which is what shows on phones, with scripts off and for less movement.

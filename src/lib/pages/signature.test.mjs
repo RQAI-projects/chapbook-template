@@ -94,6 +94,12 @@ test('no Book, Pay or Call button ever goes nowhere, however few details the web
   assert.match(team, /href="\/appointments\/"[^>]*>Book with Dr Osei</);
   // Her own Cal.com page opens the Appointments page with her named (round B review, minor 3).
   assert.match(team, /href="\/appointments\/#book-[a-z0-9-]+"[^>]*>Book with Hannah</);
+  // A person with a link of her own (Read more, LinkedIn, a Cal.com page) but no Book link uses the
+  // website's booking, never that other link (round B2 re-review M1).
+  for (const href of ['https://www.linkedin.com/in/hannah-reed', '/about/', 'https://cal.com/rick/hannah']) {
+    const other = renderPage(page([{ id: 'tm1', type: 'team', variant: 'grid', data: { bookEach: true, items: [{ id: 'p1', name: 'Hannah Reed', link: { label: 'Read more', href } }] } }]), { site: SITE });
+    assert.match(other, /<p class="cb-person-book"><a[^>]*href="\/appointments\/"[^>]*>Book with Hannah</, href);
+  }
   const bare = renderPage(page([{ type: 'team', variant: 'grid', data: { bookEach: true, items: [{ name: 'Hannah Reed' }] } }]), { site: NOTHING });
   assert.match(bare, /href="\/contact\/"[^>]*>Ask about Hannah</);
 });
