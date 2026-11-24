@@ -95,3 +95,5 @@
 .shopfront-site .pro-banner{margin-top:1rem}
 .pro-custom-title{margin:2.5rem 0 1rem;font-size:clamp(1.5rem,2.6vw,2.1rem)}
 .contour .pro-hero-photo,.practice .pro-hero-photo,.office .pro-hero-photo,.cut .pro-hero-photo,.still .pro-hero-photo{margin-top:2rem}
+/* The choice a Book button kept (app walk, 24 Nov): shown when its address asks for it. Opening hours, one typed line to a row. */
+.appt-choice{display:none;margin:0 0 3rem;padding-top:2rem;border-top:1px solid var(--line-strong)}.appt-choice:target,.appt-choice.is-chosen{display:block}.appointment-page:has(.appt-choice:target) .appt-main,.appointment-page.has-choice .appt-main{display:none}.appt-choice h2{font-size:1.6rem;margin:0 0 1.2rem}.appt-choice-what{font-weight:400;color:var(--ink-dim)}.appt-choice-back{margin-top:1.5rem}.appt-choice-back a{color:inherit}.hours-line{display:block}

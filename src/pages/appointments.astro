@@ -1,10 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
 import {site} from '../lib/site';
-import {professionalDetails,contactHref,calBookingLink,bookingText} from '../lib/professional.mjs';
+import {professionalDetails,contactHref,bookingText} from '../lib/professional.mjs';
 import ServiceMenu from '../components/professional/ServiceMenu.astro';
 import {vocabFor} from '../lib/vocab';
-import {pageCss} from '../lib/pages/render.mjs';
+import {withBase} from '../lib/withBase';
+import {pageCss,bookingChoices} from '../lib/pages/render.mjs';
+import {bookingTarget} from '../lib/pages/schema.mjs';
+import {hoursLines} from '../lib/professional.mjs';
 import {blockPage,blockPages,baseColours} from '../lib/pages/site-pages';
 const p=professionalDetails((site as any).professional);
 // The website's own look (walk, 23 Nov): a website made of block pages wears its Home page's
@@ -16,7 +19,19 @@ const lookCss=homeLook&&(homeLook.colours||homeLook.font||homeLook.bodyFont)?pag
 const ownLink=(x:any)=>{const h=typeof x?.link?.href==='string'?x.link.href.trim():'';return !!h&&h!=='@booking';};
 const paysHere=!!p.bookingUrl&&blockPages.some((pg:any)=>pg.blocks.some((b:any)=>(b.type==='bookstrip'||b.type==='spaces')&&(b.data?.items||[]).some((x:any)=>x?.paid===true&&!ownLink(x))));
 const mail=/^[^\s@<>"'?&#%]+@[^\s@<>"'?&#%]+\.[^\s@<>"'?&#%]+$/.test(p.email||'')?p.email:'';
-const href=contactHref(p),calLink=calBookingLink(p.bookingUrl);
+const href=contactHref(p);
+// The calendar shown on this page behind "Show available times" (app walk, 24 Nov): a Cal.com page,
+// one event or a person's whole page (Cal.com's embed takes either), or a Google appointment
+// schedule in its own frame, as the Online booking section shows it. Nothing loads until pressed.
+const mainT=p.bookingUrl?bookingTarget(p.bookingUrl):null;
+const main=mainT&&(mainT.kind==='cal'||mainT.kind==='google')?{kind:mainT.kind,src:mainT.kind==='cal'?mainT.calLink:mainT.frame,href:mainT.href,provider:mainT.provider}:null;
+// A Book on an item with its own Cal.com or Google link comes here with the item after "#": that
+// item is named, with its own calendar. Shown by :target with scripts off; the script marks it after
+// the site's own page changes too.
+const seen=new Set();
+const choices=blockPages.flatMap((pg:any)=>bookingChoices(pg,{normalised:true})).filter((c:any)=>c.target&&!seen.has(c.key)&&seen.add(c.key));
+const callOr=p.phone?{href:'tel:'+p.phone.replace(/[^+\d]/g,''),words:p.phone,how:'call'}:mail?{href:'mailto:'+mail,words:mail,how:'email'}:null;
+const hours=hoursLines(p.hours);
 const vocab=vocabFor(site.defaultTheme);
 // The button's words: the owner's own, else the look's own ("Book a table", "Order"), so a bakery is
 // never told to "Book an appointment".
@@ -26,35 +41,65 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
 {lookCss&&<Fragment slot="head"><style set:html={lookCss}></style></Fragment>}
 <div class={`pro-site appointment-page${homeLook?.font?' has-look-font':''}`}>
  <p class="pro-kicker">{site.name}</p><h1>{vocab.bookingTitle}</h1>
- <div class="appointment-layout"><section><h2>{p.bookingUrl?'Choose a time':'Get in touch'}</h2>
- <p>{calLink?'Open the calendar below to see available times and book.':p.bookingUrl?'See available times and book with our booking service.':'Get in touch to ask about availability.'}</p>
- {calLink&&<><button class="pro-button booking-load" type="button" data-booking-link={calLink} aria-controls="booking-calendar">Show available times</button><p class="appointment-note">Opening the calendar connects to Cal.com. Your booking details go directly to the booking service.</p><p class="booking-status" role="status" aria-live="polite"></p><p class="booking-fail" hidden>The calendar did not load. <a href={href}>Open booking in a separate page</a>{p.phone?<>, or call <a href={'tel:'+p.phone.replace(/[^+\d]/g,'')}>{p.phone}</a></>:mail?<>, or email <a href={'mailto:'+mail}>{mail}</a></>:null}.</p></>}
- {href?<p><a class={calLink?'pro-link':'pro-button'} href={href}>{calLink?'Open booking in a separate page':p.bookingUrl?bookWords:'Contact us'} ↗</a></p>:<p class="pro-empty">Online booking is not available yet.</p>}
+ {choices.map((c:any)=><section class="appt-choice" id={c.key} aria-labelledby={`${c.key}-h`} data-booking-box>
+  <h2 id={`${c.key}-h`}><span class="appt-choice-what">Booking:</span> {c.name}</h2>
+  <button class="pro-button booking-load" type="button" data-booking-kind={c.target.kind} data-booking-link={c.target.src} aria-controls={`${c.key}-cal`}>Show available times</button>
+  <p class="appointment-note">Opening the calendar connects to {c.target.provider}. Your booking details go directly to the booking service.</p>
+  <p class="booking-status" role="status" aria-live="polite"></p>
+  <p class="booking-fail" hidden>The calendar did not load. <a href={c.target.href}>Open booking in a separate page</a>{callOr?<>, or {callOr.how} <a href={callOr.href}>{callOr.words}</a></>:null}.</p>
+  <p><a class="pro-link" href={c.target.href}>Open booking in a separate page ↗</a></p>
+  <div id={`${c.key}-cal`} class="booking-embed" hidden></div>
+  <p class="appt-choice-back"><a href={withBase('/appointments/')}>Book something else</a></p>
+ </section>)}
+ <div class="appt-main">
+ <div class="appointment-layout"><section data-booking-box><h2>{p.bookingUrl?'Choose a time':'Get in touch'}</h2>
+ <p>{main?'Open the calendar below to see available times and book.':p.bookingUrl?'See available times and book with our booking service.':'Get in touch to ask about availability.'}</p>
+ {main&&<><button class="pro-button booking-load" type="button" data-booking-kind={main.kind} data-booking-link={main.src} aria-controls="booking-calendar">Show available times</button><p class="appointment-note">Opening the calendar connects to {main.provider}. Your booking details go directly to the booking service.</p><p class="booking-status" role="status" aria-live="polite"></p><p class="booking-fail" hidden>The calendar did not load. <a href={href}>Open booking in a separate page</a>{callOr?<>, or {callOr.how} <a href={callOr.href}>{callOr.words}</a></>:null}.</p></>}
+ {href?<p><a class={main?'pro-link':'pro-button'} href={href}>{main?'Open booking in a separate page':p.bookingUrl?bookWords:'Contact us'} ↗</a></p>:<p class="pro-empty">Online booking is not available yet.</p>}
  {paysHere&&<p class="appointment-pay">Payment is taken as you book.</p>}
  {p.bookingUrl&&<p class="appointment-note">Availability, confirmation and any payment are managed by the booking service.</p>}
- </section><aside>{p.location&&<><h2>Where</h2><p>{p.location}</p></>}{p.hours&&<><h2>When</h2><p class="pro-hours">{p.hours}</p></>}{p.email&&<p><a href={'mailto:'+encodeURIComponent(p.email)}>{p.email}</a></p>}{p.phone&&<p><a href={'tel:'+p.phone.replace(/[^+\d]/g,'')}>{p.phone}</a></p>}</aside></div>
- {calLink&&<div id="booking-calendar" class="booking-embed" hidden></div>}
+ </section><aside>{p.location&&<><h2>Where</h2><p>{p.location}</p></>}{hours.length>0&&<><h2>When</h2><p class="pro-hours">{hours.map((l)=><span class="hours-line">{l}</span>)}</p></>}{p.email&&<p><a href={'mailto:'+encodeURIComponent(p.email)}>{p.email}</a></p>}{p.phone&&<p><a href={'tel:'+p.phone.replace(/[^+\d]/g,'')}>{p.phone}</a></p>}</aside></div>
+ {main&&<div id="booking-calendar" class="booking-embed" hidden></div>}
+ </div>
  {p.services.length>0&&<section class="appointment-services"><h2>What we offer</h2><ServiceMenu services={p.services}/></section>}
 </div>
 </Base>
 <script>
  import { showCalendar, watchCalendar } from '../scripts/booking-calendar.js';
- function setup(){
-  const button=document.querySelector<HTMLButtonElement>('.booking-load');
-  const target=document.querySelector<HTMLElement>('#booking-calendar');
-  const status=document.querySelector<HTMLElement>('.booking-status');
-  if(!button||!target||!status||button.dataset.ready)return;
-  button.dataset.ready='true';
-  button.addEventListener('click',async()=>{
-   button.disabled=true;status.textContent='Loading the booking calendar…';
-   // No calendar after about 5 seconds: the page says so, with the booking page and a call.
-   const watch=watchCalendar(target,status,document.querySelector('.booking-fail'));
-   try{
-    target.hidden=false;
-    await showCalendar(target,button.dataset.bookingLink||'',target.parentElement||document.body);if(!target.isConnected)return;
-    if(!watch.showing())status.textContent='Choose a time in the calendar. If it does not load, use the booking link above.';button.hidden=true;
-   }catch{button.disabled=false;watch.fail();}
-  });
+ // The item a Book button chose ("#book-…"): shown, and the rest of the page's choices left out.
+ function choose(){
+  const page=document.querySelector('.appointment-page');if(!page)return;
+  let id='';try{id=decodeURIComponent(location.hash.slice(1));}catch{id='';}
+  let any=false;
+  for(const s of page.querySelectorAll<HTMLElement>('.appt-choice')){const on=!!id&&s.id===id;s.classList.toggle('is-chosen',on);any=any||on;}
+  page.classList.toggle('has-choice',any);
  }
- setup();document.addEventListener('astro:page-load',setup);
+ // Every "Show available times" loads its own calendar, only when pressed.
+ function setup(){
+  choose();
+  for(const button of document.querySelectorAll<HTMLButtonElement>('.appointment-page .booking-load')){
+   const box=button.closest<HTMLElement>('[data-booking-box]');
+   const target=document.getElementById(button.getAttribute('aria-controls')||'');
+   const status=box?.querySelector<HTMLElement>('.booking-status');
+   if(!box||!target||!status||button.dataset.ready)continue;
+   button.dataset.ready='true';
+   button.addEventListener('click',async()=>{
+    button.disabled=true;status.textContent='Loading the booking calendar…';
+    // No calendar after about 5 seconds: the page says so, with the booking page and a call.
+    const watch=watchCalendar(target,status,box.querySelector('.booking-fail'));
+    try{
+     const kind=button.dataset.bookingKind||'cal',src=button.dataset.bookingLink||'';
+     target.hidden=false;
+     if(kind==='google'&&/^https:\/\/calendar\.google\.com\/calendar\/appointments\/schedules\//.test(src)){
+      const f=document.createElement('iframe');f.src=src;f.title='Booking calendar';f.addEventListener('load',()=>{f.dataset.loaded='1';});
+      target.replaceChildren(f);
+     }else if(kind==='cal'&&src)await showCalendar(target,src,target.parentElement||document.body);
+     else throw new Error('unknown');
+     if(!target.isConnected)return;
+     if(!watch.showing())status.textContent='Choose a time in the calendar. If it does not load, use the booking link above.';button.hidden=true;
+    }catch{button.disabled=false;watch.fail();}
+   });
+  }
+ }
+ setup();document.addEventListener('astro:page-load',setup);window.addEventListener('hashchange',choose);
 </script>

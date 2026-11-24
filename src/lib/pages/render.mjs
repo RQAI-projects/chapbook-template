@@ -899,7 +899,7 @@ R_.gallery = (C, b) => {
 };
 
 function serviceLinks(C, b, i, s) {
-  const book = s.link ? BTN(C, b, `items.${i}.link`, s.link, 'cb-link') : '';
+  const book = s.link ? BTN(C, b, `items.${i}.link`, choiceLink(C, b, s), 'cb-link') : '';
   const pay = s.pay ? BTN(C, b, `items.${i}.pay`, s.pay, 'cb-btn cb-btn-small') : '';
   // Booking and paying are two steps here, so they say so; a recognised pay page is named.
   const known = pay && s.pay?.href ? payNote(s.pay.href) : '';
@@ -1445,6 +1445,50 @@ export function bookWays(C, { own = null, label = 'Book', whatsapp = '' } = {}) 
   if (!out.length) out.push({ href: at('/contact/'), label: 'Get in touch', kind: 'contact', away: false });
   return out;
 }
+// ---- the visitor's choice kept (app walk, 24 Nov 2026) ----
+// A Book whose own link is a Cal.com or Google booking page opens the website's Appointments page
+// with that choice named and its own calendar behind "Show available times", rather than leaving
+// the website. The address carries the choice after "#", which the static page reads with
+// scripts off too (:target). Any other own link opens directly, as before; an item without one
+// goes to the Appointments page as every Book does.
+const keyPart = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+export const choiceKey = (slug, blockId, itemId) => `book-${keyPart(slug || 'home')}-${keyPart(blockId)}-${keyPart(itemId)}`;
+// The booking page behind an own link, when the Appointments page can show it: { kind, src, href, provider }.
+export function choiceTarget(href) {
+  const h = typeof href === 'string' ? href.trim() : '';
+  if (!/^https:\/\//i.test(h)) return null;
+  const t = bookingTarget(h);
+  return t && (t.kind === 'cal' || t.kind === 'google') ? { kind: t.kind, src: t.kind === 'cal' ? t.calLink : t.frame, href: t.href, provider: t.provider } : null;
+}
+// The link a Book button uses on the website for item `x` of block `b`.
+function choiceLink(C, b, x, link = x?.link) {
+  if (C.editable || !link?.href || !choiceTarget(link.href)) return link;
+  return { ...link, href: `/appointments/#${choiceKey(C.page?.slug, b.id, x.id)}` };
+}
+const BOOKABLE = ['bookstrip', 'spaces', 'services'];
+// The things on a page that a visitor books, each with the link its Book uses (its own, or '' for
+// the website's): booking strip choices, dated places and treatment cards with a Book button.
+// The app's "What people can book" table and the Appointments page both read this list.
+// → [{ key, slug, blockId, itemId, index, type, name, link, target }]
+export function bookingChoices(rawPage, { normalised = false } = {}) {
+  const page = normalised ? rawPage : normalisePage(rawPage || {}, { allowData: true });
+  const out = [], slug = page.slug || 'home';
+  const walk = (blocks) => { for (const b of blocks || []) {
+    if (b.type === 'columns') { walk(b.data?.children); continue; }
+    if (!BOOKABLE.includes(b.type)) continue;
+    (b.data?.items || []).forEach((x, index) => {
+      if (!x) return;
+      if (b.type === 'bookstrip' && !x.name) return;
+      if (b.type === 'spaces' && !x.name && !x.date) return;
+      if (b.type === 'services' && !(x.name && x.link?.href)) return;
+      const own = typeof x.link?.href === 'string' && x.link.href !== '@booking' ? x.link.href : '';
+      const words = b.type === 'spaces' ? [x.name, longDate(x.date)] : [x.name, x.duration];
+      out.push({ key: choiceKey(slug, b.id, x.id), slug, blockId: b.id, itemId: x.id, index, type: b.type, name: words.map((w) => String(w || '').replace(/\*+/g, '').trim()).filter(Boolean).join(', '), link: own, target: choiceTarget(own) });
+    });
+  } };
+  walk(page.blocks);
+  return out;
+}
 const wayLink = (w, cls = 'cb-btn') => `<a class="${cls}" href="${esc(w.href)}"${w.away ? ' rel="noopener"' : ''}${w.kind === 'whatsapp' ? ' target="_blank"' : ''} data-way="${w.kind}">${esc(w.label)}</a>`;
 // The Cal.com event behind a booking address ("sam/haircut"), when it is one a page can ask
 // Cal.com about: a person's own event. Teams and other addresses give ''.
@@ -1485,14 +1529,14 @@ R_.bookstrip = (C, b) => {
   const sticky = d.sticky ? `<div class="cb-bookbar" data-bookbar role="region" aria-label="${esc(label)}" hidden>${ways.slice(0, 2).map((w, i) => wayLink({ ...w, label: w.kind === 'call' ? 'Call' : w.kind === 'whatsapp' ? 'WhatsApp' : w.label }, i ? 'cb-btn cb-btn-2' : 'cb-btn')).join('')}</div>` : '';
   if (v === 'bar' || !named.length) return `<div class="cb-bs cb-bs-bar">${head}<div class="cb-bs-go">${buttons}${live}</div></div>${note}${sticky}`;
   if (v === 'cards') {
-    const cards = named.map(([x, i]) => { const own = bookWays(C, { own: x.link, label, whatsapp: d.whatsapp })[0]; return `<article class="cb-bs-opt"><h3 class="cb-bs-name">${esc(x.name)}</h3><p class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}${paid(x)}</p>${wayLink({ ...own, label: own.kind === 'book' ? label : own.label }, 'cb-btn cb-btn-small')}</article>`; }).join('');
+    const cards = named.map(([x, i]) => { const own = bookWays(C, { own: choiceLink(C, b, x), label, whatsapp: d.whatsapp })[0]; return `<article class="cb-bs-opt"><h3 class="cb-bs-name">${esc(x.name)}</h3><p class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}${paid(x)}</p>${wayLink({ ...own, label: own.kind === 'book' ? label : own.label }, 'cb-btn cb-btn-small')}</article>`; }).join('');
     return `${head}<div class="cb-bs cb-bs-cards"><div class="cb-bs-pick">${cards}</div>${live}</div>${note}${sticky}`;
   }
   // One strip: a choice of what to book, then one button. Each choice carries where it goes; the
   // page's script sends the button there. Without it the button opens the booking page, where
   // the same choice is offered.
   const opts = named.map(([x, i], k) => {
-    const own = x.link?.href && x.link.href !== '@booking' ? resolveLink(x.link.href, C) : '';
+    const mine = choiceLink(C, b, x), own = mine?.href && mine.href !== '@booking' ? resolveLink(mine.href, C) : '';
     const words = [x.duration, x.price].filter(Boolean).join(', ');
     return `<label class="cb-bs-opt"><input type="radio" name="bs-${uid}" value="${i}"${k ? '' : ' checked'}${own ? ` data-href="${esc(own)}"` : ''}><span class="cb-bs-name">${esc(x.name)}</span>${words || paid(x) ? `<span class="cb-bs-meta">${x.duration ? `<span class="cb-bs-time">${esc(x.duration)}</span>` : ''}${x.price ? `<span class="cb-bs-price">${esc(x.price)}</span>` : ''}${paid(x)}</span>` : ''}</label>`;
   }).join('');
@@ -1789,7 +1833,7 @@ R_.spaces = (C, b) => {
       else {
         // In the editor a date without its own link still shows its Book button, which opens the
         // website's booking page (or calls), so the owner sees where it goes and can change it.
-        const book = x.link ? BTN(C, b, `items.${i}.link`, { label: x.link.label || 'Book', href: x.link.href }, 'cb-btn cb-btn-small')
+        const book = x.link ? BTN(C, b, `items.${i}.link`, { label: x.link.label || 'Book', href: choiceLink(C, b, x).href }, 'cb-btn cb-btn-small')
           : C.editable ? BTN(C, b, `items.${i}.link`, { label: 'Book', href: '@booking' }, 'cb-btn cb-btn-small') : wayLink(site, 'cb-btn cb-btn-small');
         const pay = x.pay && !paysOnBooking(C, x) ? BTN(C, b, `items.${i}.pay`, { label: x.pay.label || 'Pay now', href: x.pay.href }, 'cb-btn cb-btn-2 cb-btn-small') : '';
         // Booking and paying in two steps say so; a recognised pay page is named.
