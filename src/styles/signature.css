@@ -449,7 +449,10 @@ html.cba-js .cb-cmp-stage.is-live:has(.cb-cmp-range:focus-visible){outline:3px s
   html.cbm-js .cbm[data-m-arrive=settle]:not([data-m-edit])>.cb.cb-opening{animation:cbs-arrive-rise .8s var(--m-ease) both}
   html.cbm-js .cbm[data-m-arrive=settle]:not([data-m-edit])>.cb:nth-child(2){animation-delay:.08s}
   html.cbm-js .cbm[data-m-arrive=settle]:not([data-m-edit])>.cb:nth-child(3){animation-delay:.16s}
-  html.cbm-js .cbm[data-m-arrive=veil]:not([data-m-edit])::before{content:"";position:fixed;inset:0;z-index:90;background:var(--accent);transform-origin:50% 0;pointer-events:none;animation:cbs-veil .75s cubic-bezier(.7,0,.2,1) .05s both}
+  /* Veil: a coloured band across the top of the screen draws up and away as the page opens. It
+     never covers the whole first screen (app walk, 24 Nov: a full-screen sheet read as a second
+     of solid colour on a computer). Transform only; nothing under reduced motion. */
+  html.cbm-js .cbm[data-m-arrive=veil]:not([data-m-edit])::before{content:"";position:fixed;inset:0 0 auto;height:min(22vh,11rem);z-index:90;background:var(--accent);transform-origin:50% 0;pointer-events:none;animation:cbs-veil .6s cubic-bezier(.7,0,.2,1) both}
 
   /* ---- As people scroll: a wave from corner to corner, and a curtain that opens ---------- */
   .cbm.cbm-ready[data-m-scroll=cascade] [data-m]{transform:translate3d(0,calc(var(--m-dist) + 16px),0) scale(.94) rotate(-1.2deg);transform-origin:0 100%}
