@@ -575,6 +575,11 @@ export const BLOCK_TYPES = {
         // A monthly plan's link to the payment service's own page where members change their card
         // or cancel (Stripe's customer portal link, for example). Optional.
         manage: { kind: 'link', label: 'Manage your membership link' },
+        // The button's words while this card has no pay link of its own (app walk, 24 Nov: a
+        // package and a monthly plan both said Book). Chosen by the owner, never guessed from the
+        // card's words. Book, Buy and Join go where Book would; Ask about this and Get in touch go
+        // to the Contact page.
+        act: { kind: 'choice', options: ['book', 'buy', 'join', 'ask', 'contact'], def: 'book', labels: { book: 'Book', buy: 'Buy', join: 'Join', ask: 'Ask about this', contact: 'Get in touch' }, label: 'Button words without a pay link' },
       }, sample: { name: 'New way to pay', price: '', includes: '' } },
       note: L(240, 'Small print'),
       // A card with no pay link yet still leads somewhere by itself (the booking page, a call or

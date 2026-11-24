@@ -220,3 +220,20 @@ test('a price asks only with no digit and a way of asking, as whole words (revie
   for (const p of ['', '  ', 'Ask', 'ask us', 'Quote', 'Get a quote', 'Quoted', 'Quotation', 'POA', 'P.O.A.', 'p.o.a', 'Price on application', 'On request', 'Price on request', 'TBC', 'To be confirmed', 'Enquire', 'Enquire for price']) assert.equal(asksPrice(p), true, p);
   for (const p of ['Free', 'Card', 'Card, when you book', 'Insured', '£0', 'From £50', '£50 (ask about concessions)', '£45 TBC', 'Tasks', 'Basket', 'Taskforce', 'Enquired']) assert.equal(asksPrice(p), false, p);
 });
+test('ways to pay: the card’s own button words when it has no pay link, never guessed (app walk, 24 Nov)', () => {
+  const plans = (x) => ({ type: 'plans', variant: 'rows', data: { items: [{ name: 'Block of five', price: '£250', ...x }] } });
+  const books = { site: withPro({ bookingUrl: 'https://cal.com/sam/massage' }) };
+  assert.match(draw([plans({ act: 'ask' })], books), /href="\/contact\/"[^>]*>Ask about this<\/a>/);
+  assert.match(draw([plans({ act: 'contact' })], books), /href="\/contact\/"[^>]*>Get in touch<\/a>/);
+  assert.match(draw([plans({ act: 'join' })], books), /href="\/appointments\/"[^>]*>Join<\/a>/);
+  assert.match(draw([plans({ act: 'buy' })], books), /href="\/appointments\/"[^>]*>Buy<\/a>/);
+  assert.match(draw([plans({ act: 'join' })]), /href="\/contact\/"[^>]*>Join<\/a>/, 'phone only: Join goes to Contact, never rings');
+  assert.match(draw([plans({})], books), /href="\/appointments\/"[^>]*>Book<\/a>/, 'no choice: as before');
+  assert.match(draw([plans({ name: 'Monthly', act: 'book' })], books), /href="\/appointments\/"[^>]*>Book<\/a>/, 'the words are not guessed from the name');
+  // With a pay link the pay button wins, with its own words.
+  assert.match(draw([plans({ act: 'ask', pay: { label: 'Join', href: STRIPE } })], books), /<a class="cb-btn cb-pl-pay" href="https:\/\/buy\.stripe\.com\/aEU5kC0n9"[^>]*>Join<\/a>/);
+  // Ask at reception and No button still win over the card's words.
+  const block = (unpaid) => ({ type: 'plans', variant: 'rows', data: { unpaid, items: [{ name: 'Block', price: '£250', act: 'join' }] } });
+  assert.match(draw([block('ask')], books), /Ask at reception/);
+  assert.doesNotMatch(draw([block('none')], books), />Join</);
+});

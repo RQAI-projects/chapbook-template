@@ -1519,9 +1519,14 @@ R_.plans = (C, b) => {
     else if (x.pay?.href) action = `<a class="cb-btn cb-pl-pay" href="${esc(resolveLink(x.pay.href, C))}" rel="noopener">${esc(x.pay.label || 'Pay now')}</a>${payNote(x.pay.href)}`;
     else if (d.unpaid === 'ask') action = '<p class="cb-pl-ask">Ask at reception</p>';
     else if (d.unpaid === 'none') action = '';
+    // The card's own button words, chosen by the owner (app walk, 24 Nov): Ask about this and Get
+    // in touch go to the Contact page; Buy and Join go to the booking page, or to Contact when the
+    // website books by phone (a Join that rings a number would surprise).
+    else if (x.act === 'ask' || x.act === 'contact') action = wayLink({ href: C.href ? C.href('/contact/') : '/contact/', label: x.act === 'ask' ? 'Ask about this' : 'Get in touch', kind: 'contact', away: false }, 'cb-btn cb-btn-2 cb-pl-pay');
     // A card whose price asks ("Ask", "Quote", "POA", blank) is a question, not a booking: it
     // leads to the Contact page (newcomer walk, 23 Nov).
     else if (asksPrice(x.price)) action = wayLink({ href: C.href ? C.href('/contact/') : '/contact/', label: 'Get in touch', kind: 'contact', away: false }, 'cb-btn cb-btn-2 cb-pl-pay');
+    else if (x.act === 'buy' || x.act === 'join') { const word = x.act === 'buy' ? 'Buy' : 'Join'; action = wayLink(other.kind === 'book' ? { ...other, label: word } : { href: C.href ? C.href('/contact/') : '/contact/', label: word, kind: 'contact', away: false }, 'cb-btn cb-btn-2 cb-pl-pay'); }
     else action = wayLink({ ...other, label: other.kind === 'contact' ? 'Ask about this' : other.label }, 'cb-btn cb-btn-2 cb-pl-pay');
     const price = x.price || x.per || C.editable ? `<p class="cb-pl-price">${T(C, b, `items.${i}.price`, x.price, 'span', 'cb-pl-amount')}${T(C, b, `items.${i}.per`, x.per, 'span', 'cb-pl-per')}</p>` : '';
     // A monthly plan's own link to the payment service's page where members change their card or
