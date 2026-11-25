@@ -286,6 +286,41 @@ test('round C4 re-review minor 5: show, never guess', () => {
   assert.equal(partlyClosed(['Every day 9am to 5pm except Sunday 10am to 2pm'], 0), true);
 });
 
+test('round C5 re-review S1, S2 and minor 1: "except" with part of a day, appointment notes, "except" before the times', () => {
+  // x closed, - unsaid (no search data, no Open now), ? not named, else the times.
+  const week = (lines) => [0, 1, 2, 3, 4, 5, 6].map((d) => { if (partlyClosed(lines, d)) return '-'; const s = hoursOn(lines, d); return s === null ? '?' : s.length ? s.map(([a, z]) => `${a / 60}-${z / 60}`).join('+') : 'x'; }).join(' ');
+  for (const [l, w] of [
+    ['Mon to Fri 9am to 5pm except Wednesday afternoons', '? 9-17 9-17 - 9-17 9-17 ?'],
+    ['Mon to Fri 9am to 5pm except Wednesday mornings', '? 9-17 9-17 - 9-17 9-17 ?'],
+    ['Mon to Sat 9am to 5pm except Thursday when we open at 1pm', '? 9-17 9-17 9-17 - 9-17 9-17'],
+    ['Mon to Sat 9am to 5pm except Saturday afternoon', '? 9-17 9-17 9-17 9-17 9-17 -'],
+    ['Mon to Fri 9am to 5pm except Thursdays after 1pm', '? 9-17 9-17 9-17 - 9-17 ?'],
+    ['Every day 9am to 5pm except Sunday', 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
+    ['Open every day except Sunday, 9am to 5pm', 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
+    ['Open daily except Mondays, 10am to 4pm', '10-16 x 10-16 10-16 10-16 10-16 10-16'],
+    ['Every day except Sunday 9am to 5pm', '- - - - - - -'],
+    ['Every day apart from Sunday 9am to 5pm', '- - - - - - -'],
+    ['Mon to Sat 9am to 5pm. Last booking 4.30pm', '? 9-17 9-17 9-17 9-17 9-17 9-17'],
+    ['Mon to Sat 9am to 5pm, last booking 4.30pm', '? 9-17 9-17 9-17 9-17 9-17 9-17'],
+    ['Mon to Fri 9am to 6pm. Last appointment 5pm', '? 9-18 9-18 9-18 9-18 9-18 ?'],
+    ['Mon to Fri 9am to 6pm. First appointment 8am', '? 9-18 9-18 9-18 9-18 9-18 ?'],
+    ['Mon to Fri 9am to 6pm. First appointment 8am by arrangement', '? 9-18 9-18 9-18 9-18 9-18 ?'],
+    ['Mon to Fri 9am to 5pm. Closed the last week of December', '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ['Mon to Fri 9am to 5pm. Last Saturday of the month 10am to 2pm', '? 9-17 9-17 9-17 9-17 9-17 -'],
+    ['Mon to Fri 9am to 5pm || Sat 9am to 12pm (first and third Saturday only)', '? 9-17 9-17 9-17 9-17 9-17 -'],
+    ['Mon to Fri 9am to 5pm except bank holidays', '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ['Every day 9am to 5pm except Sundays and bank holidays', 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
+    ['Weekdays 9am to 5pm. Weekends by appointment', '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ['Tue to Sat 10am to 6pm, late night Thursday until 8pm', '? ? 10-18 10-18 10-18 10-18 10-18'],
+    ['Mon to Fri. 9am to 5pm', '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ['Monday to Friday. 9am to 5pm. Saturday. 10am to 2pm', '? 9-17 9-17 9-17 9-17 9-17 10-14'],
+    ['Mon to Fri 9am to 5pm. 10am to 2pm on Saturdays', '? 9-17 9-17 9-17 9-17 9-17 10-14'],
+    ['Weekdays. 8am to 6pm', '? 8-18 8-18 8-18 8-18 8-18 ?'],
+    ['Tue to Sat. 9.30am to 5.30pm. Closed Sun and Mon', 'x x 9.5-17.5 9.5-17.5 9.5-17.5 9.5-17.5 9.5-17.5'],
+    ['Mon to Fri 9am to 5pm. Sat 10am to 2pm. 1pm to 2pm closed for lunch', '? 9-17 9-17 9-17 9-17 9-17 -'],
+  ]) assert.equal(week(l.split(' || ')), w, l);
+});
+
 test('minor 2: block pages draw hours without blank rows', () => {
   const html = renderPage(page([{ id: 'c', type: 'contact', variant: 'card', data: { heading: 'Find us', business: true } }]), { site: { ...SITE, professional: { ...SITE.professional, hours: 'Mon to Fri 9am to 5pm\n\n\nSat 9am to 1pm  ' } }, today: '2026-11-24' });
   assert.match(html, /Mon to Fri 9am to 5pm<br>Sat 9am to 1pm</);

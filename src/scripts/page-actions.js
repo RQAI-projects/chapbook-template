@@ -49,7 +49,7 @@ const DAY_RE = new RegExp(String.raw`\b(?:${DAY_WORD}|weekdays?|weekends?)\b`, '
 // "Open" or "Closed" before bank or public holidays splits too, so that part can be left out
 // (". Open bank holidays 10am to 2pm"; round C build review, minor 9).
 // "Closed every Wednesday", "each", "all day", "at weekends", "on the" too (round C3 re-review S3).
-export const DAY_AHEAD = new RegExp(String.raw`^\s*(?:(?:closed|open)(?:\s+(?:on|at|the|every|each|all\s+day|all|other|first|second|third|fourth|last))*\s+)?(?:${DAY_WORD}|weekdays?|weekends?|every ?day|daily)\b|^\s*(?:closed|open)(?:\s+on)?\s+(?:bank|public)\s+holidays?\b`, 'i');
+export const DAY_AHEAD = new RegExp(String.raw`^\s*(?:(?:closed|open)(?:\s+(?:on|at|the|every|each|all\s+day|all|other|first|second|third|fourth|last))*\s+)?(?:(?:first|second|third|fourth|last)\s+)?(?:${DAY_WORD}|weekdays?|weekends?|every ?day|daily)\b|^\s*(?:closed|open)(?:\s+on)?\s+(?:bank|public)\s+holidays?\b`, 'i');
 const isDay = (w, key) => new RegExp(String.raw`^${DAY_WORD}$`).test(w) && w.startsWith(key);
 export function dayInLabel(label, dow) {
   const text = String(label || '').toLowerCase();
@@ -150,12 +150,17 @@ const plural = (text) => { const w = String(text || '').toLowerCase().match(DAY_
 // Words the reader cannot be sure of ("the first Sunday of the month", "every other Saturday", "in
 // school holidays"): such a line gives no search data and no Open now for the days it names, rather
 // than a guess; the rows on the website stay as typed (round C4 re-review, minor 5: show, never guess).
-const UNSURE = /\b(?:first|second|third|fourth|last|of the month|every other|alternate|fortnightly|school|term(?:s|[ -]?time)?)\b/i;
-// "Every day 9am to 5pm except Sunday": the days after "except" are closed (round C4 re-review, minor 5).
-const EXCEPT = /\s+except\s+(?:on\s+)?(.*)$/i;
+// Only words that change which days are open count; "First appointment 8am" and "Last booking
+// 4.30pm" are notes about appointments and never do (round C5 re-review S2).
+const UNSURE = new RegExp(String.raw`\b(?:(?:first|second|third|fourth|last)\s+(?:${DAY_WORD})\b|of the month|every other|alternate|fortnightly|school|term(?:s|[ -]?time)?\b)`, 'i');
+// "Every day 9am to 5pm except Sunday": the days after "except" are closed (round C4 re-review, minor 5),
+// but only when nothing but days follows; "except Wednesday afternoons" or "except Thursday when we
+// open at 1pm" leaves that day as typed and unsaid (round C5 re-review S1).
+const EXCEPT = /\s+(?:except|apart from)\s+(?:on\s+)?(.*)$/i;
+const onlyDays = (t) => !String(t || '').toLowerCase().replace(DAY_RE, ' ').replace(/\b(?:and|on|the)\b|[&,.\s]+/g, '');
 export function hoursGroups(line) {
   const groups = [];
-  let waiting = '', waitingKind = null, waitingAnd = false, loose = null;
+  let waiting = '', waitingKind = null, waitingAnd = false, waitingExcept = '', loose = null;
   for (const { text: typed, and } of hoursPieces(line)) {
     const part = typed.replace(HOLIDAYS, ' ');
     if (part !== typed && !ANY_DAY.some((d) => dayInLabel(part.replace(new RegExp(RANGE.source, 'gi'), ' '), d))) continue;
@@ -166,14 +171,21 @@ export function hoursGroups(line) {
     const ex = spans.length && !closed ? EXCEPT.exec(part) : null, exDays = ex && ANY_DAY.some((d) => dayInLabel(ex[1], d));
     const unsure = UNSURE.test(part) || (exDays && hoursSpans(ex[1]).length > 0);
     if (exDays && !unsure) {
-      groups.push({ days: `${waiting} ${part.slice(0, ex.index).replace(new RegExp(RANGE.source, 'gi'), ' ')}`, spans: [...spans], closed: false }, { days: ex[1], spans: [], closed: true });
+      groups.push({ days: `${waiting} ${part.slice(0, ex.index).replace(new RegExp(RANGE.source, 'gi'), ' ')}`, spans: [...spans], closed: false }, { days: ex[1], spans: [], closed: true, ...(onlyDays(ex[1]) ? {} : { partial: true }) });
       waiting = ''; waitingKind = null; continue;
     }
+    // "Open every day except Sunday, 9am to 5pm": the times that follow are for the other days, and
+    // Sunday is closed (round C5 re-review, minor 1).
+    const exw = !spans.length && !closed && hasDays ? EXCEPT.exec(part) : null;
+    if (exw && onlyDays(exw[1]) && ANY_DAY.some((d) => dayInLabel(exw[1], d))) { if (!waiting) waitingAnd = and; waiting = `${waiting} ${part.slice(0, exw.index)}`; waitingExcept = exw[1]; continue; }
     if (unsure && (hasDays || waiting)) { groups.push({ days: `${waiting} ${days}`, spans: [...spans], closed: closed && !spans.length, partial: true }); waiting = ''; waitingKind = null; continue; }
     if (hasDays && !spans.length && !closed) { if (!waiting) waitingAnd = and; waiting = `${waiting} ${days}`; waitingKind = waitingKind || partKind(part); continue; }
-    if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length, ...(closed && !spans.length && partKind(part) ? { partial: true } : {}) }); waiting = ''; waitingKind = null; continue; }
+    if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length, ...(closed && !spans.length && partKind(part) ? { partial: true } : {}) }); if (waitingExcept && spans.length) groups.push({ days: waitingExcept, spans: [], closed: true }); waiting = ''; waitingKind = null; waitingExcept = ''; continue; }
     // Times with no days: more times for the group before, or (times written first) for the days after.
     const last = groups[groups.length - 1];
+    // Times said to be closed ("1pm to 2pm closed for lunch") are never opening times: the day before
+    // them is left unsaid (round C5 re-review, h5 and h7 lines).
+    if (closed && spans.length && last && !last.closed) { last.partial = true; continue; }
     if (last?.closed && spans.length) continue;
     if (last) { last.spans.push(...spans); if (spans.length) last.closed = false; else if (closed && !last.spans.length) last.closed = true; }
     else if (spans.length || closed) loose = { spans: [...(loose?.spans || []), ...spans], closed: closed && !spans.length && !loose?.spans?.length };
