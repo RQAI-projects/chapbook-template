@@ -2060,14 +2060,18 @@ export function servicesOf(biz) {
 }
 // "From £35" from "£35"; the amount in a price, for the lowest of several.
 const fromless = (p) => String(p || '').replace(/^\s*from\s+/i, '').trim();
-const amount = (p) => { const m = /\d[\d,]*(?:\.\d+)?/.exec(fromless(p)); return m ? parseFloat(m[0].replace(/,/g, '')) : null; };
+// A plain price: an amount with at most a currency sign before it ("£35", "From £35", "35"), as
+// { cur, n, text }; anything else ("Two for £50", "Ask") is null (round C build review, minor 3).
+const plainPrice = (p) => { const m = /^([£$€]?)\s?(\d[\d,]*(?:\.\d+)?)$/.exec(fromless(p)); return m ? { cur: m[1], n: parseFloat(m[2].replace(/,/g, '')), text: fromless(p) } : null; };
+// A length's unit, so "30 mins" and "60 min" read as one: 'min' or 'hour', else the word itself.
+const unitWord = (u) => (/^min/i.test(u) ? 'min' : /^(h|hr|hrs|hour|hours)$/i.test(u) ? 'hour' : u.toLowerCase());
 // "30 min", "60 min", "90 min" → "30 to 90 min"; one length → that length; mixed units → ''.
 function lengthRange(list) {
   const ls = list.map((s) => String(s.duration || '').trim()).filter(Boolean);
   if (!ls.length) return '';
   if (ls.every((l) => l === ls[0])) return ls[0];
   const parts = ls.map((l) => /^(\d+(?:\.\d+)?)\s*([a-z]+)$/i.exec(l));
-  if (parts.some((x) => !x) || parts.some((x) => x[2].toLowerCase() !== parts[0][2].toLowerCase())) return '';
+  if (parts.some((x) => !x) || parts.some((x) => unitWord(x[2]) !== unitWord(parts[0][2]))) return '';
   const ns = parts.map((x) => parseFloat(x[1]));
   return `${Math.min(...ns)} to ${Math.max(...ns)} ${parts[0][2]}`;
 }
@@ -2101,16 +2105,28 @@ export function linkServices(b, C) {
     const y = { ...x }, svc = many[0], summary = !!x.services?.length;
     const set = new Set(take.filter((k) => k !== 'link'));
     if (summary) {
+      // Its name: the services' one name, else the card's own, else the first service's (round C
+      // build review S2), so a renamed service never leaves the card without a heading.
       const names = new Set(many.map((s) => s.name));
       if (names.size === 1) y.name = line('name', svc.name);
-      else set.delete('name');
-      y.duration = line('duration', lengthRange(many));
-      const low = many.filter((s) => amount(s.price) !== null).sort((a, z) => amount(a.price) - amount(z.price))[0];
-      y.price = low ? line('price', many.length > 1 ? `From ${fromless(low.price)}` : low.price) : '';
+      else if (x.name) set.delete('name');
+      else y.name = line('name', svc.name);
+      if (x.lengthShows !== 'hidden') y.duration = line('duration', lengthRange(many));
+      // "From" from the lowest plain amount, all in one currency; otherwise the card's own words.
+      const prices = many.map((s) => plainPrice(s.price));
+      if (prices.every(Boolean) && new Set(prices.map((p) => p.cur)).size === 1) {
+        const low = prices.reduce((a, z) => (z.n < a.n ? z : a));
+        y.price = line('price', many.length > 1 ? `From ${low.text}` : many[0].price);
+      } else if (x.price) set.delete('price');
+      else delete y.price;
       for (const k of ['pay', 'paid', 'act', 'manage']) set.delete(k);
     } else {
-      y.name = line('name', byLength ? lengthHeading(svc.duration) : svc.name);
-      if (take.includes('duration')) y.duration = line('duration', svc.duration);
+      // The length shows in its own place, in the heading ("Sports massage, 30 minutes") or not at
+      // all, as the card chooses (round C build review S6: the samples keep their look). A ways-to-pay
+      // section of one service in several lengths shows the length as the heading.
+      const shows = x.lengthShows;
+      y.name = line('name', shows === 'heading' && svc.duration ? `${svc.name}, ${lengthHeading(svc.duration)}` : byLength && shows !== 'hidden' && shows !== 'heading' ? lengthHeading(svc.duration) : svc.name);
+      if (take.includes('duration')) { if (shows === 'heading' || shows === 'hidden') delete y.duration; else y.duration = line('duration', svc.duration); }
       y.price = line('price', svc.price);
       if (take.includes('pay')) {
         if (svc.paymentTyped) y.pay = { label: cleanLine(svc.payLabel || x.pay?.label || 'Pay now', 60), href: promoHref(svc.paymentTyped, svc.promoCode) };

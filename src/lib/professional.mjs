@@ -25,7 +25,7 @@ export const SERVICE_ID=/^[a-z0-9][a-z0-9-]{0,39}$/;
 export const SERVICE_ACTS=['book','buy','join','ask','contact'];
 // An https address kept exactly as typed (round B2 S1: a query or hash is the owner's), or ''.
 export function typedHttps(value){const t=text(value,2048);return safeBookingUrl(t)?t:'';}
-const serviceExtras=(s)=>{const o={};const id=text(s.id,40);if(SERVICE_ID.test(id))o.id=id;if(SERVICE_ACTS.includes(s.act))o.act=s.act;if(s.paid===true)o.paid=true;const m=typedHttps(s.manage);if(m)o.manage=m;const b=typedHttps(s.bookingUrl);if(b)o.bookingTyped=b;const pay=typedHttps(s.paymentUrl);if(pay)o.paymentTyped=pay;return o;};
+const serviceExtras=(s)=>{const o={};const id=text(s.id,40);if(SERVICE_ID.test(id)&&!/^n\d+$/.test(id))o.id=id;if(SERVICE_ACTS.includes(s.act))o.act=s.act;if(s.paid===true)o.paid=true;const m=typedHttps(s.manage);if(m)o.manage=m;const b=typedHttps(s.bookingUrl);if(b)o.bookingTyped=b;const pay=typedHttps(s.paymentUrl);if(pay)o.paymentTyped=pay;return o;};
 const text=(v,max=500)=>typeof v==='string'?v.trim().slice(0,max):'';
 export function safeBookingUrl(value){
   try{const u=new URL(text(value,2048));return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch{return '';}

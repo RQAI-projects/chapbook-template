@@ -102,3 +102,29 @@ test('a page with a linked card needs the design that knows the list (release 8)
   const typed = [block('services', [{ name: 'Sports massage', price: '£35', duration: '30 min' }], 'menu')];
   assert.equal(draw(typed), renderPage({ v: 1, slug: 'home', blocks: typed }, { site: { ...SITE, professional: { ...SITE.professional, services: [] } }, today: '2026-11-25' }));
 });
+
+test('round C build review S6: a linked card keeps its look, the length in its own place, in the heading or not shown', () => {
+  const b = linkServices(block('services', [{ service: 'kn30', lengthShows: 'heading' }, { service: 'kn60', lengthShows: 'hidden' }, { service: 'kn90' }], 'board'), C());
+  assert.deepEqual(b.data.items.map((x) => [x.name, x.duration ?? '']), [['Sports massage, 30 minutes', ''], ['Sports massage', ''], ['Sports massage', '90 min']]);
+  // Ways to pay: the length heading rule stands; "hidden" keeps the name.
+  const p = linkServices(block('plans', [{ service: 'kn30' }, { service: 'kn60', lengthShows: 'hidden' }]), C());
+  assert.deepEqual(p.data.items.map((x) => x.name), ['30 minutes', 'Sports massage']);
+});
+
+test('round C build review S2 and minor 3: a summary card keeps a name; From only from plain amounts in one currency', () => {
+  const renamed = { ...SITE, professional: { ...SITE.professional, services: LIST.map((s) => (s.id === 'kn30' ? { ...s, name: 'Short sports massage' } : s)) } };
+  assert.equal(linkServices(block('services', [{ services: ['kn30', 'kn60'], name: 'Sports massage' }], 'flip'), C(renamed)).data.items[0].name, 'Sports massage', 'its own name');
+  assert.equal(linkServices(block('services', [{ services: ['kn30', 'kn60'] }], 'flip'), C(renamed)).data.items[0].name, 'Short sports massage', 'else the first service\'s');
+  const odd = (prices, own) => linkServices(block('services', [{ services: ['a', 'b'], name: 'X', ...(own ? { price: own } : {}) }], 'flip'), C({ professional: { services: [{ id: 'a', name: 'A', price: prices[0], duration: '30 mins' }, { id: 'b', name: 'B', price: prices[1], duration: '60 min' }] } })).data.items[0];
+  assert.equal(odd(['Two for £50', '£35'], 'From £35').price, 'From £35', 'the card\'s own words');
+  assert.equal(odd(['€30', '£35']).price, undefined, 'never across currencies');
+  assert.equal(odd(['£30', '£35']).price, 'From £30');
+  assert.equal(odd(['£30', '£35']).duration, '30 to 60 mins', '"30 mins" and "60 min" are one unit');
+});
+
+test('round C build review minor 6: an id of the form n<number> is refused', () => {
+  const p = professionalDetails({ services: [{ id: 'n2', name: 'A' }, { name: 'B' }] });
+  assert.equal(p.services[0].id, undefined);
+  assert.deepEqual([...servicesOf(p).keys()], ['n1', 'n2']);
+  assert.equal(serviceKey({ id: 'n7' }, 0), 'n1');
+});
