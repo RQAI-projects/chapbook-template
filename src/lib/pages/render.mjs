@@ -2076,6 +2076,8 @@ function promoHref(href, code) {
   if (!code) return href;
   try { const u = new URL(href); if (u.hostname === 'buy.stripe.com') u.searchParams.set('prefilled_promo_code', code); return u.href; } catch { return href; }
 }
+// A length as a card's heading, written out: "60 min" → "60 minutes", "1 hr" → "1 hour".
+export const lengthHeading = (d) => String(d || '').replace(/^(\d+(?:\.\d+)?)\s*(?:mins?|minutes?)$/i, (m, n) => `${n} minute${+n === 1 ? '' : 's'}`).replace(/^(\d+(?:\.\d+)?)\s*(?:hrs?|hours?)$/i, (m, n) => `${n} hour${+n === 1 ? '' : 's'}`);
 const fieldMax = (type, k) => BLOCK_TYPES[type]?.fields?.items?.item?.[k]?.max || 200;
 // The section as drawn: its linked cards filled in from the list. `_svcFields[n]` names the values
 // card n takes from the list (the editor opens the service for those), `_svcKey` its booking key.
@@ -2107,7 +2109,7 @@ export function linkServices(b, C) {
       y.price = low ? line('price', many.length > 1 ? `From ${fromless(low.price)}` : low.price) : '';
       for (const k of ['pay', 'paid', 'act', 'manage']) set.delete(k);
     } else {
-      y.name = line('name', byLength ? svc.duration : svc.name);
+      y.name = line('name', byLength ? lengthHeading(svc.duration) : svc.name);
       if (take.includes('duration')) y.duration = line('duration', svc.duration);
       y.price = line('price', svc.price);
       if (take.includes('pay')) {
@@ -2116,7 +2118,7 @@ export function linkServices(b, C) {
       }
       if (take.includes('paid')) { if (svc.paid) y.paid = true; else delete y.paid; }
       if (take.includes('act')) { if (svc.act) y.act = svc.act; else delete y.act; }
-      if (take.includes('manage')) { if (svc.manage) y.manage = { label: x.manage?.label || 'Manage your membership', href: svc.manage }; else delete y.manage; }
+      if (take.includes('manage')) { if (svc.manage) y.manage = { label: x.manage?.label || 'Manage your membership', href: svc.manage }; else if (x.manage?.label) y.manage = { label: x.manage.label }; else delete y.manage; }
       // The booking link (round C review P1): a booking strip choice books the service; any other card
       // keeps its own link and words, and only a Book that goes to the booking takes the service's own.
       if (take.includes('link')) {

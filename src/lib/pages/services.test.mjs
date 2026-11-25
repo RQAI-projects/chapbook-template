@@ -56,7 +56,7 @@ test('a booking strip choice books the service; Pay when you book comes from the
 
 test('ways to pay: one service in several lengths shows the length as the heading; button words and manage link from the list', () => {
   const b = linkServices(block('plans', [{ service: 'kn30', per: 'a session' }, { service: 'kn60' }, { service: 'kn90' }], 'ladder'), C());
-  assert.deepEqual(b.data.items.map((x) => x.name), ['30 min', '60 min', '90 min']);
+  assert.deepEqual(b.data.items.map((x) => x.name), ['30 minutes', '60 minutes', '90 minutes']);
   assert.equal(b.data.items[0].per, 'a session');
   assert.equal(b.data.items[2].act, 'ask');
   const m = linkServices(block('plans', [{ service: 'mo' }, { name: 'Clubs and teams', price: 'Ask' }]), C()).data.items;
