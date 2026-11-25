@@ -215,6 +215,19 @@ test('round C review M1, M2 and minor 1: holidays, closed after a full stop, "an
   assert.deepEqual(openingHours('Every day 9am to 5pm except bank holidays').map((x) => x.dayOfWeek.length), [7]);
 });
 
+test('round C build review minor 9: a later closed day, open bank holidays after a full stop, closed on two days', () => {
+  const week = (lines) => [0, 1, 2, 3, 4, 5, 6].map((d) => { const s = hoursOn(lines, d); return s === null ? '?' : s.length ? s.map(([a, z]) => `${a / 60}-${z / 60}`).join('+') : 'closed'; }).join(' ');
+  assert.equal(week(['Mon to Fri 9am to 5pm. Closed Wednesdays']), '? 9-17 9-17 closed 9-17 9-17 ?');
+  assert.equal(week(['Mon to Fri 9am to 5pm. Open bank holidays 10am to 2pm']), '? 9-17 9-17 9-17 9-17 9-17 ?');
+  assert.deepEqual(openingHours('Mon to Fri 9am to 5pm. Open bank holidays 10am to 2pm').map((x) => [x.opens, x.closes]), [['09:00', '17:00']]);
+  assert.equal(week(['Mon to Fri 9am to 5pm. Closed on Saturday and Sunday']), 'closed 9-17 9-17 9-17 9-17 9-17 closed');
+  assert.equal(week(['Tue to Sat 10am to 6pm. Closed Sun & Mon']), 'closed closed 10-18 10-18 10-18 10-18 10-18');
+  // Days left with nothing of their own after an open group stay unknown, never given its times.
+  assert.equal(week(['Mon to Fri 9am to 5pm, Sat by appointment']), '? 9-17 9-17 9-17 9-17 9-17 ?');
+  assert.equal(week(['Mon to Fri 9am to 5pm, weekends by appointment']), '? 9-17 9-17 9-17 9-17 9-17 ?');
+  assert.equal(week(['Sundays and bank holidays 10am to 4pm']), '10-16 ? ? ? ? ? ?');
+});
+
 test('minor 2: block pages draw hours without blank rows', () => {
   const html = renderPage(page([{ id: 'c', type: 'contact', variant: 'card', data: { heading: 'Find us', business: true } }]), { site: { ...SITE, professional: { ...SITE.professional, hours: 'Mon to Fri 9am to 5pm\n\n\nSat 9am to 1pm  ' } }, today: '2026-11-24' });
   assert.match(html, /Mon to Fri 9am to 5pm<br>Sat 9am to 1pm</);

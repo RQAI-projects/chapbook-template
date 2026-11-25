@@ -46,7 +46,9 @@ const DAY_WORD = String.raw`(sun|mon|tue|wed|thu|fri|sat)(?:day|s|sday|nesday|rs
 const DAY_RE = new RegExp(String.raw`\b(?:${DAY_WORD}|weekdays?|weekends?)\b`, 'g');
 // What may come straight after a split point: a day, or "closed" or "open" before one (". Closed
 // weekends", ". Closed on Sundays", "and closed Sundays"; round C review M2).
-export const DAY_AHEAD = new RegExp(String.raw`^\s*(?:(?:closed|open)(?:\s+on)?\s+)?(?:${DAY_WORD}|weekdays?|weekends?|every ?day|daily)\b`, 'i');
+// "Open" or "Closed" before bank or public holidays splits too, so that part can be left out
+// (". Open bank holidays 10am to 2pm"; round C build review, minor 9).
+export const DAY_AHEAD = new RegExp(String.raw`^\s*(?:(?:closed|open)(?:\s+on)?\s+)?(?:${DAY_WORD}|weekdays?|weekends?|every ?day|daily)\b|^\s*(?:closed|open)(?:\s+on)?\s+(?:bank|public)\s+holidays?\b`, 'i');
 const isDay = (w, key) => new RegExp(String.raw`^${DAY_WORD}$`).test(w) && w.startsWith(key);
 export function dayInLabel(label, dow) {
   const text = String(label || '').toLowerCase();
@@ -144,7 +146,10 @@ export function hoursGroups(line) {
     if (last) { last.spans.push(...spans); if (spans.length) last.closed = false; else if (closed && !last.spans.length) last.closed = true; }
     else if (spans.length || closed) loose = { spans: [...(loose?.spans || []), ...spans], closed: closed && !spans.length && !loose?.spans?.length };
   }
-  if (waiting.trim()) groups.push({ days: waiting, spans: loose?.spans || [], closed: !!loose?.closed && !loose?.spans?.length });
+  // Days left at the end with nothing of their own join a closed group just before them ("Closed
+  // on Saturday and Sunday"); with times written first, they take those.
+  if (waiting.trim() && !loose && groups.length && groups[groups.length - 1].closed) groups[groups.length - 1].days += ` ${waiting}`;
+  else if (waiting.trim()) groups.push({ days: waiting, spans: loose?.spans || [], closed: !!loose?.closed && !loose?.spans?.length });
   // Times written before the days they belong to, never given to a day said to be closed.
   else if (loose) { const open = groups.find((g) => !g.closed); if (open) open.spans.unshift(...loose.spans); }
   return groups;
@@ -157,7 +162,9 @@ export function hoursOn(lines, dow) {
     for (const g of hoursGroups(line)) {
       if (!dayInLabel(g.days, dow)) continue;
       if (g.spans.length) found = [...(found || []), ...g.spans];
-      else if (g.closed) found = found || [];
+      // A day said to be closed after its times were given is closed ("Mon to Fri 9am to 5pm.
+      // Closed Wednesdays").
+      else if (g.closed) found = [];
     }
   }
   return found ? found.sort((x, y) => x[0] - y[0]) : null;
