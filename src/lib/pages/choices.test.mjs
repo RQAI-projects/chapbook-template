@@ -409,6 +409,20 @@ test('round C11: one time range, then closed days with no punctuation, reads as 
   ]) assert.equal(week(l.split(' || ')), w, l);
 });
 
+test('round C12: "closed <day> at 1pm" and "closed <day> 1pm" leave that day unsaid (C11 re-review M1, S1)', () => {
+  const week = (lines) => [0, 1, 2, 3, 4, 5, 6].map((d) => { if (partlyClosed(lines, d)) return '-'; const s = hoursOn(lines, d); return s === null ? '?' : s.length ? s.map(([a, z]) => `${a / 60}-${z / 60}`).join('+') : 'x'; }).join(' ');
+  for (const [l, w] of [
+    ["Mon to Sat 9am to 5pm closed Wednesday at 1pm", '? 9-17 9-17 - 9-17 9-17 9-17'],
+    ["Mon to Sat 9am to 5pm Wednesday closed at 1pm", '? 9-17 9-17 - 9-17 9-17 9-17'],
+    ["Mon to Sat 9am to 5.30pm closed Thursday at 1pm", '? 9-17.5 9-17.5 9-17.5 - 9-17.5 9-17.5'],
+    ["Mon to Fri 9am to 5pm closed Fridays at 3pm", '? 9-17 9-17 9-17 9-17 - ?'],
+    ["Mon to Sat 9am to 5pm. Closed Wednesday at 1pm", '? 9-17 9-17 - 9-17 9-17 9-17'],
+    ["Mon to Sat 9am to 5pm. Wednesday closed at 1pm", '? 9-17 9-17 - 9-17 9-17 9-17'],
+    ["Mon to Fri 9am to 5.30pm, Thursday closed at 1pm", '? 9-17.5 9-17.5 9-17.5 - 9-17.5 ?'],
+    ["Mon to Sat 9am to 5pm closed Saturday 1pm", '? 9-17 9-17 9-17 9-17 9-17 -'],
+  ]) assert.equal(week(l.split(' || ')), w, l);
+});
+
 test('minor 2: block pages draw hours without blank rows', () => {
   const html = renderPage(page([{ id: 'c', type: 'contact', variant: 'card', data: { heading: 'Find us', business: true } }]), { site: { ...SITE, professional: { ...SITE.professional, hours: 'Mon to Fri 9am to 5pm\n\n\nSat 9am to 1pm  ' } }, today: '2026-11-24' });
   assert.match(html, /Mon to Fri 9am to 5pm<br>Sat 9am to 1pm</);

@@ -145,7 +145,7 @@ export function hoursParts(line) {
 // weekends", "Sunday, a dash, closed", "Closed Wednesdays for training", "Closed every Wednesday").
 // Only those words keep a day's typed hours (round C2 re-review N2, round C3 re-review S3).
 const MONTH_WORDS = String.raw`jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?`;
-const DAY_PART = /\b(?:mornings?|afternoons?|evenings?|lunch(?:times?)?|am|pm|a\.m|p\.m|half[ -]?days?|(?:from|until|till|after|before)\s+\d)/i;
+const DAY_PART = /\b(?:mornings?|afternoons?|evenings?|lunch(?:times?)?|am|pm|a\.m|p\.m|half[ -]?days?|(?:from|until|till|after|before|at)\s+\d|\d(?:[.:]\d{2})?\s*(?:am|pm)\b)/i;
 const YEAR_PART = new RegExp(String.raw`\b(?:${MONTH_WORDS}|winters?|summers?|spring|autumns?|seasons?|terms?|term[ -]?time|school|holidays?|in|during|except|excluding|unless|appointments?|arrangements?|request|alternate|other|first|second|third|fourth|last|fortnightly|occasionally|sometimes)\b`, 'i');
 const partKind = (text) => { const t = String(text || '').replace(new RegExp(RANGE.source, 'gi'), ' ').replace(DAY_RE, ' '); return DAY_PART.test(t) ? 'day' : YEAR_PART.test(t) ? 'year' : null; };
 // A day straight before "closed" ("Saturday closed 1pm to 5pm", "Wednesday: closed"): round C9 review S1.
