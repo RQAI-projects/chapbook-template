@@ -144,6 +144,8 @@ const MONTH_WORDS = String.raw`jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|
 const DAY_PART = /\b(?:mornings?|afternoons?|evenings?|lunch(?:times?)?|am|pm|a\.m|p\.m|half[ -]?days?|(?:from|until|till|after|before)\s+\d)/i;
 const YEAR_PART = new RegExp(String.raw`\b(?:${MONTH_WORDS}|winters?|summers?|spring|autumns?|seasons?|terms?|term[ -]?time|school|holidays?|in|during|except|excluding|unless|appointments?|arrangements?|request|alternate|other|first|second|third|fourth|last|fortnightly|occasionally|sometimes)\b`, 'i');
 const partKind = (text) => { const t = String(text || '').replace(new RegExp(RANGE.source, 'gi'), ' ').replace(DAY_RE, ' '); return DAY_PART.test(t) ? 'day' : YEAR_PART.test(t) ? 'year' : null; };
+// A day straight before "closed" ("Saturday closed 1pm to 5pm", "Wednesday: closed"): round C9 review S1.
+const DAY_CLOSED = new RegExp(String.raw`\b(?:${DAY_WORD}|weekdays?|weekends?)\s*[:\u2013\u2014-]?\s*closed\b`);
 // Days written as plurals ("Sundays", "weekends"): a closure complete in itself, which words for part
 // of a day after a later day do not reach ("Closed Sundays and Wednesday afternoons").
 const plural = (text) => { const w = String(text || '').toLowerCase().match(DAY_RE) || []; return w.length > 0 && w.every((x) => /s$/.test(x) && !/^(tues|thurs)$/.test(x)); };
@@ -186,7 +188,7 @@ export function hoursGroups(line) {
     if (hasDays && !spans.length && !closed) { if (!waiting) waitingAnd = and; waiting = `${waiting} ${days}`; waitingKind = waitingKind || partKind(part); continue; }
     // "Closed Saturday 1pm to 5pm": times said to be closed on a day named after "closed" are never
     // opening times; that day is left unsaid (round C9 item 5).
-    const low = part.toLowerCase(), closedDay = closed && spans.length > 0 && hasDays && low.search(/\bclosed\b/) < low.search(DAY_RE);
+    const low = part.toLowerCase(), closedDay = closed && spans.length > 0 && hasDays && (low.search(/\bclosed\b/) < low.search(DAY_RE) || DAY_CLOSED.test(low));
     if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length, ...((closed && !spans.length && partKind(part)) || closedDay ? { partial: true } : {}) }); if (waitingExcept && spans.length) groups.push({ days: waitingExcept, spans: [], closed: true }); waiting = ''; waitingKind = null; waitingExcept = ''; continue; }
     // Times with no days: more times for the group before, or (times written first) for the days after.
     const last = groups[groups.length - 1];
