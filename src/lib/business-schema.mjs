@@ -8,7 +8,7 @@
 // - Medical kinds can carry a medicalSpecialty from schema.org's own list.
 // - The address is read from the address lines (a UK postcode, then the town before it).
 // - Opening hours are read the way the website's "Open now" line reads them (page-actions.js).
-import { hoursOn } from '../scripts/page-actions.js';
+import { hoursOn, partlyClosed } from '../scripts/page-actions.js';
 import { SCHEMA_TYPES, MEDICAL_SPECIALTIES } from './professional.mjs';
 
 export { SCHEMA_TYPES, MEDICAL_SPECIALTIES };
@@ -52,6 +52,8 @@ export function openingHours(hours) {
   const ls = lines(hours);
   const groups = new Map();
   for (const dow of [1, 2, 3, 4, 5, 6, 0]) {
+    // A day closed for part of it or of the year is left out: search engines are told only what is certain.
+    if (partlyClosed(ls, dow)) continue;
     for (const [a, b] of hoursOn(ls, dow) || []) {
       const key = `${a}-${b}`;
       if (!groups.has(key)) groups.set(key, { '@type': 'OpeningHoursSpecification', dayOfWeek: [], opens: clock(a), closes: clock(b) });

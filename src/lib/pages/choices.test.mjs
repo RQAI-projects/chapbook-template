@@ -99,7 +99,7 @@ test('ordinary templates: every place hours show gives one row per line', () => 
 });
 
 // ---- round B review (24 Nov 2026) ----------------------------------------------------------------
-import { hoursGroups, hoursOn, openState, dayInLabel, hoursParts } from '../../scripts/page-actions.js';
+import { hoursGroups, hoursOn, openState, dayInLabel, hoursParts, partlyClosed } from '../../scripts/page-actions.js';
 import { calEmbedParts } from '../../scripts/booking-calendar.js';
 
 test('S1: an owner link keeps its query and hash everywhere; the calendar is given the query', () => {
@@ -226,6 +226,30 @@ test('round C build review minor 9: a later closed day, open bank holidays after
   assert.equal(week(['Mon to Fri 9am to 5pm, Sat by appointment']), '? 9-17 9-17 9-17 9-17 9-17 ?');
   assert.equal(week(['Mon to Fri 9am to 5pm, weekends by appointment']), '? 9-17 9-17 9-17 9-17 9-17 ?');
   assert.equal(week(['Sundays and bank holidays 10am to 4pm']), '10-16 ? ? ? ? ? ?');
+});
+
+test('round C2 re-review N2: a closure of part of a day or of the year never closes the whole day', () => {
+  const week = (lines) => [0, 1, 2, 3, 4, 5, 6].map((d) => { const s = hoursOn(lines, d); return s === null ? '?' : s.length ? s.map(([a, z]) => `${a / 60}-${z / 60}`).join('+') : 'closed'; }).join(' ');
+  assert.equal(week(['Mon to Fri 9am to 5pm. Closed Wednesday afternoons']), '? 9-17 9-17 9-17 9-17 9-17 ?');
+  assert.equal(week(['Mon to Fri 8:30am to 6pm. Closed Thursday mornings']), '? 8.5-18 8.5-18 8.5-18 8.5-18 8.5-18 ?');
+  assert.equal(week(['Mon to Sat 9am to 5pm. Closed Saturdays in August']), '? 9-17 9-17 9-17 9-17 9-17 9-17');
+  assert.equal(week(['Mon to Sat 9am to 5pm', 'Closed Saturdays in August']), '? 9-17 9-17 9-17 9-17 9-17 9-17');
+  assert.equal(week(['Mon to Fri 9am to 5pm. Closed Saturday. Sunday by appointment']), '? 9-17 9-17 9-17 9-17 9-17 closed');
+  assert.equal(week(['Mon to Fri 9am to 5pm. Closed Saturdays and Sundays except by arrangement']), '? 9-17 9-17 9-17 9-17 9-17 ?');
+  assert.equal(week(['Mon to Sat 9am to 5pm. Closed Saturdays and Sundays in August']), '? 9-17 9-17 9-17 9-17 9-17 9-17');
+  assert.equal(partlyClosed(['Mon to Sat 9am to 5pm. Closed Saturdays and Sundays in August'], 0), true);
+  assert.equal(week(['Mon to Sat 9am to 1pm. Closed Thursday afternoon and Sunday']), 'closed 9-13 9-13 9-13 9-13 9-13 9-13');
+  assert.equal(week(['Mon to Fri 9am to 5pm. Closed Wednesday and Saturday afternoons']), '? 9-17 9-17 9-17 9-17 9-17 ?');
+  assert.equal(week(['Mon to Fri 9am to 5pm. Closed Saturday afternoons']), '? 9-17 9-17 9-17 9-17 9-17 ?');
+  // The search data says nothing more than is certain.
+  assert.deepEqual(openingHours('Mon to Fri 9am to 5pm. Closed Wednesday afternoons').map((x) => x.dayOfWeek), [['Monday', 'Tuesday', 'Thursday', 'Friday']]);
+  assert.equal(openState(['Mon to Fri 9am to 5pm. Closed Wednesday afternoons'], new Date('2026-11-25T15:00:00Z'), 'Europe/London'), null, 'Wednesday 3pm: nothing claimed');
+  assert.equal(openState(['Mon to Fri 9am to 5pm. Closed Wednesday afternoons'], new Date('2026-11-24T18:00:00Z'), 'Europe/London'), null, 'Tuesday evening: Wednesday may open late');
+  assert.match(openState(['Mon to Fri 9am to 5pm. Closed Wednesday afternoons'], new Date('2026-11-26T10:00:00Z'), 'Europe/London').text, /Open now, closes at 5pm/);
+  // Bare closures still close the day.
+  assert.equal(week(['Mon to Fri 9am to 5pm. Closed Wednesdays']), '? 9-17 9-17 closed 9-17 9-17 ?');
+  assert.equal(week(['Mon to Fri 9am to 5pm. Closed on Saturday and Sunday']), 'closed 9-17 9-17 9-17 9-17 9-17 closed');
+  assert.equal(week(['Sun: closed']), 'closed ? ? ? ? ? ?');
 });
 
 test('minor 2: block pages draw hours without blank rows', () => {

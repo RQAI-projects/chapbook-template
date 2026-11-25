@@ -117,29 +117,37 @@ const ANY_DAY = [0, 1, 2, 3, 4, 5, 6];
 // "and" or "&" (also after "p.m."), or a full stop, is a split point when a day comes next.
 const JOIN = /(?<=\.)\s+(?:(?:and|&)\s+)?|\s+(?:and|&)\s+/gi;
 const HOLIDAYS = new RegExp(String.raw`(?:,|\band\b|&)?\s*(?:\b(?:except|excluding|including|not|closed on)\s+)?(?:on\s+)?\b(?:bank|public)\s+holidays?\b(?:\s+${DAY_WORD}\b)?`, 'gi');
-export function hoursParts(line) {
+// The parts of a line, each with whether "and" (or "&") joined it to the part before it.
+function hoursPieces(line) {
   const out = [];
   for (const piece of String(line || '').split(/[,;/|()[\]]/)) {
-    let from = 0;
+    let from = 0, and = false;
     for (const m of piece.matchAll(JOIN)) {
       const after = m.index + m[0].length;
-      if (DAY_AHEAD.test(piece.slice(after))) { out.push(piece.slice(from, m.index)); from = after; }
+      if (DAY_AHEAD.test(piece.slice(after))) { out.push({ text: piece.slice(from, m.index), and }); from = after; and = /\b(?:and)\b|&/i.test(m[0]) && piece[m.index - 1] !== '.'; }
     }
-    out.push(piece.slice(from));
+    out.push({ text: piece.slice(from), and });
   }
   return out;
 }
+export function hoursParts(line) {
+  return hoursPieces(line).map((p) => p.text);
+}
+// Whether a part says nothing but days (and "closed", "on", "and"): "Closed Wednesdays" is bare,
+// "Closed Wednesday afternoons", "Closed Saturdays in August" and "Sunday by appointment" are not
+// (round C2 re-review N2: a closure of part of a day or part of the year never closes the day).
+const bare = (text) => !String(text || '').toLowerCase().replace(new RegExp(RANGE.source, 'gi'), ' ').replace(DAY_RE, ' ').replace(/\b(every ?day|daily|all week|closed|open|on|and|the|all day)\b/gi, ' ').replace(/[&:.,;!\s-]+/g, '');
 export function hoursGroups(line) {
   const groups = [];
-  let waiting = '', loose = null;
-  for (const typed of hoursParts(line)) {
+  let waiting = '', waitingBare = true, waitingAnd = false, loose = null;
+  for (const { text: typed, and } of hoursPieces(line)) {
     const part = typed.replace(HOLIDAYS, ' ');
     if (part !== typed && !ANY_DAY.some((d) => dayInLabel(part.replace(new RegExp(RANGE.source, 'gi'), ' '), d))) continue;
     const days = part.replace(new RegExp(RANGE.source, 'gi'), ' ');
     const hasDays = ANY_DAY.some((d) => dayInLabel(days, d));
     const spans = hoursSpans(part), closed = /\bclosed\b/i.test(part);
-    if (hasDays && !spans.length && !closed) { waiting = `${waiting} ${days}`; continue; }
-    if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length }); waiting = ''; continue; }
+    if (hasDays && !spans.length && !closed) { if (!waiting) waitingAnd = and; waiting = `${waiting} ${days}`; waitingBare = waitingBare && bare(part); continue; }
+    if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length, ...(closed && !spans.length && !bare(part) ? { partial: true } : {}) }); waiting = ''; waitingBare = true; continue; }
     // Times with no days: more times for the group before, or (times written first) for the days after.
     const last = groups[groups.length - 1];
     if (last?.closed && spans.length) continue;
@@ -148,7 +156,14 @@ export function hoursGroups(line) {
   }
   // Days left at the end with nothing of their own join a closed group just before them ("Closed
   // on Saturday and Sunday"); with times written first, they take those.
-  if (waiting.trim() && !loose && groups.length && groups[groups.length - 1].closed) groups[groups.length - 1].days += ` ${waiting}`;
+  // Words after them ("Closed Saturdays and Sundays in August") speak for the whole list, so the
+  // closure becomes partial; bare days after a partial closure ("Closed Thursday afternoon and
+  // Sunday") are closed all day.
+  const end = groups[groups.length - 1];
+  if (waiting.trim() && !loose && end?.closed && !waitingBare && waitingAnd) { end.partial = true; end.days += ` ${waiting}`; }
+  else if (waiting.trim() && waitingBare && !loose && end?.closed && end.partial) groups.push({ days: waiting, spans: [], closed: true });
+  else if (waiting.trim() && waitingBare && !loose && end?.closed) end.days += ` ${waiting}`;
+  else if (waiting.trim() && !waitingBare && !loose && end?.closed) { /* "Closed Saturday. Sunday by appointment": nothing known of Sunday */ }
   else if (waiting.trim()) groups.push({ days: waiting, spans: loose?.spans || [], closed: !!loose?.closed && !loose?.spans?.length });
   // Times written before the days they belong to, never given to a day said to be closed.
   else if (loose) { const open = groups.find((g) => !g.closed); if (open) open.spans.unshift(...loose.spans); }
@@ -160,7 +175,8 @@ export function hoursOn(lines, dow) {
   let found = null;
   for (const line of lines || []) {
     for (const g of hoursGroups(line)) {
-      if (!dayInLabel(g.days, dow)) continue;
+      // A closure of part of a day or of the year says nothing certain about the day: left as typed.
+      if (!dayInLabel(g.days, dow) || g.partial) continue;
       if (g.spans.length) found = [...(found || []), ...g.spans];
       // A day said to be closed after its times were given is closed ("Mon to Fri 9am to 5pm.
       // Closed Wednesdays").
@@ -168,6 +184,11 @@ export function hoursOn(lines, dow) {
     }
   }
   return found ? found.sort((x, y) => x[0] - y[0]) : null;
+}
+// Whether a line closes part of that day or of the year ("Closed Wednesday afternoons", "Closed
+// Saturdays in August"): its typed hours stay, but nothing is claimed about it that is not certain.
+export function partlyClosed(lines, dow) {
+  return (lines || []).some((line) => hoursGroups(line).some((g) => g.partial && dayInLabel(g.days, dow)));
 }
 // 540 → "9am", 570 → "9.30am", 720 → "12pm", 1080 → "6pm".
 export function timeText(m) {
@@ -194,12 +215,15 @@ export function openState(lines, now = new Date(), timeZone = '') {
   const { dow, mins } = clockIn(now, timeZone);
   const today = hoursOn(lines, dow);
   if (today === null && [0, 1, 2, 3, 4, 5, 6].every((d) => hoursOn(lines, d) === null)) return null;
+  // Part of today may be closed: nothing certain to say.
+  if (partlyClosed(lines, dow)) return null;
   const span = (today || []).find(([a, b]) => mins >= a && mins < b);
   if (span) return { open: true, text: `Open now, closes at ${timeText(span[1])}` };
   const later = (today || []).find(([a]) => a > mins);
   if (later) return { open: false, text: `Closed now, opens at ${timeText(later[0])}` };
   for (let k = 1; k <= 7; k++) {
     const d = (dow + k) % 7, next = hoursOn(lines, d);
+    if (partlyClosed(lines, d)) return null;
     if (next && next.length) return { open: false, text: `Closed now, opens ${k === 1 ? 'tomorrow' : `on ${DAYS[d]}`} at ${timeText(next[0][0])}` };
   }
   return null;
