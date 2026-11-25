@@ -118,10 +118,14 @@ const ANY_DAY = [0, 1, 2, 3, 4, 5, 6];
 // "and" or "&" (also after "p.m."), or a full stop, is a split point when a day comes next.
 const JOIN = /(?<=\.)\s+(?:(?:and|&)\s+)?|\s+(?:and|&)\s+/gi;
 const HOLIDAYS = new RegExp(String.raw`(?:,|\band\b|&)?\s*(?:\b(?:except|excluding|including|not|closed on)\s+)?(?:on\s+)?\b(?:bank|public)\s+holidays?\b(?:\s+${DAY_WORD}\b)?`, 'gi');
+// In a line with one time range, that range followed with no punctuation by closed days ("9am to 5pm
+// Closed weekends", "5pm Sat and Sun closed") reads as if a full stop stood after it (round C10 re-review minor 1).
+const DAYS_W = String.raw`(?:${DAY_WORD}|weekdays?|weekends?)`;
+const CLOSED_NEXT = new RegExp(String.raw`(?:${TIME})(?=\s+(?:closed(?:\s+(?:on|every|all|the))*\s+${DAYS_W}\b|${DAYS_W}(?:\s*(?:and|&|to|-)\s*${DAYS_W})*\s*[:-]?\s*closed\b))`, 'gi');
 // The parts of a line, each with whether "and" (or "&") joined it to the part before it.
 function hoursPieces(line) {
-  const out = [];
-  for (const piece of String(line || '').split(/[,;/|()[\]]/)) {
+  const out = [], text = String(line || ''), one = (text.match(new RegExp(RANGE.source, 'gi')) || []).length === 1;
+  for (const piece of (one ? text.replace(CLOSED_NEXT, (m) => `${m}.`) : text).split(/[,;/|()[\]]/)) {
     let from = 0, and = false;
     for (const m of piece.matchAll(JOIN)) {
       const after = m.index + m[0].length;

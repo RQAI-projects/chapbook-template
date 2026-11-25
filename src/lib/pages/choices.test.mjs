@@ -393,6 +393,22 @@ test('round C10: item 4 only when the whole line holds one time range (C9 review
   ]) assert.equal(week(l.split(' || ')), w, l);
 });
 
+test('round C11: one time range, then closed days with no punctuation, reads as the full-stop form (C10 re-review minor 1)', () => {
+  const week = (lines) => [0, 1, 2, 3, 4, 5, 6].map((d) => { if (partlyClosed(lines, d)) return '-'; const s = hoursOn(lines, d); return s === null ? '?' : s.length ? s.map(([a, z]) => `${a / 60}-${z / 60}`).join('+') : 'x'; }).join(' ');
+  for (const [l, w] of [
+    ["Mon to Fri 9am to 5pm Closed weekends", 'x 9-17 9-17 9-17 9-17 9-17 x'],
+    ["Mon to Fri 9am to 5pm Sat and Sun closed", 'x 9-17 9-17 9-17 9-17 9-17 x'],
+    ["Mon to Fri 9am to 5pm Closed Saturday and Sunday", 'x 9-17 9-17 9-17 9-17 9-17 x'],
+    ["Mon to Sat 9am to 5pm Closed Sundays", 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
+    ["Mon to Sat 9am to 5pm Sunday closed", 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
+    ["Mon to Fri 9am to 5pm. Closed weekends", 'x 9-17 9-17 9-17 9-17 9-17 x'],
+    ["Mon to Fri 9am to 5pm. Sat and Sun closed", 'x 9-17 9-17 9-17 9-17 9-17 x'],
+    ["Mon to Fri 9am to 5pm Sat 10am to 2pm Sun closed", '- - - - - - -'],
+    ["Mon to Fri 9am to 6pm closed 1pm to 2pm", '? 9-18+13-14 9-18+13-14 9-18+13-14 9-18+13-14 9-18+13-14 ?'],
+    ["Monday closed Tuesday to Saturday 9am to 5pm", '? - - - - - -'],
+  ]) assert.equal(week(l.split(' || ')), w, l);
+});
+
 test('minor 2: block pages draw hours without blank rows', () => {
   const html = renderPage(page([{ id: 'c', type: 'contact', variant: 'card', data: { heading: 'Find us', business: true } }]), { site: { ...SITE, professional: { ...SITE.professional, hours: 'Mon to Fri 9am to 5pm\n\n\nSat 9am to 1pm  ' } }, today: '2026-11-24' });
   assert.match(html, /Mon to Fri 9am to 5pm<br>Sat 9am to 1pm</);
