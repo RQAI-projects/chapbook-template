@@ -183,9 +183,6 @@ export function hoursGroups(line) {
     if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length, ...(closed && !spans.length && partKind(part) ? { partial: true } : {}) }); if (waitingExcept && spans.length) groups.push({ days: waitingExcept, spans: [], closed: true }); waiting = ''; waitingKind = null; waitingExcept = ''; continue; }
     // Times with no days: more times for the group before, or (times written first) for the days after.
     const last = groups[groups.length - 1];
-    // Times said to be closed ("1pm to 2pm closed for lunch") are never opening times: the day before
-    // them is left unsaid (round C5 re-review, h5 and h7 lines).
-    if (closed && spans.length && last && !last.closed) { last.partial = true; continue; }
     if (last?.closed && spans.length) continue;
     if (last) { last.spans.push(...spans); if (spans.length) last.closed = false; else if (closed && !last.spans.length) last.closed = true; }
     else if (spans.length || closed) loose = { spans: [...(loose?.spans || []), ...spans], closed: closed && !spans.length && !loose?.spans?.length };

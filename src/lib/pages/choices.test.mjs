@@ -317,7 +317,7 @@ test('round C5 re-review S1, S2 and minor 1: "except" with part of a day, appoin
     ['Mon to Fri 9am to 5pm. 10am to 2pm on Saturdays', '? 9-17 9-17 9-17 9-17 9-17 10-14'],
     ['Weekdays. 8am to 6pm', '? 8-18 8-18 8-18 8-18 8-18 ?'],
     ['Tue to Sat. 9.30am to 5.30pm. Closed Sun and Mon', 'x x 9.5-17.5 9.5-17.5 9.5-17.5 9.5-17.5 9.5-17.5'],
-    ['Mon to Fri 9am to 5pm. Sat 10am to 2pm. 1pm to 2pm closed for lunch', '? 9-17 9-17 9-17 9-17 9-17 -'],
+    ['Mon to Fri 9am to 5pm. Sat 10am to 2pm. 1pm to 2pm closed for lunch', '? 9-17 9-17 9-17 9-17 9-17 10-14+13-14'],
   ]) assert.equal(week(l.split(' || ')), w, l);
 });
 
