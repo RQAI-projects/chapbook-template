@@ -252,6 +252,22 @@ test('round C2 re-review N2: a closure of part of a day or of the year never clo
   assert.equal(week(['Sun: closed']), 'closed ? ? ? ? ? ?');
 });
 
+test('round C3 re-review S3: whole-day closures speak again; only words for part of a day or the year keep a day\'s hours', () => {
+  const week = (lines) => [0, 1, 2, 3, 4, 5, 6].map((d) => { const s = hoursOn(lines, d); return s === null ? '?' : s.length ? s.map(([a, z]) => `${a / 60}-${z / 60}`).join('+') : 'closed'; }).join(' ');
+  for (const l of ['Closed at weekends', 'Closed at the weekend']) assert.equal(week(['Mon to Fri 9am to 5pm', l]), 'closed 9-17 9-17 9-17 9-17 9-17 closed', l);
+  for (const l of ['Sunday \u2014 closed', 'Sunday \u2013 closed', 'Closed Sunday\u2019s']) assert.equal(week(['Mon to Sat 9am to 5pm', l]), 'closed 9-17 9-17 9-17 9-17 9-17 9-17', l);
+  for (const l of ['Closed Wednesdays for training', 'Closed every Wednesday', 'Closed each Wednesday', 'Closed all day Wednesday']) assert.equal(week([`Mon to Fri 9am to 5pm. ${l}`]), '? 9-17 9-17 closed 9-17 9-17 ?', l);
+  // Sunday closed, Wednesday as typed (and left out of the search data).
+  const both = ['Mon to Fri 9am to 5pm. Closed Sundays and Wednesday afternoons'];
+  assert.equal(week(both), 'closed 9-17 9-17 9-17 9-17 9-17 ?');
+  assert.equal(partlyClosed(both, 3), true); assert.equal(partlyClosed(both, 0), false);
+  assert.match(openState(both, new Date('2026-11-29T11:00:00Z'), 'Europe/London').text, /Closed now, opens tomorrow at 9am/);
+  assert.deepEqual(openingHours('Mon to Fri 9am to 5pm || Closed at weekends'.split(' || ').join('\n')).map((x) => x.dayOfWeek.length), [5]);
+  // Part of a day or of the year still keeps the typed hours.
+  for (const l of ['Closed Wednesday afternoons', 'Closed Wed PM', 'Closed Wednesdays from 1pm']) assert.equal(partlyClosed([`Mon to Fri 9am to 5pm. ${l}`], 3), true, l);
+  assert.equal(partlyClosed(['Mon to Sat 9am to 5pm. Closed Saturdays and Sundays in August'], 6), true);
+});
+
 test('minor 2: block pages draw hours without blank rows', () => {
   const html = renderPage(page([{ id: 'c', type: 'contact', variant: 'card', data: { heading: 'Find us', business: true } }]), { site: { ...SITE, professional: { ...SITE.professional, hours: 'Mon to Fri 9am to 5pm\n\n\nSat 9am to 1pm  ' } }, today: '2026-11-24' });
   assert.match(html, /Mon to Fri 9am to 5pm<br>Sat 9am to 1pm</);

@@ -48,7 +48,8 @@ const DAY_RE = new RegExp(String.raw`\b(?:${DAY_WORD}|weekdays?|weekends?)\b`, '
 // weekends", ". Closed on Sundays", "and closed Sundays"; round C review M2).
 // "Open" or "Closed" before bank or public holidays splits too, so that part can be left out
 // (". Open bank holidays 10am to 2pm"; round C build review, minor 9).
-export const DAY_AHEAD = new RegExp(String.raw`^\s*(?:(?:closed|open)(?:\s+on)?\s+)?(?:${DAY_WORD}|weekdays?|weekends?|every ?day|daily)\b|^\s*(?:closed|open)(?:\s+on)?\s+(?:bank|public)\s+holidays?\b`, 'i');
+// "Closed every Wednesday", "each", "all day", "at weekends", "on the" too (round C3 re-review S3).
+export const DAY_AHEAD = new RegExp(String.raw`^\s*(?:(?:closed|open)(?:\s+(?:on|at|the|every|each|all\s+day))*\s+)?(?:${DAY_WORD}|weekdays?|weekends?|every ?day|daily)\b|^\s*(?:closed|open)(?:\s+on)?\s+(?:bank|public)\s+holidays?\b`, 'i');
 const isDay = (w, key) => new RegExp(String.raw`^${DAY_WORD}$`).test(w) && w.startsWith(key);
 export function dayInLabel(label, dow) {
   const text = String(label || '').toLowerCase();
@@ -133,21 +134,29 @@ function hoursPieces(line) {
 export function hoursParts(line) {
   return hoursPieces(line).map((p) => p.text);
 }
-// Whether a part says nothing but days (and "closed", "on", "and"): "Closed Wednesdays" is bare,
-// "Closed Wednesday afternoons", "Closed Saturdays in August" and "Sunday by appointment" are not
-// (round C2 re-review N2: a closure of part of a day or part of the year never closes the day).
-const bare = (text) => !String(text || '').toLowerCase().replace(new RegExp(RANGE.source, 'gi'), ' ').replace(DAY_RE, ' ').replace(/\b(every ?day|daily|all week|closed|open|on|and|the|all day)\b/gi, ' ').replace(/[&:.,;!\s-]+/g, '');
+// Whether a part closes only part of a day ("Closed Wednesday afternoons", "Closed Wed pm", "Closed
+// Fridays from 3pm": 'day') or of the year ("Closed Saturdays in August", "Sunday by appointment",
+// "except by arrangement": 'year'), or neither (null): a whole day, whatever else it says ("Closed at
+// weekends", "Sunday, a dash, closed", "Closed Wednesdays for training", "Closed every Wednesday").
+// Only those words keep a day's typed hours (round C2 re-review N2, round C3 re-review S3).
+const MONTH_WORDS = String.raw`jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?`;
+const DAY_PART = /\b(?:mornings?|afternoons?|evenings?|lunch(?:times?)?|am|pm|a\.m|p\.m|half[ -]?days?|(?:from|until|till|after|before)\s+\d)/i;
+const YEAR_PART = new RegExp(String.raw`\b(?:${MONTH_WORDS}|winters?|summers?|spring|autumns?|seasons?|terms?|term[ -]?time|school|holidays?|in|during|except|excluding|unless|appointments?|arrangements?|request|alternate|other|first|second|third|fourth|last|fortnightly|occasionally|sometimes)\b`, 'i');
+const partKind = (text) => { const t = String(text || '').replace(new RegExp(RANGE.source, 'gi'), ' ').replace(DAY_RE, ' '); return DAY_PART.test(t) ? 'day' : YEAR_PART.test(t) ? 'year' : null; };
+// Days written as plurals ("Sundays", "weekends"): a closure complete in itself, which words for part
+// of a day after a later day do not reach ("Closed Sundays and Wednesday afternoons").
+const plural = (text) => { const w = String(text || '').toLowerCase().match(DAY_RE) || []; return w.length > 0 && w.every((x) => /s$/.test(x) && !/^(tues|thurs)$/.test(x)); };
 export function hoursGroups(line) {
   const groups = [];
-  let waiting = '', waitingBare = true, waitingAnd = false, loose = null;
+  let waiting = '', waitingKind = null, waitingAnd = false, loose = null;
   for (const { text: typed, and } of hoursPieces(line)) {
     const part = typed.replace(HOLIDAYS, ' ');
     if (part !== typed && !ANY_DAY.some((d) => dayInLabel(part.replace(new RegExp(RANGE.source, 'gi'), ' '), d))) continue;
     const days = part.replace(new RegExp(RANGE.source, 'gi'), ' ');
     const hasDays = ANY_DAY.some((d) => dayInLabel(days, d));
     const spans = hoursSpans(part), closed = /\bclosed\b/i.test(part);
-    if (hasDays && !spans.length && !closed) { if (!waiting) waitingAnd = and; waiting = `${waiting} ${days}`; waitingBare = waitingBare && bare(part); continue; }
-    if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length, ...(closed && !spans.length && !bare(part) ? { partial: true } : {}) }); waiting = ''; waitingBare = true; continue; }
+    if (hasDays && !spans.length && !closed) { if (!waiting) waitingAnd = and; waiting = `${waiting} ${days}`; waitingKind = waitingKind || partKind(part); continue; }
+    if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length, ...(closed && !spans.length && partKind(part) ? { partial: true } : {}) }); waiting = ''; waitingKind = null; continue; }
     // Times with no days: more times for the group before, or (times written first) for the days after.
     const last = groups[groups.length - 1];
     if (last?.closed && spans.length) continue;
@@ -156,14 +165,19 @@ export function hoursGroups(line) {
   }
   // Days left at the end with nothing of their own join a closed group just before them ("Closed
   // on Saturday and Sunday"); with times written first, they take those.
-  // Words after them ("Closed Saturdays and Sundays in August") speak for the whole list, so the
-  // closure becomes partial; bare days after a partial closure ("Closed Thursday afternoon and
-  // Sunday") are closed all day.
+  // Words for part of the year after them ("Closed Saturdays and Sundays in August") speak for the
+  // whole list, as words for part of a day do after a day written singly ("Closed Wednesday and
+  // Saturday afternoons"), so the closure becomes partial; after days written as plurals they speak
+  // only for their own day ("Closed Sundays and Wednesday afternoons"). Bare days after a partial
+  // closure ("Closed Thursday afternoon and Sunday") are closed all day.
   const end = groups[groups.length - 1];
-  if (waiting.trim() && !loose && end?.closed && !waitingBare && waitingAnd) { end.partial = true; end.days += ` ${waiting}`; }
-  else if (waiting.trim() && waitingBare && !loose && end?.closed && end.partial) groups.push({ days: waiting, spans: [], closed: true });
-  else if (waiting.trim() && waitingBare && !loose && end?.closed) end.days += ` ${waiting}`;
-  else if (waiting.trim() && !waitingBare && !loose && end?.closed) { /* "Closed Saturday. Sunday by appointment": nothing known of Sunday */ }
+  if (waiting.trim() && !loose && end?.closed && waitingKind && waitingAnd) {
+    if (end.partial || waitingKind === 'year' || !plural(end.days)) { end.partial = true; end.days += ` ${waiting}`; }
+    else groups.push({ days: waiting, spans: [], closed: true, partial: true });
+  }
+  else if (waiting.trim() && !waitingKind && !loose && end?.closed && end.partial) groups.push({ days: waiting, spans: [], closed: true });
+  else if (waiting.trim() && !waitingKind && !loose && end?.closed) end.days += ` ${waiting}`;
+  else if (waiting.trim() && waitingKind && !loose && end?.closed) { /* "Closed Saturday. Sunday by appointment": nothing known of Sunday */ }
   else if (waiting.trim()) groups.push({ days: waiting, spans: loose?.spans || [], closed: !!loose?.closed && !loose?.spans?.length });
   // Times written before the days they belong to, never given to a day said to be closed.
   else if (loose) { const open = groups.find((g) => !g.closed); if (open) open.spans.unshift(...loose.spans); }
