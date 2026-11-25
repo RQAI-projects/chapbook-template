@@ -102,7 +102,7 @@
   "src/layouts/Base.astro": "dd583c1322b67b602ca341e16e0ed79ac12940a0",
   "src/lib/about.mjs": "0d821ea5a95b6f94f4bf7e94ecc036f62a3108db",
   "src/lib/blog-homes.mjs": "10665b5b1eeb25eaa5599380321364c04c543ccf",
-  "src/lib/business-schema.mjs": "f1e072ad0934d93b88a7148164321de4a925ab80",
+  "src/lib/business-schema.mjs": "7cbee1dd26f8fe6f4e455faf93a49b514e85cd3b",
   "src/lib/business/render.mjs": "33f2cadc9348af2e52e1ce7d6ae4146a642c230e",
   "src/lib/darkroom-build.mjs": "26ee8db086a11b56997528f06226139e1ece494c",
   "src/lib/darkroom.mjs": "3bf674d05968d33fe990583d3ba5c83dc96f9c6a",
@@ -131,7 +131,7 @@
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
   "src/lib/page-css.mjs": "6f21aacb20cb8b5aaa45cb7367ee23eca1241bbe",
   "src/lib/pages/migrate.mjs": "fb3906b9ca04d7c0497a9532d0d93ac0839e1056",
-  "src/lib/pages/render.mjs": "3ce5939f8920a7c84e84b6c922d12a18fbe62707",
+  "src/lib/pages/render.mjs": "adfb79eebcc1b3a6fa23386abc8156f4138a348f",
   "src/lib/pages/schema.mjs": "a257093a2a353dbfc6bc2ab9cfb3ed50651072a6",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
@@ -165,7 +165,7 @@
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
-  "src/scripts/page-actions.js": "d7572e5a07033182c398f3cedbd18490b456c250",
+  "src/scripts/page-actions.js": "22ef359fcb839e1b7fa4ad2bc4f95a56acf2ad58",
   "src/scripts/page-motion.js": "c917f5f4f915ff405e8023cc3663dac9c8f955bd",
   "src/styles/blocks.css": "18ff48707427e3512bc3128dc8125553b804fa77",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
@@ -213,6 +213,7 @@
  },
  "history": {
   "src/lib/pages/render.mjs": [
+   "3ce5939f8920a7c84e84b6c922d12a18fbe62707",
    "11d4956453a8d5d64f015b9ac0cc2f07fd1d1f46",
    "3f29fe15608e1f2a25fa88d9dd3a77902ddb3e73",
    "01949fa563c223431620f9054b97bb22af908479",
@@ -281,6 +282,24 @@
    "c7226998668f0fbee76774c9de823a6b4e21fcfe",
    "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
   ],
+  "src/lib/business-schema.mjs": [
+   "f1e072ad0934d93b88a7148164321de4a925ab80",
+   "95c12315777cf035e158625c819b3b63316328c1"
+  ],
+  "src/scripts/page-actions.js": [
+   "d7572e5a07033182c398f3cedbd18490b456c250",
+   "86e1324023f42fe3d9ac4a1dd8cbab960383d857",
+   "99b03540520322b78bd10066d54ded63d7e4690c",
+   "64a98d7e2ad0ac9e874bae3cc53e137d5f9b842c",
+   "c41e57da498d9cc3004cb0ccd53114b5f484ccaa",
+   "ffcce1c652c785d670b4c0f8b18344e1c35fec2f",
+   "f0f6e9c75eb65b9c47970c0815a73570de5087b6",
+   "5addd8a7c408bb499206f52a0bcdd150374ca68b",
+   "c08fda2bedbf408c4574abc4bf7623fe983d6e14",
+   "419869c7e5d9a25af8f4517f1b9f2fd56451a7f8",
+   "f1e8d005503afce76faad8de3f6827c42fa62609",
+   "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9"
+  ],
   "src/lib/pages/schema.mjs": [
    "1b74e28a27f2f7f4d4c00c154f0ade5eeb7c57f4",
    "556a460063c52ee0ce8f0537969988b47af9f692",
@@ -333,19 +352,6 @@
    "38243e7dfcb562107f1fafa511c950db37f23e9e",
    "f6228b9a5ceb15847a1e8599b87784b1af38f61c",
    "aa9f50c5bf4bf64fb0ee5ae0f3935f56ed51cd48"
-  ],
-  "src/scripts/page-actions.js": [
-   "86e1324023f42fe3d9ac4a1dd8cbab960383d857",
-   "99b03540520322b78bd10066d54ded63d7e4690c",
-   "64a98d7e2ad0ac9e874bae3cc53e137d5f9b842c",
-   "c41e57da498d9cc3004cb0ccd53114b5f484ccaa",
-   "ffcce1c652c785d670b4c0f8b18344e1c35fec2f",
-   "f0f6e9c75eb65b9c47970c0815a73570de5087b6",
-   "5addd8a7c408bb499206f52a0bcdd150374ca68b",
-   "c08fda2bedbf408c4574abc4bf7623fe983d6e14",
-   "419869c7e5d9a25af8f4517f1b9f2fd56451a7f8",
-   "f1e8d005503afce76faad8de3f6827c42fa62609",
-   "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9"
   ],
   "src/lib/pages/migrate.mjs": [
    "ac3d603f17de28b7ee79a291ed39ba8b093ad0f5",
@@ -568,9 +574,6 @@
    "7e8e31068b327653f58d71e88f2f3098597ec9ff",
    "708fe7c01bba959fb46cdc695a801c6b9da0918f",
    "38b178a9aa040db1f5a4c0bf3f68ba23ccadc952"
-  ],
-  "src/lib/business-schema.mjs": [
-   "95c12315777cf035e158625c819b3b63316328c1"
   ],
   "astro.config.mjs": [
    "685b8e42a11fa755c12cfeb9651543faf3b1d421",
