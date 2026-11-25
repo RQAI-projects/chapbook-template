@@ -169,9 +169,13 @@ export function hoursGroups(line) {
     const spans = hoursSpans(part), closed = /\bclosed\b/i.test(part);
     // A part with words the reader cannot be sure of, or an "except" with times of its own: no claim.
     const ex = spans.length && !closed ? EXCEPT.exec(part) : null, exDays = ex && ANY_DAY.some((d) => dayInLabel(ex[1], d));
-    const unsure = UNSURE.test(part) || (exDays && hoursSpans(ex[1]).length > 0);
+    // "Every day except Sunday 9am to 5pm": no times before "except" and only days and one time range
+    // after it, so the range is for the other days (round C9 item 4).
+    const exRest = ex ? ex[1].replace(new RegExp(RANGE.source, 'gi'), ' ') : '';
+    const exRange = exDays && !hoursSpans(part.slice(0, ex.index)).length && hoursSpans(ex[1]).length === 1 && onlyDays(exRest);
+    const unsure = UNSURE.test(part) || (exDays && hoursSpans(ex[1]).length > 0 && !exRange);
     if (exDays && !unsure) {
-      groups.push({ days: `${waiting} ${part.slice(0, ex.index).replace(new RegExp(RANGE.source, 'gi'), ' ')}`, spans: [...spans], closed: false }, { days: ex[1], spans: [], closed: true, ...(onlyDays(ex[1]) ? {} : { partial: true }) });
+      groups.push({ days: `${waiting} ${part.slice(0, ex.index).replace(new RegExp(RANGE.source, 'gi'), ' ')}`, spans: [...spans], closed: false }, { days: exRange ? exRest : ex[1], spans: [], closed: true, ...(onlyDays(exRange ? exRest : ex[1]) ? {} : { partial: true }) });
       waiting = ''; waitingKind = null; continue;
     }
     // "Open every day except Sunday, 9am to 5pm": the times that follow are for the other days, and
