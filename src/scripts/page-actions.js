@@ -49,7 +49,7 @@ const DAY_RE = new RegExp(String.raw`\b(?:${DAY_WORD}|weekdays?|weekends?)\b`, '
 // "Open" or "Closed" before bank or public holidays splits too, so that part can be left out
 // (". Open bank holidays 10am to 2pm"; round C build review, minor 9).
 // "Closed every Wednesday", "each", "all day", "at weekends", "on the" too (round C3 re-review S3).
-export const DAY_AHEAD = new RegExp(String.raw`^\s*(?:(?:closed|open)(?:\s+(?:on|at|the|every|each|all\s+day))*\s+)?(?:${DAY_WORD}|weekdays?|weekends?|every ?day|daily)\b|^\s*(?:closed|open)(?:\s+on)?\s+(?:bank|public)\s+holidays?\b`, 'i');
+export const DAY_AHEAD = new RegExp(String.raw`^\s*(?:(?:closed|open)(?:\s+(?:on|at|the|every|each|all\s+day|all|other|first|second|third|fourth|last))*\s+)?(?:${DAY_WORD}|weekdays?|weekends?|every ?day|daily)\b|^\s*(?:closed|open)(?:\s+on)?\s+(?:bank|public)\s+holidays?\b`, 'i');
 const isDay = (w, key) => new RegExp(String.raw`^${DAY_WORD}$`).test(w) && w.startsWith(key);
 export function dayInLabel(label, dow) {
   const text = String(label || '').toLowerCase();
@@ -125,7 +125,8 @@ function hoursPieces(line) {
     let from = 0, and = false;
     for (const m of piece.matchAll(JOIN)) {
       const after = m.index + m[0].length;
-      if (DAY_AHEAD.test(piece.slice(after))) { out.push({ text: piece.slice(from, m.index), and }); from = after; and = /\b(?:and)\b|&/i.test(m[0]) && piece[m.index - 1] !== '.'; }
+      // After a full stop, times that come first start a part too ("Sat closed. 10am to 2pm Sunday").
+      if (DAY_AHEAD.test(piece.slice(after)) || (piece[m.index - 1] === '.' && new RegExp(String.raw`^\s*(?:${TIME})\s*(?:to|until|till|-|\u2013|\u2014)`, 'i').test(piece.slice(after)))) { out.push({ text: piece.slice(from, m.index), and }); from = after; and = /\b(?:and)\b|&/i.test(m[0]) && piece[m.index - 1] !== '.'; }
     }
     out.push({ text: piece.slice(from), and });
   }
@@ -146,6 +147,12 @@ const partKind = (text) => { const t = String(text || '').replace(new RegExp(RAN
 // Days written as plurals ("Sundays", "weekends"): a closure complete in itself, which words for part
 // of a day after a later day do not reach ("Closed Sundays and Wednesday afternoons").
 const plural = (text) => { const w = String(text || '').toLowerCase().match(DAY_RE) || []; return w.length > 0 && w.every((x) => /s$/.test(x) && !/^(tues|thurs)$/.test(x)); };
+// Words the reader cannot be sure of ("the first Sunday of the month", "every other Saturday", "in
+// school holidays"): such a line gives no search data and no Open now for the days it names, rather
+// than a guess; the rows on the website stay as typed (round C4 re-review, minor 5: show, never guess).
+const UNSURE = /\b(?:first|second|third|fourth|last|of the month|every other|alternate|fortnightly|school|term(?:s|[ -]?time)?)\b/i;
+// "Every day 9am to 5pm except Sunday": the days after "except" are closed (round C4 re-review, minor 5).
+const EXCEPT = /\s+except\s+(?:on\s+)?(.*)$/i;
 export function hoursGroups(line) {
   const groups = [];
   let waiting = '', waitingKind = null, waitingAnd = false, loose = null;
@@ -155,6 +162,14 @@ export function hoursGroups(line) {
     const days = part.replace(new RegExp(RANGE.source, 'gi'), ' ');
     const hasDays = ANY_DAY.some((d) => dayInLabel(days, d));
     const spans = hoursSpans(part), closed = /\bclosed\b/i.test(part);
+    // A part with words the reader cannot be sure of, or an "except" with times of its own: no claim.
+    const ex = spans.length && !closed ? EXCEPT.exec(part) : null, exDays = ex && ANY_DAY.some((d) => dayInLabel(ex[1], d));
+    const unsure = UNSURE.test(part) || (exDays && hoursSpans(ex[1]).length > 0);
+    if (exDays && !unsure) {
+      groups.push({ days: `${waiting} ${part.slice(0, ex.index).replace(new RegExp(RANGE.source, 'gi'), ' ')}`, spans: [...spans], closed: false }, { days: ex[1], spans: [], closed: true });
+      waiting = ''; waitingKind = null; continue;
+    }
+    if (unsure && (hasDays || waiting)) { groups.push({ days: `${waiting} ${days}`, spans: [...spans], closed: closed && !spans.length, partial: true }); waiting = ''; waitingKind = null; continue; }
     if (hasDays && !spans.length && !closed) { if (!waiting) waitingAnd = and; waiting = `${waiting} ${days}`; waitingKind = waitingKind || partKind(part); continue; }
     if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length, ...(closed && !spans.length && partKind(part) ? { partial: true } : {}) }); waiting = ''; waitingKind = null; continue; }
     // Times with no days: more times for the group before, or (times written first) for the days after.

@@ -178,7 +178,8 @@ test('B2 re-review minor 3: other separators, holidays, weekdays and words that 
   // "month" is never Monday, and whole, short and many-day names are all read.
   assert.equal(dayInLabel('first Saturday of the month', 1), false);
   assert.equal(dayInLabel('Satisfaction guaranteed', 6), false);
-  assert.deepEqual(sp('Mon to Fri 9am to 5pm, first Saturday of the month 10am to 2pm'), [[W5, '09:00', '17:00'], ['Saturday', '10:00', '14:00']]);
+  // "The first Saturday of the month" cannot be said in the search data: Saturday is left out (round C4 re-review, minor 5).
+  assert.deepEqual(sp('Mon to Fri 9am to 5pm, first Saturday of the month 10am to 2pm'), [[W5, '09:00', '17:00']]);
   for (const [w, d] of [['Tues', 2], ['Thurs', 4], ['Wednesday', 3], ['Saturdays', 6], ['Sundays', 0], ['Fri', 5]]) assert.equal(dayInLabel(w, d), true, w);
   assert.deepEqual(hoursParts('Mon to Fri 9am to 5pm (Sat by appointment)').map((x) => x.trim()).filter(Boolean), ['Mon to Fri 9am to 5pm', 'Sat by appointment']);
 });
@@ -266,6 +267,23 @@ test('round C3 re-review S3: whole-day closures speak again; only words for part
   // Part of a day or of the year still keeps the typed hours.
   for (const l of ['Closed Wednesday afternoons', 'Closed Wed PM', 'Closed Wednesdays from 1pm']) assert.equal(partlyClosed([`Mon to Fri 9am to 5pm. ${l}`], 3), true, l);
   assert.equal(partlyClosed(['Mon to Sat 9am to 5pm. Closed Saturdays and Sundays in August'], 6), true);
+});
+
+test('round C4 re-review minor 5: show, never guess', () => {
+  const week = (lines) => [0, 1, 2, 3, 4, 5, 6].map((d) => { const s = hoursOn(lines, d); return s === null ? '?' : s.length ? s.map(([a, z]) => `${a / 60}-${z / 60}`).join('+') : 'closed'; }).join(' ');
+  assert.equal(week(['Every day 9am to 5pm except Sunday']), 'closed 9-17 9-17 9-17 9-17 9-17 9-17');
+  assert.equal(week(['Open daily 10am to 4pm except Mondays']), '10-16 closed 10-16 10-16 10-16 10-16 10-16');
+  assert.equal(week(['Mon to Sat 9am to 5pm except Wednesday']), '? 9-17 9-17 closed 9-17 9-17 9-17');
+  assert.equal(week(['Mon to Fri 9am to 5pm. Closed all Wednesdays']), '? 9-17 9-17 closed 9-17 9-17 ?');
+  assert.equal(week(['Mon to Sat 9am to 5pm. Closed on all Sundays']), 'closed 9-17 9-17 9-17 9-17 9-17 9-17');
+  assert.equal(week(['Mon to Fri 9am to 5pm. Sat closed. 10am to 2pm Sunday']), '10-14 9-17 9-17 9-17 9-17 9-17 closed');
+  // Words the reader cannot be sure of: no search data and no Open now for the days that part names.
+  const first = ['Mon to Sat 9am to 5pm. Open the first Sunday of the month 10am to 2pm'];
+  assert.equal(partlyClosed(first, 0), true); assert.equal(partlyClosed(first, 1), false);
+  assert.deepEqual(openingHours(first.join('\n')).map((x) => x.dayOfWeek.length), [6]);
+  assert.equal(openState(first, new Date('2026-11-29T11:00:00Z'), 'Europe/London'), null);
+  for (const l of ['Closed every other Saturday', 'Closed Saturdays in school holidays']) assert.equal(partlyClosed([`Mon to Sat 9am to 5pm. ${l}`], 6), true, l);
+  assert.equal(partlyClosed(['Every day 9am to 5pm except Sunday 10am to 2pm'], 0), true);
 });
 
 test('minor 2: block pages draw hours without blank rows', () => {
