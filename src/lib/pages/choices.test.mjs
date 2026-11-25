@@ -298,8 +298,8 @@ test('round C5 re-review S1, S2 and minor 1: "except" with part of a day, appoin
     ['Every day 9am to 5pm except Sunday', 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
     ['Open every day except Sunday, 9am to 5pm', 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
     ['Open daily except Mondays, 10am to 4pm', '10-16 x 10-16 10-16 10-16 10-16 10-16'],
-    ['Every day except Sunday 9am to 5pm', '- - - - - - -'],
-    ['Every day apart from Sunday 9am to 5pm', '- - - - - - -'],
+    ['Every day except Sunday 9am to 5pm', 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
+    ['Every day apart from Sunday 9am to 5pm', 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
     ['Mon to Sat 9am to 5pm. Last booking 4.30pm', '? 9-17 9-17 9-17 9-17 9-17 9-17'],
     ['Mon to Sat 9am to 5pm, last booking 4.30pm', '? 9-17 9-17 9-17 9-17 9-17 9-17'],
     ['Mon to Fri 9am to 6pm. Last appointment 5pm', '? 9-18 9-18 9-18 9-18 9-18 ?'],
@@ -318,6 +318,50 @@ test('round C5 re-review S1, S2 and minor 1: "except" with part of a day, appoin
     ['Weekdays. 8am to 6pm', '? 8-18 8-18 8-18 8-18 8-18 ?'],
     ['Tue to Sat. 9.30am to 5.30pm. Closed Sun and Mon', 'x x 9.5-17.5 9.5-17.5 9.5-17.5 9.5-17.5 9.5-17.5'],
     ['Mon to Fri 9am to 5pm. Sat 10am to 2pm. 1pm to 2pm closed for lunch', '? 9-17 9-17 9-17 9-17 9-17 10-14+13-14'],
+  ]) assert.equal(week(l.split(' || ')), w, l);
+});
+
+test('round C9 items 4 and 5: "except <day> <times>" with no comma; closed times on a named day; the C6 review\'s h8 lines', () => {
+  // x closed, - unsaid (no search data, no Open now), ? not named, else the times. Lunch hours written
+  // without a day still count as open, as in every earlier round (a known gap, left).
+  const week = (lines) => [0, 1, 2, 3, 4, 5, 6].map((d) => { if (partlyClosed(lines, d)) return '-'; const s = hoursOn(lines, d); return s === null ? '?' : s.length ? s.map(([a, z]) => `${a / 60}-${z / 60}`).join('+') : 'x'; }).join(' ');
+  for (const [l, w] of [
+    ["Mon to Fri 9am to 5pm, closed 1pm to 2pm", '? 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 ?'],
+    ["Mon to Fri 9am to 5pm, closed 1pm to 2pm for lunch", '? 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 ?'],
+    ["Mon to Fri 9am to 5pm. Closed 1pm to 2pm", '? 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 ?'],
+    ["Mon to Fri 9am to 5pm. Closed for lunch 1pm to 2pm", '? 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 ?'],
+    ["Mon to Fri 9am to 5pm. 1pm to 2pm closed for lunch", '? 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 ?'],
+    ["Mon to Fri 9am to 5pm (closed 1pm to 2pm)", '? 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 ?'],
+    ["Mon to Fri 9am to 5pm || Closed for lunch 1pm to 2pm", '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ["Mon to Fri 9am to 5pm || Sat 10am to 2pm || Closed 1pm to 2pm for lunch", '? 9-17 9-17 9-17 9-17 9-17 10-14'],
+    ["Mon to Fri 9am to 5pm. Sat 10am to 2pm. 1pm to 2pm closed for lunch", '? 9-17 9-17 9-17 9-17 9-17 10-14+13-14'],
+    ["Mon to Fri 9am to 1pm and 2pm to 5pm", '? 9-13+14-17 9-13+14-17 9-13+14-17 9-13+14-17 9-13+14-17 ?'],
+    ["Mon to Fri 9am to 1pm, 2pm to 5pm", '? 9-13+14-17 9-13+14-17 9-13+14-17 9-13+14-17 9-13+14-17 ?'],
+    ["Sat 10am to 2pm. Closed Sunday", 'x ? ? ? ? ? 10-14'],
+    ["Mon to Fri 9am to 5pm, Sat 10am to 2pm. Closed Sunday", 'x 9-17 9-17 9-17 9-17 9-17 10-14'],
+    ["Mon to Sat 9am to 5pm. Closed Sundays and bank holidays", 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
+    ["Mon to Fri 9am to 5pm. Closed on bank holidays", '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ["Mon to Fri 9am to 5pm. Closed 24 Dec to 2 Jan", '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ["Mon to Fri 9am to 5pm. Closed 24th December to 2nd January", '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ["Mon to Fri 9am to 5pm. Closed Christmas Day and Boxing Day", '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ["Mon to Fri 9am to 5pm. Closed from 23 December, open again 3 January", '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ["Mon to Fri 9am to 5pm. Closed 25 and 26 December", '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ["Mon to Fri 9am to 5pm. Closed for holidays 1 to 14 August", '? 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 9-17+13-14 ?'],
+    ["Mon to Fri 9am to 5pm. Closed from 4pm on Christmas Eve", '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ["Mon to Fri 9am to 5pm. Closed Wednesdays from 1pm", '? 9-17 9-17 - 9-17 9-17 ?'],
+    ["Mon to Fri 9am to 5pm. Closed at 3pm on Fridays", '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    ["Mon to Fri 9am to 5pm. Doors closed 12.30pm to 1.30pm", '? 9-17+12.5-13.5 9-17+12.5-13.5 9-17+12.5-13.5 9-17+12.5-13.5 9-17+12.5-13.5 ?'],
+    ["Mon to Fri 9am to 5.30pm. Closed 12pm to 1pm", '? 9-17.5+12-13 9-17.5+12-13 9-17.5+12-13 9-17.5+12-13 9-17.5+12-13 ?'],
+    ["Mon to Fri 8am to 6pm. Closed Sat and Sun", 'x 8-18 8-18 8-18 8-18 8-18 x'],
+    ["Mon to Fri 9am to 5pm. Sat 9am to 12pm. Closed Sun", 'x 9-17 9-17 9-17 9-17 9-17 9-12'],
+    ["Tue to Sat 9am to 5pm. Closed Sun and Mon", 'x x 9-17 9-17 9-17 9-17 9-17'],
+    ["Mon to Fri 9am to 5pm. Closed Saturday 1pm to 5pm", '? 9-17 9-17 9-17 9-17 9-17 -'],
+    ["Mon to Sat 9am to 5pm, closed Wed 1pm to 2pm", '? 9-17 9-17 - 9-17 9-17 9-17'],
+    ["Every day except Sunday 9am to 5pm", 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
+    ["Every day apart from Sunday 9am to 5pm", 'x 9-17 9-17 9-17 9-17 9-17 9-17'],
+    ["Every day 9am to 5pm except Saturday 10am to 2pm", '- - - - - - -'],
+    ["Mon to Fri 9am to 5pm except Thursdays after 1pm", '? 9-17 9-17 9-17 - 9-17 ?'],
+    ["Mon to Sat 9am to 5pm except Thursday when we open at 1pm", '? 9-17 9-17 9-17 - 9-17 9-17'],
   ]) assert.equal(week(l.split(' || ')), w, l);
 });
 

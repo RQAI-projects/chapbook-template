@@ -184,7 +184,10 @@ export function hoursGroups(line) {
     if (exw && onlyDays(exw[1]) && ANY_DAY.some((d) => dayInLabel(exw[1], d))) { if (!waiting) waitingAnd = and; waiting = `${waiting} ${part.slice(0, exw.index)}`; waitingExcept = exw[1]; continue; }
     if (unsure && (hasDays || waiting)) { groups.push({ days: `${waiting} ${days}`, spans: [...spans], closed: closed && !spans.length, partial: true }); waiting = ''; waitingKind = null; continue; }
     if (hasDays && !spans.length && !closed) { if (!waiting) waitingAnd = and; waiting = `${waiting} ${days}`; waitingKind = waitingKind || partKind(part); continue; }
-    if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length, ...(closed && !spans.length && partKind(part) ? { partial: true } : {}) }); if (waitingExcept && spans.length) groups.push({ days: waitingExcept, spans: [], closed: true }); waiting = ''; waitingKind = null; waitingExcept = ''; continue; }
+    // "Closed Saturday 1pm to 5pm": times said to be closed on a day named after "closed" are never
+    // opening times; that day is left unsaid (round C9 item 5).
+    const low = part.toLowerCase(), closedDay = closed && spans.length > 0 && hasDays && low.search(/\bclosed\b/) < low.search(DAY_RE);
+    if (hasDays || waiting) { groups.push({ days: `${waiting} ${hasDays ? days : ''}`, spans: [...spans], closed: closed && !spans.length, ...((closed && !spans.length && partKind(part)) || closedDay ? { partial: true } : {}) }); if (waitingExcept && spans.length) groups.push({ days: waitingExcept, spans: [], closed: true }); waiting = ''; waitingKind = null; waitingExcept = ''; continue; }
     // Times with no days: more times for the group before, or (times written first) for the days after.
     const last = groups[groups.length - 1];
     if (last?.closed && spans.length) continue;
