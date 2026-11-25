@@ -128,3 +128,12 @@ test('round C build review minor 6: an id of the form n<number> is refused', () 
   assert.deepEqual([...servicesOf(p).keys()], ['n1', 'n2']);
   assert.equal(serviceKey({ id: 'n7' }, 0), 'n1');
 });
+
+test('round C2 re-review minors 5 and 10: a linked card says what it cut and when it shows no price', () => {
+  const C = { biz: { services: [{ id: 'sa', name: 'Sports massage for runners after a long race in the hills', duration: '30 min', price: '£35' }, { id: 'sb', name: 'B', duration: '60 min', price: 'Ask' }] } };
+  const b = (items, type = 'plans') => ({ id: 'p', type, data: { items } });
+  assert.deepEqual(linkServices(b([{ service: 'sa', lengthShows: 'heading' }]), C).data.items[0]._cut, [{ field: 'name', max: 60 }]);
+  assert.equal(linkServices(b([{ service: 'sa' }]), C).data.items[0]._cut, undefined);
+  assert.equal(linkServices(b([{ services: ['sa', 'sb'] }], 'services'), C).data.items[0]._noPrice, true);
+  assert.equal(linkServices(b([{ services: ['sa', 'sb'], price: 'Ask us' }], 'services'), C).data.items[0]._noPrice, undefined);
+});

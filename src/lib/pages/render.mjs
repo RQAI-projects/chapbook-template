@@ -2089,7 +2089,10 @@ export function linkServices(b, C) {
   const items = b?.data?.items;
   if (!SERVICE_TYPES.includes(b?.type) || !Array.isArray(items) || !items.some((x) => x && (x.service || x.services?.length))) return b;
   const list = servicesOf(C.biz), take = SERVICE_FIELDS[b.type], fields = [];
-  const line = (k, v) => cleanLine(v, fieldMax(b.type, k));
+  // `_cut` on a card names the words longer than the section shows, as built ("From £35", a
+  // heading with its length), for the app's note (round C2 re-review, minor 5).
+  let cuts = [];
+  const line = (k, v) => { const t = cleanLine(v, fieldMax(b.type, k)); if (cleanLine(v, 4000).length > t.length) cuts.push({ field: k, max: fieldMax(b.type, k) }); return t; };
   // Ways to pay: when every linked card is one service in several lengths, the length is the
   // card's heading, as the samples have it ("30 minutes", "60 minutes", "90 minutes").
   const singles = items.filter((x) => x?.service && list.has(x.service)).map((x) => list.get(x.service));
@@ -2103,6 +2106,7 @@ export function linkServices(b, C) {
       return;
     }
     const y = { ...x }, svc = many[0], summary = !!x.services?.length;
+    cuts = [];
     const set = new Set(take.filter((k) => k !== 'link'));
     if (summary) {
       // Its name: the services' one name, else the card's own, else the first service's (round C
@@ -2118,7 +2122,12 @@ export function linkServices(b, C) {
         const low = prices.reduce((a, z) => (z.n < a.n ? z : a));
         y.price = line('price', many.length > 1 ? `From ${low.text}` : many[0].price);
       } else if (x.price) set.delete('price');
-      else delete y.price;
+      else {
+        // No price can be worked out ("Ask", "£35 per session"): the card shows none, and `_noPrice`
+        // lets the app say so (round C2 re-review, minor 10).
+        delete y.price;
+        if (many.some((s) => s.price)) y._noPrice = true;
+      }
       for (const k of ['pay', 'paid', 'act', 'manage']) set.delete(k);
     } else {
       // The length shows in its own place, in the heading ("Sports massage, 30 minutes") or not at
@@ -2143,6 +2152,7 @@ export function linkServices(b, C) {
       if (y.link?.href && y.link.href === svc.bookingTyped) { y._svcKey = svc.key; y._svcLink = svc.bookingTyped; }
     }
     for (const k of Object.keys(y)) if (y[k] === '' || y[k] === undefined) delete y[k];
+    if (cuts.length) y._cut = cuts;
     out.push(y); fields.push(set);
   });
   return { ...b, data: { ...b.data, items: out }, _svcFields: fields };
