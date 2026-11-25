@@ -218,6 +218,10 @@ export const INTERACTIVE_SRC = /^\/interactives\/[a-z0-9][a-z0-9-]{0,79}\.html$/
 // block's settings (with its `hint`). A choice may carry `labels` for its options.
 const L = (max, label, ph) => ({ kind: 'line', max, label, ph: ph || `Add ${label.toLowerCase()}` });
 const R = (max, label, ph) => ({ kind: 'rich', max, label, ph: ph || `Add ${label.toLowerCase()}` });
+// A card linked to a service in Your services (round C): the service's id, or for a summary card the
+// ids of the services it sums up. The card then takes its name, length, price and links from the list.
+const SVC = { kind: 'service', label: 'Service in Your services' };
+const SVCS = { kind: 'services', max: 12, label: 'Services this card sums up' };
 const PIC = (label = 'Picture') => ({ kind: 'picture', label });
 const BTNS = (max = 2) => ({ kind: 'links', max, label: 'Buttons' });
 const HEAD = L(160, 'Heading', 'Add a heading');
@@ -385,7 +389,7 @@ export const BLOCK_TYPES = {
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 40, label: 'Services', add: 'Add a service', item: {
-        name: L(100, 'Name', 'Name of the service'), description: R(600, 'Description'), price: L(60, 'Price', 'Price'), duration: L(60, 'Time', 'Time'),
+        service: SVC, services: SVCS, name: L(100, 'Name', 'Name of the service'), description: R(600, 'Description'), price: L(60, 'Price', 'Price'), duration: L(60, 'Time', 'Time'),
         offer: L(120, 'Offer'), picture: PIC(), link: { kind: 'link', label: 'Booking link' }, pay: { kind: 'link', label: 'Pay link' },
         // Shown on the sideways cards (a speciality's consultant and usual wait).
         who: L(80, 'Who you will see', 'e.g. Dr Amelia Hart'), wait: L(40, 'Usual wait', 'e.g. 5 days'),
@@ -560,7 +564,7 @@ export const BLOCK_TYPES = {
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(600, 'Introduction'),
       items: { kind: 'items', max: 12, label: 'Things to book', add: 'Add one', item: {
-        name: L(80, 'Name', 'e.g. Dinner for two'), duration: L(40, 'Time', 'e.g. 90 min'), price: L(40, 'Price', 'e.g. £45'), link: { kind: 'link', label: 'Its own booking link' },
+        service: SVC, services: SVCS, name: L(80, 'Name', 'e.g. Dinner for two'), duration: L(40, 'Time', 'e.g. 90 min'), price: L(40, 'Price', 'e.g. £45'), link: { kind: 'link', label: 'Its own booking link' },
         // Payment is taken as the visitor books (payment switched on in Cal.com or Google), so
         // the item says so and needs no separate pay button.
         paid: { kind: 'bool', label: 'Pay when you book', hint: 'Tick only once payment is switched on in Cal.com or Google (Details & booking, Take payment as people book).' },
@@ -580,7 +584,7 @@ export const BLOCK_TYPES = {
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 6, label: 'Ways to pay', add: 'Add a way to pay', item: {
-        name: L(60, 'Name', 'e.g. Deposit'), price: L(40, 'Price', 'e.g. £20'), per: L(40, 'For what or how often', 'e.g. a month'),
+        service: SVC, services: SVCS, name: L(60, 'Name', 'e.g. Deposit'), price: L(40, 'Price', 'e.g. £20'), per: L(40, 'For what or how often', 'e.g. a month'),
         includes: R(600, 'What is included', 'A short list of what is included'), small: L(160, 'Small print', 'e.g. Balance due on the day'),
         pay: { kind: 'link', label: 'Pay link' }, popular: { kind: 'bool', label: 'Most popular' },
         // A monthly plan's link to the payment service's own page where members change their card
@@ -629,7 +633,7 @@ export const BLOCK_TYPES = {
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 60, label: 'Lines', add: 'Add a line', item: {
-        group: L(40, 'Group it starts', 'e.g. Starters'), name: L(100, 'Name', 'Name'), description: L(240, 'Description'), duration: L(40, 'Time', 'e.g. 45 min'), price: L(40, 'Price', 'Price'), tag: L(24, 'Small label', 'e.g. Vegan'),
+        service: SVC, services: SVCS, group: L(40, 'Group it starts', 'e.g. Starters'), name: L(100, 'Name', 'Name'), description: L(240, 'Description'), duration: L(40, 'Time', 'e.g. 45 min'), price: L(40, 'Price', 'Price'), tag: L(24, 'Small label', 'e.g. Vegan'),
       }, sample: { name: 'New line', price: '' } },
       note: L(240, 'Small print'),
     },
@@ -640,7 +644,7 @@ export const BLOCK_TYPES = {
     fields: {
       kicker: L(100, 'Short label'), heading: HEAD, intro: R(800, 'Introduction'),
       items: { kind: 'items', max: 9, label: 'Tiles', add: 'Add a tile', item: {
-        value: L(16, 'Big number or word', 'e.g. 12'), name: L(60, 'Heading', 'Heading'), text: L(200, 'Words'), duration: L(40, 'Time', 'e.g. 45 min'), price: L(40, 'Price', 'Price'), picture: PIC(), link: { kind: 'link', label: 'Link' },
+        service: SVC, services: SVCS, value: L(16, 'Big number or word', 'e.g. 12'), name: L(60, 'Heading', 'Heading'), text: L(200, 'Words'), duration: L(40, 'Time', 'e.g. 45 min'), price: L(40, 'Price', 'Price'), picture: PIC(), link: { kind: 'link', label: 'Link' },
         // A friendly shape drawn on a tile without a photo (release 7).
         // Shapes, or a simple line drawing of an everyday task (therapy batch 1, occupational therapy).
         shape: { kind: 'choice', options: ['none', 'circle', 'arch', 'leaf', 'star', 'drop', 'wave', 'dressing', 'cooking', 'washing', 'stairs', 'work', 'school'], def: 'none', labels: { none: 'No shape', circle: 'A circle', arch: 'An arch', leaf: 'A leaf', star: 'A star', drop: 'A drop', wave: 'A wave', dressing: 'A drawing: a shirt on a hanger', cooking: 'A drawing: a pan on the hob', washing: 'A drawing: a basin and tap', stairs: 'A drawing: stairs with a rail', work: 'A drawing: a laptop and a mug', school: 'A drawing: a school bag' }, label: 'Shape on the tile' },
@@ -740,6 +744,16 @@ export const HEADING_EM = /(^|[\s(\u201c"'])\*([^*\s](?:[^*]{0,60}?[^*\s])?)\*(?
 const hasEm = (v) => typeof v === 'string' && v.includes('*') && new RegExp(HEADING_EM.source).test(v);
 // A choice of "none" uses nothing new either.
 const filled = (v) => v !== undefined && v !== '' && v !== false && v !== null && v !== 'none';
+// A reference to a service: its id, or "n" and its place in the list for one without an id.
+export const SERVICE_REF = /^[a-z0-9][a-z0-9-]{0,39}$/;
+// A service's key: its id, or "n" and its place in the list for one written before ids (round C review P5).
+export const serviceKey = (s, i) => (s && typeof s.id === 'string' && SERVICE_REF.test(s.id) ? s.id : `n${i + 1}`);
+// The sections whose cards can be linked to Your services, and what a linked card takes from the list.
+export const SERVICE_TYPES = ['bookstrip', 'services', 'plans', 'menuboard', 'tiles'];
+export const SERVICE_FIELDS = { bookstrip: ['name', 'duration', 'price', 'link', 'paid'], services: ['name', 'duration', 'price', 'pay'], plans: ['name', 'price', 'pay', 'act', 'manage'], menuboard: ['name', 'duration', 'price'], tiles: ['name', 'duration', 'price'] };
+// Whether a block has a card linked to Your services, which needs design release 8 (round C): an
+// older design does not know the link and would draw the card empty.
+export const linksServices = (b) => !!b && ((SERVICE_TYPES.includes(b.type) && (b.data?.items || []).some((x) => x && (x.service || (Array.isArray(x.services) && x.services.length)))) || (b.data?.children || []).some(linksServices));
 // Whether a block needs website design release 7 to be drawn as it is meant.
 export const needsSignature = (b) => !!b && (SIGNATURE_TYPES.includes(b.type) || (SIGNATURE_LAYOUTS[b.type] || []).includes(b.variant) || (SIGNATURE_FIELDS[b.type] || []).some((k) => filled(b.data?.[k])) || (SIGNATURE_ITEM_FIELDS[b.type] || []).some((k) => (b.data?.items || []).some((x) => filled(x?.[k]))) || hasEm(b.data?.heading) || (b.data?.children || []).some(needsSignature));
 // A page's own look can need release 7 too: the two new heading typefaces and the still wash
@@ -772,6 +786,8 @@ function cleanField(f, v, opts) {
     case 'src': return typeof v === 'string' && INTERACTIVE_SRC.test(v) ? v : '';
     case 'booking': return bookingTarget(v)?.href || '';
     case 'date': return cleanDate(v);
+    case 'service': { const t = typeof v === 'string' ? v.trim() : ''; return SERVICE_REF.test(t) ? t : ''; }
+    case 'services': return [...new Set((Array.isArray(v) ? v : []).map((x) => (typeof x === 'string' ? x.trim() : '')).filter((x) => SERVICE_REF.test(x)))].slice(0, f.max);
     default: return null;
   }
 }

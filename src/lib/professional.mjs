@@ -19,6 +19,13 @@ export const MEDICAL_SPECIALTIES = [
 export const EMAIL_RE=/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 export const PHONE_RE=/^[+\d ()-]{5,60}$/;
 export const PROMO_RE=/^[A-Za-z0-9_-]{1,40}$/;
+// Your services: how many, and what a block page card takes from one besides the standard fields.
+export const MAX_SERVICES=60;
+export const SERVICE_ID=/^[a-z0-9][a-z0-9-]{0,39}$/;
+export const SERVICE_ACTS=['book','buy','join','ask','contact'];
+// An https address kept exactly as typed (round B2 S1: a query or hash is the owner's), or ''.
+export function typedHttps(value){const t=text(value,2048);return safeBookingUrl(t)?t:'';}
+const serviceExtras=(s)=>{const o={};const id=text(s.id,40);if(SERVICE_ID.test(id))o.id=id;if(SERVICE_ACTS.includes(s.act))o.act=s.act;if(s.paid===true)o.paid=true;const m=typedHttps(s.manage);if(m)o.manage=m;const b=typedHttps(s.bookingUrl);if(b)o.bookingTyped=b;const pay=typedHttps(s.paymentUrl);if(pay)o.paymentTyped=pay;return o;};
 const text=(v,max=500)=>typeof v==='string'?v.trim().slice(0,max):'';
 export function safeBookingUrl(value){
   try{const u=new URL(text(value,2048));return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch{return '';}
@@ -96,7 +103,10 @@ export function professionalDetails(value={},{allowDataImages=false}={}){
     email:EMAIL_RE.test(email)?email:'',
     phone:PHONE_RE.test(phone)?phone:'',
     bookingUrl:safeBookingUrl(p.bookingUrl),bookingLabel:text(p.bookingLabel,60)||'Book an appointment',
-    services:(Array.isArray(p.services)?p.services:[]).filter(s=>s&&text(s.name)).slice(0,30).map(s=>({name:text(s.name,100),description:text(s.description,500),price:text(s.price,80),duration:text(s.duration,80),bookingUrl:safeBookingUrl(s.bookingUrl),paymentUrl:safeBookingUrl(s.paymentUrl),payLabel:text(s.payLabel,40),offer:text(s.offer,120),promoCode:PROMO_RE.test(text(s.promoCode,40))?text(s.promoCode,40):'',image:pic(s.image)})),
+    // Your services (round C): one list, which the standard pages draw and block page cards link to
+    // by id. The id, the button words without a pay link, Pay when you book, a plan's manage link and
+    // the booking link exactly as typed are kept for the cards (an older design ignores them).
+    services:(Array.isArray(p.services)?p.services:[]).filter(s=>s&&text(s.name)).slice(0,MAX_SERVICES).map(s=>({...serviceExtras(s),name:text(s.name,100),description:text(s.description,500),price:text(s.price,80),duration:text(s.duration,80),bookingUrl:safeBookingUrl(s.bookingUrl),paymentUrl:safeBookingUrl(s.paymentUrl),payLabel:text(s.payLabel,40),offer:text(s.offer,120),promoCode:PROMO_RE.test(text(s.promoCode,40))?text(s.promoCode,40):'',image:pic(s.image)})),
     paymentUrl:safeBookingUrl(p.paymentUrl),paymentLabel:text(p.paymentLabel,60),
     announcement:text(p.announcement,200),story:text(p.story,3000),storyTitle:text(p.storyTitle,100),
     heroImage:pic(p.heroImage),

@@ -5,8 +5,8 @@ import {professionalDetails,contactHref,bookingText} from '../lib/professional.m
 import ServiceMenu from '../components/professional/ServiceMenu.astro';
 import {vocabFor} from '../lib/vocab';
 import {withBase} from '../lib/withBase';
-import {pageCss,bookingChoices} from '../lib/pages/render.mjs';
-import {bookingTarget} from '../lib/pages/schema.mjs';
+import {pageCss,bookingChoices,serviceChoices,linkServices} from '../lib/pages/render.mjs';
+import {bookingTarget,linksServices} from '../lib/pages/schema.mjs';
 import {hoursLines} from '../lib/professional.mjs';
 import {blockPage,blockPages,baseColours} from '../lib/pages/site-pages';
 const p=professionalDetails((site as any).professional);
@@ -17,7 +17,8 @@ const lookCss=homeLook&&(homeLook.colours||homeLook.font||homeLook.bodyFont)?pag
 // Items ticked "Pay when you book" (on the booking strip or dated places): one line says so.
 // Only an item that books through this page (no booking link of its own) counts.
 const ownLink=(x:any)=>{const h=typeof x?.link?.href==='string'?x.link.href.trim():'';return !!h&&h!=='@booking';};
-const paysHere=!!p.bookingUrl&&blockPages.some((pg:any)=>pg.blocks.some((b:any)=>(b.type==='bookstrip'||b.type==='spaces')&&(b.data?.items||[]).some((x:any)=>x?.paid===true&&!ownLink(x))));
+// A card linked to Your services takes Pay when you book and its booking link from the list (round C).
+const paysHere=!!p.bookingUrl&&blockPages.some((pg:any)=>pg.blocks.some((b:any)=>(b.type==='bookstrip'||b.type==='spaces')&&(linkServices(b,{biz:p}).data?.items||[]).some((x:any)=>x?.paid===true&&!ownLink(x))));
 const mail=/^[^\s@<>"'?&#%]+@[^\s@<>"'?&#%]+\.[^\s@<>"'?&#%]+$/.test(p.email||'')?p.email:'';
 const href=contactHref(p);
 // The calendar shown on this page behind "Show available times" (app walk, 24 Nov): a Cal.com page,
@@ -32,8 +33,11 @@ const sepHref=main?main.href:href;
 // item is named, with its own calendar. Shown by :target with scripts off; the script marks it after
 // the site's own page changes too.
 const seen=new Set();
-const choices=blockPages.flatMap((pg:any)=>bookingChoices(pg,{normalised:true})).filter((c:any)=>c.target&&!seen.has(c.key)&&seen.add(c.key));
+// Each service in Your services with its own Cal.com or Google link has its section too (round C).
+const choices=[...serviceChoices(site),...blockPages.flatMap((pg:any)=>bookingChoices(pg,{normalised:true}))].filter((c:any)=>c.target&&!seen.has(c.key)&&seen.add(c.key));
 const callOr=p.phone?{href:'tel:'+p.phone.replace(/[^+\d]/g,''),words:p.phone,how:'call'}:mail?{href:'mailto:'+mail,words:mail,how:'email'}:null;
+// "What we offer" stays for websites whose pages do not show Your services on cards of their own (round C, choice G).
+const cardsLinked=blockPages.some((pg:any)=>pg.blocks.some((b:any)=>linksServices(b)));
 const hours=hoursLines(p.hours);
 const vocab=vocabFor(site.defaultTheme);
 // The button's words: the owner's own, else the look's own ("Book a table", "Order"), so a bakery is
@@ -64,7 +68,7 @@ const bookWords=bookingText((site as any).professional,vocab.bookingNav==='Appoi
  </section><aside>{p.location&&<><h2>Where</h2><p>{p.location}</p></>}{hours.length>0&&<><h2>When</h2><p class="pro-hours">{hours.map((l)=><span class="hours-line">{l}</span>)}</p></>}{p.email&&<p><a href={'mailto:'+encodeURIComponent(p.email)}>{p.email}</a></p>}{p.phone&&<p><a href={'tel:'+p.phone.replace(/[^+\d]/g,'')}>{p.phone}</a></p>}</aside></div>
  {main&&<div id="booking-calendar" class="booking-embed" hidden></div>}
  </div>
- {p.services.length>0&&<section class="appointment-services"><h2>What we offer</h2><ServiceMenu services={p.services}/></section>}
+ {p.services.length>0&&!cardsLinked&&<section class="appointment-services"><h2>What we offer</h2><ServiceMenu services={p.services}/></section>}
 </div>
 </Base>
 <script>

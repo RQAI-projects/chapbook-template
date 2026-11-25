@@ -3,7 +3,7 @@
 // Everything a writer types is escaped. Rich text allows only paragraphs, **bold**, *italic*,
 // [links](…) and "- " lists. With { editable: true } every value carries a data-cb marker the
 // editor uses for click-to-edit; published HTML has none.
-import { normalisePage, BLOCK_TYPES, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading, CQC_ID, CQC_RATINGS, registerOf, payLine, usesCqc, payPage } from './schema.mjs';
+import { normalisePage, BLOCK_TYPES, SERVICE_TYPES, SERVICE_FIELDS, serviceKey, choiceValue, cleanHref, cleanHex, cleanLine, cleanDate, videoEmbed, INTERACTIVE_SRC, bookingTarget, MOTION, HERO_PHOTO_ROOM, WEEK_DAYS, HEADING_EM, plainHeading, CQC_ID, CQC_RATINGS, registerOf, payLine, usesCqc, payPage } from './schema.mjs';
 import { professionalDetails, telHref, sameText, hoursLines } from '../professional.mjs';
 
 export * from './schema.mjs';
@@ -235,9 +235,17 @@ function fieldPh(type, path) {
 // One editable text value. Empty values disappear from the published page.
 function T(C, b, path, value, tag = 'p', cls = '', attrs = '') {
   const c = cls ? ` class="${cls}"` : '';
-  if (!value) return C.editable ? `<${tag}${c}${attrs}${ED(C, 'data-cb', `${b.id}:${path}`)}${PH(C, b, path)}></${tag}>` : '';
-  return `<${tag}${c}${attrs}${ED(C, 'data-cb', `${b.id}:${path}`)}>${esc(value)}</${tag}>`;
+  const at = svcAt(C, b, path) || ED(C, 'data-cb', `${b.id}:${path}`);
+  if (!value) return C.editable ? `<${tag}${c}${attrs}${at}${PH(C, b, path)}></${tag}>` : '';
+  return `<${tag}${c}${attrs}${at}>${esc(value)}</${tag}>`;
 }
+// A value a linked card takes from Your services (round C): in the editor it is not typed into
+// here; pressing it opens the service ("<block>:items.<n>"), so the list is the only place it lives.
+const svcAt = (C, b, path) => {
+  if (!C.editable || !b._svcFields) return '';
+  const m = /^items\.(\d+)\.([a-z]+)$/i.exec(path);
+  return m && b._svcFields[+m[1]]?.has(m[2]) ? ` data-cb-svc="${esc(`${b.id}:items.${m[1]}`)}"` : '';
+};
 function RT(C, b, path, value, cls = 'cb-rich') {
   if (!value) return C.editable ? `<div class="${cls}"${ED(C, 'data-cb', `${b.id}:${path}`)} data-cb-rich${PH(C, b, path)}></div>` : '';
   return `<div class="${cls}"${ED(C, 'data-cb', `${b.id}:${path}`)}${C.editable ? ' data-cb-rich' : ''}>${richText(value, C)}</div>`;
@@ -283,7 +291,7 @@ function BTN(C, b, path, link, cls = 'cb-btn') {
   const label = link?.label || '';
   if ((!href || !label) && !C.editable) return '';
   const needs = C.editable && (!href || !label) ? ' data-cb-incomplete' : '';
-  return `<a class="${cls}" href="${esc(href || '#')}"${ED(C, 'data-cb-link', `${b.id}:${path}`)}${needs}>${esc(label || 'Button')}</a>`;
+  return `<a class="${cls}" href="${esc(href || '#')}"${svcAt(C, b, path) || ED(C, 'data-cb-link', `${b.id}:${path}`)}${needs}>${esc(label || 'Button')}</a>`;
 }
 function BTNS(C, b, buttons = [], cls = 'cb-actions') {
   const out = buttons.map((l, i) => BTN(C, b, `buttons.${i}`, l, i ? 'cb-btn cb-btn-2' : 'cb-btn')).join('');
@@ -1469,7 +1477,8 @@ export function choiceTarget(href) {
 // other link (Read more, LinkedIn).
 function choiceLink(C, b, x, link) {
   if (C.editable || !link?.href || !choiceTarget(link.href)) return link;
-  return { ...link, href: `/appointments/#${choiceKey(C.page?.slug, b.id, x.id)}` };
+  // A card linked to a service books it under the service's own key, the same from every page.
+  return { ...link, href: `/appointments/#${x?._svcKey && link.href === x._svcLink ? serviceChoiceKey(x._svcKey) : choiceKey(C.page?.slug, b.id, x.id)}` };
 }
 const BOOKABLE = ['bookstrip', 'spaces', 'services'];
 // Sections whose items carry a link that may be a booking page of their own (round B review,
@@ -1500,7 +1509,8 @@ export function bookingChoices(rawPage, { normalised = false } = {}) {
     }
     if (!BOOKABLE.includes(b.type)) continue;
     (b.data?.items || []).forEach((x, index) => {
-      if (!x) return;
+      // A card linked to Your services books under its service (serviceChoices), not here.
+      if (!x || x.service || x.services?.length) return;
       if (b.type === 'bookstrip' && !x.name) return;
       if (b.type === 'spaces' && !x.name && !x.date) return;
       if (b.type === 'services' && !(x.name && x.link?.href)) return;
@@ -2032,6 +2042,100 @@ R_.scenes = (C, b) => {
 };
 
 R_.spacer = (C, b) => (b.variant === 'ornament' ? '<p class="cb-ornament" aria-hidden="true"><span></span><span></span><span></span></p>' : b.variant === 'line' ? '<hr>' : '');
+
+// ---- Your services (round C) ------------------------------------------------------------------
+// A card in a booking strip, services, ways to pay, menu board or tiles section may be linked to a
+// service in Your services (site.json professional.services) by its id (`service`), or, as a summary
+// card, to several (`services`). The card takes its name, length, price and links from the list;
+// everything else (description, photo, what is included, small print, its own page link) stays the
+// card's. A section's cards stay its own, in its own order, and may mix linked and typed cards.
+// A service is known by its id, or else by "n" and its place in the list (a list written before ids):
+// the Book link and the Appointments page are made from the same list in the same build.
+export { serviceKey };
+export const serviceChoiceKey = (key) => `book-svc-${keyPart(key)}`;
+export function servicesOf(biz) {
+  const m = new Map();
+  (biz?.services || []).forEach((s, i) => { const key = serviceKey(s, i); if (!m.has(key)) m.set(key, { ...s, key }); });
+  return m;
+}
+// "From £35" from "£35"; the amount in a price, for the lowest of several.
+const fromless = (p) => String(p || '').replace(/^\s*from\s+/i, '').trim();
+const amount = (p) => { const m = /\d[\d,]*(?:\.\d+)?/.exec(fromless(p)); return m ? parseFloat(m[0].replace(/,/g, '')) : null; };
+// "30 min", "60 min", "90 min" → "30 to 90 min"; one length → that length; mixed units → ''.
+function lengthRange(list) {
+  const ls = list.map((s) => String(s.duration || '').trim()).filter(Boolean);
+  if (!ls.length) return '';
+  if (ls.every((l) => l === ls[0])) return ls[0];
+  const parts = ls.map((l) => /^(\d+(?:\.\d+)?)\s*([a-z]+)$/i.exec(l));
+  if (parts.some((x) => !x) || parts.some((x) => x[2].toLowerCase() !== parts[0][2].toLowerCase())) return '';
+  const ns = parts.map((x) => parseFloat(x[1]));
+  return `${Math.min(...ns)} to ${Math.max(...ns)} ${parts[0][2]}`;
+}
+// A Stripe payment link with the service's promotion code put in, as the standard pages do.
+function promoHref(href, code) {
+  if (!code) return href;
+  try { const u = new URL(href); if (u.hostname === 'buy.stripe.com') u.searchParams.set('prefilled_promo_code', code); return u.href; } catch { return href; }
+}
+const fieldMax = (type, k) => BLOCK_TYPES[type]?.fields?.items?.item?.[k]?.max || 200;
+// The section as drawn: its linked cards filled in from the list. `_svcFields[n]` names the values
+// card n takes from the list (the editor opens the service for those), `_svcKey` its booking key.
+export function linkServices(b, C) {
+  const items = b?.data?.items;
+  if (!SERVICE_TYPES.includes(b?.type) || !Array.isArray(items) || !items.some((x) => x && (x.service || x.services?.length))) return b;
+  const list = servicesOf(C.biz), take = SERVICE_FIELDS[b.type], fields = [];
+  const line = (k, v) => cleanLine(v, fieldMax(b.type, k));
+  // Ways to pay: when every linked card is one service in several lengths, the length is the
+  // card's heading, as the samples have it ("30 minutes", "60 minutes", "90 minutes").
+  const singles = items.filter((x) => x?.service && list.has(x.service)).map((x) => list.get(x.service));
+  const byLength = b.type === 'plans' && singles.length > 1 && singles.every((s) => s.name === singles[0].name && s.duration) && new Set(singles.map((s) => s.duration)).size === singles.length;
+  const out = [];
+  items.forEach((x) => {
+    if (!x || !(x.service || x.services?.length)) { out.push(x); fields.push(null); return; }
+    const many = (x.services?.length ? x.services : [x.service]).map((k) => list.get(k)).filter(Boolean);
+    if (!many.length) {
+      if (C.editable) { out.push({ ...x, name: 'This card’s service was removed from Your services.' }); fields.push(new Set(['name'])); }
+      return;
+    }
+    const y = { ...x }, svc = many[0], summary = !!x.services?.length;
+    const set = new Set(take.filter((k) => k !== 'link'));
+    if (summary) {
+      const names = new Set(many.map((s) => s.name));
+      if (names.size === 1) y.name = line('name', svc.name);
+      else set.delete('name');
+      y.duration = line('duration', lengthRange(many));
+      const low = many.filter((s) => amount(s.price) !== null).sort((a, z) => amount(a.price) - amount(z.price))[0];
+      y.price = low ? line('price', many.length > 1 ? `From ${fromless(low.price)}` : low.price) : '';
+      for (const k of ['pay', 'paid', 'act', 'manage']) set.delete(k);
+    } else {
+      y.name = line('name', byLength ? svc.duration : svc.name);
+      if (take.includes('duration')) y.duration = line('duration', svc.duration);
+      y.price = line('price', svc.price);
+      if (take.includes('pay')) {
+        if (svc.paymentTyped) y.pay = { label: cleanLine(svc.payLabel || x.pay?.label || 'Pay now', 60), href: promoHref(svc.paymentTyped, svc.promoCode) };
+        else if (x.pay?.label) y.pay = { label: x.pay.label }; else delete y.pay;
+      }
+      if (take.includes('paid')) { if (svc.paid) y.paid = true; else delete y.paid; }
+      if (take.includes('act')) { if (svc.act) y.act = svc.act; else delete y.act; }
+      if (take.includes('manage')) { if (svc.manage) y.manage = { label: x.manage?.label || 'Manage your membership', href: svc.manage }; else delete y.manage; }
+      // The booking link (round C review P1): a booking strip choice books the service; any other card
+      // keeps its own link and words, and only a Book that goes to the booking takes the service's own.
+      if (take.includes('link')) {
+        if (svc.bookingTyped) { y.link = { label: x.link?.label || 'Book', href: svc.bookingTyped }; set.add('link'); } else delete y.link;
+      } else if (x.link?.href === '@booking' && svc.bookingTyped) y.link = { ...x.link, href: svc.bookingTyped };
+      if (y.link?.href && y.link.href === svc.bookingTyped) { y._svcKey = svc.key; y._svcLink = svc.bookingTyped; }
+    }
+    for (const k of Object.keys(y)) if (y[k] === '' || y[k] === undefined) delete y[k];
+    out.push(y); fields.push(set);
+  });
+  return { ...b, data: { ...b.data, items: out }, _svcFields: fields };
+}
+// The services a visitor can book on the Appointments page with their own calendar: every service
+// in the list with its own Cal.com or Google booking link. → [{ key, name, link, target, paid }]
+export function serviceChoices(site) {
+  const biz = professionalDetails(site?.professional || {});
+  return [...servicesOf(biz).values()].map((s) => ({ key: serviceChoiceKey(s.key), name: [s.name, s.duration].filter(Boolean).join(', '), link: s.bookingTyped || '', target: choiceTarget(s.bookingTyped || ''), paid: !!s.paid })).filter((c) => c.target);
+}
+for (const t of SERVICE_TYPES) { const draw = R_[t]; R_[t] = (C, b) => draw(C, linkServices(b, C)); }
 
 function renderBlock(b, C) {
   const inner = R_[b.type](C, b);

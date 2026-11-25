@@ -18,12 +18,19 @@ test('every business design converts with nothing lost', () => {
   for (const theme of BUSINESS_LAYOUTS) {
     const page = pageFromHome({ name: 'Crumb', defaultTheme: theme, professional }, theme);
     const all = JSON.stringify(page);
-    for (const must of ['Bread worth the queue', 'Sourdough', 'Birthday cake', '£4.50', 'We started in a garage.', 'Closed Mondays', '5 star hygiene rating', '/site-images/hero.jpg', '/site-images/g1.jpg', 'Order a cake', 'Pay a deposit', 'prefilled_promo_code=JAN10']) assert.ok(all.includes(must), `${theme}: ${must}`);
+    for (const must of ['Bread worth the queue', 'We started in a garage.', 'Closed Mondays', '5 star hygiene rating', '/site-images/hero.jpg', '/site-images/g1.jpg', 'Order a cake', 'Pay a deposit']) assert.ok(all.includes(must), `${theme}: ${must}`);
     assert.equal(page.slug, 'home');
     assert.equal(page.blocks[0].type, 'notice');
     assert.equal(page.blocks[1].type, 'hero');
     const html = renderPage(page, { site: { professional } });
     assert.ok(html.includes('Bread worth the queue'), theme);
+    // The services are linked to Your services (round C), never copied: names, prices and pay links
+    // are drawn from the list, so the page file holds none of them.
+    const svc = page.blocks.find((b) => b.type === 'services');
+    if (svc) {
+      assert.ok(svc.data.items.every((x) => x.service && !x.name && !x.price && !x.pay), theme);
+      for (const must of ['Birthday cake', '£4.50', 'prefilled_promo_code=JAN10']) { assert.ok(html.includes(must), `${theme}: ${must}`); assert.ok(!all.includes(must), `${theme}: ${must} copied`); }
+    }
   }
 });
 

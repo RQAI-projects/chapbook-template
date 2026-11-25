@@ -4,7 +4,7 @@
 import { professionalDetails, ownText, sameText } from '../professional.mjs';
 import { designDetails, sectionOrder, defaultTitles, infoSitsInOpening, BUSINESS_LAYOUTS, SECTION_LABELS } from '../business/render.mjs';
 import { aboutDetails } from '../about.mjs';
-import { normalisePage, cleanText } from './schema.mjs';
+import { normalisePage, cleanText, serviceKey } from './schema.mjs';
 
 // How each business design lays out its opening and its price list today.
 const HERO = { table: 'centred', trade: 'panel', clinic: 'panel', pulse: 'poster', counsel: 'split', shopfront: 'centred', practice: 'panel', petal: 'centred', contour: 'panel', cut: 'poster', still: 'centred', office: 'split' };
@@ -40,10 +40,11 @@ export function pageFromHome(site = {}, theme = site.defaultTheme) {
   for (const s of design.sections) {
     const into = s.on ? blocks : spare;
     if (s.id === 'photos' && p.gallery.length) into.push({ type: 'gallery', role: 'gallery', variant: GALLERY[theme] || 'grid', data: { heading: title('photos', s.title), pictures: p.gallery.map(pic).filter(Boolean) } });
-    if (s.id === 'services' && p.services.length) into.push({ type: 'services', role: 'services', variant: SERVICES[theme] || 'menu', data: { heading: title('services', s.title), items: p.services.map((x) => strip({
-      name: x.name, description: x.description, price: x.price, duration: x.duration, offer: x.offer, picture: pic(x.image),
-      link: x.bookingUrl ? { label: 'Book', href: x.bookingUrl } : null,
-      pay: x.paymentUrl ? { label: x.payLabel || 'Pay now', href: promoHref(x) } : null,
+    if (s.id === 'services' && p.services.length) into.push({ type: 'services', role: 'services', variant: SERVICES[theme] || 'menu', data: { heading: title('services', s.title), items: p.services.map((x, i) => strip({
+      // Each card is linked to its service in Your services (round C), never a typed copy: the name,
+      // length, price and links stay in the list. The card keeps its own words and photo.
+      service: serviceKey(x, i), description: x.description, offer: x.offer, picture: pic(x.image),
+      link: x.bookingUrl ? { label: 'Book', href: '@booking' } : null,
     })) } });
     if (s.id === 'story' && p.story) into.push({ type: 'text', role: 'story', variant: ['counsel', 'office', 'practice'].includes(theme) ? 'sidehead' : 'plain', data: { heading: s.title || p.storyTitle || titles.story || 'Our story', body: p.story } });
     if (s.id === 'info' && (p.hours || p.location || p.phone || p.email) && !(business && infoSitsInOpening(theme))) into.push({ type: 'contact', role: 'contact', variant: CONTACT[theme] || 'split', data: { heading: s.title || 'Find us', business: true } });
@@ -52,10 +53,6 @@ export function pageFromHome(site = {}, theme = site.defaultTheme) {
     if (s.id === 'news') into.push({ type: 'posts', role: 'posts', variant: 'list', data: { heading: title('news', s.title) || 'News', count: 3 } });
   }
   return normalisePage({ v: 1, title: 'Home', slug: 'home', menu: { show: true, label: 'Home' }, blocks, spare });
-}
-function promoHref(x) {
-  if (!x.promoCode) return x.paymentUrl;
-  try { const u = new URL(x.paymentUrl); if (u.hostname === 'buy.stripe.com') u.searchParams.set('prefilled_promo_code', x.promoCode); return u.href; } catch { return x.paymentUrl; }
 }
 
 // About: the profile (name, role, bio, numbers) plus any lists the site already shows.
