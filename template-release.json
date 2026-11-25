@@ -165,7 +165,7 @@
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
-  "src/scripts/page-actions.js": "22ef359fcb839e1b7fa4ad2bc4f95a56acf2ad58",
+  "src/scripts/page-actions.js": "971b33db93d02dfa37e8aed40c8fc60e54f88c51",
   "src/scripts/page-motion.js": "c917f5f4f915ff405e8023cc3663dac9c8f955bd",
   "src/styles/blocks.css": "18ff48707427e3512bc3128dc8125553b804fa77",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
@@ -212,6 +212,21 @@
   "src/styles/themes/zine.css": "2965c02c12970fa7f0fc3edda3f35301593a17c1"
  },
  "history": {
+  "src/scripts/page-actions.js": [
+   "22ef359fcb839e1b7fa4ad2bc4f95a56acf2ad58",
+   "d7572e5a07033182c398f3cedbd18490b456c250",
+   "86e1324023f42fe3d9ac4a1dd8cbab960383d857",
+   "99b03540520322b78bd10066d54ded63d7e4690c",
+   "64a98d7e2ad0ac9e874bae3cc53e137d5f9b842c",
+   "c41e57da498d9cc3004cb0ccd53114b5f484ccaa",
+   "ffcce1c652c785d670b4c0f8b18344e1c35fec2f",
+   "f0f6e9c75eb65b9c47970c0815a73570de5087b6",
+   "5addd8a7c408bb499206f52a0bcdd150374ca68b",
+   "c08fda2bedbf408c4574abc4bf7623fe983d6e14",
+   "419869c7e5d9a25af8f4517f1b9f2fd56451a7f8",
+   "f1e8d005503afce76faad8de3f6827c42fa62609",
+   "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9"
+  ],
   "src/lib/pages/render.mjs": [
    "3ce5939f8920a7c84e84b6c922d12a18fbe62707",
    "11d4956453a8d5d64f015b9ac0cc2f07fd1d1f46",
@@ -285,20 +300,6 @@
   "src/lib/business-schema.mjs": [
    "f1e072ad0934d93b88a7148164321de4a925ab80",
    "95c12315777cf035e158625c819b3b63316328c1"
-  ],
-  "src/scripts/page-actions.js": [
-   "d7572e5a07033182c398f3cedbd18490b456c250",
-   "86e1324023f42fe3d9ac4a1dd8cbab960383d857",
-   "99b03540520322b78bd10066d54ded63d7e4690c",
-   "64a98d7e2ad0ac9e874bae3cc53e137d5f9b842c",
-   "c41e57da498d9cc3004cb0ccd53114b5f484ccaa",
-   "ffcce1c652c785d670b4c0f8b18344e1c35fec2f",
-   "f0f6e9c75eb65b9c47970c0815a73570de5087b6",
-   "5addd8a7c408bb499206f52a0bcdd150374ca68b",
-   "c08fda2bedbf408c4574abc4bf7623fe983d6e14",
-   "419869c7e5d9a25af8f4517f1b9f2fd56451a7f8",
-   "f1e8d005503afce76faad8de3f6827c42fa62609",
-   "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9"
   ],
   "src/lib/pages/schema.mjs": [
    "1b74e28a27f2f7f4d4c00c154f0ade5eeb7c57f4",
