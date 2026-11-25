@@ -183,6 +183,38 @@ test('B2 re-review minor 3: other separators, holidays, weekdays and words that 
   assert.deepEqual(hoursParts('Mon to Fri 9am to 5pm (Sat by appointment)').map((x) => x.trim()).filter(Boolean), ['Mon to Fri 9am to 5pm', 'Sat by appointment']);
 });
 
+test('round C review M1, M2 and minor 1: holidays, closed after a full stop, "and" after p.m., "&"', () => {
+  const week = (lines) => [0, 1, 2, 3, 4, 5, 6].map((d) => { const s = hoursOn(lines, d); return s === null ? '?' : s.length ? s.map(([a, z]) => `${a / 60}-${z / 60}`).join('+') : 'closed'; }).join(' ');
+  //                                   Sun     Mon   Tue   Wed   Thu   Fri   Sat
+  const cases = [
+    [['Mon to Sat 9am to 5pm, Sundays and bank holidays 10am to 4pm'], '10-16 9-17 9-17 9-17 9-17 9-17 9-17'],
+    [['Sundays and bank holidays 10am to 4pm'], '10-16 ? ? ? ? ? ?'],
+    [['Mon to Sat 9am to 5pm', 'Sun and bank holidays 10am to 4pm'], '10-16 9-17 9-17 9-17 9-17 9-17 9-17'],
+    [['Every day 9am to 5pm except bank holidays'], '9-17 9-17 9-17 9-17 9-17 9-17 9-17'],
+    [['Mon to Fri 9am to 5pm except bank holidays'], '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    [['Mon to Fri 8.30am to 6pm including bank holidays'], '? 8.5-18 8.5-18 8.5-18 8.5-18 8.5-18 ?'],
+    [['Mon to Fri 9am to 5pm. Closed weekends and bank holidays'], 'closed 9-17 9-17 9-17 9-17 9-17 closed'],
+    [['Mon to Fri 9am to 6pm, closed Sundays and bank holidays'], 'closed 9-18 9-18 9-18 9-18 9-18 ?'],
+    [['Mon to Fri 9am to 5pm, Sat 9am to 1pm, Sun and public holidays closed'], 'closed 9-17 9-17 9-17 9-17 9-17 9-13'],
+    [['Mon to Fri 9am to 5pm, Sat closed, bank holidays 10am to 2pm'], '? 9-17 9-17 9-17 9-17 9-17 closed'],
+    [['Daily 9 to 5, bank holiday Mondays closed'], '9-17 9-17 9-17 9-17 9-17 9-17 9-17'],
+    [['Mon to Fri 9am to 5pm || Bank holidays closed'.split(' || ')].flat(), '? 9-17 9-17 9-17 9-17 9-17 ?'],
+    [['Mon to Fri 9am to 5pm. Closed weekends'], 'closed 9-17 9-17 9-17 9-17 9-17 closed'],
+    [['Mon to Sat 9am to 5pm. Closed on Sundays'], 'closed 9-17 9-17 9-17 9-17 9-17 9-17'],
+    [['Mon to Sat 9am to 5pm and closed Sundays'], 'closed 9-17 9-17 9-17 9-17 9-17 9-17'],
+    [['Open 9am to 5pm. Closed Sundays and bank holidays'], 'closed ? ? ? ? ? ?'],
+    [['Sat 9 a.m. to 1 p.m. and Sun closed'], 'closed ? ? ? ? ? 9-13'],
+    [['Sat 9am to 1pm & Sun closed'], 'closed ? ? ? ? ? 9-13'],
+    [['Thu & Fri 9 to 8'], '? ? ? ? 9-20 9-20 ?'],
+    [['Mon to Fri 9 a.m. to 5 p.m. and Sat 10 a.m. to 2 p.m.'], '? 9-17 9-17 9-17 9-17 9-17 10-14'],
+  ];
+  for (const [lines, want] of cases) assert.equal(week(lines), want, lines.join(' || '));
+  // Open now and search engine data follow (Sunday 29 Nov and Saturday 28 Nov 2026, noon in London).
+  assert.equal(openState(['Mon to Sat 9am to 5pm', 'Sundays and bank holidays 10am to 4pm'], new Date('2026-11-29T12:00:00Z'), 'Europe/London').text, 'Open now, closes at 4pm');
+  assert.equal(openState(['Mon to Fri 9am to 5pm. Closed weekends'], new Date('2026-11-28T12:00:00Z'), 'Europe/London').open, false);
+  assert.deepEqual(openingHours('Every day 9am to 5pm except bank holidays').map((x) => x.dayOfWeek.length), [7]);
+});
+
 test('minor 2: block pages draw hours without blank rows', () => {
   const html = renderPage(page([{ id: 'c', type: 'contact', variant: 'card', data: { heading: 'Find us', business: true } }]), { site: { ...SITE, professional: { ...SITE.professional, hours: 'Mon to Fri 9am to 5pm\n\n\nSat 9am to 1pm  ' } }, today: '2026-11-24' });
   assert.match(html, /Mon to Fri 9am to 5pm<br>Sat 9am to 1pm</);
