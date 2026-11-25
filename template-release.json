@@ -131,11 +131,11 @@
   "src/lib/og.ts": "0f12ca344566ac9a8dfe6f1b710811c0f2c4949d",
   "src/lib/page-css.mjs": "6f21aacb20cb8b5aaa45cb7367ee23eca1241bbe",
   "src/lib/pages/migrate.mjs": "fb3906b9ca04d7c0497a9532d0d93ac0839e1056",
-  "src/lib/pages/render.mjs": "11d4956453a8d5d64f015b9ac0cc2f07fd1d1f46",
-  "src/lib/pages/schema.mjs": "1b74e28a27f2f7f4d4c00c154f0ade5eeb7c57f4",
+  "src/lib/pages/render.mjs": "3ce5939f8920a7c84e84b6c922d12a18fbe62707",
+  "src/lib/pages/schema.mjs": "a257093a2a353dbfc6bc2ab9cfb3ed50651072a6",
   "src/lib/pages/site-pages.ts": "e10baa1f19d05b61cd480d35db44887830745c53",
   "src/lib/post-cover.mjs": "2bc95c49dcb90d04bfc6e3f15917f93f7b9621af",
-  "src/lib/professional.mjs": "f6248addd1922ddc5de32d50a5ec61fa91d99e68",
+  "src/lib/professional.mjs": "b38d81c9de6cd2924bdfc3cada28d98fb90c6083",
   "src/lib/rehype-gallery.mjs": "bb610588d2865746a8911ff0d714fdaa4ee34d8b",
   "src/lib/series.ts": "2cd316b40f4a3a49204a571691408fcfde56ca72",
   "src/lib/site.ts": "d9dc8323ea6399c9992bcd91c32f54dfe5ea9699",
@@ -165,7 +165,7 @@
   "src/scripts/darkroom.js": "0331e75b39808f1e34a0666c67e8fe93758d5aee",
   "src/scripts/galaxy.js": "ed9cc139ed7faf94855104463e6ee36f9e8a9d42",
   "src/scripts/lightbox.js": "3fa2c900501759d4305b1d87d254cb10a4c8fdff",
-  "src/scripts/page-actions.js": "86e1324023f42fe3d9ac4a1dd8cbab960383d857",
+  "src/scripts/page-actions.js": "d7572e5a07033182c398f3cedbd18490b456c250",
   "src/scripts/page-motion.js": "c917f5f4f915ff405e8023cc3663dac9c8f955bd",
   "src/styles/blocks.css": "18ff48707427e3512bc3128dc8125553b804fa77",
   "src/styles/fonts.css": "e142947a14c875bbedeffdef21c6b7bcba762b0e",
@@ -213,6 +213,7 @@
  },
  "history": {
   "src/lib/pages/render.mjs": [
+   "11d4956453a8d5d64f015b9ac0cc2f07fd1d1f46",
    "3f29fe15608e1f2a25fa88d9dd3a77902ddb3e73",
    "01949fa563c223431620f9054b97bb22af908479",
    "400e597344bba82f93e293dac42c6169aa067778",
@@ -280,12 +281,8 @@
    "c7226998668f0fbee76774c9de823a6b4e21fcfe",
    "282310dd71e696d7ea398138d08cae4e6ffdf3c0"
   ],
-  "src/lib/pages/migrate.mjs": [
-   "ac3d603f17de28b7ee79a291ed39ba8b093ad0f5",
-   "9f5fe20140be5b8460a8ce0e28f619fa96a996ab",
-   "c729d7bf2cb2d216e9b036db420683a9faf93969"
-  ],
   "src/lib/pages/schema.mjs": [
+   "1b74e28a27f2f7f4d4c00c154f0ade5eeb7c57f4",
    "556a460063c52ee0ce8f0537969988b47af9f692",
    "8e74dc541b0180a78c19f0af16a89d63d34e5549",
    "b04622c10127bb6d3a9912d3ffcbfb325b62a955",
@@ -325,6 +322,7 @@
    "09baab156a3a0a6a1e577eed8db8115618800402"
   ],
   "src/lib/professional.mjs": [
+   "f6248addd1922ddc5de32d50a5ec61fa91d99e68",
    "c301823ef4856379e58e3688cffb1b83f574f063",
    "f77728e6d1d876e0dc435c69de239f36d3f8a4c5",
    "dac1183aa9cc2ac4769ad72d6de693380beb9415",
@@ -335,6 +333,24 @@
    "38243e7dfcb562107f1fafa511c950db37f23e9e",
    "f6228b9a5ceb15847a1e8599b87784b1af38f61c",
    "aa9f50c5bf4bf64fb0ee5ae0f3935f56ed51cd48"
+  ],
+  "src/scripts/page-actions.js": [
+   "86e1324023f42fe3d9ac4a1dd8cbab960383d857",
+   "99b03540520322b78bd10066d54ded63d7e4690c",
+   "64a98d7e2ad0ac9e874bae3cc53e137d5f9b842c",
+   "c41e57da498d9cc3004cb0ccd53114b5f484ccaa",
+   "ffcce1c652c785d670b4c0f8b18344e1c35fec2f",
+   "f0f6e9c75eb65b9c47970c0815a73570de5087b6",
+   "5addd8a7c408bb499206f52a0bcdd150374ca68b",
+   "c08fda2bedbf408c4574abc4bf7623fe983d6e14",
+   "419869c7e5d9a25af8f4517f1b9f2fd56451a7f8",
+   "f1e8d005503afce76faad8de3f6827c42fa62609",
+   "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9"
+  ],
+  "src/lib/pages/migrate.mjs": [
+   "ac3d603f17de28b7ee79a291ed39ba8b093ad0f5",
+   "9f5fe20140be5b8460a8ce0e28f619fa96a996ab",
+   "c729d7bf2cb2d216e9b036db420683a9faf93969"
   ],
   "src/pages/appointments.astro": [
    "d308f4cb6d686e77bfaaf3a288f3026b62ee2e69",
@@ -350,18 +366,6 @@
    "13e22d5a6026e60cb45b9f6650679411d5c73145",
    "b2ac55fe8ffe23a6d89d01a496b46564c3f2bd44",
    "013d789f180b6f0491bd60d97b182f54244457df"
-  ],
-  "src/scripts/page-actions.js": [
-   "99b03540520322b78bd10066d54ded63d7e4690c",
-   "64a98d7e2ad0ac9e874bae3cc53e137d5f9b842c",
-   "c41e57da498d9cc3004cb0ccd53114b5f484ccaa",
-   "ffcce1c652c785d670b4c0f8b18344e1c35fec2f",
-   "f0f6e9c75eb65b9c47970c0815a73570de5087b6",
-   "5addd8a7c408bb499206f52a0bcdd150374ca68b",
-   "c08fda2bedbf408c4574abc4bf7623fe983d6e14",
-   "419869c7e5d9a25af8f4517f1b9f2fd56451a7f8",
-   "f1e8d005503afce76faad8de3f6827c42fa62609",
-   "5d397a3c8ff7089e6633b0ff6bf1c5cc5c8e8cf9"
   ],
   "src/scripts/booking-calendar.js": [
    "f7bceef4e7abe845c5a6ffcecf960d58db3491ad",
